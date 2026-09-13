@@ -42,6 +42,8 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+/* Classes like .sample set display, which would otherwise override the hidden attribute. */
+[hidden]{display:none!important}
 html,body{margin:0}
 body{background:var(--page);color:var(--ink);
   font:400 15px/1.4 Barlow,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
@@ -380,9 +382,23 @@ const TEAM_KEYS = 'fd fdR fdP fdX rushN rushY passC passA passY passTD passInt s
 const PL_KEYS = 'pc pa py ptd pint plg psk pskY ru ry rtd rlg re rey retd relg tk ast tfl sk dint dintY fr ff pbu bk fum fgm fga fglg xpm xpa ko koy ktb pu puy pulg pi20 ptb kr kry krtd krlg pr pry prtd prlg tds two pts'.split(' ');
 const zeros = keys => Object.fromEntries(keys.map(k => [k, 0]));
 
+// 11-man plays NFHS on a 100-yard field. Kansas 8-man plays an 80-yard field
+// (midfield at the 40) with its own kickoff and touchback spots. Any spot can be
+// changed per game in Setup.
+const FORMATS = {
+  11: {len:100, kickFrom:40, tb:20, safety:20, ot:10},
+  8:  {len:80,  kickFrom:30, tb:15, safety:15, ot:10}
+};
+function rulesOf(game){
+  const s = (game && game.set) || {}, men = +s.men === 8 ? 8 : 11, f = FORMATS[men];
+  const num = (v, d) => +v > 0 ? +v : d;
+  return {men, len:f.len, kickFrom:num(s.kickFrom, f.kickFrom), tb:num(s.tb, f.tb), safety:num(s.safety, f.safety), ot:num(s.ot, f.ot)};
+}
+
 function replay(g, upto = g.plays.length){
-  const T = g.teams, qSec = (g.set.qtr || 12) * 60, otSpot = 100 - (g.set.ot || 10);
-  let st = {q:1, phase:'kick', kickKind:'kickoff', poss:g.set.firstKick || 'H', kickFrom:NFHS.kickFrom,
+  const RU = rulesOf(g), FL = RU.len, HALF = FL / 2;
+  const T = g.teams, qSec = (g.set.qtr || 12) * 60, otSpot = FL - RU.ot;
+  let st = {q:1, phase:'kick', kickKind:'kickoff', poss:g.set.firstKick || 'H', kickFrom:RU.kickFrom,
     spot:0, down:1, ltg:10, score:{A:0,H:0}, lines:{A:[0,0,0,0,0],H:[0,0,0,0,0]}, to:{A:3,H:3},
     ot:null, final:false, drive:null, fresh:false};
   let S = {team:{A:zeros(TEAM_KEYS), H:zeros(TEAM_KEYS)}, pl:{A:{}, H:{}}};
@@ -395,8 +411,8 @@ function replay(g, upto = g.plays.length){
     const who = (T[s].roster || {})[n];
     return who ? `#${n} ${who.split(' ').slice(-1)[0]}` : `#${n}`;
   };
-  const yl = (s, pos) => { pos = clamp(pos, 0, 100); if (pos === 50) return '50';
-    return pos < 50 ? `${ab(s)} ${fy(pos)}` : `${ab(other(s))} ${fy(100 - pos)}`; };
+  const yl = (s, pos) => { pos = clamp(pos, 0, FL); if (pos === HALF) return String(HALF);
+    return pos < HALF ? `${ab(s)} ${fy(pos)}` : `${ab(other(s))} ${fy(FL - pos)}`; };
   const yds = g => g > 0 ? `for ${fy(g)} yard${g === 1 ? '' : 's'}` : g < 0 ? `for a loss of ${fy(-g)}` : 'for no gain';
   const plural = (n, w) => `${fy(n)} ${w}${n === 1 ? '' : 's'}`;
   const pl = (s, n) => {
@@ -417,16 +433,16 @@ function replay(g, upto = g.plays.length){
     if (st.final) return 'Final';
     if (st.phase === 'kick') return `${st.kickKind === 'free' ? 'Free kick' : 'Kickoff'} · ${ab(st.poss)} from the ${yl(st.poss, st.kickFrom)}`;
     if (st.phase === 'try') return `Try · ${ab(st.poss)} at the ${yl(st.poss, st.spot)}`;
-    return `${ab(st.poss)} · ${ord(st.down)} & ${st.ltg >= 100 ? 'Goal' : fy(st.ltg - st.spot)} at ${yl(st.poss, st.spot)}`;
+    return `${ab(st.poss)} · ${ord(st.down)} & ${st.ltg >= FL ? 'Goal' : fy(st.ltg - st.spot)} at ${yl(st.poss, st.spot)}`;
   }
 
   /* ---- series, possession, drives ---- */
   function newSeries(s, spot){
-    st.poss = s; st.spot = spot; st.down = 1; st.ltg = Math.min(100, spot + 10); st.phase = 'play'; st.fresh = true;
+    st.poss = s; st.spot = spot; st.down = 1; st.ltg = Math.min(FL, spot + 10); st.phase = 'play'; st.fresh = true;
   }
   function kickoffBy(s, kind = 'kickoff'){
     st.phase = 'kick'; st.poss = s; st.kickKind = kind;
-    st.kickFrom = kind === 'free' ? NFHS.safetyKickFrom : NFHS.kickFrom;
+    st.kickFrom = kind === 'free' ? RU.safety : RU.kickFrom;
   }
   function driveTouch(){
     if (!st.drive || st.drive.team !== st.poss){
@@ -448,7 +464,7 @@ function replay(g, upto = g.plays.length){
   function endGame(){ closeDrive(st.q > 4 ? 'End of OT' : 'End of game'); st.final = true; st.phase = 'final'; }
 
   /* ---- overtime (NFHS tiebreaker, Kansas plan: 10-yard line) ---- */
-  function otSeries(s){ st.ot.cur = s; newSeries(s, otSpot); st.ltg = Math.min(100, otSpot + 10); }
+  function otSeries(s){ st.ot.cur = s; newSeries(s, otSpot); st.ltg = Math.min(FL, otSpot + 10); }
   function otEnd(){
     const o = st.ot; o.done[o.cur] = true;
     if (o.done.A && o.done.H){
@@ -472,12 +488,12 @@ function replay(g, upto = g.plays.length){
   }
   function amendTry(txt){ const last = scoring[scoring.length - 1]; if (last && last.how === 'TD') last.desc += ` (${txt})`; }
   function touchdown(s, desc, scorer){
-    if (st.drive && st.drive.team === s) closeDrive('TD', 100); else closeDrive();
+    if (st.drive && st.drive.team === s) closeDrive('TD', FL); else closeDrive();
     if (scorer){ scorer.tds++; scorer.pts += 6; }
     score(s, 6, 'TD', desc);
     // A second overtime team that goes ahead wins without a try.
     if (st.ot && st.ot.done[other(s)] && st.score[s] > st.score[other(s)]) { st.ot.done[s] = true; endGame(); return ' TOUCHDOWN. Game over.'; }
-    st.phase = 'try'; st.poss = s; st.spot = 100 - NFHS.tryFrom; st.down = 1; st.ltg = 100;
+    st.phase = 'try'; st.poss = s; st.spot = FL - NFHS.tryFrom; st.down = 1; st.ltg = FL;
     return ' TOUCHDOWN.';
   }
   function safety(defense){
@@ -491,7 +507,7 @@ function replay(g, upto = g.plays.length){
   // Offense keeps the ball and reaches `end`: touchdown, safety, first down, next down or turnover on downs.
   function progress(end, fdKind, tdDesc, scorer){
     const O = st.poss, D = other(O), t = S.team[O];
-    if (end >= 100){ if (fdKind){ t.fd++; t['fd' + fdKind]++; } return touchdown(O, tdDesc, scorer); }
+    if (end >= FL){ if (fdKind){ t.fd++; t['fd' + fdKind]++; } return touchdown(O, tdDesc, scorer); }
     if (end <= 0) return safety(D);
     if (end >= st.ltg){
       if (fdKind){ t.fd++; t['fd' + fdKind]++; }
@@ -499,7 +515,7 @@ function replay(g, upto = g.plays.length){
     }
     if (st.down >= 4){
       closeDrive('Downs', end); tags.push(['to', 'Downs']);
-      if (st.ot) otEnd(); else newSeries(D, 100 - end);
+      if (st.ot) otEnd(); else newSeries(D, FL - end);
       return ' Turnover on downs.';
     }
     st.down++; st.spot = end; return '';
@@ -519,10 +535,10 @@ function replay(g, upto = g.plays.length){
     let txt = ` FUMBLE${f.ff ? ` forced by ${nm(rs, f.ff)}` : ''}, recovered by ${f.by ? nm(rs, f.by) : ab(rs)} at the ${yl(cs, pos)}`;
     if (st.drive && st.drive.team === cs) closeDrive('Fumble', pos);
     if (st.ot) { otEnd(); return txt + ' (ball dead).'; }
-    const ry = +f.ry || 0, fin = 100 - pos + ry;
+    const ry = +f.ry || 0, fin = FL - pos + ry;
     if (ry) txt += `, returned ${plural(ry, 'yard')}`;
-    if (fin >= 100) return txt + '.' + touchdown(rs, `${f.by ? nm(rs, f.by) : ab(rs)} fumble return`, pl(rs, f.by));
-    if (fin <= 0){ newSeries(rs, NFHS.touchback); return txt + '. Touchback.'; }
+    if (fin >= FL) return txt + '.' + touchdown(rs, `${f.by ? nm(rs, f.by) : ab(rs)} fumble return`, pl(rs, f.by));
+    if (fin <= 0){ newSeries(rs, RU.tb); return txt + '. Touchback.'; }
     newSeries(rs, fin); return txt + '.';
   }
   function fumbleKept(cs, cn, f){
@@ -535,7 +551,7 @@ function replay(g, upto = g.plays.length){
     const off = pen.side === st.poss;
     let y = +pen.y || 0;
     const base = st.phase === 'kick' ? 'kickFrom' : 'spot';
-    const room = off ? st[base] : 100 - st[base];
+    const room = off ? st[base] : FL - st[base];
     if (y > room / 2) y = room / 2;          // half the distance to the offender's goal
     st[base] += off ? -y : y;
     return y;
@@ -561,7 +577,7 @@ function replay(g, upto = g.plays.length){
       txt += ', loss of down';
       if (st.down >= 4){
         closeDrive('Downs', st.spot); tags.push(['to', 'Downs']);
-        if (st.ot) otEnd(); else newSeries(other(st.poss), 100 - st.spot);
+        if (st.ot) otEnd(); else newSeries(other(st.poss), FL - st.spot);
         return txt + '. Turnover on downs.';
       }
       st.down++;
@@ -572,8 +588,8 @@ function replay(g, upto = g.plays.length){
   /* ---- plays ---- */
   function run(p){
     const O = st.poss, D = other(O), t = S.team[O], r = pl(O, p.r);
-    const g = clamp(+p.y || 0, -st.spot, 100 - st.spot), end = st.spot + g, td = end >= 100;
-    if (st.phase === 'try') return twoPoint(p, end >= 100, `${nm(O, p.r)} rush`);
+    const g = clamp(+p.y || 0, -st.spot, FL - st.spot), end = st.spot + g, td = end >= FL;
+    if (st.phase === 'try') return twoPoint(p, end >= FL, `${nm(O, p.r)} rush`);
     driveTouch(); t.plays++;
     t.rushN++; t.rushY += g; bump(r, 'ru'); bump(r, 'ry', g); long(r, 'rlg', g);
     tackles(D, p.tk, g); conversion(end);
@@ -590,7 +606,7 @@ function replay(g, upto = g.plays.length){
     const O = st.poss, D = other(O), t = S.team[O], qb = pl(O, p.qb);
     if (st.phase === 'try'){
       const g = p.res === 'c' ? +p.y || 0 : -1;
-      return twoPoint(p, p.res === 'c' && st.spot + g >= 100, `${nm(O, p.qb)} pass to ${nm(O, p.to)}`);
+      return twoPoint(p, p.res === 'c' && st.spot + g >= FL, `${nm(O, p.qb)} pass to ${nm(O, p.to)}`);
     }
     driveTouch(); t.plays++;
     if (p.res === 's'){
@@ -612,20 +628,20 @@ function replay(g, upto = g.plays.length){
     if (p.res === 'x'){
       conversion(st.spot);
       t.passInt++; bump(qb, 'pint');
-      const dp = pl(D, p.ib), at = clamp(st.spot + (+p.at || 0), 0, 110), ry = st.ot ? 0 : (+p.ry || 0);
+      const dp = pl(D, p.ib), at = clamp(st.spot + (+p.at || 0), 0, (FL + 10)), ry = st.ot ? 0 : (+p.ry || 0);
       bump(dp, 'dint'); bump(dp, 'dintY', ry); S.team[D].intN++; S.team[D].intY += ry;
       tags.push(['to', 'INT']);
-      let txt = `${nm(O, p.qb)} pass intercepted by ${p.ib ? nm(D, p.ib) : ab(D)} at the ${at >= 100 ? `${ab(D)} end zone` : yl(O, at)}`;
+      let txt = `${nm(O, p.qb)} pass intercepted by ${p.ib ? nm(D, p.ib) : ab(D)} at the ${at >= FL ? `${ab(D)} end zone` : yl(O, at)}`;
       closeDrive('INT', st.spot);
       if (st.ot){ otEnd(); return txt + ' (ball dead).'; }
-      const fin = 100 - at + ry;
+      const fin = FL - at + ry;
       if (ry) txt += `, returned ${plural(ry, 'yard')}`;
-      if (fin >= 100) return txt + '.' + touchdown(D, `${p.ib ? nm(D, p.ib) : ab(D)} interception return`, dp);
-      if (fin <= 0){ newSeries(D, NFHS.touchback); return txt + '. Touchback.'; }
+      if (fin >= FL) return txt + '.' + touchdown(D, `${p.ib ? nm(D, p.ib) : ab(D)} interception return`, dp);
+      if (fin <= 0){ newSeries(D, RU.tb); return txt + '. Touchback.'; }
       newSeries(D, fin); return txt + ` to the ${yl(D, fin)}.`;
     }
     // complete
-    const rec = pl(O, p.to), g = clamp(+p.y || 0, -st.spot, 100 - st.spot), end = st.spot + g, td = end >= 100;
+    const rec = pl(O, p.to), g = clamp(+p.y || 0, -st.spot, FL - st.spot), end = st.spot + g, td = end >= FL;
     t.passC++; t.passY += g; bump(qb, 'pc'); bump(qb, 'py', g); long(qb, 'plg', g);
     bump(rec, 're'); bump(rec, 'rey', g); long(rec, 'relg', g);
     tackles(D, p.tk, g); conversion(end);
@@ -645,9 +661,9 @@ function replay(g, upto = g.plays.length){
     S.team[R][k1 === 'kr' ? 'krN' : 'prN']++; S.team[R][k1 === 'kr' ? 'krY' : 'prY'] += ry;
     tackles(K, p.tk, 1);
     let txt = `, ${nm(R, p.ret)} returns ${plural(ry, 'yard')}`;
-    if (p.fum && p.fum.lost) return {txt: txt + fumbleLost(R, p.ret, clamp(fin, 1, 99), p.fum), fin};
-    if (fin >= 100){ bump(ret, k1 + 'td'); return {txt: txt + '.' + touchdown(R, `${nm(R, p.ret)} ${fy(ry)}-yard ${kind === 'kr' ? 'kickoff' : 'punt'} return`, ret), fin}; }
-    if (fin <= 0){ newSeries(R, NFHS.touchback); return {txt: txt + ', downed in the end zone. Touchback.', fin:NFHS.touchback}; }
+    if (p.fum && p.fum.lost) return {txt: txt + fumbleLost(R, p.ret, clamp(fin, 1, (FL - 1)), p.fum), fin};
+    if (fin >= FL){ bump(ret, k1 + 'td'); return {txt: txt + '.' + touchdown(R, `${nm(R, p.ret)} ${fy(ry)}-yard ${kind === 'kr' ? 'kickoff' : 'punt'} return`, ret), fin}; }
+    if (fin <= 0){ newSeries(R, RU.tb); return {txt: txt + ', downed in the end zone. Touchback.', fin:RU.tb}; }
     if (p.fum) txt += `,${fumbleKept(R, p.ret, p.fum).slice(1, -1)}`;
     newSeries(R, fin); return {txt: txt + ` to the ${yl(R, fin)}${tackleTxt(K, p.tk)}.`, fin};
   }
@@ -657,25 +673,25 @@ function replay(g, upto = g.plays.length){
     // A kickoff typed with no distance ("ko") takes it from the spot typed next.
     const unknown = p.d == null && !['tb', 'oob', 'onside'].includes(p.res);
     let d = +p.d || 0;
-    if (p.res === 'tb' && !d) d = 100 - kf;
+    if (p.res === 'tb' && !d) d = FL - kf;
     bump(k, 'ko'); tk.koN++;
     if (!unknown && p.res !== 'oob'){ bump(k, 'koy', d); tk.koY += d; }
     const what = st.kickKind === 'free' ? 'free kick' : 'kickoff';
     let txt = unknown || (p.res === 'oob' && !p.d) ? `${nm(K, p.k)} ${what}` : `${nm(K, p.k)} ${what} ${plural(d, 'yard')}`;
-    if (p.bs != null){ newSeries(R, clamp(+p.bs, 1, 99)); return `${nm(K, p.k)} ${what}. ${ab(R)} ball at the ${yl(R, st.spot)}.`; }
-    if (unknown){ newSeries(R, 100 - kf); return txt + '.'; }
-    const at = 100 - (kf + d);
+    if (p.bs != null){ newSeries(R, clamp(+p.bs, 1, (FL - 1))); return `${nm(K, p.k)} ${what}. ${ab(R)} ball at the ${yl(R, st.spot)}.`; }
+    if (unknown){ newSeries(R, FL - kf); return txt + '.'; }
+    const at = FL - (kf + d);
     switch (p.res){
       case 'spot': {
-        const s = at <= 0 ? NFHS.touchback : at; newSeries(R, s);
+        const s = at <= 0 ? RU.tb : at; newSeries(R, s);
         return txt + (at <= 0 ? ', into the end zone. Touchback.' : ` to the ${yl(R, s)}.`);
       }
-      case 'tb': bump(k, 'ktb'); tk.koTB++; newSeries(R, NFHS.touchback); return txt + `, touchback. ${ab(R)} ball at the ${yl(R, NFHS.touchback)}.`;
-      case 'oob': { const s = 100 - (kf + NFHS.oobFreeKick); newSeries(R, s); return txt + `, out of bounds. ${ab(R)} ball at the ${yl(R, s)}.`; }
+      case 'tb': bump(k, 'ktb'); tk.koTB++; newSeries(R, RU.tb); return txt + `, touchback. ${ab(R)} ball at the ${yl(R, RU.tb)}.`;
+      case 'oob': { const s = FL - (kf + NFHS.oobFreeKick); newSeries(R, s); return txt + `, out of bounds. ${ab(R)} ball at the ${yl(R, s)}.`; }
       case 'onside': { const s = kf + d; bump(pl(K, p.ret), 'fr'); newSeries(K, s); tags.push(['to', 'Onside']);
         return txt + `, onside, recovered by ${p.ret ? nm(K, p.ret) : ab(K)} at the ${yl(K, s)}.`; }
       case 'fc': case 'down': {
-        const s = at <= 0 ? NFHS.touchback : at; newSeries(R, s);
+        const s = at <= 0 ? RU.tb : at; newSeries(R, s);
         return txt + (at <= 0 ? ', downed in the end zone. Touchback.' : p.res === 'fc' ? `, fair catch by ${nm(R, p.ret)} at the ${yl(R, s)}.` : `, downed at the ${yl(R, s)}.`);
       }
       default: return txt + ` to the ${at <= 0 ? `${ab(R)} end zone` : yl(R, at)}` + kickReturn(R, 'kr', p, at).txt;
@@ -688,20 +704,20 @@ function replay(g, upto = g.plays.length){
     closeDrive('Punt', st.spot);
     if (p.res === 'blk'){
       t.pntBlk++; bump(pl(R, p.by), 'bk'); tags.push(['to', 'Blocked']);
-      const at = clamp(100 - (st.spot - (+p.b || 0)), 1, 100), ry = +p.ry || 0, fin = at + ry;
+      const at = clamp(FL - (st.spot - (+p.b || 0)), 1, FL), ry = +p.ry || 0, fin = at + ry;
       let txt = `${nm(O, p.k)} punt BLOCKED${p.by ? ` by ${nm(R, p.by)}` : ''}, recovered by ${p.ret ? nm(R, p.ret) : ab(R)} at the ${yl(R, at)}`;
       if (ry) txt += `, returned ${plural(ry, 'yard')}`;
-      if (fin >= 100) return txt + '.' + touchdown(R, `${p.ret ? nm(R, p.ret) : ab(R)} blocked punt return`, pl(R, p.ret));
+      if (fin >= FL) return txt + '.' + touchdown(R, `${p.ret ? nm(R, p.ret) : ab(R)} blocked punt return`, pl(R, p.ret));
       newSeries(R, fin); return txt + '.';
     }
     const unknown = p.d == null && p.res !== 'tb';
     let d = +p.d || 0;
-    if (p.res === 'tb') d = 100 - st.spot;
-    if (unknown){ newSeries(R, 100 - st.spot); return `${nm(O, p.k)} punt.`; }
+    if (p.res === 'tb') d = FL - st.spot;
+    if (unknown){ newSeries(R, FL - st.spot); return `${nm(O, p.k)} punt.`; }
     bump(k, 'puy', d); long(k, 'pulg', d); t.pntY += d;
-    const at = 100 - (st.spot + d);
+    const at = FL - (st.spot + d);
     let txt = `${nm(O, p.k)} punt ${plural(d, 'yard')}`;
-    if (p.res === 'tb' || at <= 0){ bump(k, 'ptb'); t.pntTB++; newSeries(R, NFHS.touchback); return txt + `, touchback. ${ab(R)} ball at the ${yl(R, NFHS.touchback)}.`; }
+    if (p.res === 'tb' || at <= 0){ bump(k, 'ptb'); t.pntTB++; newSeries(R, RU.tb); return txt + `, touchback. ${ab(R)} ball at the ${yl(R, RU.tb)}.`; }
     if (p.res === 'ret'){
       const r = kickReturn(R, 'pr', p, at);
       if (r.fin < 20) bump(k, 'pi20');
@@ -714,7 +730,7 @@ function replay(g, upto = g.plays.length){
 
   function fieldGoal(p){
     const O = st.poss, D = other(O), t = S.team[O], k = pl(O, p.k);
-    const dist = +p.d || Math.round(100 - st.spot + NFHS.fgExtra);
+    const dist = +p.d || Math.round(FL - st.spot + NFHS.fgExtra);
     driveTouch(); t.plays++; bump(k, 'fga');
     if (p.res === 'good'){
       bump(k, 'fgm'); long(k, 'fglg', dist); if (k) k.pts += 3;
@@ -728,17 +744,17 @@ function replay(g, upto = g.plays.length){
       closeDrive('Blocked FG', st.spot);
       let txt = `${nm(O, p.k)} ${dist}-yard field goal BLOCKED${p.by ? ` by ${nm(D, p.by)}` : ''}`;
       if (st.ot){ otEnd(); return txt + '.'; }
-      const at = clamp(100 - (st.spot - (+p.b || 0)), 1, 100), ry = +p.ry || 0, fin = at + ry;
+      const at = clamp(FL - (st.spot - (+p.b || 0)), 1, FL), ry = +p.ry || 0, fin = at + ry;
       txt += `, recovered by ${p.ret ? nm(D, p.ret) : ab(D)} at the ${yl(D, at)}`;
       if (ry) txt += `, returned ${plural(ry, 'yard')}`;
-      if (fin >= 100) return txt + '.' + touchdown(D, `${p.ret ? nm(D, p.ret) : ab(D)} blocked field goal return`, pl(D, p.ret));
+      if (fin >= FL) return txt + '.' + touchdown(D, `${p.ret ? nm(D, p.ret) : ab(D)} blocked field goal return`, pl(D, p.ret));
       newSeries(D, fin); return txt + '.';
     }
     closeDrive('Missed FG', st.spot);
     if (st.ot){ otEnd(); return `${nm(O, p.k)} ${dist}-yard field goal is NO GOOD.`; }
     // NFHS: a missed field goal into the end zone is a touchback — no "spot of the kick" rule.
-    newSeries(D, NFHS.touchback);
-    return `${nm(O, p.k)} ${dist}-yard field goal is NO GOOD. Touchback, ${ab(D)} ball at the ${yl(D, NFHS.touchback)}.`;
+    newSeries(D, RU.tb);
+    return `${nm(O, p.k)} ${dist}-yard field goal is NO GOOD. Touchback, ${ab(D)} ball at the ${yl(D, RU.tb)}.`;
   }
 
   function twoPoint(p, good, what){
@@ -799,11 +815,11 @@ function replay(g, upto = g.plays.length){
       case 'note': tags.push(['info', 'Note']); return p.text || '';
       case 'set': {   // "N ball at N35 1-10": the scorer states the situation outright
         if (st.drive && st.drive.team !== p.poss) closeDrive();
-        st.poss = p.poss; st.spot = clamp(+p.spot, 0.5, 99.5); st.down = clamp(+p.down || 1, 1, 4);
-        st.ltg = p.goal ? 100 : Math.min(100, st.spot + (+p.togo || 10)); st.phase = 'play'; st.fresh = true;
+        st.poss = p.poss; st.spot = clamp(+p.spot, 0.5, (FL - .5)); st.down = clamp(+p.down || 1, 1, 4);
+        st.ltg = p.goal ? FL : Math.min(FL, st.spot + (+p.togo || 10)); st.phase = 'play'; st.fresh = true;
         if (st.ot) st.ot.cur = p.poss;
         tags.push(['info', 'Spot']);
-        return `${ab(p.poss)} ball, ${ord(st.down)} & ${st.ltg >= 100 ? 'Goal' : fy(st.ltg - st.spot)} at the ${yl(p.poss, st.spot)}.`;
+        return `${ab(p.poss)} ball, ${ord(st.down)} & ${st.ltg >= FL ? 'Goal' : fy(st.ltg - st.spot)} at the ${yl(p.poss, st.spot)}.`;
       }
       case 'endq': return endPeriod(p);
       case 'final': endGame(); return 'Game ended.';
@@ -841,18 +857,18 @@ function replay(g, upto = g.plays.length){
     // A punt typed without a distance takes it from the spot typed next ("S ball at S10").
     if (p.t === 'punt' && p.d == null && p.res !== 'tb' && p.res !== 'blk' && st.phase === 'play'){
       const nx = g.plays[i + 1];
-      if (nx && nx.t === 'set' && nx.poss === other(st.poss)) p = {...p, d:Math.max(0, 100 - nx.spot - st.spot + (+p.ry || 0))};
+      if (nx && nx.t === 'set' && nx.poss === other(st.poss)) p = {...p, d:Math.max(0, FL - nx.spot - st.spot + (+p.ry || 0))};
     }
     if (p.t === 'ko' && p.d == null && !['tb', 'oob', 'onside'].includes(p.res) && st.phase === 'kick'){
       const nx = g.plays[i + 1];
-      if (nx && nx.t === 'set' && nx.poss === other(st.poss)) p = {...p, d:Math.max(0, 100 - st.kickFrom - nx.spot + (+p.ry || 0))};
+      if (nx && nx.t === 'set' && nx.poss === other(st.poss)) p = {...p, d:Math.max(0, FL - st.kickFrom - nx.spot + (+p.ry || 0))};
     }
     const pre = {sit: sit(), q: st.q, poss: st.poss};
     const r = apply(p);
     log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q});
   }
   const open = st.drive ? [{...st.drive, res:'In progress', open:true}] : [];
-  return {st, S, log, scoring, drives:drives.concat(open), sit:sit(), yl, nm, ab};
+  return {st, S, log, scoring, drives:drives.concat(open), sit:sit(), yl, nm, ab, FL, RU};
 }
 /* ================================================================
    UI: scoreboard, field, and the play-entry pad.
@@ -894,7 +910,7 @@ function renderBoard(){
     ? '<svg viewBox="0 0 12 12"><rect x="1" y="1" width="3.6" height="10"/><rect x="7.4" y="1" width="3.6" height="10"/></svg>'
     : '<svg viewBox="0 0 12 12"><path d="M2 1l9 5-9 5z"/></svg>';
   const dd = st.final ? '' : st.phase === 'play'
-    ? `${esc(ab(st.poss))} ball · <b>${ord(st.down)} &amp; ${st.ltg >= 100 ? 'Goal' : fy(st.ltg - st.spot)}</b> at ${esc(R.yl(st.poss, st.spot))}`
+    ? `${esc(ab(st.poss))} ball · <b>${ord(st.down)} &amp; ${st.ltg >= R.FL ? 'Goal' : fy(st.ltg - st.spot)}</b> at ${esc(R.yl(st.poss, st.spot))}`
     : esc(R.sit);
   $('#sb').innerHTML = `<div class="sb-in">${team('A')}
     <div class="mid">
@@ -907,27 +923,30 @@ function renderBoard(){
 
 /* ---------- field ---------- */
 function renderField(){
-  const st = R.st, T = g.teams, X = y => 100 + y * 10;
-  const abs = (side, pos) => side === 'A' ? pos : 100 - pos;   // yards from the visitors' goal (left)
+  const st = R.st, T = g.teams, FL = R.FL, HALF = FL / 2;
+  // End zones are 10 yards deep on either field, so the drawing is FL + 20 yards wide.
+  const k = 1200 / (FL + 20), X = y => (10 + y) * k, EZ = 10 * k, W = 1200;
+  const abs = (side, pos) => side === 'A' ? pos : FL - pos;   // yards from the visitors' goal (left)
+  const font = "'Barlow Condensed','Arial Narrow',sans-serif";
   let s = '<svg viewBox="0 0 1200 190" role="img" aria-label="Field position">';
-  for (let i = 0; i < 10; i++) s += `<rect x="${X(i * 10)}" y="0" width="100" height="190" style="fill:var(${i % 2 ? '--turf-2' : '--turf'})"/>`;
-  s += `<rect x="0" y="0" width="100" height="190" style="fill:${esc(T.A.color)}"/><rect x="1100" y="0" width="100" height="190" style="fill:${esc(T.H.color)}"/>`;
-  s += '<rect x="0" y="0" width="100" height="190" style="fill:rgba(0,0,0,.18)"/><rect x="1100" y="0" width="100" height="190" style="fill:rgba(0,0,0,.18)"/>';
-  const ezt = (x, rot, t) => `<text x="${x}" y="95" transform="rotate(${rot} ${x} 95)" text-anchor="middle" dominant-baseline="central" style="fill:rgba(255,255,255,.92);font:700 46px 'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:4px">${esc(t)}</text>`;
-  s += ezt(50, -90, T.A.abbr) + ezt(1150, 90, T.H.abbr);
-  for (let y = 0; y <= 100; y++){
+  for (let i = 0; i < FL / 10; i++) s += `<rect x="${X(i * 10)}" y="0" width="${10 * k}" height="190" style="fill:var(${i % 2 ? '--turf-2' : '--turf'})"/>`;
+  s += `<rect x="0" y="0" width="${EZ}" height="190" style="fill:${esc(T.A.color)}"/><rect x="${W - EZ}" y="0" width="${EZ}" height="190" style="fill:${esc(T.H.color)}"/>`;
+  s += `<rect x="0" y="0" width="${EZ}" height="190" style="fill:rgba(0,0,0,.18)"/><rect x="${W - EZ}" y="0" width="${EZ}" height="190" style="fill:rgba(0,0,0,.18)"/>`;
+  const ezt = (x, rot, t) => `<text x="${x}" y="95" transform="rotate(${rot} ${x} 95)" text-anchor="middle" dominant-baseline="central" style="fill:rgba(255,255,255,.92);font:700 46px ${font};letter-spacing:4px">${esc(t)}</text>`;
+  s += ezt(EZ / 2, -90, T.A.abbr) + ezt(W - EZ / 2, 90, T.H.abbr);
+  for (let y = 0; y <= FL; y++){
     const x = X(y);
-    if (y % 5 === 0) s += `<line x1="${x}" y1="0" x2="${x}" y2="190" style="stroke:var(--chalk);stroke-width:${y % 100 === 0 ? 4 : y % 10 === 0 ? 2 : 1.3}"/>`;
+    if (y % 5 === 0) s += `<line x1="${x}" y1="0" x2="${x}" y2="190" style="stroke:var(--chalk);stroke-width:${y === 0 || y === FL ? 4 : y % 10 === 0 ? 2 : 1.3}"/>`;
     else s += [[2, 9], [62, 70], [120, 128], [181, 188]].map(([a, b]) => `<line x1="${x}" y1="${a}" x2="${x}" y2="${b}" style="stroke:var(--chalk);stroke-width:1.2"/>`).join('');
   }
-  for (let y = 10; y <= 90; y += 10){
-    const n = y <= 50 ? y : 100 - y;
-    s += `<text x="${X(y)}" y="40" text-anchor="middle" style="fill:var(--chalk);font:600 26px 'Barlow Condensed','Arial Narrow',sans-serif">${n}</text>`;
-    s += `<text x="${X(y)}" y="166" text-anchor="middle" style="fill:var(--chalk);font:600 26px 'Barlow Condensed','Arial Narrow',sans-serif">${n}</text>`;
+  for (let y = 10; y < FL; y += 10){
+    const n = y <= HALF ? y : FL - y;
+    s += `<text x="${X(y)}" y="40" text-anchor="middle" style="fill:var(--chalk);font:600 26px ${font}">${n}</text>`;
+    s += `<text x="${X(y)}" y="166" text-anchor="middle" style="fill:var(--chalk);font:600 26px ${font}">${n}</text>`;
   }
   if (!st.final){
     const side = st.poss, pos = st.phase === 'kick' ? st.kickFrom : st.spot, bx = X(abs(side, pos)), dir = side === 'A' ? 1 : -1;
-    if (st.phase === 'play' && st.ltg < 100) s += `<line x1="${X(abs(side, st.ltg))}" y1="0" x2="${X(abs(side, st.ltg))}" y2="190" style="stroke:var(--ltg);stroke-width:5"/>`;
+    if (st.phase === 'play' && st.ltg < FL) s += `<line x1="${X(abs(side, st.ltg))}" y1="0" x2="${X(abs(side, st.ltg))}" y2="190" style="stroke:var(--ltg);stroke-width:5"/>`;
     s += `<line x1="${bx}" y1="0" x2="${bx}" y2="190" style="stroke:var(--los);stroke-width:5"/>`;
     s += `<ellipse cx="${bx}" cy="95" rx="15" ry="9" style="fill:#7B4A21;stroke:#fff;stroke-width:2"/>`;
     s += `<line x1="${bx - 6}" y1="95" x2="${bx + 6}" y2="95" style="stroke:#fff;stroke-width:1.5"/>`;
@@ -1117,14 +1136,14 @@ function formHtml(){
       if (d.res === 'ret') h += row(fJ('ret', 'Returner', Rr, 'ret'), fN('ry', 'Return yards', '0')) + row(fJ('tk.0', 'Tackle', K, 'def'), fJ('tk.1', 'Assist', K));
       if (d.res === 'fc') h += row(fJ('ret', 'Caught by', Rr, 'ret'));
       if (d.res === 'onside') h += row(fJ('ret', 'Recovered by', K));
-      h += `<p class="hint">Kick yards count from the ${esc(R.yl(K, st.kickFrom))}. Out of bounds gives ${esc(ab(Rr))} the ball 25 yards beyond the kicking line (its 35 on a normal kickoff).</p>`;
+      h += `<p class="hint">Kick yards count from the ${esc(R.yl(K, st.kickFrom))}. Out of bounds gives ${esc(ab(Rr))} the ball 25 yards beyond the kicking line (its ${ui.ctx.FL - rulesOf(g).kickFrom - NFHS.oobFreeKick} on a normal kickoff).</p>`;
       return h + extras();
     }
     case 'fg': {
-      const auto = Math.round(100 - st.spot + NFHS.fgExtra);
+      const auto = Math.round(ui.ctx.FL - st.spot + NFHS.fgExtra);
       let h = row(fJ('k', 'Kicker', O, 'kick'), fN('d', 'Distance', String(auto)));
       h += fSeg('res', 'Result', [['good', 'Good'], ['miss', 'No good'], ['blk', 'Blocked']]);
-      if (d.res === 'miss') h += `<p class="hint">Under NFHS rules a missed field goal is a touchback, so ${esc(ab(D))} takes over at its 20.</p>`;
+      if (d.res === 'miss') h += `<p class="hint">Under NFHS rules a missed field goal is a touchback, so ${esc(ab(D))} takes over at its ${rulesOf(g).tb}.</p>`;
       if (d.res === 'blk') h += row(fJ('by', 'Blocked by', D), fN('b', 'Recovered, yds behind line', '0')) + row(fJ('ret', 'Recovered by', D), fN('ry', 'Return yards', '0'));
       return h + extras();
     }
@@ -1150,7 +1169,7 @@ function periodHtml(st){
   if (ui.ask === 'half') body = `<span class="eyebrow">Who kicks off to open the 2nd half?</span><div class="line">${['A', 'H'].map(s => `<button class="btn small" data-endq="${s}">${esc(ab(s))}${s === other(g.set.firstKick) ? ' (usual)' : ''}</button>`).join('')}<button class="linkbtn" data-ask="">Cancel</button></div>`;
   else if (ui.ask === 'ot') body = `<span class="eyebrow">Tied — who has the ball first in overtime?</span><div class="line">${['A', 'H'].map(s => `<button class="btn small" data-endq="${s}">${esc(ab(s))}</button>`).join('')}<button class="linkbtn" data-ask="">Cancel</button></div>`;
   else if (ui.ask === 'final') body = `<span class="eyebrow">End the game now, with the score as it stands?</span><div class="line"><button class="btn small danger" data-final>End game</button><button class="linkbtn" data-ask="">Cancel</button></div>`;
-  else if (q > 4) body = `<p class="hint">Overtime ${q - 4}: each team gets a series from the ${g.set.ot || 10}-yard line. If the defense takes the ball, it is dead and the series is over.</p><div class="line"><button class="linkbtn" data-ask="final">End game early</button></div>`;
+  else if (q > 4) body = `<p class="hint">Overtime ${q - 4}: each team gets a series from the ${rulesOf(g).ot}-yard line. If the defense takes the ball, it is dead and the series is over.</p><div class="line"><button class="linkbtn" data-ask="final">End game early</button></div>`;
   else body = `<div class="line"><button class="btn small" data-endq-ask>End of ${ord(q)} quarter</button><button class="linkbtn" data-ask="final">End game early</button></div>`;
   return `<div class="period">${body}</div>`;
 }
@@ -1247,6 +1266,7 @@ function parseQuick(raw, st){
   let toks = tokenize(line).map(t => TD_WORDS.includes(t) ? 'td' : t);
   const {map, key} = quickTeams();
   const T = t => map[t], L = s => key[s].toUpperCase();
+  const FL = rulesOf(g).len, HALF = FL / 2;
   // "N5", "sou35": a yard line named by team.
   const spotOf = t => { const m = String(t).match(/^([a-z]+)(\d+(?:\.5)?)$/); return m && T(m[1]) ? {side:T(m[1]), n:+m[2]} : null; };
   const isNum = t => /^-?\d+(\.\d+)?$/.test(t);
@@ -1279,10 +1299,10 @@ function parseQuick(raw, st){
     const m = (rest[0] || '').match(/^([a-z]+)(\d+(?:\.5)?)$/);
     if (m && T(m[1])){ spotSide = T(m[1]); n = +m[2]; rest.shift(); }
     else if (T(rest[0]) && isNum(rest[1] || '')){ spotSide = T(rest[0]); n = +rest[1]; rest.splice(0, 2); }
-    else if (['50', 'mid', 'midfield'].includes(rest[0])){ spotSide = side; n = 50; rest.shift(); }
+    else if ([String(HALF), 'mid', 'midfield'].includes(rest[0])){ spotSide = side; n = HALF; rest.shift(); }
     else return bad(`Say whose yard line, like ${L(side)}35 or ${L(other(side))}35.`);
-    if (!(n >= 1 && n <= 50)) return bad('Yard lines run from 1 to 50.');
-    const spot = spotSide === side ? n : 100 - n;
+    if (!(n >= 1 && n <= HALF)) return bad(`Yard lines run from 1 to ${HALF}.`);
+    const spot = spotSide === side ? n : FL - n;
     const dn = rest.map(t => t.replace(/(st|nd|rd|th)$/, ''));
     let down = 1, togo = 10, goal = false;
     if (dn.length){
@@ -1291,7 +1311,7 @@ function parseQuick(raw, st){
       if (dn[1] === 'g' || dn[1] === 'goal') goal = true;
       else if (dn[1] != null){ togo = +dn[1]; if (!(togo > 0)) return bad('Distance should be yards, like 3-7.'); }
     }
-    if (spot + togo >= 100) goal = true;
+    if (spot + togo >= FL) goal = true;
     return ok({t:'set', poss:side, spot, down, ...(goal ? {goal:true} : {togo})});
   }
 
@@ -1348,11 +1368,11 @@ function parseQuick(raw, st){
     const sp = rest.map(spotOf).find(Boolean);             // a yard line instead of a distance
     const p = {t:'ko', res:'spot'};
     if (before[0] != null) p.k = before[0];
-    if (sp) p.d = Math.max(0, (sp.side === Rk ? 100 - sp.n : sp.n) - st.kickFrom);
+    if (sp) p.d = Math.max(0, (sp.side === Rk ? FL - sp.n : sp.n) - st.kickFrom);
     else if (after[0] != null) p.d = Math.abs(+after[0]);
     const nx = sp ? after : after.slice(1);                // then the returner and return yards
     // "ko-C25": no kick details, just where the receiving team's drive starts.
-    if (sp && !nx.length && !has('tb', 'oob', 'onside', 'fc')){ delete p.d; p.bs = sp.side === Rk ? sp.n : 100 - sp.n; return flag(p); }
+    if (sp && !nx.length && !has('tb', 'oob', 'onside', 'fc')){ delete p.d; p.bs = sp.side === Rk ? sp.n : FL - sp.n; return flag(p); }
     if (has('tb')) p.res = 'tb';
     else if (has('oob')) p.res = 'oob';
     else if (has('onside')){ p.res = 'onside'; if (nx[0] != null) p.ret = nx[0]; if (p.d == null) p.d = 10; }
@@ -1366,8 +1386,10 @@ function parseQuick(raw, st){
   /* ---- the try after a touchdown ---- */
   if (st.phase === 'try'){
     const nums = toks.filter(isNum), no = has(...NO_WORDS);
+    if (has('fg', 'punt', 'sack', 'sacked', 'sk', 'int', 'fum', 'fumble'))
+      return bad('This is the try after the touchdown: 15-xp for the kick (15-xp-no if missed), 3 for a two-point run, 7-88 for a two-point pass.');
     if (has('xp', 'pat', 'kick', '1pt')) return ok({t:'try', kind:'kick', ...(nums[0] != null ? {k:nums[0]} : {}), res:has('blk', 'blocked') ? 'blk' : no ? 'miss' : 'good'});
-    const need = 100 - st.spot;
+    const need = FL - st.spot;
     if (has('inc')) return ok({t:'pass', qb:nums[0], res:'i', ...(nums[1] != null ? {to:nums[1]} : {})});
     if (nums.length === 1) return ok({t:'run', r:nums[0], y:no ? 0 : need});
     if (nums.length >= 2) return ok({t:'pass', qb:nums[0], to:nums[1], res:'c', y:no ? 0 : need});
@@ -1388,7 +1410,7 @@ function parseQuick(raw, st){
     }
     if (has('tb')){ p.res = 'tb'; return flag(p); }
     const sp = toks.slice(i + 1).map(spotOf).find(Boolean);   // "punt to S10"
-    if (sp) p.d = Math.max(0, (sp.side === D ? 100 - sp.n : sp.n) - st.spot);
+    if (sp) p.d = Math.max(0, (sp.side === D ? FL - sp.n : sp.n) - st.spot);
     else if (after[0] != null) p.d = Math.abs(+after[0]);
     const nx = sp ? after : after.slice(1);
     if (has('fc')){ p.res = 'fc'; if (nx[0] != null) p.ret = nx[0]; }
@@ -1428,11 +1450,11 @@ function parseQuick(raw, st){
     if (!fum) return p;
     let ry = fum.lost ? fum.ry : 0;
     // The recovering team runs it back the whole way from where it picked the ball up.
-    if (fum.td){ const y = p.res === 's' ? -Math.min(p.sy, st.spot) : (+p.y || 0); ry = clamp(st.spot + y, 0, 100); }
+    if (fum.td){ const y = p.res === 's' ? -Math.min(p.sy, st.spot) : (+p.y || 0); ry = clamp(st.spot + y, 0, FL); }
     p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ry};
     return p;
   };
-  const nums = toks.filter(isNum), td = has('td'), toGoal = 100 - st.spot;
+  const nums = toks.filter(isNum), td = has('td'), toGoal = FL - st.spot;
   if (has('inc', 'incomplete', 'incomp')) return flag({t:'pass', qb:nums[0], res:'i', ...(nums[1] != null ? {to:nums[1]} : {}), ...(tk[0] ? {pbu:tk[0]} : {})});
   if (has('int', 'pick', 'picked', 'intercepted')){
     const p = {t:'pass', qb:nums[0], res:'x', at:0, ry:nums[2] != null ? Math.abs(+nums[2]) : 0};
@@ -1674,7 +1696,7 @@ function renderView(){
 /* ---------- text export ---------- */
 function summaryText(){
   const st = R.st, T = g.teams, lp = (s, n) => String(s).padStart(n), rp = (s, n) => String(s).padEnd(n);
-  let out = `${T.A.name} at ${T.H.name}\n${st.final ? 'FINAL' : perLabel(st.q) + (st.q <= 4 ? ' ' + mmss(clockNow()) : '')}\n\n`;
+  let out = `${T.A.name} at ${T.H.name}${rulesOf(g).men === 8 ? ' (8-man)' : ''}\n${st.final ? 'FINAL' : perLabel(st.q) + (st.q <= 4 ? ' ' + mmss(clockNow()) : '')}\n\n`;
   const cols = [0, 1, 2, 3].concat(st.q > 4 ? [4] : []);
   out += rp('', 8) + cols.map(i => lp(i < 4 ? i + 1 : 'OT', 4)).join('') + lp('T', 5) + '\n';
   ['A', 'H'].forEach(s => out += rp(T[s].abbr, 8) + cols.map(i => lp(st.lines[s][i], 4)).join('') + lp(st.score[s], 5) + '\n');
@@ -1711,8 +1733,13 @@ function openDialog(kind){
 }
 function closeDialog(){ if (dlg().open) dlg().close(); ui.dlg = null; }
 
+const ruleHint = men => men === 8
+  ? 'Kansas 8-man: 80-yard field with midfield at the 40, touchback at the 15, overtime from the 10. Check the kickoff and safety-kick spots against your league.'
+  : 'NFHS 11-man: 100-yard field, kickoff from the 40, touchback at the 20, safety kick from the 20. Kansas overtime starts at the 10.';
 function dlgSetup(isNew){
-  const src = isNew ? {teams:{A:{name:'', abbr:'', color:'#1F4E9C', roster:{}}, H:{name:'', abbr:'', color:'#B0151B', roster:{}}}, set:{qtr:12, ot:10, firstKick:'H'}} : g;
+  // A new game starts in the same format as the one open now, since most weeks are all 8-man or all 11-man.
+  const src = isNew ? {teams:{A:{name:'', abbr:'', color:'#1F4E9C', roster:{}}, H:{name:'', abbr:'', color:'#B0151B', roster:{}}}, set:{qtr:12, firstKick:'H', men:g.sample ? 11 : rulesOf(g).men}} : g;
+  const ru = rulesOf(src);
   const rosterTxt = s => Object.entries(src.teams[s].roster || {}).sort((a, b) => a[0] - b[0]).map(([n, v]) => `${n} ${v}`).join('\n');
   const teamRow = (s, label) => `<div class="grp"><h3>${label}</h3><div class="teamset">
       <div class="fld"><label class="eyebrow" for="s-${s}-name">School</label><input class="inp" id="s-${s}-name" value="${esc(src.teams[s].name)}" placeholder="${s === 'A' ? 'Visiting school' : 'Home school'}"></div>
@@ -1721,11 +1748,17 @@ function dlgSetup(isNew){
       <div class="fld"><label class="eyebrow" for="s-${s}-roster">Roster, optional · one player per line, number then name</label>
       <textarea class="inp" id="s-${s}-roster" rows="4" placeholder="7 Cole Brandt&#10;22 Mason Ortiz">${esc(rosterTxt(s))}</textarea></div></div>`;
   return `${dlgHead(isNew ? 'New game' : 'Game setup')}<div class="dlg-bd">${teamRow('A', 'Visitors')}${teamRow('H', 'Home')}
-    <div class="grp"><h3>Rules</h3><div class="row">
+    <div class="grp"><h3>Rules</h3>
+      <div class="fld"><span class="eyebrow">Game</span><div class="seg" id="s-men">${[[11, '11-man · 100 yards'], [8, '8-man · 80 yards']].map(([m, l]) => `<button type="button" data-men="${m}" aria-pressed="${ru.men === m}">${l}</button>`).join('')}</div></div>
+      <div class="row">
       <div class="fld"><span class="eyebrow">Opening kickoff by</span><div class="seg" id="s-kick">${['A', 'H'].map(s => `<button type="button" data-kick="${s}" aria-pressed="${src.set.firstKick === s}">${s === 'A' ? 'Visitors' : 'Home'}</button>`).join('')}</div></div>
-      <div class="fld"><label class="eyebrow" for="s-qtr">Quarter, minutes</label><input class="inp" id="s-qtr" inputmode="numeric" value="${src.set.qtr}"></div>
-      <div class="fld"><label class="eyebrow" for="s-ot">Overtime from the</label><input class="inp" id="s-ot" inputmode="numeric" value="${src.set.ot}"></div></div>
-      <p class="hint">NFHS quarters are 12 minutes. Kansas overtime starts at the 10-yard line; some states use the 15, 20 or 25.</p></div></div>
+      <div class="fld"><label class="eyebrow" for="s-qtr">Quarter, minutes</label><input class="inp" id="s-qtr" inputmode="numeric" value="${src.set.qtr}"></div></div>
+      <div class="row">
+      <div class="fld"><label class="eyebrow" for="s-kf">Kick off from the</label><input class="inp" id="s-kf" inputmode="numeric" value="${ru.kickFrom}"></div>
+      <div class="fld"><label class="eyebrow" for="s-tb">Touchback at the</label><input class="inp" id="s-tb" inputmode="numeric" value="${ru.tb}"></div>
+      <div class="fld"><label class="eyebrow" for="s-sf">Safety kick from the</label><input class="inp" id="s-sf" inputmode="numeric" value="${ru.safety}"></div>
+      <div class="fld"><label class="eyebrow" for="s-ot">Overtime from the</label><input class="inp" id="s-ot" inputmode="numeric" value="${ru.ot}"></div></div>
+      <p class="hint" id="s-rulehint">${ruleHint(ru.men)}</p></div></div>
     <div class="dlg-ft"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" data-save-setup="${isNew ? 1 : 0}">${isNew ? 'Start game' : 'Save'}</button></div>`;
 }
 function saveSetup(isNew){
@@ -1736,7 +1769,10 @@ function saveSetup(isNew){
     return {name, abbr:(v(`s-${s}-abbr`) || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(), color:$(`#s-${s}-color`).value, roster:parseRoster($(`#s-${s}-roster`).value)};
   };
   const kick = $('#s-kick [aria-pressed="true"]');
-  const set = {qtr:clamp(parseInt(v('s-qtr')) || 12, 1, 20), ot:clamp(parseInt(v('s-ot')) || 10, 1, 50), firstKick:kick ? kick.dataset.kick : 'H'};
+  const menBtn = $('#s-men [aria-pressed="true"]'), men = menBtn ? +menBtn.dataset.men : 11, f = FORMATS[men];
+  const spotIn = (id, def) => clamp(parseInt(v(id)) || def, 1, f.len / 2);
+  const set = {qtr:clamp(parseInt(v('s-qtr')) || 12, 1, 20), men, kickFrom:spotIn('s-kf', f.kickFrom), tb:spotIn('s-tb', f.tb),
+    safety:spotIn('s-sf', f.safety), ot:spotIn('s-ot', f.ot), firstKick:kick ? kick.dataset.kick : 'H'};
   const teams = {A:team('A', 'Visitors'), H:team('H', 'Home')};
   if (isNew){ g = {id:'g' + Date.now().toString(36), created:Date.now(), teams, set, plays:[], clk:{s:set.qtr * 60, run:false, at:0}}; resetUi(); }
   else { if (!g.plays.length && set.qtr !== g.set.qtr) g.clk = {s:set.qtr * 60, run:false, at:0}; Object.assign(g, {teams, set}); }
@@ -1747,7 +1783,7 @@ function dlgGames(){
   const list = Object.values(db.games).sort((a, b) => (b.updated || 0) - (a.updated || 0));
   const items = list.map(x => { const r = replay(x);
     return `<div class="gitem"><div><b>${esc(x.teams.A.abbr)} ${r.st.score.A} at ${esc(x.teams.H.abbr)} ${r.st.score.H}</b>${x.id === g.id ? '<span class="cur-tag">Open</span>' : ''}${x.sample ? '<span class="cur-tag" style="color:var(--flag-ink)">Sample</span>' : ''}
-      <div class="meta">${esc(x.teams.A.name)} at ${esc(x.teams.H.name)} · ${new Date(x.created).toLocaleDateString()} · ${r.st.final ? 'Final' : perLabel(r.st.q)} · ${x.plays.length} plays</div></div>
+      <div class="meta">${esc(x.teams.A.name)} at ${esc(x.teams.H.name)} · ${rulesOf(x).men === 8 ? '8-man · ' : ''}${new Date(x.created).toLocaleDateString()} · ${r.st.final ? 'Final' : perLabel(r.st.q)} · ${x.plays.length} plays</div></div>
       <div class="acts">${x.id !== g.id ? `<button class="btn small" data-open-game="${x.id}">Open</button>` : ''}<button class="btn small danger" data-del-game="${x.id}">${ui.confirm === 'g:' + x.id ? 'Tap again' : 'Delete'}</button></div></div>`; }).join('');
   return `${dlgHead('Games')}<div class="dlg-bd">${syncBlock()}<div class="glist">${items}</div>
     <p class="hint">Every game is saved in this browser${sync.user ? ' and to your Google account' : ''}. Export makes a backup you can keep anywhere.</p></div>
@@ -1797,7 +1833,7 @@ function resetUi(){ Object.assign(ui, {type:null, draft:null, editing:null, ctx:
 function refresh(){
   R = replay(g);
   ui.ctx = ui.editing != null ? Object.assign(replay(g, ui.editing), {}) : R;
-  $('#gtitle').textContent = `${g.teams.A.name} at ${g.teams.H.name}`;
+  $('#gtitle').textContent = `${g.teams.A.name} at ${g.teams.H.name}${rulesOf(g).men === 8 ? ' · 8-man' : ''}`;
   $('#sample').hidden = !g.sample;
   renderBoard(); renderField(); renderPad(); renderView();
 }
@@ -1864,7 +1900,13 @@ document.addEventListener('click', e => {
   if (d.seg){ setK(ui.draft, d.seg, d.v); return renderPad(); }
   if (d.tog){ setK(ui.draft, d.tog, !getK(ui.draft, d.tog)); return renderPad(); }
   if (d.chip){ setK(ui.draft, d.chip, d.v); return renderPad(); }
-  if ('td' in d){ ui.draft.y = String(Math.ceil(100 - ui.ctx.st.spot)); ui.draft.yn = 'gain'; return renderPad(); }
+  if ('td' in d){ ui.draft.y = String(Math.ceil(ui.ctx.FL - ui.ctx.st.spot)); ui.draft.yn = 'gain'; return renderPad(); }
+  if (d.men){
+    const f = FORMATS[+d.men];
+    t.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === t)));
+    [['s-kf', 'kickFrom'], ['s-tb', 'tb'], ['s-sf', 'safety'], ['s-ot', 'ot']].forEach(([id, key]) => { $('#' + id).value = f[key]; });
+    $('#s-rulehint').textContent = ruleHint(+d.men); return;
+  }
   if ('undo' in d) return undo();
   if ('cancelEdit' in d){ ui.editing = null; ui.draft = null; ui.type = null; ui.qedit = false; ui.qtext = ''; return refresh(); }
   if (d.timeout){
