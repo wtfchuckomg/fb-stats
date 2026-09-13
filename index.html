@@ -1,0 +1,2101 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Press Box Play-by-Play</title>
+<meta name="theme-color" content="#101316">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<style>
+:root{
+  --page:#E9ECEE; --ground:#FFFFFF; --surface:#F4F5F7; --surface-2:#E7EAED;
+  --ink:#0E1013; --muted:#5F6873; --line:#D6DADF; --line-2:#E8EBEE;
+  --board:#101316; --board-2:#1A1F24; --board-ink:#FFFFFF; --board-muted:#9AA3AD; --board-line:#2A3037;
+  --accent:#D50A0A; --accent-ink:#FFFFFF; --accent-wash:#FBECEC;
+  --turf:#2E6A3A; --turf-2:#337142; --chalk:rgba(255,255,255,.86); --ltg:#F2C200; --los:#4DA3FF;
+  --good:#0F7A34; --good-wash:#E6F3EA; --bad:#B8231B; --bad-wash:#FAE9E7;
+  --flag:#E8B400; --flag-wash:#FFF5D2; --flag-ink:#6B5200;
+  --cond:"Barlow Condensed","Arial Narrow",Barlow,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --page:#0C0E10; --ground:#15181C; --surface:#1B1F24; --surface-2:#242A31;
+    --ink:#E9ECEF; --muted:#939CA6; --line:#2C3239; --line-2:#22272D;
+    --board:#07090A; --board-2:#121519; --board-line:#23282E;
+    --accent:#F0433A; --accent-wash:#3A1614;
+    --turf:#1F4B29; --turf-2:#23522E;
+    --good:#4CC37A; --good-wash:#12301D; --bad:#FF6B61; --bad-wash:#3A1916;
+    --flag-wash:#372E0E; --flag-ink:#F2D36B;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#0C0E10; --ground:#15181C; --surface:#1B1F24; --surface-2:#242A31;
+  --ink:#E9ECEF; --muted:#939CA6; --line:#2C3239; --line-2:#22272D;
+  --board:#07090A; --board-2:#121519; --board-line:#23282E;
+  --accent:#F0433A; --accent-wash:#3A1614;
+  --turf:#1F4B29; --turf-2:#23522E;
+  --good:#4CC37A; --good-wash:#12301D; --bad:#FF6B61; --bad-wash:#3A1916;
+  --flag-wash:#372E0E; --flag-ink:#F2D36B;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--page);color:var(--ink);
+  font:400 15px/1.4 Barlow,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.num{font-variant-numeric:tabular-nums}
+.eyebrow{font:700 11px/1.2 var(--cond);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- app bar ---------- */
+.appbar{background:var(--board);color:var(--board-ink);border-bottom:1px solid var(--board-line)}
+.appbar-in{max-width:1240px;margin:0 auto;padding:8px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.mark{display:flex;align-items:baseline;gap:9px}
+.mark b{font:700 21px/1 var(--cond);text-transform:uppercase;letter-spacing:.01em}
+.mark b i{font-style:normal;color:var(--accent)}
+.mark span{font:600 11px/1 var(--cond);text-transform:uppercase;letter-spacing:.06em;color:var(--board-muted);
+  border-left:1px solid var(--board-line);padding-left:9px}
+.gtitle{margin-right:auto;font:600 14px/1.2 var(--cond);text-transform:uppercase;letter-spacing:.03em;color:var(--board-muted);
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.abtns{display:flex;gap:6px}
+.abtn{background:none;border:1px solid var(--board-line);color:var(--board-ink);border-radius:3px;
+  padding:6px 11px;font:600 13px/1 var(--cond);text-transform:uppercase;letter-spacing:.04em}
+.abtn:hover{border-color:var(--board-muted)}
+.syncbtn{display:inline-flex;align-items:center;gap:7px}
+.syncbtn i{width:8px;height:8px;border-radius:50%;background:var(--board-muted);flex:none}
+.syncbtn.ok i{background:#3DBE6E}
+.syncbtn.busy i{background:var(--ltg)}
+.syncbtn.bad i{background:#FF5A4F}
+.acct{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  background:var(--surface);border-radius:4px;padding:11px 12px}
+.acct > div{flex:1 1 260px;min-width:0}
+.acct b{font:700 15px/1.2 var(--cond);text-transform:uppercase;letter-spacing:.02em}
+.acct .hint{margin-top:3px}
+
+.sample{background:var(--flag-wash);color:var(--flag-ink);border-bottom:1px solid var(--line);
+  padding:8px 16px;font-size:13.5px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
+.sample button{background:var(--ink);color:var(--ground);border:0;border-radius:3px;padding:5px 10px;
+  font:600 13px/1 var(--cond);text-transform:uppercase;letter-spacing:.04em}
+
+/* ---------- scoreboard ---------- */
+.sb{position:sticky;top:0;z-index:30;background:var(--board);color:var(--board-ink);border-bottom:1px solid var(--board-line)}
+.sb-in{max-width:1240px;margin:0 auto;padding:10px 16px 11px;display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:14px;align-items:center}
+.tm{display:flex;align-items:center;gap:12px;min-width:0}
+.tm.home{flex-direction:row-reverse;text-align:right}
+.tm-id{min-width:0;display:flex;flex-direction:column;gap:3px}
+.tm-abbr{font:700 26px/1 var(--cond);text-transform:uppercase;display:flex;align-items:center;gap:7px}
+.tm.home .tm-abbr{flex-direction:row-reverse}
+.swatch{width:10px;height:22px;border-radius:2px;flex:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.tm-name{font-size:12px;color:var(--board-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tos{display:flex;gap:4px}
+.tm.home .tos{justify-content:flex-end}
+.tos i{width:14px;height:4px;border-radius:1px;background:var(--board-line)}
+.tos i.on{background:var(--ltg)}
+.tm-score{font:700 52px/.9 var(--cond);font-variant-numeric:tabular-nums;margin-left:auto;min-width:1.1em;text-align:right}
+.tm.home .tm-score{margin-left:0;margin-right:auto;text-align:left}
+.poss-dot{width:0;height:0;border:6px solid transparent;border-left:9px solid var(--ltg);align-self:center;visibility:hidden}
+.tm.home .poss-dot{border-left:0;border-right:9px solid var(--ltg)}
+.tm.has .poss-dot{visibility:visible}
+.mid{display:flex;flex-direction:column;align-items:center;gap:5px}
+.per{font:700 13px/1 var(--cond);text-transform:uppercase;letter-spacing:.08em;color:var(--board-muted)}
+.clockrow{display:flex;align-items:center;gap:6px}
+.clock{background:var(--board-2);border:1px solid var(--board-line);border-radius:3px;color:var(--board-ink);
+  font:700 26px/1 var(--cond);font-variant-numeric:tabular-nums;padding:4px 9px 3px;min-width:84px;text-align:center}
+.clock.run{color:var(--ltg)}
+input.clock{width:92px}
+.clk-go{width:32px;height:32px;border-radius:3px;border:1px solid var(--board-line);background:var(--board-2);
+  color:var(--board-ink);display:grid;place-items:center;padding:0}
+.clk-go svg{width:12px;height:12px;fill:currentColor}
+.dd{font:600 15px/1.1 var(--cond);text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
+.dd b{color:var(--ltg);font-weight:700}
+@media (max-width:620px){
+  .sb-in{padding:8px 12px 9px;gap:8px}
+  .tm{gap:7px}.tm-name{display:none}.tm-abbr{font-size:20px}.swatch{height:16px;width:7px}
+  .tm-score{font-size:38px}.clock{font-size:21px;min-width:70px}.dd{font-size:13px}
+  .mark span{display:none}
+}
+
+/* ---------- field ---------- */
+.fieldwrap{background:var(--board);padding:0 16px 12px}
+.field{max-width:1240px;margin:0 auto;display:block}
+.field svg{display:block;width:100%;height:auto;border-radius:3px}
+
+/* ---------- work area ---------- */
+.work{max-width:1240px;margin:0 auto;padding:18px 16px 60px;display:grid;
+  grid-template-columns:minmax(0,430px) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:980px){.work{grid-template-columns:minmax(0,1fr)}}
+.pad{background:var(--ground);border:1px solid var(--line);border-radius:4px;padding:14px;
+  display:flex;flex-direction:column;gap:14px;position:sticky;top:132px}
+@media (max-width:980px){.pad{position:static}}
+.pad-hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pad-hd .sit{font:700 18px/1.1 var(--cond);text-transform:uppercase}
+.editing-bar{background:var(--flag-wash);color:var(--flag-ink);border-radius:3px;padding:7px 10px;font-size:13px;
+  display:flex;justify-content:space-between;align-items:center;gap:8px}
+
+.types{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.type{border:1px solid var(--line);background:var(--surface);border-radius:3px;padding:10px 4px;
+  font:700 15px/1 var(--cond);text-transform:uppercase;letter-spacing:.03em}
+.type:hover{border-color:var(--muted)}
+.type[aria-pressed="true"]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+
+.form{display:flex;flex-direction:column;gap:12px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px}
+.fld{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fld > label,.fld > .eyebrow{display:block}
+.inp{width:100%;height:44px;border:1px solid var(--line);border-radius:3px;background:var(--surface);
+  padding:0 10px;font:600 20px/1 var(--cond);font-variant-numeric:tabular-nums}
+.inp:focus{border-color:var(--ink);background:var(--ground);outline:none}
+select.inp{font:500 16px/1 Barlow,sans-serif}
+textarea.inp{height:auto;min-height:80px;padding:8px 10px;font:400 15px/1.4 Barlow,sans-serif}
+.who{font-size:12px;color:var(--muted);min-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{border:1px solid var(--line);background:var(--ground);border-radius:3px;padding:3px 7px;
+  font:600 13px/1.1 var(--cond);font-variant-numeric:tabular-nums}
+.chip:hover{border-color:var(--muted)}
+.pair{display:flex;gap:6px}
+.pair .inp{min-width:0}
+.seg{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--surface)}
+.seg button{flex:1 1 auto;border:0;background:none;padding:10px 9px;font:600 14px/1 var(--cond);
+  text-transform:uppercase;letter-spacing:.03em;border-right:1px solid var(--line);white-space:nowrap}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--ground)}
+.yds{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px}
+.yds .seg button{padding:10px 10px}
+.tdbtn{border:1px solid var(--line);background:var(--surface);border-radius:3px;padding:0 12px;
+  font:700 14px/1 var(--cond);text-transform:uppercase;letter-spacing:.04em}
+.tdbtn:hover{border-color:var(--good);color:var(--good)}
+.more{border-top:1px solid var(--line-2);padding-top:10px;display:flex;flex-direction:column;gap:10px}
+.tog{display:flex;align-items:center;gap:8px;font:600 14px/1 var(--cond);text-transform:uppercase;letter-spacing:.03em;
+  background:none;border:0;padding:2px 0;color:var(--muted)}
+.tog .box{width:18px;height:18px;border:1.5px solid var(--muted);border-radius:3px;display:grid;place-items:center}
+.tog[aria-pressed="true"]{color:var(--ink)}
+.tog[aria-pressed="true"] .box{background:var(--ink);border-color:var(--ink)}
+.tog[aria-pressed="true"] .box::after{content:"";width:8px;height:4px;border:2px solid var(--ground);border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.tog.flagtog[aria-pressed="true"] .box{background:var(--flag);border-color:var(--flag)}
+.sub{background:var(--surface);border-radius:3px;padding:10px;display:flex;flex-direction:column;gap:10px}
+.sub.flag{background:var(--flag-wash)}
+.checks{display:flex;gap:16px;flex-wrap:wrap}
+.hint{font-size:12.5px;color:var(--muted);margin:0}
+
+.preview{border:1px dashed var(--line);border-radius:3px;padding:9px 10px;font-size:13.5px;display:flex;flex-direction:column;gap:3px}
+.preview .next{font:700 15px/1.1 var(--cond);text-transform:uppercase;letter-spacing:.02em}
+.actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:3px;padding:12px 14px;
+  font:700 15px/1 var(--cond);text-transform:uppercase;letter-spacing:.04em}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-size:17px}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.small{padding:8px 10px;font-size:13px}
+.btn.danger{color:var(--bad)}
+.btn:disabled{opacity:.45;cursor:default}
+.tobtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tobtns .btn{padding:16px 8px}
+.period{border-top:1px solid var(--line-2);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.line{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.final-card .line{justify-content:center}
+.linkbtn{background:none;border:0;padding:0;color:var(--muted);font-size:12.5px;text-decoration:underline;text-underline-offset:2px}
+.linkbtn:hover{color:var(--ink)}
+.final-card{text-align:center;padding:18px 8px;display:flex;flex-direction:column;gap:6px;align-items:center}
+.final-card b{font:700 30px/1 var(--cond);text-transform:uppercase}
+
+/* ---------- quick entry ---------- */
+.quick{display:flex;flex-direction:column;gap:10px}
+.qk{width:100%;height:56px;border:2px solid var(--ink);border-radius:4px;background:var(--ground);color:var(--ink);padding:0 12px;
+  font:600 22px/1 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.qk:focus{outline:none;border-color:var(--accent)}
+.qk::placeholder{color:var(--muted);opacity:.7}
+.qkeys{display:flex;flex-wrap:wrap;gap:5px}
+.qkey{border:1px solid var(--line);background:var(--surface);border-radius:3px;padding:8px 10px;min-width:38px;
+  font:600 14px/1 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.qkey:hover{border-color:var(--muted)}
+.qprev{border-radius:3px;padding:9px 11px;background:var(--surface);font-size:14.5px;display:flex;flex-direction:column;gap:4px;min-height:56px}
+.qprev.ok{background:var(--good-wash)}
+.qprev.err{background:var(--bad-wash);color:var(--bad)}
+.qprev .next{font:700 15px/1.15 var(--cond);text-transform:uppercase;letter-spacing:.02em}
+.shake{animation:shake .28s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.cheat summary{cursor:pointer;font:700 14px/1 var(--cond);text-transform:uppercase;letter-spacing:.04em;padding:4px 0;color:var(--muted)}
+.cheat[open] summary{color:var(--ink)}
+.cheat table{font-size:13px;margin-top:6px}
+.cheat td{white-space:normal;text-align:left;vertical-align:top;padding:6px 6px}
+.cheat td:first-child{white-space:nowrap}
+.cheat code,.qsrc{font:600 12.5px/1.3 ui-monospace,"SF Mono",Menlo,Consolas,monospace;background:var(--surface-2);
+  padding:1px 5px;border-radius:2px;color:var(--ink);text-transform:none;letter-spacing:0}
+.qsrc{font-size:11.5px;margin-left:4px}
+
+/* ---------- right side ---------- */
+.side{min-width:0;display:flex;flex-direction:column;gap:12px}
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--ink);overflow-x:auto}
+.tab{background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;padding:8px 12px 7px;
+  font:700 15px/1 var(--cond);text-transform:uppercase;letter-spacing:.03em;color:var(--muted);white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.panel{background:var(--ground);border:1px solid var(--line);border-radius:4px}
+.empty{padding:26px 16px;text-align:center;color:var(--muted)}
+
+.qhd{font:700 13px/1 var(--cond);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);
+  padding:10px 12px 7px;background:var(--surface);border-bottom:1px solid var(--line-2)}
+.pl{display:grid;grid-template-columns:62px minmax(0,1fr);gap:10px;padding:9px 12px;border-bottom:1px solid var(--line-2);
+  width:100%;text-align:left;background:none;border-left:0;border-right:0;border-top:0;font-size:14px}
+.pl:hover{background:var(--surface)}
+.pl.open{background:var(--surface)}
+.pl-clk{font:600 15px/1.2 var(--cond);font-variant-numeric:tabular-nums}
+.pl-no{display:block;font-size:11px;color:var(--muted)}
+.pl-sit{font:600 12px/1.2 var(--cond);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:2px}
+.pl-txt s{color:var(--muted)}
+.tags{display:inline-flex;gap:4px;margin-left:4px;vertical-align:1px}
+.tag{font:700 11px/1 var(--cond);text-transform:uppercase;letter-spacing:.05em;padding:3px 5px 2px;border-radius:2px;white-space:nowrap}
+.tag.score{background:var(--good);color:#fff}
+.tag.fd{background:var(--good-wash);color:var(--good)}
+.tag.to{background:var(--bad-wash);color:var(--bad)}
+.tag.flag{background:var(--flag-wash);color:var(--flag-ink)}
+.tag.info{background:var(--surface-2);color:var(--muted)}
+.pl-act{display:flex;gap:8px;padding:0 12px 10px 84px;background:var(--surface);border-bottom:1px solid var(--line-2)}
+
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line-2)}
+th:first-child,td:first-child{text-align:left}
+thead th{font:700 12px/1.1 var(--cond);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--surface)}
+tbody tr:last-child td{border-bottom:0}
+td.lbl{color:var(--muted)}
+tr.tot td{font-weight:700}
+.line-score td,.line-score th{text-align:center}
+.line-score td:first-child,.line-score th:first-child{text-align:left}
+.line-score td:last-child{font:700 18px/1 var(--cond)}
+.sect{padding:0}
+.sect + .sect{border-top:1px solid var(--line)}
+.sect-hd{display:flex;justify-content:space-between;align-items:baseline;padding:10px 12px 6px}
+.sect-hd h3{margin:0;font:700 16px/1 var(--cond);text-transform:uppercase;letter-spacing:.02em}
+.teamseg{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.teamseg .btn[aria-pressed="true"]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+.sc{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line-2);align-items:baseline}
+.sc:last-child{border-bottom:0}
+.sc b{font:700 15px/1 var(--cond);font-variant-numeric:tabular-nums}
+
+/* ---------- dialogs ---------- */
+dialog{border:1px solid var(--line);border-radius:5px;background:var(--ground);color:var(--ink);padding:0;
+  width:min(620px,calc(100vw - 24px));max-height:calc(100vh - 40px)}
+dialog::backdrop{background:rgba(8,10,12,.55)}
+.dlg-hd{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:2px solid var(--ink)}
+.dlg-hd h2{margin:0;font:700 20px/1 var(--cond);text-transform:uppercase}
+.dlg-bd{padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+.dlg-ft{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--line-2)}
+.x{background:none;border:0;font-size:24px;line-height:1;color:var(--muted);padding:2px 6px}
+.teamset{display:grid;grid-template-columns:minmax(0,1fr) 84px 54px;gap:8px;align-items:end}
+.teamset input[type=color]{width:100%;height:44px;border:1px solid var(--line);border-radius:3px;padding:3px;background:var(--surface)}
+.grp{display:flex;flex-direction:column;gap:8px}
+.grp h3{margin:0;font:700 15px/1 var(--cond);text-transform:uppercase;letter-spacing:.03em}
+.glist{display:flex;flex-direction:column}
+.gitem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line-2)}
+.gitem b{font:700 17px/1.1 var(--cond);text-transform:uppercase}
+.gitem .meta{font-size:12.5px;color:var(--muted)}
+.gitem .acts{display:flex;gap:6px}
+.cur-tag{font:700 11px/1 var(--cond);text-transform:uppercase;letter-spacing:.05em;color:var(--good);margin-left:6px}
+
+.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);opacity:0;pointer-events:none;
+  background:var(--ink);color:var(--ground);padding:9px 14px;border-radius:3px;font:600 14px/1 var(--cond);
+  text-transform:uppercase;letter-spacing:.04em;transition:opacity .18s,transform .18s;z-index:60}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media print{
+  .appbar,.sample,.fieldwrap,.pad,.tabs,.pl-act,.toast{display:none!important}
+  .sb{position:static}
+  .work{display:block;padding:0}
+  body{background:#fff}
+}
+</style>
+
+<div class="appbar">
+  <div class="appbar-in">
+    <div class="mark"><b>Press<i>·</i>Box</b><span>Play-by-play · NFHS rules</span></div>
+    <div class="gtitle" id="gtitle"></div>
+    <div class="abtns">
+      <span id="sync"></span>
+      <button class="abtn" data-open="games">Games</button>
+      <button class="abtn" data-open="setup">Setup</button>
+      <button class="abtn" data-open="export">Export</button>
+    </div>
+  </div>
+</div>
+<div class="sample" id="sample" hidden>
+  <span>This is a sample game with made-up teams and plays, so you can see how it works.</span>
+  <button type="button" data-open="new">Start a real game</button>
+</div>
+<header class="sb" id="sb"></header>
+<div class="fieldwrap"><div class="field" id="field"></div></div>
+<main class="work">
+  <section class="pad" id="pad" aria-label="Record the next play"></section>
+  <section class="side">
+    <div class="tabs" role="tablist" id="tabs">
+      <button class="tab" role="tab" data-tab="log">Play-by-play</button>
+      <button class="tab" role="tab" data-tab="box">Box score</button>
+      <button class="tab" role="tab" data-tab="players">Players</button>
+      <button class="tab" role="tab" data-tab="drives">Drives</button>
+      <button class="tab" role="tab" data-tab="scoring">Scoring</button>
+    </div>
+    <div id="view"></div>
+  </section>
+</main>
+<dialog id="dlg"></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+/* ================================================================
+   Engine. A game is its setup plus an ordered list of plays; every
+   score, down, spot and stat is derived by replaying that list, so
+   editing or deleting any play corrects everything after it.
+   Positions are yards from the possessing team's own goal line.
+   ================================================================ */
+const NFHS = {kickFrom:40, safetyKickFrom:20, touchback:20, tryFrom:3, oobFreeKick:25, fgExtra:17};
+const other = s => s === 'H' ? 'A' : 'H';
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const ord = n => n + (['th','st','nd','rd'][n] || 'th');
+const fy = x => { const w = Math.floor(x), h = x - w >= .5; return h ? (w ? w + '½' : '½') : String(w); };
+
+// NFHS penalty yardage. Only the four roughing fouls carry an automatic
+// first down; illegal forward pass and intentional grounding lose the down.
+const PENALTIES = [
+  ['False start',5,'O'],['Encroachment',5,'D'],['Offside',5,'D'],['Delay of game',5,'E'],
+  ['Illegal formation',5,'O'],['Illegal motion',5,'O'],['Illegal shift',5,'O'],['Illegal snap',5,'O'],
+  ['Illegal substitution',5,'E'],['Too many players',5,'E'],['Ineligible downfield',5,'O'],
+  ['Illegal forward pass',5,'O','l'],['Intentional grounding',5,'O','l'],['Running into the kicker',5,'D'],
+  ['Free-kick infraction',5,'E'],['Invalid fair catch signal',5,'D'],
+  ['Holding',10,'E'],['Illegal use of hands',10,'E'],['Illegal block in the back',10,'E'],
+  ['Pass interference',15,'E'],['Kick-catch interference',15,'D'],['Facemask',15,'E'],['Horse-collar',15,'D'],
+  ['Personal foul',15,'E'],['Unnecessary roughness',15,'E'],['Late hit',15,'E'],['Targeting',15,'E'],
+  ['Clipping',15,'E'],['Chop block',15,'E'],['Illegal block below the waist',15,'E'],['Tripping',15,'E'],
+  ['Head slap',15,'E'],['Illegal participation',15,'E'],['Unsportsmanlike conduct',15,'E'],
+  ['Roughing the passer',15,'D','a'],['Roughing the kicker',15,'D','a'],
+  ['Roughing the holder',15,'D','a'],['Roughing the snapper',15,'D','a'],['Other',5,'E']
+].map(([name,y,s,f]) => ({name, y, s, a: f === 'a', l: f === 'l'}));
+
+const TEAM_KEYS = 'fd fdR fdP fdX rushN rushY passC passA passY passTD passInt sk skY pen penY fum fumL pnt pntY pntTB pntBlk prN prY krN krY koN koY koTB intN intY d3a d3m d4a d4m plays top'.split(' ');
+const PL_KEYS = 'pc pa py ptd pint plg psk pskY ru ry rtd rlg re rey retd relg tk ast tfl sk dint dintY fr ff pbu bk fum fgm fga fglg xpm xpa ko koy ktb pu puy pulg pi20 ptb kr kry krtd krlg pr pry prtd prlg tds two pts'.split(' ');
+const zeros = keys => Object.fromEntries(keys.map(k => [k, 0]));
+
+function replay(g, upto = g.plays.length){
+  const T = g.teams, qSec = (g.set.qtr || 12) * 60, otSpot = 100 - (g.set.ot || 10);
+  let st = {q:1, phase:'kick', kickKind:'kickoff', poss:g.set.firstKick || 'H', kickFrom:NFHS.kickFrom,
+    spot:0, down:1, ltg:10, score:{A:0,H:0}, lines:{A:[0,0,0,0,0],H:[0,0,0,0,0]}, to:{A:3,H:3},
+    ot:null, final:false, drive:null, fresh:false};
+  let S = {team:{A:zeros(TEAM_KEYS), H:zeros(TEAM_KEYS)}, pl:{A:{}, H:{}}};
+  let scoring = [], drives = [], clk = null, tags = [];
+  const log = [];
+
+  const ab = s => T[s].abbr || s;
+  const nm = (s, n) => {
+    if (n === '' || n == null) return ab(s);
+    const who = (T[s].roster || {})[n];
+    return who ? `#${n} ${who.split(' ').slice(-1)[0]}` : `#${n}`;
+  };
+  const yl = (s, pos) => { pos = clamp(pos, 0, 100); if (pos === 50) return '50';
+    return pos < 50 ? `${ab(s)} ${fy(pos)}` : `${ab(other(s))} ${fy(100 - pos)}`; };
+  const yds = g => g > 0 ? `for ${fy(g)} yard${g === 1 ? '' : 's'}` : g < 0 ? `for a loss of ${fy(-g)}` : 'for no gain';
+  const plural = (n, w) => `${fy(n)} ${w}${n === 1 ? '' : 's'}`;
+  const pl = (s, n) => {
+    if (n === '' || n == null) return null;
+    const k = String(n);
+    return S.pl[s][k] || (S.pl[s][k] = Object.assign({n:k}, zeros(PL_KEYS)));
+  };
+  const bump = (o, k, v = 1) => { if (o) o[k] += v; };
+  const long = (o, k, v) => { if (o && v > o[k]) o[k] = v; };
+  const list = a => (a || []).filter(x => x !== '' && x != null);
+  const tackleTxt = (s, a) => { a = list(a); return a.length ? ` (${a.map(n => nm(s, n)).join(', ')})` : ''; };
+  function tackles(s, a, gain){
+    a = list(a);
+    a.forEach(n => { const p = pl(s, n); if (a.length === 1) p.tk++; else p.ast++; if (gain < 0) p.tfl += 1 / a.length; });
+  }
+
+  function sit(){
+    if (st.final) return 'Final';
+    if (st.phase === 'kick') return `${st.kickKind === 'free' ? 'Free kick' : 'Kickoff'} · ${ab(st.poss)} from the ${yl(st.poss, st.kickFrom)}`;
+    if (st.phase === 'try') return `Try · ${ab(st.poss)} at the ${yl(st.poss, st.spot)}`;
+    return `${ab(st.poss)} · ${ord(st.down)} & ${st.ltg >= 100 ? 'Goal' : fy(st.ltg - st.spot)} at ${yl(st.poss, st.spot)}`;
+  }
+
+  /* ---- series, possession, drives ---- */
+  function newSeries(s, spot){
+    st.poss = s; st.spot = spot; st.down = 1; st.ltg = Math.min(100, spot + 10); st.phase = 'play'; st.fresh = true;
+  }
+  function kickoffBy(s, kind = 'kickoff'){
+    st.phase = 'kick'; st.poss = s; st.kickKind = kind;
+    st.kickFrom = kind === 'free' ? NFHS.safetyKickFrom : NFHS.kickFrom;
+  }
+  function driveTouch(){
+    if (!st.drive || st.drive.team !== st.poss){
+      closeDrive();
+      st.drive = {team:st.poss, q:st.q, clk, start:st.spot, plays:0, last:st.spot, res:''};
+    }
+    st.drive.plays++;
+  }
+  function closeDrive(res, last){
+    const d = st.drive; if (!d) return;
+    if (last != null) d.last = last;
+    d.res = res || d.res || '—'; d.endQ = st.q; d.endClk = clk;
+    if (d.clk != null && d.endClk != null && d.q <= 4 && d.endQ <= 4){
+      d.time = Math.max(0, (d.endQ - d.q) * qSec + d.clk - d.endClk);
+      S.team[d.team].top += d.time;
+    }
+    drives.push(d); st.drive = null;
+  }
+  function endGame(){ closeDrive(st.q > 4 ? 'End of OT' : 'End of game'); st.final = true; st.phase = 'final'; }
+
+  /* ---- overtime (NFHS tiebreaker, Kansas plan: 10-yard line) ---- */
+  function otSeries(s){ st.ot.cur = s; newSeries(s, otSpot); st.ltg = Math.min(100, otSpot + 10); }
+  function otEnd(){
+    const o = st.ot; o.done[o.cur] = true;
+    if (o.done.A && o.done.H){
+      if (st.score.A !== st.score.H) return endGame();
+      o.n++; st.q = 4 + o.n; o.first = other(o.first); o.done = {A:false, H:false}; st.to = {A:1, H:1};
+      return otSeries(o.first);
+    }
+    otSeries(other(o.cur));
+  }
+
+  /* ---- scoring ---- */
+  function score(s, pts, how, desc){
+    st.score[s] += pts; st.lines[s][Math.min(st.q, 5) - 1] += pts;
+    tags.push(['score', `${ab('A')} ${st.score.A} – ${ab('H')} ${st.score.H}`]);
+    if (how === 'try'){
+      const last = scoring[scoring.length - 1];
+      if (last){ last.A = st.score.A; last.H = st.score.H; }
+      return;
+    }
+    scoring.push({q:st.q, clk, side:s, how, desc, A:st.score.A, H:st.score.H});
+  }
+  function amendTry(txt){ const last = scoring[scoring.length - 1]; if (last && last.how === 'TD') last.desc += ` (${txt})`; }
+  function touchdown(s, desc, scorer){
+    if (st.drive && st.drive.team === s) closeDrive('TD', 100); else closeDrive();
+    if (scorer){ scorer.tds++; scorer.pts += 6; }
+    score(s, 6, 'TD', desc);
+    // A second overtime team that goes ahead wins without a try.
+    if (st.ot && st.ot.done[other(s)] && st.score[s] > st.score[other(s)]) { st.ot.done[s] = true; endGame(); return ' TOUCHDOWN. Game over.'; }
+    st.phase = 'try'; st.poss = s; st.spot = 100 - NFHS.tryFrom; st.down = 1; st.ltg = 100;
+    return ' TOUCHDOWN.';
+  }
+  function safety(defense){
+    closeDrive('Safety', 0);
+    score(defense, 2, 'Safety', `Safety`);
+    if (st.ot) otEnd(); else kickoffBy(other(defense), 'free');
+    return ' SAFETY.';
+  }
+  function afterTry(){ if (st.ot) otEnd(); else kickoffBy(st.poss); }
+
+  // Offense keeps the ball and reaches `end`: touchdown, safety, first down, next down or turnover on downs.
+  function progress(end, fdKind, tdDesc, scorer){
+    const O = st.poss, D = other(O), t = S.team[O];
+    if (end >= 100){ if (fdKind){ t.fd++; t['fd' + fdKind]++; } return touchdown(O, tdDesc, scorer); }
+    if (end <= 0) return safety(D);
+    if (end >= st.ltg){
+      if (fdKind){ t.fd++; t['fd' + fdKind]++; }
+      newSeries(O, end); tags.push(['fd', '1st down']); return ' First down.';
+    }
+    if (st.down >= 4){
+      closeDrive('Downs', end); tags.push(['to', 'Downs']);
+      if (st.ot) otEnd(); else newSeries(D, 100 - end);
+      return ' Turnover on downs.';
+    }
+    st.down++; st.spot = end; return '';
+  }
+  function conversion(end){
+    const t = S.team[st.poss], made = end >= st.ltg;
+    if (st.down === 3){ t.d3a++; if (made) t.d3m++; }
+    if (st.down === 4){ t.d4a++; if (made) t.d4m++; }
+  }
+
+  // Carrier side `cs` loses a fumble at `pos` (cs frame).
+  function fumbleLost(cs, cn, pos, f){
+    const rs = other(cs);
+    bump(pl(cs, cn), 'fum'); S.team[cs].fum++; S.team[cs].fumL++;
+    bump(pl(rs, f.by), 'fr'); if (f.ff) bump(pl(rs, f.ff), 'ff');
+    tags.push(['to', 'Fumble']);
+    let txt = ` FUMBLE${f.ff ? ` forced by ${nm(rs, f.ff)}` : ''}, recovered by ${f.by ? nm(rs, f.by) : ab(rs)} at the ${yl(cs, pos)}`;
+    if (st.drive && st.drive.team === cs) closeDrive('Fumble', pos);
+    if (st.ot) { otEnd(); return txt + ' (ball dead).'; }
+    const ry = +f.ry || 0, fin = 100 - pos + ry;
+    if (ry) txt += `, returned ${plural(ry, 'yard')}`;
+    if (fin >= 100) return txt + '.' + touchdown(rs, `${f.by ? nm(rs, f.by) : ab(rs)} fumble return`, pl(rs, f.by));
+    if (fin <= 0){ newSeries(rs, NFHS.touchback); return txt + '. Touchback.'; }
+    newSeries(rs, fin); return txt + '.';
+  }
+  function fumbleKept(cs, cn, f){
+    bump(pl(cs, cn), 'fum'); S.team[cs].fum++;
+    return ` Fumble, recovered by ${f.by ? nm(cs, f.by) : ab(cs)}.`;
+  }
+
+  /* ---- penalties ---- */
+  function enforce(pen){
+    const off = pen.side === st.poss;
+    let y = +pen.y || 0;
+    const base = st.phase === 'kick' ? 'kickFrom' : 'spot';
+    const room = off ? st[base] : 100 - st[base];
+    if (y > room / 2) y = room / 2;          // half the distance to the offender's goal
+    st[base] += off ? -y : y;
+    return y;
+  }
+  function penalize(pen, seriesNew){
+    const side = pen.side, offFoul = side === st.poss;
+    const from = st.phase === 'kick' ? st.kickFrom : st.spot;
+    const full = +pen.y || 0, y = enforce(pen);
+    S.team[side].pen++; S.team[side].penY += y;
+    tags.push(['flag', 'Flag']);
+    let txt = `PENALTY ${ab(side)} ${pen.name}${pen.n ? ` (${nm(side, pen.n)})` : ''}, ${plural(y, 'yard')}${y < full ? ' (half the distance)' : ''}`;
+    if (st.phase === 'kick') return txt + `. Kick from the ${yl(st.poss, st.kickFrom)}.`;
+    if (st.phase === 'try') return txt + `. Try from the ${yl(st.poss, st.spot)}.`;
+    if (st.phase !== 'play') return txt + '.';
+    txt += `, from the ${yl(st.poss, from)}`;
+    if (seriesNew){ newSeries(st.poss, st.spot); return txt + '.'; }
+    if (!offFoul && (pen.a || st.spot >= st.ltg)){
+      S.team[st.poss].fd++; S.team[st.poss].fdX++;
+      newSeries(st.poss, st.spot); tags.push(['fd', '1st down']);
+      return txt + `${pen.a ? ', automatic first down' : ''}. First down.`;
+    }
+    if (offFoul && pen.l){
+      txt += ', loss of down';
+      if (st.down >= 4){
+        closeDrive('Downs', st.spot); tags.push(['to', 'Downs']);
+        if (st.ot) otEnd(); else newSeries(other(st.poss), 100 - st.spot);
+        return txt + '. Turnover on downs.';
+      }
+      st.down++;
+    }
+    return txt + '.';
+  }
+
+  /* ---- plays ---- */
+  function run(p){
+    const O = st.poss, D = other(O), t = S.team[O], r = pl(O, p.r);
+    const g = clamp(+p.y || 0, -st.spot, 100 - st.spot), end = st.spot + g, td = end >= 100;
+    if (st.phase === 'try') return twoPoint(p, end >= 100, `${nm(O, p.r)} rush`);
+    driveTouch(); t.plays++;
+    t.rushN++; t.rushY += g; bump(r, 'ru'); bump(r, 'ry', g); long(r, 'rlg', g);
+    tackles(D, p.tk, g); conversion(end);
+    let txt = td ? `${nm(O, p.r)} ${fy(g)}-yard rush` : `${nm(O, p.r)} rush ${yds(g)} to the ${yl(O, end)}${tackleTxt(D, p.tk)}.`;
+    if (p.fum){
+      if (p.fum.lost) return txt + fumbleLost(O, p.r, end, p.fum);
+      txt += fumbleKept(O, p.r, p.fum);
+    }
+    if (td){ bump(r, 'rtd'); return txt + '.' + progress(end, 'R', `${nm(O, p.r)} ${fy(g)}-yard run`, r); }
+    return txt + progress(end, 'R');
+  }
+
+  function pass(p){
+    const O = st.poss, D = other(O), t = S.team[O], qb = pl(O, p.qb);
+    if (st.phase === 'try'){
+      const g = p.res === 'c' ? +p.y || 0 : -1;
+      return twoPoint(p, p.res === 'c' && st.spot + g >= 100, `${nm(O, p.qb)} pass to ${nm(O, p.to)}`);
+    }
+    driveTouch(); t.plays++;
+    if (p.res === 's'){
+      const g = -clamp(+p.sy || 0, 0, st.spot), end = st.spot + g, by = list(p.by);
+      t.sk++; t.skY -= g; t.rushN++; t.rushY += g;
+      bump(qb, 'psk'); bump(qb, 'pskY', -g); bump(qb, 'ru'); bump(qb, 'ry', g);
+      by.forEach(n => { const d = pl(D, n); d.sk += 1 / by.length; });
+      tackles(D, by, g); conversion(end);
+      let txt = `${nm(O, p.qb)} sacked${by.length ? ` by ${by.map(n => nm(D, n)).join(' and ')}` : ''} ${yds(g)} to the ${yl(O, end)}.`;
+      if (p.fum){ if (p.fum.lost) return txt + fumbleLost(O, p.qb, end, p.fum); txt += fumbleKept(O, p.qb, p.fum); }
+      return txt + progress(end, null);
+    }
+    t.passA++; bump(qb, 'pa');
+    if (p.res === 'i'){
+      conversion(st.spot);
+      if (p.pbu) bump(pl(D, p.pbu), 'pbu');
+      return `${nm(O, p.qb)} pass incomplete${p.to ? `, intended for ${nm(O, p.to)}` : ''}${p.pbu ? ` (broken up by ${nm(D, p.pbu)})` : ''}.` + progress(st.spot, null);
+    }
+    if (p.res === 'x'){
+      conversion(st.spot);
+      t.passInt++; bump(qb, 'pint');
+      const dp = pl(D, p.ib), at = clamp(st.spot + (+p.at || 0), 0, 110), ry = st.ot ? 0 : (+p.ry || 0);
+      bump(dp, 'dint'); bump(dp, 'dintY', ry); S.team[D].intN++; S.team[D].intY += ry;
+      tags.push(['to', 'INT']);
+      let txt = `${nm(O, p.qb)} pass intercepted by ${p.ib ? nm(D, p.ib) : ab(D)} at the ${at >= 100 ? `${ab(D)} end zone` : yl(O, at)}`;
+      closeDrive('INT', st.spot);
+      if (st.ot){ otEnd(); return txt + ' (ball dead).'; }
+      const fin = 100 - at + ry;
+      if (ry) txt += `, returned ${plural(ry, 'yard')}`;
+      if (fin >= 100) return txt + '.' + touchdown(D, `${p.ib ? nm(D, p.ib) : ab(D)} interception return`, dp);
+      if (fin <= 0){ newSeries(D, NFHS.touchback); return txt + '. Touchback.'; }
+      newSeries(D, fin); return txt + ` to the ${yl(D, fin)}.`;
+    }
+    // complete
+    const rec = pl(O, p.to), g = clamp(+p.y || 0, -st.spot, 100 - st.spot), end = st.spot + g, td = end >= 100;
+    t.passC++; t.passY += g; bump(qb, 'pc'); bump(qb, 'py', g); long(qb, 'plg', g);
+    bump(rec, 're'); bump(rec, 'rey', g); long(rec, 'relg', g);
+    tackles(D, p.tk, g); conversion(end);
+    let txt = td ? `${nm(O, p.qb)} ${fy(g)}-yard pass to ${nm(O, p.to)}`
+                 : `${nm(O, p.qb)} pass complete to ${nm(O, p.to)} ${yds(g)} to the ${yl(O, end)}${tackleTxt(D, p.tk)}.`;
+    if (p.fum){ if (p.fum.lost) return txt + fumbleLost(O, p.to, end, p.fum); txt += fumbleKept(O, p.to, p.fum); }
+    if (td){ t.passTD++; bump(qb, 'ptd'); bump(rec, 'retd');
+      return txt + '.' + progress(end, 'P', `${nm(O, p.to)} ${fy(g)}-yard pass from ${nm(O, p.qb)}`, rec); }
+    return txt + progress(end, 'P');
+  }
+
+  // A kicked ball the receiving team R fields at `at` (R frame) and returns.
+  function kickReturn(R, kind, p, at){
+    const K = other(R), ret = pl(R, p.ret), ry = +p.ry || 0, fin = at + ry;
+    const k1 = kind === 'kr' ? 'kr' : 'pr';
+    bump(ret, k1); bump(ret, k1 + 'y', ry); long(ret, k1 + 'lg', ry);
+    S.team[R][k1 === 'kr' ? 'krN' : 'prN']++; S.team[R][k1 === 'kr' ? 'krY' : 'prY'] += ry;
+    tackles(K, p.tk, 1);
+    let txt = `, ${nm(R, p.ret)} returns ${plural(ry, 'yard')}`;
+    if (p.fum && p.fum.lost) return {txt: txt + fumbleLost(R, p.ret, clamp(fin, 1, 99), p.fum), fin};
+    if (fin >= 100){ bump(ret, k1 + 'td'); return {txt: txt + '.' + touchdown(R, `${nm(R, p.ret)} ${fy(ry)}-yard ${kind === 'kr' ? 'kickoff' : 'punt'} return`, ret), fin}; }
+    if (fin <= 0){ newSeries(R, NFHS.touchback); return {txt: txt + ', downed in the end zone. Touchback.', fin:NFHS.touchback}; }
+    if (p.fum) txt += `,${fumbleKept(R, p.ret, p.fum).slice(1, -1)}`;
+    newSeries(R, fin); return {txt: txt + ` to the ${yl(R, fin)}${tackleTxt(K, p.tk)}.`, fin};
+  }
+
+  function kickoff(p){
+    const K = st.poss, R = other(K), kf = st.kickFrom, k = pl(K, p.k), tk = S.team[K];
+    let d = +p.d || 0;
+    if (p.res === 'tb' && !d) d = 100 - kf;
+    bump(k, 'ko'); bump(k, 'koy', d); tk.koN++; tk.koY += d;
+    const what = st.kickKind === 'free' ? 'free kick' : 'kickoff';
+    let txt = `${nm(K, p.k)} ${what} ${plural(d, 'yard')}`;
+    const at = 100 - (kf + d);
+    switch (p.res){
+      case 'tb': bump(k, 'ktb'); tk.koTB++; newSeries(R, NFHS.touchback); return txt + `, touchback. ${ab(R)} ball at the ${yl(R, NFHS.touchback)}.`;
+      case 'oob': { const s = 100 - (kf + NFHS.oobFreeKick); newSeries(R, s); return txt + `, out of bounds. ${ab(R)} ball at the ${yl(R, s)}.`; }
+      case 'onside': { const s = kf + d; bump(pl(K, p.ret), 'fr'); newSeries(K, s); tags.push(['to', 'Onside']);
+        return txt + `, onside, recovered by ${p.ret ? nm(K, p.ret) : ab(K)} at the ${yl(K, s)}.`; }
+      case 'fc': case 'down': {
+        const s = at <= 0 ? NFHS.touchback : at; newSeries(R, s);
+        return txt + (at <= 0 ? ', downed in the end zone. Touchback.' : p.res === 'fc' ? `, fair catch by ${nm(R, p.ret)} at the ${yl(R, s)}.` : `, downed at the ${yl(R, s)}.`);
+      }
+      default: return txt + ` to the ${at <= 0 ? `${ab(R)} end zone` : yl(R, at)}` + kickReturn(R, 'kr', p, at).txt;
+    }
+  }
+
+  function punt(p){
+    const O = st.poss, R = other(O), t = S.team[O], k = pl(O, p.k);
+    driveTouch(); t.plays++; t.pnt++; bump(k, 'pu');
+    closeDrive('Punt', st.spot);
+    if (p.res === 'blk'){
+      t.pntBlk++; bump(pl(R, p.by), 'bk'); tags.push(['to', 'Blocked']);
+      const at = clamp(100 - (st.spot - (+p.b || 0)), 1, 100), ry = +p.ry || 0, fin = at + ry;
+      let txt = `${nm(O, p.k)} punt BLOCKED${p.by ? ` by ${nm(R, p.by)}` : ''}, recovered by ${p.ret ? nm(R, p.ret) : ab(R)} at the ${yl(R, at)}`;
+      if (ry) txt += `, returned ${plural(ry, 'yard')}`;
+      if (fin >= 100) return txt + '.' + touchdown(R, `${p.ret ? nm(R, p.ret) : ab(R)} blocked punt return`, pl(R, p.ret));
+      newSeries(R, fin); return txt + '.';
+    }
+    const unknown = p.d == null && p.res !== 'tb';
+    let d = +p.d || 0;
+    if (p.res === 'tb') d = 100 - st.spot;
+    if (unknown){ newSeries(R, 100 - st.spot); return `${nm(O, p.k)} punt.`; }
+    bump(k, 'puy', d); long(k, 'pulg', d); t.pntY += d;
+    const at = 100 - (st.spot + d);
+    let txt = `${nm(O, p.k)} punt ${plural(d, 'yard')}`;
+    if (p.res === 'tb' || at <= 0){ bump(k, 'ptb'); t.pntTB++; newSeries(R, NFHS.touchback); return txt + `, touchback. ${ab(R)} ball at the ${yl(R, NFHS.touchback)}.`; }
+    if (p.res === 'ret'){
+      const r = kickReturn(R, 'pr', p, at);
+      if (r.fin < 20) bump(k, 'pi20');
+      return txt + ` to the ${yl(R, at)}` + r.txt;
+    }
+    if (at < 20) bump(k, 'pi20');
+    newSeries(R, at);
+    return txt + ` to the ${yl(R, at)}` + ({fc:`, fair catch by ${nm(R, p.ret)}.`, down:', downed.', oob:', out of bounds.'}[p.res] || '.');
+  }
+
+  function fieldGoal(p){
+    const O = st.poss, D = other(O), t = S.team[O], k = pl(O, p.k);
+    const dist = +p.d || Math.round(100 - st.spot + NFHS.fgExtra);
+    driveTouch(); t.plays++; bump(k, 'fga');
+    if (p.res === 'good'){
+      bump(k, 'fgm'); long(k, 'fglg', dist); if (k) k.pts += 3;
+      closeDrive('FG', st.spot);
+      score(O, 3, 'FG', `${nm(O, p.k)} ${dist}-yard field goal`);
+      if (st.ot) otEnd(); else kickoffBy(O);
+      return `${nm(O, p.k)} ${dist}-yard field goal is GOOD.`;
+    }
+    if (p.res === 'blk'){
+      bump(pl(D, p.by), 'bk'); tags.push(['to', 'Blocked']);
+      closeDrive('Blocked FG', st.spot);
+      let txt = `${nm(O, p.k)} ${dist}-yard field goal BLOCKED${p.by ? ` by ${nm(D, p.by)}` : ''}`;
+      if (st.ot){ otEnd(); return txt + '.'; }
+      const at = clamp(100 - (st.spot - (+p.b || 0)), 1, 100), ry = +p.ry || 0, fin = at + ry;
+      txt += `, recovered by ${p.ret ? nm(D, p.ret) : ab(D)} at the ${yl(D, at)}`;
+      if (ry) txt += `, returned ${plural(ry, 'yard')}`;
+      if (fin >= 100) return txt + '.' + touchdown(D, `${p.ret ? nm(D, p.ret) : ab(D)} blocked field goal return`, pl(D, p.ret));
+      newSeries(D, fin); return txt + '.';
+    }
+    closeDrive('Missed FG', st.spot);
+    if (st.ot){ otEnd(); return `${nm(O, p.k)} ${dist}-yard field goal is NO GOOD.`; }
+    // NFHS: a missed field goal into the end zone is a touchback — no "spot of the kick" rule.
+    newSeries(D, NFHS.touchback);
+    return `${nm(O, p.k)} ${dist}-yard field goal is NO GOOD. Touchback, ${ab(D)} ball at the ${yl(D, NFHS.touchback)}.`;
+  }
+
+  function twoPoint(p, good, what){
+    const O = st.poss, scorer = pl(O, p.res === 'c' ? p.to : p.r);
+    if (good){ bump(scorer, 'two'); bump(scorer, 'pts', 2); score(O, 2, 'try'); amendTry(what); }
+    else amendTry(`${p.t === 'pass' ? 'pass' : 'run'} failed`);
+    const txt = `Two-point try: ${what} is ${good ? 'GOOD' : 'NO GOOD'}.`;
+    afterTry(); return txt;
+  }
+  function tryPlay(p){
+    const O = st.poss;
+    if (p.kind === 'kick'){
+      const k = pl(O, p.k); bump(k, 'xpa');
+      const good = p.res === 'good';
+      if (good){ bump(k, 'xpm'); bump(k, 'pts', 1); score(O, 1, 'try'); amendTry(`${nm(O, p.k)} kick`); }
+      else amendTry(p.res === 'blk' ? 'kick blocked' : 'kick failed');
+      const txt = `${nm(O, p.k)} kick is ${good ? 'GOOD' : p.res === 'blk' ? 'BLOCKED' : 'NO GOOD'}.`;
+      afterTry(); return txt;
+    }
+    const good = p.res === 'good';
+    if (p.kind === 'pass') return twoPoint({t:'pass', res:'c', to:p.to}, good, `${nm(O, p.qb)} pass to ${nm(O, p.to)}`);
+    return twoPoint({t:'run', r:p.r}, good, `${nm(O, p.r)} rush`);
+  }
+
+  function endPeriod(p){
+    const q = st.q;
+    if (q === 1 || q === 3){ st.q++; return `End of the ${ord(q)} quarter.`; }
+    if (q === 2){
+      closeDrive('Half'); st.q = 3; st.to = {A:3, H:3};
+      kickoffBy(p.kick || other(g.set.firstKick || 'H'));
+      return `End of the 1st half. ${ab(st.poss)} kicks off to open the 2nd half.`;
+    }
+    if (q === 4){
+      if (st.score.A === st.score.H){
+        closeDrive('End of regulation');
+        st.q = 5; st.to = {A:1, H:1};
+        st.ot = {n:1, first:p.first || 'A', cur:null, done:{A:false, H:false}};
+        otSeries(st.ot.first);
+        return `End of regulation, tied ${st.score.A}–${st.score.H}. Overtime: ${ab(st.ot.first)} ball first at the ${yl(st.ot.first, otSpot)}.`;
+      }
+      endGame(); return 'End of the 4th quarter.';
+    }
+    return '';
+  }
+
+  const PLAY = {run:1, pass:1, punt:1, ko:1, fg:1};
+  function core(p){
+    switch (p.t){
+      case 'run': return run(p);
+      case 'pass': return pass(p);
+      case 'punt': return punt(p);
+      case 'ko': return kickoff(p);
+      case 'fg': return fieldGoal(p);
+      case 'try': return tryPlay(p);
+      case 'pen': return p.pen.enf === 'off' ? (tags.push(['flag', 'Flag']), `Offsetting penalties${p.pen.name ? ` (${p.pen.name})` : ''}. Replay the down.`) : penalize(p.pen, false);
+      case 'to': st.to[p.side] = Math.max(0, st.to[p.side] - 1); tags.push(['info', 'Timeout']);
+        return `Timeout ${T[p.side].name || ab(p.side)} (${st.to[p.side]} left).`;
+      case 'note': tags.push(['info', 'Note']); return p.text || '';
+      case 'set': {   // "N ball at N35 1-10": the scorer states the situation outright
+        if (st.drive && st.drive.team !== p.poss) closeDrive();
+        st.poss = p.poss; st.spot = clamp(+p.spot, 0.5, 99.5); st.down = clamp(+p.down || 1, 1, 4);
+        st.ltg = p.goal ? 100 : Math.min(100, st.spot + (+p.togo || 10)); st.phase = 'play'; st.fresh = true;
+        if (st.ot) st.ot.cur = p.poss;
+        tags.push(['info', 'Spot']);
+        return `${ab(p.poss)} ball, ${ord(st.down)} & ${st.ltg >= 100 ? 'Goal' : fy(st.ltg - st.spot)} at the ${yl(p.poss, st.spot)}.`;
+      }
+      case 'endq': return endPeriod(p);
+      case 'final': endGame(); return 'Game ended.';
+    }
+    return '';
+  }
+  // Describe a play on a throwaway copy, for flags that wipe it out.
+  function dry(p){
+    const keep = [st, S, scoring, drives, tags];
+    st = structuredClone(st); S = {team:{A:zeros(TEAM_KEYS), H:zeros(TEAM_KEYS)}, pl:{A:{}, H:{}}};
+    scoring = []; drives = []; tags = [];
+    let t = '';
+    try { t = core({...p, pen:null}); } finally { [st, S, scoring, drives, tags] = keep; }
+    return t;
+  }
+  function apply(p){
+    clk = p.clk ?? null; tags = [];
+    const pen = p.pen && PLAY[p.t] ? p.pen : null;
+    if (pen && (pen.enf === 'prev' || pen.enf === 'off')){
+      const wiped = dry(p);
+      if (pen.enf === 'off'){ tags.push(['flag', 'Flag']); return {text:'Offsetting penalties. Replay the down.', wiped}; }
+      return {text:'No play. ' + penalize(pen, false), wiped};
+    }
+    st.fresh = false;
+    const beforePoss = st.poss;
+    let text = core(p);
+    if (pen && pen.enf === 'end') text += ' ' + penalize(pen, st.fresh || st.poss !== beforePoss);
+    else if (pen && pen.enf === 'dec'){ text += ` Penalty ${ab(pen.side)} ${pen.name}, declined.`; tags.push(['flag', 'Declined']); }
+    if (st.drive && st.drive.team === st.poss && st.phase === 'play') st.drive.last = st.spot;
+    return {text};
+  }
+
+  for (let i = 0; i < upto && i < g.plays.length; i++){
+    let p = g.plays[i];
+    // A punt typed without a distance takes it from the spot typed next ("S ball at S10").
+    if (p.t === 'punt' && p.d == null && p.res !== 'tb' && p.res !== 'blk' && st.phase === 'play'){
+      const nx = g.plays[i + 1];
+      if (nx && nx.t === 'set' && nx.poss === other(st.poss)) p = {...p, d:Math.max(0, 100 - nx.spot - st.spot + (+p.ry || 0))};
+    }
+    const pre = {sit: sit(), q: st.q, poss: st.poss};
+    const r = apply(p);
+    log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q});
+  }
+  const open = st.drive ? [{...st.drive, res:'In progress', open:true}] : [];
+  return {st, S, log, scoring, drives:drives.concat(open), sit:sit(), yl, nm, ab};
+}
+/* ================================================================
+   UI: scoreboard, field, and the play-entry pad.
+   ================================================================ */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const STORE = 'pressbox.v1';
+let db = {cur:null, games:{}}, g = null, R = null;
+const ui = {type:null, draft:null, editing:null, ctx:null, tab:'log', side:'A', open:null, confirm:null, ask:null,
+  mode:(() => { try { return localStorage.getItem('pressbox.mode') || 'quick'; } catch (e) { return 'quick'; } })(),
+  qtext:'', qedit:false, cheat:false};
+
+const ab = s => g.teams[s].abbr || s;
+const rosterName = (s, n) => (g.teams[s].roster || {})[String(n)] || '';
+const mmss = s => { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const perLabel = q => q <= 4 ? `${ord(q)} Qtr` : `OT${q - 4 > 1 ? ' ' + (q - 4) : ''}`;
+function parseClock(v){
+  v = String(v).trim(); if (!v) return null;
+  if (v.includes(':')){ const [m, s] = v.split(':'); return (+m || 0) * 60 + (+s || 0); }
+  const d = v.replace(/\D/g, ''); if (!d) return null;
+  return d.length <= 2 ? +d * 60 : +d.slice(0, -2) * 60 + +d.slice(-2);
+}
+function clockNow(){ const c = g.clk; return c.run ? Math.max(0, c.s - (Date.now() - c.at) / 1000) : c.s; }
+function setClock(s, run){ g.clk = {s:Math.max(0, s), run:!!run && s > 0, at:Date.now()}; save(); }
+
+/* ---------- scoreboard ---------- */
+function renderBoard(){
+  const st = R.st, T = g.teams;
+  const team = s => `<div class="tm ${s === 'H' ? 'home' : ''} ${!st.final && st.poss === s ? 'has' : ''}">
+    <div class="tm-id">
+      <div class="tm-abbr"><span class="swatch" style="background:${esc(T[s].color)}"></span>${esc(T[s].abbr)}</div>
+      <div class="tm-name">${esc(T[s].name)}</div>
+      <div class="tos" title="${st.to[s]} timeout${st.to[s] === 1 ? '' : 's'} left">${Array.from({length: st.q > 4 ? 1 : 3}, (_, i) => `<i class="${i < st.to[s] ? 'on' : ''}"></i>`).join('')}</div>
+    </div>
+    <span class="poss-dot" aria-hidden="true"></span>
+    <div class="tm-score">${st.score[s]}</div></div>`;
+  const clockOn = !st.final && st.q <= 4;
+  const go = g.clk.run
+    ? '<svg viewBox="0 0 12 12"><rect x="1" y="1" width="3.6" height="10"/><rect x="7.4" y="1" width="3.6" height="10"/></svg>'
+    : '<svg viewBox="0 0 12 12"><path d="M2 1l9 5-9 5z"/></svg>';
+  const dd = st.final ? '' : st.phase === 'play'
+    ? `${esc(ab(st.poss))} ball · <b>${ord(st.down)} &amp; ${st.ltg >= 100 ? 'Goal' : fy(st.ltg - st.spot)}</b> at ${esc(R.yl(st.poss, st.spot))}`
+    : esc(R.sit);
+  $('#sb').innerHTML = `<div class="sb-in">${team('A')}
+    <div class="mid">
+      <div class="per">${st.final ? 'Final' + (st.q > 4 ? ' / OT' : '') : perLabel(st.q)}</div>
+      ${clockOn ? `<div class="clockrow"><button class="clock num ${g.clk.run ? 'run' : ''}" id="clk" title="Tap to set the clock">${mmss(clockNow())}</button>
+        <button class="clk-go" id="clkgo" aria-label="${g.clk.run ? 'Stop' : 'Start'} the clock">${go}</button></div>` : ''}
+      <div class="dd">${dd}</div>
+    </div>${team('H')}</div>`;
+}
+
+/* ---------- field ---------- */
+function renderField(){
+  const st = R.st, T = g.teams, X = y => 100 + y * 10;
+  const abs = (side, pos) => side === 'A' ? pos : 100 - pos;   // yards from the visitors' goal (left)
+  let s = '<svg viewBox="0 0 1200 190" role="img" aria-label="Field position">';
+  for (let i = 0; i < 10; i++) s += `<rect x="${X(i * 10)}" y="0" width="100" height="190" style="fill:var(${i % 2 ? '--turf-2' : '--turf'})"/>`;
+  s += `<rect x="0" y="0" width="100" height="190" style="fill:${esc(T.A.color)}"/><rect x="1100" y="0" width="100" height="190" style="fill:${esc(T.H.color)}"/>`;
+  s += '<rect x="0" y="0" width="100" height="190" style="fill:rgba(0,0,0,.18)"/><rect x="1100" y="0" width="100" height="190" style="fill:rgba(0,0,0,.18)"/>';
+  const ezt = (x, rot, t) => `<text x="${x}" y="95" transform="rotate(${rot} ${x} 95)" text-anchor="middle" dominant-baseline="central" style="fill:rgba(255,255,255,.92);font:700 46px 'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:4px">${esc(t)}</text>`;
+  s += ezt(50, -90, T.A.abbr) + ezt(1150, 90, T.H.abbr);
+  for (let y = 0; y <= 100; y++){
+    const x = X(y);
+    if (y % 5 === 0) s += `<line x1="${x}" y1="0" x2="${x}" y2="190" style="stroke:var(--chalk);stroke-width:${y % 100 === 0 ? 4 : y % 10 === 0 ? 2 : 1.3}"/>`;
+    else s += [[2, 9], [62, 70], [120, 128], [181, 188]].map(([a, b]) => `<line x1="${x}" y1="${a}" x2="${x}" y2="${b}" style="stroke:var(--chalk);stroke-width:1.2"/>`).join('');
+  }
+  for (let y = 10; y <= 90; y += 10){
+    const n = y <= 50 ? y : 100 - y;
+    s += `<text x="${X(y)}" y="40" text-anchor="middle" style="fill:var(--chalk);font:600 26px 'Barlow Condensed','Arial Narrow',sans-serif">${n}</text>`;
+    s += `<text x="${X(y)}" y="166" text-anchor="middle" style="fill:var(--chalk);font:600 26px 'Barlow Condensed','Arial Narrow',sans-serif">${n}</text>`;
+  }
+  if (!st.final){
+    const side = st.poss, pos = st.phase === 'kick' ? st.kickFrom : st.spot, bx = X(abs(side, pos)), dir = side === 'A' ? 1 : -1;
+    if (st.phase === 'play' && st.ltg < 100) s += `<line x1="${X(abs(side, st.ltg))}" y1="0" x2="${X(abs(side, st.ltg))}" y2="190" style="stroke:var(--ltg);stroke-width:5"/>`;
+    s += `<line x1="${bx}" y1="0" x2="${bx}" y2="190" style="stroke:var(--los);stroke-width:5"/>`;
+    s += `<ellipse cx="${bx}" cy="95" rx="15" ry="9" style="fill:#7B4A21;stroke:#fff;stroke-width:2"/>`;
+    s += `<line x1="${bx - 6}" y1="95" x2="${bx + 6}" y2="95" style="stroke:#fff;stroke-width:1.5"/>`;
+    s += `<path d="M${bx + dir * 24} 86 l${dir * 13} 9 l${-dir * 13} 9 z" style="fill:#fff"/>`;
+  }
+  $('#field').innerHTML = s + '</svg>';
+}
+
+/* ---------- pad: drafts ---------- */
+const TYPE_LABEL = {run:'Run', pass:'Pass', punt:'Punt', fg:'Field goal', ko:'Kickoff', try:'Try', pen:'Penalty', to:'Timeout', note:'Note'};
+function typesFor(st){
+  if (st.final) return [];
+  if (st.phase === 'kick') return ['ko', 'pen', 'to', 'note'];
+  if (st.phase === 'try') return ['try', 'pen', 'to', 'note'];
+  return ['run', 'pass', 'punt', 'fg', 'pen', 'to', 'note'];
+}
+const ROLE = {rush:p => p.ru, qb:p => p.pa + p.psk, rec:p => p.re, kick:p => p.ko + p.fga + p.xpa, punt:p => p.pu,
+  ret:p => p.kr + p.pr, def:p => p.tk + p.ast + p.sk + p.dint + p.pbu};
+function recent(side, role){
+  const f = ROLE[role]; if (!f) return [];
+  return Object.values(ui.ctx.S.pl[side]).filter(p => f(p) > 0).sort((a, b) => f(b) - f(a)).slice(0, 5).map(p => p.n);
+}
+const first = (side, role) => recent(side, role)[0] || '';
+function penBlank(side, enf){ return {side, name:'Holding', y:10, a:false, l:false, n:'', enf}; }
+function blank(t, st){
+  const O = st.poss, D = other(O);
+  const fum = {lost:'lost', by:'', ff:'', ry:''};
+  const base = {t, fumOn:false, fum, penOn:false, pen:penBlank(D, 'prev')};
+  switch (t){
+    case 'run': return {...base, r:'', y:'', yn:'gain', tk:['', '']};
+    case 'pass': return {...base, qb:first(O, 'qb'), res:'c', to:'', y:'', yn:'gain', tk:['', ''], pbu:'', ib:'', at:'', ry:'', by:['', ''], sy:''};
+    case 'punt': return {...base, k:first(O, 'punt'), d:'', res:'ret', ret:'', ry:'', tk:['', ''], by:'', b:''};
+    case 'ko': return {...base, k:first(O, 'kick'), d:'', res:'ret', ret:'', ry:'', tk:['', '']};
+    case 'fg': return {...base, k:first(O, 'kick'), d:'', res:'good', by:'', b:'', ret:'', ry:''};
+    case 'try': return {t, kind:'kick', res:'good', k:first(O, 'kick'), r:'', qb:first(O, 'qb'), to:''};
+    case 'pen': return {t, pen:penBlank(O, 'acc')};
+    case 'note': return {t, text:''};
+    default: return {t};
+  }
+}
+function toDraft(p, st){
+  const d = blank(p.t, st), str = v => v == null ? '' : String(v);
+  for (const k of Object.keys(p)){
+    if (k === 'fum'){ d.fumOn = true; d.fum = {lost:p.fum.lost ? 'lost' : 'kept', by:str(p.fum.by), ff:str(p.fum.ff), ry:str(p.fum.ry || '')}; }
+    else if (k === 'pen'){ d.pen = {...p.pen, n:str(p.pen.n)}; if (p.t !== 'pen') d.penOn = true; }
+    else if (k === 'y'){ d.y = p.y ? String(Math.abs(p.y)) : ''; d.yn = p.y < 0 ? 'loss' : 'gain'; }
+    else if (k === 'tk' || k === 'by' && Array.isArray(p.by)){ const a = p[k].map(String); d[k] = [a[0] || '', a[1] || '']; }
+    else if (k !== 'clk') d[k] = str(p[k]);
+  }
+  if (p.d === 0 && p.t !== 'fg') d.d = '';
+  d.clkTxt = p.clk != null ? mmss(p.clk) : '';
+  return d;
+}
+function cleanPen(x){ return {side:x.side, name:x.name, y:Number(x.y) || 0, a:!!x.a, l:!!x.l, n:String(x.n || '').replace(/\D/g, '') || undefined, enf:x.enf}; }
+function buildPlay(d){
+  const n = v => v === '' || v == null ? undefined : Number(String(v).replace(/[^\d.]/g, '')) || 0;
+  const j = v => String(v ?? '').replace(/\D/g, '') || undefined;
+  const js = a => (a || []).map(j).filter(Boolean);
+  const yy = () => (d.yn === 'loss' ? -1 : 1) * (n(d.y) || 0);
+  const p = {t:d.t};
+  switch (d.t){
+    case 'run': Object.assign(p, {r:j(d.r), y:yy(), tk:js(d.tk)}); break;
+    case 'pass':
+      Object.assign(p, {qb:j(d.qb), res:d.res});
+      if (d.res === 'c') Object.assign(p, {to:j(d.to), y:yy(), tk:js(d.tk)});
+      if (d.res === 'i') Object.assign(p, {to:j(d.to), pbu:j(d.pbu)});
+      if (d.res === 'x') Object.assign(p, {ib:j(d.ib), at:n(d.at) || 0, ry:n(d.ry) || 0});
+      if (d.res === 's') Object.assign(p, {by:js(d.by), sy:n(d.sy) || 0});
+      break;
+    case 'punt':
+      Object.assign(p, {k:j(d.k), d:n(d.d), res:d.res});
+      if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:n(d.ry) || 0, tk:js(d.tk)});
+      if (d.res === 'fc') p.ret = j(d.ret);
+      if (d.res === 'blk') Object.assign(p, {by:j(d.by), b:n(d.b) || 0, ret:j(d.ret), ry:n(d.ry) || 0});
+      break;
+    case 'ko':
+      Object.assign(p, {k:j(d.k), d:n(d.d) || 0, res:d.res});
+      if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:n(d.ry) || 0, tk:js(d.tk)});
+      if (d.res === 'fc' || d.res === 'onside') p.ret = j(d.ret);
+      break;
+    case 'fg':
+      Object.assign(p, {k:j(d.k), d:n(d.d), res:d.res});
+      if (d.res === 'blk') Object.assign(p, {by:j(d.by), b:n(d.b) || 0, ret:j(d.ret), ry:n(d.ry) || 0});
+      break;
+    case 'try':
+      Object.assign(p, {kind:d.kind, res:d.res});
+      if (d.kind === 'kick') p.k = j(d.k);
+      if (d.kind === 'run') p.r = j(d.r);
+      if (d.kind === 'pass'){ p.qb = j(d.qb); p.to = j(d.to); }
+      break;
+    case 'pen': p.pen = cleanPen(d.pen); break;
+    case 'note': p.text = d.text; break;
+  }
+  if (fumbleAllowed(d) && d.fumOn) p.fum = {lost:d.fum.lost === 'lost', by:j(d.fum.by), ff:j(d.fum.ff), ry:n(d.fum.ry) || 0};
+  if (['run', 'pass', 'punt', 'ko', 'fg'].includes(d.t) && d.penOn) p.pen = cleanPen(d.pen);
+  return JSON.parse(JSON.stringify(p));
+}
+const fumbleAllowed = d => d.t === 'run' || (d.t === 'pass' && (d.res === 'c' || d.res === 's')) || ((d.t === 'punt' || d.t === 'ko') && d.res === 'ret');
+const getK = (o, path) => path.split('.').reduce((a, k) => a == null ? a : a[k], o);
+function setK(o, path, v){ const ks = path.split('.'), last = ks.pop(); ks.reduce((a, k) => a[k], o)[last] = v; }
+
+/* ---------- pad: field builders ---------- */
+function fJ(k, label, side, role){
+  const v = getK(ui.draft, k) ?? '';
+  const nums = role ? recent(side, role) : [];
+  return `<div class="fld"><label class="eyebrow" for="f-${k}">${label} · ${esc(ab(side))}</label>
+    <input class="inp" id="f-${k}" data-k="${k}" data-side="${side}" inputmode="numeric" autocomplete="off" maxlength="2" placeholder="#" value="${esc(v)}">
+    <div class="who" data-who="${k}">${esc(rosterName(side, v))}</div>
+    ${nums.length ? `<div class="chips">${nums.map(n => `<button type="button" class="chip" data-chip="${k}" data-v="${n}" title="${esc(rosterName(side, n))}">#${n}</button>`).join('')}</div>` : ''}</div>`;
+}
+function fN(k, label, ph = ''){
+  return `<div class="fld"><label class="eyebrow" for="f-${k}">${label}</label>
+    <input class="inp" id="f-${k}" data-k="${k}" inputmode="numeric" autocomplete="off" placeholder="${esc(ph)}" value="${esc(getK(ui.draft, k) ?? '')}"></div>`;
+}
+function seg(k, opts){
+  const v = getK(ui.draft, k);
+  return `<div class="seg" role="group">${opts.map(([val, lab]) => `<button type="button" data-seg="${k}" data-v="${val}" aria-pressed="${String(v) === String(val)}">${esc(lab)}</button>`).join('')}</div>`;
+}
+const fSeg = (k, label, opts) => `<div class="fld"><span class="eyebrow">${label}</span>${seg(k, opts)}</div>`;
+function fYds(){
+  return `<div class="fld"><label class="eyebrow" for="f-y">Yards</label><div class="yds">${seg('yn', [['gain', 'Gain'], ['loss', 'Loss']])}
+    <input class="inp" id="f-y" data-k="y" inputmode="numeric" autocomplete="off" placeholder="0" value="${esc(ui.draft.y)}">
+    <button type="button" class="tdbtn" data-td title="Fill in the yards to the goal line">TD</button></div></div>`;
+}
+const tog = (k, label, cls = '') => `<button type="button" class="tog ${cls}" data-tog="${k}" aria-pressed="${!!getK(ui.draft, k)}"><span class="box"></span>${label}</button>`;
+const row = (...a) => `<div class="row">${a.join('')}</div>`;
+
+function fumbleFields(){
+  const st = ui.ctx.st, d = ui.draft, carrier = d.t === 'punt' || d.t === 'ko' ? other(st.poss) : st.poss;
+  const lost = d.fum.lost === 'lost', recSide = lost ? other(carrier) : carrier;
+  return `<div class="sub">${fSeg('fum.lost', 'Fumble', [['lost', `Lost to ${ab(other(carrier))}`], ['kept', `${ab(carrier)} kept it`]])}
+    ${row(fJ('fum.by', 'Recovered by', recSide), fJ('fum.ff', 'Forced by', other(carrier)), lost ? fN('fum.ry', 'Return yards', '0') : '')}
+    <p class="hint">Enter the play's yards to where the ball was recovered.</p></div>`;
+}
+const ENF_HINT = {
+  prev:'The play is wiped out and its stats don’t count. Yards are marked off from the previous spot.',
+  end:'The play and its stats count, then the yards are marked off from where it ended. For a foul downfield, enter the play’s yards only up to the spot of the foul.',
+  dec:'The play stands. The foul is noted but not charged.',
+  off:'Fouls by both teams cancel and the down is replayed.',
+  acc:'Marked off from the current spot. Half the distance to the goal applies automatically.'};
+function flagFields(standalone){
+  const pn = ui.draft.pen;
+  const enf = standalone ? [['acc', 'Accepted'], ['off', 'Offsetting']] : [['prev', 'Replay down'], ['end', 'Add to play'], ['dec', 'Declined'], ['off', 'Offsetting']];
+  return `<div class="sub ${standalone ? '' : 'flag'}">
+    ${row(fSeg('pen.side', 'Against', [['A', ab('A')], ['H', ab('H')]]),
+      `<div class="fld"><label class="eyebrow" for="f-pen.name">Foul</label><select class="inp" id="f-pen.name" data-k="pen.name">${PENALTIES.map(x => `<option ${x.name === pn.name ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>`)}
+    ${row(fN('pen.y', 'Yards', '0'), fJ('pen.n', 'Player', pn.side))}
+    <div class="checks">${tog('pen.a', 'Automatic 1st down')}${tog('pen.l', 'Loss of down')}</div>
+    ${fSeg('pen.enf', 'Enforcement', enf)}
+    <p class="hint">${ENF_HINT[pn.enf]}</p></div>`;
+}
+function extras(){
+  const d = ui.draft;
+  let h = '<div class="more"><div class="checks">';
+  if (fumbleAllowed(d)) h += tog('fumOn', 'Fumble');
+  h += tog('penOn', 'Flag on the play', 'flagtog') + '</div>';
+  if (fumbleAllowed(d) && d.fumOn) h += fumbleFields();
+  if (d.penOn) h += flagFields(false);
+  return h + '</div>';
+}
+
+function formHtml(){
+  const st = ui.ctx.st, d = ui.draft, O = st.poss, D = other(O);
+  switch (d.t){
+    case 'run':
+      return row(fJ('r', 'Ball carrier', O, 'rush')) + fYds() + row(fJ('tk.0', 'Tackle', D, 'def'), fJ('tk.1', 'Assist', D)) + extras();
+    case 'pass': {
+      let h = row(fJ('qb', 'Passer', O, 'qb')) + fSeg('res', 'Result', [['c', 'Complete'], ['i', 'Incomplete'], ['x', 'Intercepted'], ['s', 'Sacked']]);
+      if (d.res === 'c') h += row(fJ('to', 'Receiver', O, 'rec')) + fYds() + row(fJ('tk.0', 'Tackle', D, 'def'), fJ('tk.1', 'Assist', D));
+      if (d.res === 'i') h += row(fJ('to', 'Intended for', O, 'rec'), fJ('pbu', 'Broken up by', D));
+      if (d.res === 'x') h += row(fJ('ib', 'Intercepted by', D, 'def'), fN('at', 'Yards past the line', '0'), fN('ry', 'Return yards', '0'));
+      if (d.res === 's') h += row(fJ('by.0', 'Sacked by', D, 'def'), fJ('by.1', 'Shared with', D), fN('sy', 'Yards lost', '0'));
+      return h + extras();
+    }
+    case 'punt': {
+      let h = row(fJ('k', 'Punter', O, 'punt'), d.res === 'tb' || d.res === 'blk' ? '' : fN('d', 'Punt yards', '0'));
+      h += fSeg('res', 'Result', [['ret', 'Returned'], ['fc', 'Fair catch'], ['down', 'Downed'], ['oob', 'Out of bounds'], ['tb', 'Touchback'], ['blk', 'Blocked']]);
+      if (d.res === 'ret') h += row(fJ('ret', 'Returner', D, 'ret'), fN('ry', 'Return yards', '0')) + row(fJ('tk.0', 'Tackle', O, 'def'), fJ('tk.1', 'Assist', O));
+      if (d.res === 'fc') h += row(fJ('ret', 'Caught by', D, 'ret'));
+      if (d.res === 'blk') h += row(fJ('by', 'Blocked by', D), fN('b', 'Recovered, yds behind line', '0')) + row(fJ('ret', 'Recovered by', D), fN('ry', 'Return yards', '0'));
+      return h + extras();
+    }
+    case 'ko': {
+      const K = st.poss, Rr = other(K);
+      let h = row(fJ('k', 'Kicker', K, 'kick'), d.res === 'tb' || d.res === 'oob' ? '' : fN('d', 'Kick yards', '0'));
+      h += fSeg('res', 'Result', [['ret', 'Returned'], ['tb', 'Touchback'], ['fc', 'Fair catch'], ['down', 'Downed'], ['oob', 'Out of bounds'], ['onside', 'Onside recovery']]);
+      if (d.res === 'ret') h += row(fJ('ret', 'Returner', Rr, 'ret'), fN('ry', 'Return yards', '0')) + row(fJ('tk.0', 'Tackle', K, 'def'), fJ('tk.1', 'Assist', K));
+      if (d.res === 'fc') h += row(fJ('ret', 'Caught by', Rr, 'ret'));
+      if (d.res === 'onside') h += row(fJ('ret', 'Recovered by', K));
+      h += `<p class="hint">Kick yards count from the ${esc(R.yl(K, st.kickFrom))}. Out of bounds gives ${esc(ab(Rr))} the ball 25 yards beyond the kicking line (its 35 on a normal kickoff).</p>`;
+      return h + extras();
+    }
+    case 'fg': {
+      const auto = Math.round(100 - st.spot + NFHS.fgExtra);
+      let h = row(fJ('k', 'Kicker', O, 'kick'), fN('d', 'Distance', String(auto)));
+      h += fSeg('res', 'Result', [['good', 'Good'], ['miss', 'No good'], ['blk', 'Blocked']]);
+      if (d.res === 'miss') h += `<p class="hint">Under NFHS rules a missed field goal is a touchback, so ${esc(ab(D))} takes over at its 20.</p>`;
+      if (d.res === 'blk') h += row(fJ('by', 'Blocked by', D), fN('b', 'Recovered, yds behind line', '0')) + row(fJ('ret', 'Recovered by', D), fN('ry', 'Return yards', '0'));
+      return h + extras();
+    }
+    case 'try': {
+      let h = fSeg('kind', 'Try', [['kick', 'Kick · 1'], ['run', 'Run · 2'], ['pass', 'Pass · 2']]);
+      if (d.kind === 'kick') h += row(fJ('k', 'Kicker', O, 'kick')) + fSeg('res', 'Result', [['good', 'Good'], ['miss', 'No good'], ['blk', 'Blocked']]);
+      if (d.kind === 'run') h += row(fJ('r', 'Ball carrier', O, 'rush')) + fSeg('res', 'Result', [['good', 'Good'], ['miss', 'No good']]);
+      if (d.kind === 'pass') h += row(fJ('qb', 'Passer', O, 'qb'), fJ('to', 'Receiver', O, 'rec')) + fSeg('res', 'Result', [['good', 'Good'], ['miss', 'No good']]);
+      return h + '<p class="hint">NFHS try is snapped from the 3-yard line. If the defense takes the ball, the try is over.</p>';
+    }
+    case 'pen': return flagFields(true);
+    case 'to': return `<div class="tobtns">${['A', 'H'].map(s => `<button type="button" class="btn" data-timeout="${s}" ${st.to[s] ? '' : 'disabled'}>Timeout ${esc(ab(s))}<br><small class="num">${st.to[s]} left</small></button>`).join('')}</div>
+      <p class="hint">NFHS: three timeouts per half, one per team in each overtime period. Recording a timeout stops the clock.</p>`;
+    case 'note': return `<div class="fld"><label class="eyebrow" for="f-text">Note for the log</label><textarea class="inp" id="f-text" data-k="text" placeholder="Injury timeout, weather delay, measurement…">${esc(d.text)}</textarea></div>`;
+  }
+  return '';
+}
+
+function periodHtml(st){
+  if (st.final || ui.editing != null) return '';
+  const q = st.q, tie = st.score.A === st.score.H;
+  let body;
+  if (ui.ask === 'half') body = `<span class="eyebrow">Who kicks off to open the 2nd half?</span><div class="line">${['A', 'H'].map(s => `<button class="btn small" data-endq="${s}">${esc(ab(s))}${s === other(g.set.firstKick) ? ' (usual)' : ''}</button>`).join('')}<button class="linkbtn" data-ask="">Cancel</button></div>`;
+  else if (ui.ask === 'ot') body = `<span class="eyebrow">Tied — who has the ball first in overtime?</span><div class="line">${['A', 'H'].map(s => `<button class="btn small" data-endq="${s}">${esc(ab(s))}</button>`).join('')}<button class="linkbtn" data-ask="">Cancel</button></div>`;
+  else if (ui.ask === 'final') body = `<span class="eyebrow">End the game now, with the score as it stands?</span><div class="line"><button class="btn small danger" data-final>End game</button><button class="linkbtn" data-ask="">Cancel</button></div>`;
+  else if (q > 4) body = `<p class="hint">Overtime ${q - 4}: each team gets a series from the ${g.set.ot || 10}-yard line. If the defense takes the ball, it is dead and the series is over.</p><div class="line"><button class="linkbtn" data-ask="final">End game early</button></div>`;
+  else body = `<div class="line"><button class="btn small" data-endq-ask>End of ${ord(q)} quarter</button><button class="linkbtn" data-ask="final">End game early</button></div>`;
+  return `<div class="period">${body}</div>`;
+}
+
+function renderPad(){
+  const ctx = ui.ctx, st = ctx.st, pad = $('#pad');
+  // While editing, the pad stays on that play's type even if earlier edits changed the situation.
+  const types = ui.editing != null ? [ui.type] : typesFor(st);
+  if (!types.length){
+    pad.innerHTML = `<div class="final-card"><span class="eyebrow">Final</span><b class="num">${esc(ab('A'))} ${st.score.A} · ${esc(ab('H'))} ${st.score.H}</b>
+      <p class="hint">Everything is saved on this device. Export has the box score and play-by-play to copy.</p>
+      <div class="line"><button class="btn small" data-undo>Undo last to reopen</button></div></div>`;
+    return;
+  }
+  const editing0 = ui.editing != null;
+  if (editing0 ? ui.qedit : ui.mode === 'quick'){
+    pad.innerHTML = `${editing0 ? `<div class="editing-bar"><span>Editing play ${ui.editing + 1}. Everything after it updates.</span><button class="linkbtn" data-cancel-edit>Cancel</button></div>` : ''}
+      <div class="pad-hd"><span class="eyebrow">${editing0 ? 'Situation before this play' : 'Next play'}</span><span class="sit">${esc(ctx.sit)}</span></div>
+      ${quickHtml()}${editing0 ? '' : '<button class="linkbtn" data-mode="form">Use the full form instead</button>'}${periodHtml(st)}`;
+    return quickPreview();
+  }
+  if (!types.includes(ui.type)) ui.type = types[0];
+  if (!ui.draft || ui.draft.t !== ui.type) ui.draft = blank(ui.type, st);
+  const label = t => t === 'ko' && st.kickKind === 'free' ? 'Free kick' : TYPE_LABEL[t];
+  const editing = ui.editing != null;
+  const noRecord = ui.type === 'to';
+  pad.innerHTML = `
+    ${editing ? `<div class="editing-bar"><span>Editing play ${ui.editing + 1}. Everything after it updates.</span><button class="linkbtn" data-cancel-edit>Cancel</button></div>` : ''}
+    <div class="pad-hd"><span class="eyebrow">${editing ? 'Situation before this play' : 'Next play'}</span><span class="sit">${esc(ctx.sit)}</span></div>
+    <div class="types" role="group" aria-label="Play type">${types.map(t => `<button type="button" class="type" data-type="${t}" aria-pressed="${t === ui.type}" ${editing && t !== ui.type ? 'disabled' : ''}>${label(t)}</button>`).join('')}</div>
+    <div class="form">${formHtml()}${editing ? row(fN('clkTxt', 'Clock at the snap', '')) : ''}</div>
+    ${noRecord ? '' : '<div class="preview" id="preview"></div>'}
+    ${noRecord ? '' : `<div class="actions"><button class="btn primary" id="rec">${editing ? 'Save changes' : 'Record play'}</button>
+      ${editing ? '<button class="btn" data-cancel-edit>Cancel</button>' : `<button class="btn" data-undo ${g.plays.length ? '' : 'disabled'}>Undo last</button>`}</div>`}
+    ${editing ? '' : '<button class="linkbtn" data-mode="quick">Back to quick entry</button>'}
+    ${periodHtml(st)}`;
+  updatePreview();
+}
+
+function updatePreview(){
+  const el = $('#preview'); if (!el) return;
+  const idx = ui.editing ?? g.plays.length;
+  const r = replay({...g, plays:[...g.plays.slice(0, idx), buildPlay(ui.draft)]});
+  const last = r.log[r.log.length - 1];
+  el.innerHTML = last ? `<span class="eyebrow">Will read</span><div>${last.wiped ? `<s>${esc(last.wiped)}</s> ` : ''}${esc(last.text)}</div><div class="next">Then: ${esc(r.sit)}</div>` : '';
+}
+/* ================================================================
+   Quick entry: one line of shorthand per play, e.g.
+     N ball at N35 1-10 · 3-10 · 3--1 · 7-inc · 7-88-5 · 15-0-50-td
+     N punt · S ball at S10 · 3-3-fumble S rec · pen S 15 pf · 15-xp
+   ================================================================ */
+const PEN_CODES = {fs:'False start', enc:'Encroachment', off:'Offside', os:'Offside', offside:'Offside',
+  dog:'Delay of game', delay:'Delay of game', form:'Illegal formation', formation:'Illegal formation',
+  motion:'Illegal motion', mot:'Illegal motion', shift:'Illegal shift', snap:'Illegal snap',
+  sub:'Illegal substitution', too:'Too many players', idp:'Ineligible downfield', ineligible:'Ineligible downfield',
+  ifp:'Illegal forward pass', ig:'Intentional grounding', grounding:'Intentional grounding', rik:'Running into the kicker',
+  hold:'Holding', holding:'Holding', iuh:'Illegal use of hands', hands:'Illegal use of hands',
+  ibb:'Illegal block in the back', bib:'Illegal block in the back', pi:'Pass interference', dpi:'Pass interference',
+  opi:'Pass interference', kci:'Kick-catch interference', fm:'Facemask', face:'Facemask', facemask:'Facemask',
+  hc:'Horse-collar', horse:'Horse-collar', pf:'Personal foul', ur:'Unnecessary roughness', late:'Late hit',
+  target:'Targeting', targeting:'Targeting', clip:'Clipping', clipping:'Clipping', chop:'Chop block',
+  blw:'Illegal block below the waist', trip:'Tripping', tripping:'Tripping', slap:'Head slap',
+  ip:'Illegal participation', uc:'Unsportsmanlike conduct', unsport:'Unsportsmanlike conduct', usc:'Unsportsmanlike conduct',
+  rtp:'Roughing the passer', rtk:'Roughing the kicker', rth:'Roughing the holder', rts:'Roughing the snapper'};
+const NO_WORDS = ['no', 'miss', 'missed', 'nogood', 'ng', 'wide', 'short', 'fail', 'failed'];
+const TD_WORDS = ['td', 'dtd', 'deftd', 'pick6', 'touchdown'];
+const FILLER = ['for', 'yds', 'yards', 'yd', 'to', 'ran', 'run', 'rush', 'pass', 'complete', 'comp', 'caught', 'gain', 'the', 'a'];
+
+// Team letters come from the short names in Setup: NOR → N, SOU → S.
+function quickTeams(){
+  const a = String(g.teams.A.abbr || 'V').toLowerCase(), h = String(g.teams.H.abbr || 'H').toLowerCase();
+  let ka = a[0], kh = h[0];
+  if (ka === kh){ ka = 'v'; kh = 'h'; }
+  const map = {[a]:'A', [h]:'H', [ka]:'A', [kh]:'H'};
+  if (!map.v) map.v = 'A';
+  if (!map.h) map.h = 'H';
+  return {map, key:{A:ka, H:kh}};
+}
+
+// Dashes separate; a dash right after a separator is a minus sign: 3-10 · 3--1 · 3-(-1) · 3 -1.
+function tokenize(s){
+  const out = []; let cur = '';
+  const flush = () => { if (cur !== '' && cur !== '-') out.push(cur); cur = ''; };
+  for (const ch of s.toLowerCase().replace(/#/g, '').replace(/&/g, ' ').replace(/\band\b/g, ' ')){
+    if (/[\s,()\/]/.test(ch)){ flush(); continue; }
+    if (ch === '-'){ if (cur === '') cur = '-'; else flush(); continue; }
+    cur += ch;
+  }
+  flush(); return out;
+}
+
+function parseQuick(raw, st){
+  const line = String(raw || '').trim(); if (!line) return null;
+  let toks = tokenize(line).map(t => TD_WORDS.includes(t) ? 'td' : t);
+  const {map, key} = quickTeams();
+  const T = t => map[t], L = s => key[s].toUpperCase();
+  const isNum = t => /^-?\d+(\.\d+)?$/.test(t);
+  const has = (...w) => w.some(x => toks.includes(x));
+  const O = st.poss, D = other(O);
+  let clk;
+  if (/^\d{1,2}:\d{2}$/.test(toks[0] || '')) clk = parseClock(toks.shift());
+  const tk = [];
+  toks = toks.filter(t => { const m = t.match(/^(?:@|tk)(\d+)$/); if (m){ tk.push(m[1]); return false; } return true; });
+  const bad = msg => ({error:msg});
+  const ok = p => {
+    if (clk != null) p.clk = clk;
+    if (tk.length && ['run', 'pass', 'punt', 'ko'].includes(p.t) && !p.tk) p.tk = tk.slice(0, 2);
+    p.q = line;
+    return {play:p};
+  };
+  if (!toks.length) return bad('Type a play, like 3-10.');
+  if (has('undo')) return {undo:true};
+
+  /* ---- whose ball, where: "N ball at N35 1-10" ---- */
+  if (has('ball')){
+    const bi = toks.indexOf('ball');
+    const side = T(toks[bi - 1]) || T(toks[bi + 1]);
+    if (!side) return bad(`Start with the team letter, like ${L('A')} ball at ${L('A')}35.`);
+    const rest = toks.slice(bi + 1).filter(t => !['at', 'on', 'the', 'own'].includes(t));
+    if (T(rest[0]) === side && (rest[1] || '').match(/^[a-z]/)) rest.shift();
+    let spotSide, n;
+    const m = (rest[0] || '').match(/^([a-z]+)(\d+(?:\.5)?)$/);
+    if (m && T(m[1])){ spotSide = T(m[1]); n = +m[2]; rest.shift(); }
+    else if (T(rest[0]) && isNum(rest[1] || '')){ spotSide = T(rest[0]); n = +rest[1]; rest.splice(0, 2); }
+    else if (['50', 'mid', 'midfield'].includes(rest[0])){ spotSide = side; n = 50; rest.shift(); }
+    else return bad(`Say whose yard line, like ${L(side)}35 or ${L(other(side))}35.`);
+    if (!(n >= 1 && n <= 50)) return bad('Yard lines run from 1 to 50.');
+    const spot = spotSide === side ? n : 100 - n;
+    const dn = rest.map(t => t.replace(/(st|nd|rd|th)$/, ''));
+    let down = 1, togo = 10, goal = false;
+    if (dn.length){
+      down = parseInt(dn[0], 10);
+      if (!(down >= 1 && down <= 4)) return bad('Down should be 1 to 4, like 3-7.');
+      if (dn[1] === 'g' || dn[1] === 'goal') goal = true;
+      else if (dn[1] != null){ togo = +dn[1]; if (!(togo > 0)) return bad('Distance should be yards, like 3-7.'); }
+    }
+    if (spot + togo >= 100) goal = true;
+    return ok({t:'set', poss:side, spot, down, ...(goal ? {goal:true} : {togo})});
+  }
+
+  /* ---- clock and game control ---- */
+  if (has('timeout', 'tmo') || (has('to') && !toks.some(isNum))){
+    const side = toks.map(T).find(Boolean);
+    if (!side) return bad(`Whose timeout? Type to ${L('A')} or to ${L('H')}.`);
+    return ok({t:'to', side});
+  }
+  if (has('eoq', 'end', 'endq', 'half', 'halftime', 'eoh')){
+    const side = toks.map(T).find(Boolean);
+    return ok({t:'endq', ...(side ? {kick:side, first:side} : {})});
+  }
+  if (has('final')) return ok({t:'final'});
+  if (st.final) return bad('The game is final. Type undo to reopen it.');
+
+  /* ---- penalties: alone, or after a play on the same line ---- */
+  let pen = null;
+  const pi = toks.findIndex(t => ['pen', 'penalty', 'flag'].includes(t));
+  if (pi >= 0){
+    const pt = toks.slice(pi + 1); toks = toks.slice(0, pi);
+    const side = pt.map(T).find(Boolean);
+    if (!side) return bad(`Which team? Like pen ${L('A')} 5 or pen ${L('H')} 15.`);
+    const code = pt.find(t => PEN_CODES[t]);
+    const preset = code && PENALTIES.find(x => x.name === PEN_CODES[code]);
+    const nums = pt.filter(isNum).map(x => Math.abs(+x));
+    const y = nums.length ? nums[0] : preset ? preset.y : null;
+    if (y == null) return bad('How many yards? Like pen S 15, or add a code like hold.');
+    pen = {side, name:preset ? preset.name : 'Penalty', y, a:preset ? preset.a : false, l:preset ? preset.l : false};
+    if (nums[1] != null) pen.n = String(nums[1]);
+    if (pt.some(t => ['1st', 'auto', 'af'].includes(t))) pen.a = true;
+    if (pt.includes('lod')) pen.l = true;
+    const offset = pt.some(t => ['offset', 'offsetting', 'offsets'].includes(t));
+    if (!toks.length) return ok({t:'pen', pen:{...pen, enf:offset ? 'off' : 'acc'}});
+    pen.enf = offset ? 'off' : pt.some(t => ['np', 'noplay', 'nullified', 'replay'].includes(t)) ? 'prev'
+      : pt.some(t => ['dec', 'declined'].includes(t)) ? 'dec' : 'end';
+  }
+  const flag = p => { if (pen) p.pen = pen; return ok(p); };
+  if (toks.some(isNum)) toks = toks.filter(t => !FILLER.includes(t));
+
+  /* ---- kickoffs ---- */
+  const kickWord = toks.findIndex(t => ['ko', 'kickoff', 'onside'].includes(t) || (t === 'kick' && st.phase === 'kick'));
+  if (st.phase === 'kick' && kickWord < 0){
+    const R = L(other(st.poss));
+    return bad(`${L(st.poss)} is kicking off. Type where the ball ends up — ${R} ball at ${R}25 — or the kick itself, like 15-ko-tb.`);
+  }
+  if (kickWord >= 0){
+    if (st.phase !== 'kick') return bad(`No kickoff is due — ${L(O)} has the ball.`);
+    const before = toks.slice(0, kickWord).filter(isNum), after = toks.slice(kickWord + 1).filter(isNum);
+    const p = {t:'ko', res:'down'};
+    if (before[0] != null) p.k = before[0];
+    if (after[0] != null) p.d = Math.abs(+after[0]);
+    if (has('tb')) p.res = 'tb';
+    else if (has('oob')) p.res = 'oob';
+    else if (has('onside')){ p.res = 'onside'; if (after[1] != null) p.ret = after[1]; }
+    else if (has('fc')){ p.res = 'fc'; if (after[1] != null) p.ret = after[1]; }
+    else if (after[1] != null){ p.res = 'ret'; p.ret = after[1]; p.ry = +(after[2] || 0); }
+    if (p.d == null && !['tb', 'oob'].includes(p.res)) return bad('How far was the kick? Like 15-ko-55-28-21, or 15-ko-tb.');
+    if (p.res === 'ret' && has('td')) p.ry = st.kickFrom + p.d;
+    return flag(p);
+  }
+
+  /* ---- the try after a touchdown ---- */
+  if (st.phase === 'try'){
+    const nums = toks.filter(isNum), no = has(...NO_WORDS);
+    if (has('xp', 'pat', 'kick', '1pt')) return ok({t:'try', kind:'kick', ...(nums[0] != null ? {k:nums[0]} : {}), res:has('blk', 'blocked') ? 'blk' : no ? 'miss' : 'good'});
+    const need = 100 - st.spot;
+    if (has('inc')) return ok({t:'pass', qb:nums[0], res:'i', ...(nums[1] != null ? {to:nums[1]} : {})});
+    if (nums.length === 1) return ok({t:'run', r:nums[0], y:no ? 0 : need});
+    if (nums.length >= 2) return ok({t:'pass', qb:nums[0], to:nums[1], res:'c', y:no ? 0 : need});
+    return bad('After a touchdown: 15-xp for the kick (15-xp-no if missed), 3 for a 2-point run, 7-88 for a 2-point pass.');
+  }
+
+  /* ---- punts and field goals ---- */
+  const nameSide = toks.map(T).find(Boolean);
+  if (has('punt')){
+    if (nameSide && nameSide !== O) return bad(`The log has ${L(O)} with the ball. Set it first: ${L(nameSide)} ball at …`);
+    const i = toks.indexOf('punt'), before = toks.slice(0, i).filter(isNum), after = toks.slice(i + 1).filter(isNum);
+    const p = {t:'punt'};
+    if (before[0] != null) p.k = before[0];
+    if (has('blk', 'blocked')){
+      p.res = 'blk'; if (after[0] != null) p.by = after[0]; if (after[1] != null) p.ret = after[1];
+      if (has('td')) p.ry = st.spot;          // picked up at the line and returned the whole way
+      return flag(p);
+    }
+    if (has('tb')){ p.res = 'tb'; return flag(p); }
+    if (after[0] != null) p.d = Math.abs(+after[0]);
+    if (has('fc')){ p.res = 'fc'; if (after[1] != null) p.ret = after[1]; }
+    else if (has('oob')) p.res = 'oob';
+    else if (has('down', 'downed')) p.res = 'down';
+    else if (after[1] != null){ p.res = 'ret'; p.ret = after[1]; p.ry = +(after[2] || 0);
+      if (has('td')) p.ry = 100 - (100 - (st.spot + p.d)); }
+    return flag(p);
+  }
+  if (has('fg')){
+    const i = toks.indexOf('fg'), bi = toks.findIndex(t => t === 'blk' || t === 'blocked');
+    const before = toks.slice(0, i).filter(isNum), after = toks.slice(i + 1, bi > i ? bi : undefined).filter(isNum);
+    const p = {t:'fg', res:bi >= 0 ? 'blk' : has(...NO_WORDS) ? 'miss' : 'good'};
+    if (before[0] != null) p.k = before[0];
+    if (after[0] != null) p.d = Math.abs(+after[0]);
+    if (bi >= 0){
+      const bn = toks.slice(bi + 1).filter(isNum);
+      if (bn[0] != null) p.by = bn[0];
+      if (bn[1] != null) p.ret = bn[1];
+      if (has('td')) p.ry = st.spot;
+    }
+    return flag(p);
+  }
+
+  /* ---- runs and passes ---- */
+  let fum = null;
+  const fi = toks.findIndex(t => ['fum', 'fumble', 'fumbled', 'fumbles'].includes(t));
+  if (fi >= 0){
+    const ft = toks.slice(fi + 1); toks = toks.slice(0, fi);
+    const fn = ft.filter(isNum), side = ft.map(T).find(Boolean), lost = !side || side !== O;
+    // td anywhere on a lost-fumble line is the defense's score; on a kept fumble it's the offense's.
+    const tdLine = ft.includes('td') || toks.includes('td');
+    if (lost) toks = toks.filter(t => t !== 'td'); else if (tdLine && !toks.includes('td')) toks.push('td');
+    fum = {lost, by:fn[0], ry:Math.abs(+(fn[1] || 0)), td:lost && tdLine};
+  }
+  const withFum = p => {
+    if (!fum) return p;
+    let ry = fum.lost ? fum.ry : 0;
+    // The recovering team runs it back the whole way from where it picked the ball up.
+    if (fum.td){ const y = p.res === 's' ? -Math.min(p.sy, st.spot) : (+p.y || 0); ry = clamp(st.spot + y, 0, 100); }
+    p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ry};
+    return p;
+  };
+  const nums = toks.filter(isNum), td = has('td'), toGoal = 100 - st.spot;
+  if (has('inc', 'incomplete', 'incomp')) return flag({t:'pass', qb:nums[0], res:'i', ...(nums[1] != null ? {to:nums[1]} : {}), ...(tk[0] ? {pbu:tk[0]} : {})});
+  if (has('int', 'pick', 'picked', 'intercepted')){
+    const p = {t:'pass', qb:nums[0], res:'x', at:0, ry:nums[2] != null ? Math.abs(+nums[2]) : 0};
+    if (nums[1] != null) p.ib = nums[1];
+    if (td) p.ry = st.spot;
+    return flag(p);
+  }
+  if (has('sack', 'sacked', 'sk')){
+    const by = nums.slice(2).length ? nums.slice(2) : tk.slice(0, 2);
+    return flag(withFum({t:'pass', qb:nums[0], res:'s', sy:Math.abs(+(nums[1] || 0)), by}));
+  }
+  if (nums.length === 1 && td) return flag(withFum({t:'run', r:nums[0], y:toGoal}));
+  if (nums.length === 2){
+    const [a, b] = nums;
+    // "15-0-td": a TD whose second number isn't the distance to the goal is a pass to that player.
+    if (td && Math.abs(+b - toGoal) > 1) return flag({t:'pass', qb:a, res:'c', to:b, y:toGoal});
+    return flag(withFum({t:'run', r:a, y:td ? toGoal : +b}));
+  }
+  if (nums.length === 3){ const [a, b, c] = nums; return flag(withFum({t:'pass', qb:a, res:'c', to:b, y:td ? toGoal : +c})); }
+  if (nums.length === 1) return bad(`Add the yards: ${nums[0]}-5 is #${nums[0]} running for 5.`);
+  return bad(`Didn't catch that. Try 3-10 (run), 7-88-5 (pass), 7-inc, ${L(O)} punt, or ${L(D)} ball at ${L(D)}20.`);
+}
+
+/* ---------- quick-entry pad ---------- */
+function cheatHtml(a, h){
+  const rows = [
+    [`${a} ball at ${a}35 1-10`, `${g.teams.A.name} ball, 1st & 10 at its own 35. Down and distance are optional (1st & 10 if left off; use 1-g for goal to go).`],
+    ['3-10', '#3 runs for 10'],
+    ['3--1 &nbsp;or&nbsp; 3-(-1)', '#3 runs for a loss of 1'],
+    ['3-td', '#3 runs it in from wherever the ball is'],
+    ['7-88-5', '#7 completes to #88 for 5'],
+    ['15-0-50-td', '#15 to #0, 50-yard touchdown'],
+    ['7-inc &nbsp;·&nbsp; 7-inc-88', 'Incomplete (intended for #88)'],
+    ['7-sack-6-90', '#7 sacked for a loss of 6 by #90'],
+    ['7-int-24-12 &nbsp;·&nbsp; 7-int-24-td', '#7 intercepted by #24, returned 12 / returned for a touchdown'],
+    [`3-3-fumble ${h} rec`, `#3 runs for 3, fumbles, ${h} recovers (add a number for who: fum ${h} 44)`],
+    [`10-0 fum ${h} rec td`, `Fumble, ${h} recovers and returns it for a touchdown (fum ${h} 44 12 = #44 returns it 12)`],
+    [`${a} punt`, `Punt. Then type where it ended up (${h} ball at ${h}10) and the distance fills in.`],
+    ['19-punt-40-11-6', '#19 punts 40, #11 returns it 6 (also: punt-tb, punt-fc, punt-oob, punt-blk)'],
+    ['15-fg &nbsp;·&nbsp; 15-fg-no', 'Field goal good / no good (distance fills in)'],
+    ['15-xp &nbsp;·&nbsp; 15-xp-no', 'Kick after a touchdown. For 2 points: 3 (run) or 7-88 (pass), add -no if it failed'],
+    ['15-ko-tb &nbsp;·&nbsp; 15-ko-55-28-21', 'Kickoff: touchback / 55 yards, #28 returns 21. Or skip it and type the spot.'],
+    [`pen ${h} 15 pf`, `15 yards on ${h}. Codes: fs off hold pi pf fm uc rtp ig dog and more. Add 1st for an automatic first down.`],
+    [`3-12 pen ${a} 10 hold np`, 'Flag wipes out the play (np = no play). Without np, the yards add on to the end of the play.'],
+    [`to ${a}`, `${g.teams.A.name} timeout`],
+    ['eoq', 'End of the quarter (at halftime: eoq S = S kicks off)'],
+    ['8:40 3-10 @54', 'Optional: clock time first, tacklers with @'],
+    ['undo', 'Remove the last play']];
+  return `<p class="hint" style="margin-top:6px"><b>td</b> always means a touchdown was scored. On a run or pass it's the offense's; on an interception or a fumble the other team recovered, it's the defense's. A line marked td that doesn't score is refused.</p>
+    <div class="tbl-wrap"><table><tbody>${rows.map(([c, m]) => `<tr><td><code>${c}</code></td><td>${esc(m)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function quickHtml(){
+  const {key} = quickTeams(), a = key.A.toUpperCase(), h = key.H.toUpperCase(), editing = ui.editing != null;
+  const keys = [a, h, 'ball at', '-', 'inc', 'td', 'punt', 'fg', 'xp', 'int', 'sack', 'fum', 'pen', 'to'];
+  return `<div class="quick">
+    <input id="qk" class="qk" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done"
+      aria-label="Type the play" placeholder="3-10 · 7-88-5 · ${a} punt" value="${esc(ui.qtext || '')}">
+    <div class="qkeys">${keys.map(k => `<button type="button" class="qkey" data-qkey="${esc(k)}">${esc(k)}</button>`).join('')}</div>
+    <div class="qprev" id="qprev" aria-live="polite"></div>
+    <div class="actions"><button class="btn primary" id="qrec">${editing ? 'Save changes' : 'Record'}</button>
+      ${editing ? '<button class="btn" data-cancel-edit>Cancel</button>' : `<button class="btn" data-undo ${g.plays.length ? '' : 'disabled'}>Undo last</button>`}</div>
+    <p class="hint"><b>${a}</b> = ${esc(g.teams.A.name)} · <b>${h}</b> = ${esc(g.teams.H.name)} · Enter records the play</p>
+    <details class="cheat" ${ui.cheat ? 'open' : ''}><summary>Shorthand</summary>${cheatHtml(a, h)}</details>
+  </div>`;
+}
+// Parse a line against the situation before it, and hold "td" to its word: it must score one.
+function quickResult(line){
+  const idx = ui.editing ?? g.plays.length, st = ui.ctx.st;
+  const r = parseQuick(line, st);
+  if (!r || r.error || r.undo) return {r};
+  const rr = replay({...g, plays:[...g.plays.slice(0, idx), r.play]});
+  if (st.phase !== 'try' && tokenize(line).some(t => TD_WORDS.includes(t)) && !rr.scoring.slice(ui.ctx.scoring.length).some(e => e.how === 'TD')){
+    const msg = st.ot ? 'In overtime the ball is dead as soon as the defense takes it, so it can’t be returned for a score.'
+      : 'You marked td, but this line doesn’t score one. Check who has the ball and where, or say who scored: 7-int-24-td, 10-0 fum S rec td.';
+    return {r:{error:msg}};
+  }
+  return {r, rr};
+}
+function quickPreview(){
+  const el = $('#qprev'); if (!el) return;
+  const {r, rr} = quickResult(ui.qtext);
+  el.className = 'qprev';
+  if (!r){ el.innerHTML = `<span class="eyebrow">Now</span><div class="next">${esc(ui.ctx.sit)}</div>`; return; }
+  if (r.error){ el.className = 'qprev err'; el.textContent = r.error; return; }
+  if (r.undo){ el.textContent = g.plays.length ? 'Removes the last play.' : 'Nothing to undo yet.'; return; }
+  const last = rr.log[rr.log.length - 1];
+  let tip = '';
+  if (r.play.t === 'punt' && r.play.d == null && !['tb', 'blk'].includes(r.play.res)){
+    const R = quickTeams().key[other(ui.ctx.st.poss)].toUpperCase();
+    tip = `<div class="hint">Next, type where it ended up — ${R} ball at ${R}__ — and the punt distance fills in.</div>`;
+  }
+  el.className = 'qprev ok';
+  el.innerHTML = `<div>${last.wiped ? `<s>${esc(last.wiped)}</s> ` : ''}${esc(last.text)}</div><div class="next">Then: ${esc(rr.sit)}</div>${tip}`;
+}
+function recordQuick(){
+  const {r} = quickResult(ui.qtext);
+  if (!r) return;
+  if (r.error){ const el = $('#qprev'); el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); return; }
+  ui.qtext = '';
+  if (r.undo){ undo(); return focusQuick(); }
+  const p = JSON.parse(JSON.stringify(r.play));
+  if (ui.editing != null){
+    const old = g.plays[ui.editing];
+    if (p.clk == null && old.clk != null) p.clk = old.clk;
+    g.plays[ui.editing] = p; ui.editing = null; ui.qedit = false; ui.open = null;
+    save(); refresh(); return toast('Play updated');
+  }
+  if (p.t === 'endq'){ endq(p.kick, p.q); return focusQuick(); }
+  if (p.clk == null && R.st.q <= 4) p.clk = Math.ceil(clockNow());
+  if (p.t === 'to' || p.t === 'final') g.clk = {s:clockNow(), run:false, at:Date.now()};
+  g.plays.push(p); save(); refresh(); focusQuick();
+  toast(p.t === 'set' ? 'Spot set' : 'Recorded');
+}
+function focusQuick(){ const q = $('#qk'); if (q) q.focus(); }
+function insertKey(k){
+  const inp = $('#qk'); if (!inp) return;
+  let v = inp.value;
+  if (k === '-') v += '-';
+  else if (k === 'ball at') v = v.replace(/\s+$/, '') + (v.trim() ? ' ' : '') + 'ball at ';
+  else if (/^[a-z]$/i.test(k)) v += (v && !/[\s-]$/.test(v) ? ' ' : '') + k.toUpperCase();
+  else v += (v && !/[\s-]$/.test(v) ? '-' : '') + k;
+  inp.value = v; ui.qtext = v; inp.focus(); inp.setSelectionRange(v.length, v.length); quickPreview();
+}
+/* ================================================================
+   Views, dialogs, storage, events.
+   ================================================================ */
+const qName = q => q <= 4 ? `${ord(q)} Quarter` : `Overtime ${q - 4}`;
+const avg = (y, n) => n ? (y / n).toFixed(1) : '0.0';
+function tagHtml(tags){
+  const seen = new Set();
+  return tags.filter(([c, t]) => !seen.has(c + t) && seen.add(c + t)).map(([c, t]) => `<span class="tag ${c}">${esc(t)}</span>`).join('');
+}
+
+function viewLog(){
+  if (!R.log.length) return '<div class="panel"><div class="empty">No plays yet. Record the opening kickoff to start the log.</div></div>';
+  let h = '', lastQ = null;
+  for (let k = R.log.length - 1; k >= 0; k--){
+    const e = R.log[k], open = ui.open === e.i;
+    if (e.q !== lastQ){ h += `<div class="qhd">${qName(e.q)}</div>`; lastQ = e.q; }
+    h += `<button type="button" class="pl ${open ? 'open' : ''}" data-row="${e.i}">
+      <div><div class="pl-clk">${e.clk != null ? mmss(e.clk) : '—'}</div><span class="pl-no">Play ${e.i + 1}</span></div>
+      <div><div class="pl-sit">${esc(e.sit)}${e.src ? ` <code class="qsrc">${esc(e.src)}</code>` : ''}</div><div class="pl-txt">${e.wiped ? `<s>${esc(e.wiped)}</s> ` : ''}${esc(e.text)}${e.tags.length ? `<span class="tags">${tagHtml(e.tags)}</span>` : ''}</div></div></button>`;
+    if (open){
+      const editable = !['endq', 'final', 'to'].includes(e.t);
+      h += `<div class="pl-act">${editable ? `<button class="btn small" data-edit="${e.i}">Edit</button>` : ''}
+        <button class="btn small danger" data-del="${e.i}">${ui.confirm === e.i ? 'Tap again to delete' : 'Delete'}</button>
+        <button class="linkbtn" data-row="${e.i}">Close</button></div>`;
+    }
+  }
+  return `<div class="panel">${h}</div>`;
+}
+
+function teamRows(){
+  const S = R.S.team;
+  const rows = [
+    ['First downs', s => S[s].fd],
+    ['Rush · pass · penalty', s => `${S[s].fdR} · ${S[s].fdP} · ${S[s].fdX}`],
+    ['Total offense', s => S[s].rushY + S[s].passY],
+    ['Plays · yards per play', s => { const n = S[s].rushN + S[s].passA; return `${n} · ${avg(S[s].rushY + S[s].passY, n)}`; }],
+    ['Rushes–yards', s => `${S[s].rushN}–${S[s].rushY}`],
+    ['Passing yards', s => S[s].passY],
+    ['Comp–att–int', s => `${S[s].passC}–${S[s].passA}–${S[s].passInt}`],
+    ['Sacked–yards lost', s => `${S[s].sk}–${S[s].skY}`],
+    ['Punts–average', s => `${S[s].pnt}–${avg(S[s].pntY, S[s].pnt - S[s].pntBlk)}`],
+    ['Punt returns–yards', s => `${S[s].prN}–${S[s].prY}`],
+    ['Kick returns–yards', s => `${S[s].krN}–${S[s].krY}`],
+    ['Interceptions–return yards', s => `${S[s].intN}–${S[s].intY}`],
+    ['Fumbles–lost', s => `${S[s].fum}–${S[s].fumL}`],
+    ['Penalties–yards', s => `${S[s].pen}–${fy(S[s].penY)}`],
+    ['3rd-down conversions', s => `${S[s].d3m} of ${S[s].d3a}`],
+    ['4th-down conversions', s => `${S[s].d4m} of ${S[s].d4a}`]];
+  if (S.A.top || S.H.top) rows.push(['Time of possession', s => mmss(S[s].top)]);
+  return rows;
+}
+function viewBox(){
+  const st = R.st, T = g.teams, hasOT = st.q > 4 || st.lines.A[4] || st.lines.H[4];
+  const cols = [0, 1, 2, 3].concat(hasOT ? [4] : []);
+  const ls = `<div class="tbl-wrap"><table class="line-score"><thead><tr><th>Team</th>${cols.map(i => `<th>${i < 4 ? i + 1 : 'OT'}</th>`).join('')}<th>T</th></tr></thead>
+    <tbody>${['A', 'H'].map(s => `<tr><td><b>${esc(T[s].abbr)}</b> <span class="lbl">${esc(T[s].name)}</span></td>${cols.map(i => `<td>${i === 4 || st.q > i || st.final ? st.lines[s][i] : ''}</td>`).join('')}<td>${st.score[s]}</td></tr>`).join('')}</tbody></table></div>`;
+  const ts = `<div class="tbl-wrap"><table><thead><tr><th>Team stats</th><th>${esc(T.A.abbr)}</th><th>${esc(T.H.abbr)}</th></tr></thead>
+    <tbody>${teamRows().map(([l, f], i) => `<tr><td class="${i === 1 ? 'lbl' : ''}">${i === 1 ? '&nbsp;&nbsp;' : ''}${l}</td><td>${f('A')}</td><td>${f('H')}</td></tr>`).join('')}</tbody></table></div>`;
+  return `<div class="panel"><div class="sect">${ls}</div><div class="sect">${ts}</div>
+    <div class="sect"><p class="hint" style="padding:10px 12px">Sacks count against rushing, the usual high-school and NCAA stat convention. Time of possession comes from the clock time recorded with each play.</p></div></div>`;
+}
+
+function viewPlayers(side = ui.side){
+  const s = side, P = Object.values(R.S.pl[s]);
+  const who = p => `#${p.n}${rosterName(s, p.n) ? ' ' + esc(rosterName(s, p.n)) : ''}`;
+  const by = (f, k) => P.filter(f).sort((a, b) => b[k] - a[k]);
+  const sect = (title, heads, rows) => rows.length ? `<div class="sect"><div class="sect-hd"><h3>${title}</h3></div><div class="tbl-wrap"><table>
+    <thead><tr><th>Player</th>${heads.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>` : '';
+  let h = `<div class="teamseg">${['A', 'H'].map(x => `<button class="btn small" data-side="${x}" aria-pressed="${x === s}">${esc(g.teams[x].name || ab(x))}</button>`).join('')}</div>`;
+  h += sect('Passing', ['C/A', 'Yds', 'TD', 'Int', 'Lg', 'Sk'], by(p => p.pa || p.psk, 'py').map(p => [who(p), `${p.pc}/${p.pa}`, p.py, p.ptd, p.pint, p.plg, p.psk]));
+  h += sect('Rushing', ['Car', 'Yds', 'Avg', 'TD', 'Lg'], by(p => p.ru, 'ry').map(p => [who(p), p.ru, p.ry, avg(p.ry, p.ru), p.rtd, p.rlg]));
+  h += sect('Receiving', ['Rec', 'Yds', 'Avg', 'TD', 'Lg'], by(p => p.re, 'rey').map(p => [who(p), p.re, p.rey, avg(p.rey, p.re), p.retd, p.relg]));
+  h += sect('Defense', ['Solo', 'Ast', 'Tot', 'TFL', 'Sk', 'Int', 'PBU', 'FF', 'FR'],
+    P.filter(p => p.tk || p.ast || p.sk || p.dint || p.pbu || p.ff || p.fr || p.bk).sort((a, b) => (b.tk + b.ast) - (a.tk + a.ast))
+      .map(p => [who(p), p.tk, p.ast, p.tk + p.ast, fy(p.tfl), fy(p.sk), p.dint, p.pbu, p.ff, p.fr]));
+  h += sect('Kicking', ['FG', 'Lg', 'PAT', 'KO', 'Avg', 'TB'], by(p => p.fga || p.xpa || p.ko, 'fga').map(p => [who(p), `${p.fgm}/${p.fga}`, p.fglg || '—', `${p.xpm}/${p.xpa}`, p.ko, avg(p.koy, p.ko), p.ktb]));
+  h += sect('Punting', ['No', 'Yds', 'Avg', 'Lg', 'In 20', 'TB'], by(p => p.pu, 'pu').map(p => [who(p), p.pu, p.puy, avg(p.puy, p.pu), p.pulg, p.pi20, p.ptb]));
+  h += sect('Returns', ['KR', 'Yds', 'Lg', 'PR', 'Yds', 'Lg', 'TD'], by(p => p.kr || p.pr, 'kry').map(p => [who(p), p.kr, p.kry, p.krlg, p.pr, p.pry, p.prlg, p.krtd + p.prtd]));
+  h += sect('Scoring', ['TD', '2-pt', 'PAT', 'FG', 'Pts'], by(p => p.pts, 'pts').map(p => [who(p), p.tds, p.two, p.xpm, p.fgm, p.pts]));
+  if (!P.length) h += `<div class="empty">No stats for ${esc(g.teams[s].name)} yet.</div>`;
+  return `<div class="panel">${h}</div>`;
+}
+
+function viewDrives(){
+  if (!R.drives.length) return '<div class="panel"><div class="empty">Drives appear once a team runs a play from scrimmage.</div></div>';
+  return `<div class="panel"><div class="tbl-wrap"><table><thead><tr><th>Team</th><th>Qtr</th><th>Start</th><th>Plays</th><th>Yds</th><th>Time</th><th>Result</th></tr></thead>
+    <tbody>${R.drives.map(d => `<tr><td><b>${esc(ab(d.team))}</b></td><td>${perLabel(d.q)}${d.clk != null ? ' ' + mmss(d.clk) : ''}</td><td>${esc(R.yl(d.team, d.start))}</td>
+      <td>${d.plays}</td><td>${Math.round(d.last - d.start)}</td><td>${d.time != null ? mmss(d.time) : '—'}</td><td>${esc(d.res)}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+function viewScoring(){
+  if (!R.scoring.length) return '<div class="panel"><div class="empty">No scores yet.</div></div>';
+  return `<div class="panel"><div class="qhd">Score shown ${esc(ab('A'))}–${esc(ab('H'))}</div>${R.scoring.map(e => `<div class="sc">
+    <span class="pl-clk">${perLabel(e.q)}<span class="pl-no">${e.clk != null ? mmss(e.clk) : ''}</span></span>
+    <div><b>${esc(ab(e.side))}</b> ${esc(e.desc)}</div><b>${e.A}–${e.H}</b></div>`).join('')}</div>`;
+}
+
+function renderView(){
+  document.querySelectorAll('#tabs .tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
+  if (ui.printing){ $('#view').innerHTML = viewBox() + viewScoring() + viewPlayers('A') + viewPlayers('H') + viewLog(); return; }
+  $('#view').innerHTML = ({log:viewLog, box:viewBox, players:() => viewPlayers(), drives:viewDrives, scoring:viewScoring})[ui.tab]();
+}
+
+/* ---------- text export ---------- */
+function summaryText(){
+  const st = R.st, T = g.teams, lp = (s, n) => String(s).padStart(n), rp = (s, n) => String(s).padEnd(n);
+  let out = `${T.A.name} at ${T.H.name}\n${st.final ? 'FINAL' : perLabel(st.q) + (st.q <= 4 ? ' ' + mmss(clockNow()) : '')}\n\n`;
+  const cols = [0, 1, 2, 3].concat(st.q > 4 ? [4] : []);
+  out += rp('', 8) + cols.map(i => lp(i < 4 ? i + 1 : 'OT', 4)).join('') + lp('T', 5) + '\n';
+  ['A', 'H'].forEach(s => out += rp(T[s].abbr, 8) + cols.map(i => lp(st.lines[s][i], 4)).join('') + lp(st.score[s], 5) + '\n');
+  out += '\nSCORING\n' + (R.scoring.map(e => `${perLabel(e.q)} ${e.clk != null ? mmss(e.clk) : ''}  ${ab(e.side)} – ${e.desc}  (${T.A.abbr} ${e.A}, ${T.H.abbr} ${e.H})`).join('\n') || 'None') + '\n';
+  out += '\n' + rp('TEAM STATS', 28) + lp(T.A.abbr, 10) + lp(T.H.abbr, 10) + '\n';
+  teamRows().forEach(([l, f]) => out += rp(l, 28) + lp(f('A'), 10) + lp(f('H'), 10) + '\n');
+  ['A', 'H'].forEach(s => {
+    const P = Object.values(R.S.pl[s]), nmx = p => rosterName(s, p.n) || '#' + p.n;
+    const line = (label, arr) => arr.length ? `${label}: ${arr.join('; ')}\n` : '';
+    out += `\n${T[s].name.toUpperCase()}\n`;
+    out += line('Passing', P.filter(p => p.pa).sort((a, b) => b.py - a.py).map(p => `${nmx(p)} ${p.pc}-${p.pa}-${p.pint}, ${p.py} yds${p.ptd ? `, ${p.ptd} TD` : ''}`));
+    out += line('Rushing', P.filter(p => p.ru).sort((a, b) => b.ry - a.ry).map(p => `${nmx(p)} ${p.ru}-${p.ry}${p.rtd ? `, ${p.rtd} TD` : ''}`));
+    out += line('Receiving', P.filter(p => p.re).sort((a, b) => b.rey - a.rey).map(p => `${nmx(p)} ${p.re}-${p.rey}${p.retd ? `, ${p.retd} TD` : ''}`));
+    out += line('Tackles', P.filter(p => p.tk + p.ast).sort((a, b) => (b.tk + b.ast) - (a.tk + a.ast)).map(p => `${nmx(p)} ${p.tk + p.ast}`));
+    out += line('Interceptions', P.filter(p => p.dint).map(p => `${nmx(p)} ${p.dint}`));
+  });
+  out += '\nPLAY-BY-PLAY\n'; let q = null;
+  R.log.forEach(e => {
+    if (e.q !== q){ out += `\n${qName(e.q).toUpperCase()}\n`; q = e.q; }
+    out += `${e.clk != null ? lp(mmss(e.clk), 5) : '     '}  ${e.sit} — ${e.wiped ? `[${e.wiped}] ` : ''}${e.text}\n`;
+  });
+  return out;
+}
+
+/* ---------- dialogs ---------- */
+const dlg = () => $('#dlg');
+// Embedded viewers (an iframe) block file downloads, so only offer one on a top-level page.
+const framed = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+const dlgHead = t => `<div class="dlg-hd"><h2>${t}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>`;
+function openDialog(kind){
+  ui.dlg = kind; ui.confirm = null;
+  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : dlgSetup(kind === 'new');
+  if (!dlg().open) dlg().showModal();
+}
+function closeDialog(){ if (dlg().open) dlg().close(); ui.dlg = null; }
+
+function dlgSetup(isNew){
+  const src = isNew ? {teams:{A:{name:'', abbr:'', color:'#1F4E9C', roster:{}}, H:{name:'', abbr:'', color:'#B0151B', roster:{}}}, set:{qtr:12, ot:10, firstKick:'H'}} : g;
+  const rosterTxt = s => Object.entries(src.teams[s].roster || {}).sort((a, b) => a[0] - b[0]).map(([n, v]) => `${n} ${v}`).join('\n');
+  const teamRow = (s, label) => `<div class="grp"><h3>${label}</h3><div class="teamset">
+      <div class="fld"><label class="eyebrow" for="s-${s}-name">School</label><input class="inp" id="s-${s}-name" value="${esc(src.teams[s].name)}" placeholder="${s === 'A' ? 'Visiting school' : 'Home school'}"></div>
+      <div class="fld"><label class="eyebrow" for="s-${s}-abbr">Short</label><input class="inp" id="s-${s}-abbr" maxlength="5" value="${esc(src.teams[s].abbr)}" placeholder="${s === 'A' ? 'VIS' : 'HOME'}"></div>
+      <div class="fld"><label class="eyebrow" for="s-${s}-color">Color</label><input type="color" id="s-${s}-color" value="${esc(src.teams[s].color)}"></div></div>
+      <div class="fld"><label class="eyebrow" for="s-${s}-roster">Roster, optional · one player per line, number then name</label>
+      <textarea class="inp" id="s-${s}-roster" rows="4" placeholder="7 Cole Brandt&#10;22 Mason Ortiz">${esc(rosterTxt(s))}</textarea></div></div>`;
+  return `${dlgHead(isNew ? 'New game' : 'Game setup')}<div class="dlg-bd">${teamRow('A', 'Visitors')}${teamRow('H', 'Home')}
+    <div class="grp"><h3>Rules</h3><div class="row">
+      <div class="fld"><span class="eyebrow">Opening kickoff by</span><div class="seg" id="s-kick">${['A', 'H'].map(s => `<button type="button" data-kick="${s}" aria-pressed="${src.set.firstKick === s}">${s === 'A' ? 'Visitors' : 'Home'}</button>`).join('')}</div></div>
+      <div class="fld"><label class="eyebrow" for="s-qtr">Quarter, minutes</label><input class="inp" id="s-qtr" inputmode="numeric" value="${src.set.qtr}"></div>
+      <div class="fld"><label class="eyebrow" for="s-ot">Overtime from the</label><input class="inp" id="s-ot" inputmode="numeric" value="${src.set.ot}"></div></div>
+      <p class="hint">NFHS quarters are 12 minutes. Kansas overtime starts at the 10-yard line; some states use the 15, 20 or 25.</p></div></div>
+    <div class="dlg-ft"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" data-save-setup="${isNew ? 1 : 0}">${isNew ? 'Start game' : 'Save'}</button></div>`;
+}
+function saveSetup(isNew){
+  const v = id => $('#' + id).value.trim();
+  const parseRoster = txt => { const o = {}; txt.split('\n').forEach(l => { const m = l.match(/^\s*#?(\d{1,2})\s*[-–,.:)]?\s*(.+?)\s*$/); if (m) o[m[1]] = m[2]; }); return o; };
+  const team = (s, def) => {
+    const name = v(`s-${s}-name`) || def;
+    return {name, abbr:(v(`s-${s}-abbr`) || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(), color:$(`#s-${s}-color`).value, roster:parseRoster($(`#s-${s}-roster`).value)};
+  };
+  const kick = $('#s-kick [aria-pressed="true"]');
+  const set = {qtr:clamp(parseInt(v('s-qtr')) || 12, 1, 20), ot:clamp(parseInt(v('s-ot')) || 10, 1, 50), firstKick:kick ? kick.dataset.kick : 'H'};
+  const teams = {A:team('A', 'Visitors'), H:team('H', 'Home')};
+  if (isNew){ g = {id:'g' + Date.now().toString(36), created:Date.now(), teams, set, plays:[], clk:{s:set.qtr * 60, run:false, at:0}}; resetUi(); }
+  else { if (!g.plays.length && set.qtr !== g.set.qtr) g.clk = {s:set.qtr * 60, run:false, at:0}; Object.assign(g, {teams, set}); }
+  save(); closeDialog(); refresh(); toast(isNew ? 'Game started' : 'Setup saved');
+}
+
+function dlgGames(){
+  const list = Object.values(db.games).sort((a, b) => (b.updated || 0) - (a.updated || 0));
+  const items = list.map(x => { const r = replay(x);
+    return `<div class="gitem"><div><b>${esc(x.teams.A.abbr)} ${r.st.score.A} at ${esc(x.teams.H.abbr)} ${r.st.score.H}</b>${x.id === g.id ? '<span class="cur-tag">Open</span>' : ''}${x.sample ? '<span class="cur-tag" style="color:var(--flag-ink)">Sample</span>' : ''}
+      <div class="meta">${esc(x.teams.A.name)} at ${esc(x.teams.H.name)} · ${new Date(x.created).toLocaleDateString()} · ${r.st.final ? 'Final' : perLabel(r.st.q)} · ${x.plays.length} plays</div></div>
+      <div class="acts">${x.id !== g.id ? `<button class="btn small" data-open-game="${x.id}">Open</button>` : ''}<button class="btn small danger" data-del-game="${x.id}">${ui.confirm === 'g:' + x.id ? 'Tap again' : 'Delete'}</button></div></div>`; }).join('');
+  return `${dlgHead('Games')}<div class="dlg-bd">${syncBlock()}<div class="glist">${items}</div>
+    <p class="hint">Every game is saved in this browser${sync.user ? ' and to your Google account' : ''}. Export makes a backup you can keep anywhere.</p></div>
+    <div class="dlg-ft"><button class="btn primary" data-open="new">New game</button></div>`;
+}
+function dlgExport(){
+  return `${dlgHead('Export')}<div class="dlg-bd">
+    <div class="grp"><h3>Box score and play-by-play</h3><textarea class="inp num" id="x-txt" rows="8" readonly style="font:13px/1.35 ui-monospace,Menlo,Consolas,monospace">${esc(summaryText())}</textarea>
+      <div class="line"><button class="btn small" data-copy="x-txt">Copy text</button><button class="btn small" data-print>Print</button></div></div>
+    <div class="grp"><h3>Back up this game</h3><p class="hint">A backup restores the game on any device through Import below.</p>
+      <div class="line">${framed ? '' : '<button class="btn small" data-download>Download backup</button>'}<button class="btn small" data-copy="x-json">Copy backup text</button></div>
+      <textarea class="inp" id="x-json" rows="3" readonly hidden>${esc(JSON.stringify(g))}</textarea></div>
+    <div class="grp"><h3>Import a game</h3><textarea class="inp" id="x-imp" rows="3" placeholder="Paste backup text here"></textarea>
+      <div class="line"><button class="btn small" data-import>Import pasted text</button><label class="btn small">Choose file<input type="file" id="x-file" accept=".json,application/json" hidden></label></div></div></div>`;
+}
+function copyFrom(id){
+  const el = $('#' + id), text = el.value;
+  const fallback = () => { el.hidden = false; el.focus(); el.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) {} toast(ok ? 'Copied' : 'Text selected — copy it from the box'); };
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => toast('Copied'), fallback); else fallback();
+}
+function download(){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(g, null, 1)], {type:'application/json'}));
+  a.download = `${g.teams.A.abbr}-at-${g.teams.H.abbr}-${new Date(g.created).toISOString().slice(0, 10)}.json`.toLowerCase();
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('Backup saved');
+}
+function importText(txt){
+  let x; try { x = JSON.parse(txt); } catch (e) { toast('That isn’t backup text — paste the whole thing'); return; }
+  if (!x || !x.teams || !Array.isArray(x.plays)){ toast('That backup is missing its teams or plays'); return; }
+  x.id = 'g' + Date.now().toString(36); x.clk = x.clk || {s:(x.set?.qtr || 12) * 60, run:false, at:0}; x.set = x.set || {qtr:12, ot:10, firstKick:'H'};
+  g = x; resetUi(); save(); closeDialog(); refresh(); toast('Game imported');
+}
+function printAll(){
+  closeDialog(); ui.printing = true; renderView();
+  try { window.print(); } finally { setTimeout(() => { ui.printing = false; renderView(); }, 300); }
+}
+
+/* ---------- storage ---------- */
+function load(){ try { const d = JSON.parse(localStorage.getItem(STORE) || 'null'); if (d && d.games) db = d; } catch (e) {} }
+function persist(){ try { localStorage.setItem(STORE, JSON.stringify(db)); } catch (e) {} }
+// An edit: stamp the game, keep it here, and send it to the account when signed in.
+function save(){ if (!g) return; g.updated = Date.now(); db.games[g.id] = g; db.cur = g.id; persist(); syncPush(g); }
+// Opening a game isn't an edit, so it mustn't look newer than another device's copy.
+function setCurrent(){ if (!g) return; db.games[g.id] = g; db.cur = g.id; persist(); }
+function resetUi(){ Object.assign(ui, {type:null, draft:null, editing:null, ctx:null, open:null, confirm:null, ask:null, qtext:'', qedit:false}); }
+function refresh(){
+  R = replay(g);
+  ui.ctx = ui.editing != null ? Object.assign(replay(g, ui.editing), {}) : R;
+  $('#gtitle').textContent = `${g.teams.A.name} at ${g.teams.H.name}`;
+  $('#sample').hidden = !g.sample;
+  renderBoard(); renderField(); renderPad(); renderView();
+}
+let toastT;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 1700); }
+
+/* ---------- actions ---------- */
+function record(){
+  const p = buildPlay(ui.draft);
+  if (ui.editing != null){
+    const c = parseClock(ui.draft.clkTxt || ''); if (c != null) p.clk = c;
+    g.plays[ui.editing] = p; ui.editing = null; ui.open = null; toast('Play updated');
+  } else {
+    if (R.st.q <= 4) p.clk = Math.ceil(clockNow());
+    g.plays.push(p); toast('Recorded');
+  }
+  if (!['run', 'pass'].includes(ui.type)) ui.type = null;
+  ui.draft = null; save(); refresh();
+}
+function undo(){ if (!g.plays.length) return; g.plays.pop(); resetUi(); save(); refresh(); toast('Last play removed'); }
+function endq(v, src){
+  const q = R.st.q, p = {t:'endq', clk:0};
+  if (src) p.q = src;
+  if (q === 2) p.kick = v; if (q === 4) p.first = v;
+  g.plays.push(p); ui.ask = null; ui.type = null; ui.draft = null;
+  if (q < 4) g.clk = {s:g.set.qtr * 60, run:false, at:0}; else g.clk.run = false;
+  save(); refresh(); toast(q === 4 ? 'End of regulation' : `End of the ${ord(q)} quarter`);
+}
+function startEdit(i){
+  const p = g.plays[i]; ui.editing = i; ui.ctx = replay(g, i); ui.type = p.t; ui.open = null;
+  // A play typed in shorthand is edited by retyping its line; others use the form.
+  ui.qedit = !!p.q; ui.qtext = p.q || ''; ui.draft = p.q ? null : toDraft(p, ui.ctx.st);
+  renderPad(); renderView(); $('#pad').scrollIntoView({behavior:'smooth', block:'start'});
+  if (p.q) focusQuick();
+}
+function editClock(){
+  const b = $('#clk'), inp = document.createElement('input');
+  inp.className = 'clock num'; inp.inputMode = 'numeric'; inp.value = mmss(clockNow()); inp.setAttribute('aria-label', 'Game clock, minutes:seconds');
+  b.replaceWith(inp); inp.focus(); inp.select();
+  let done = false;
+  const finish = keep => { if (done) return; done = true; const s = keep ? parseClock(inp.value) : null; if (s != null) setClock(Math.min(s, g.set.qtr * 60), false); renderBoard(); };
+  inp.addEventListener('blur', () => finish(true));
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') finish(true); if (e.key === 'Escape') finish(false); });
+}
+
+document.addEventListener('click', e => {
+  if (e.target === dlg()){ closeDialog(); return; }
+  const t = e.target.closest('button'); if (!t) return;
+  const d = t.dataset;
+  if (t.id === 'clk') return editClock();
+  if (t.id === 'clkgo'){ setClock(clockNow(), !g.clk.run); return renderBoard(); }
+  if (t.id === 'rec') return record();
+  if (t.id === 'qrec') return recordQuick();
+  if (d.qkey) return insertKey(d.qkey);
+  if (d.mode){
+    ui.mode = d.mode; ui.draft = null;
+    try { localStorage.setItem('pressbox.mode', d.mode); } catch (e) {}
+    renderPad(); if (d.mode === 'quick') focusQuick(); return;
+  }
+  if (d.open) return openDialog(d.open);
+  if ('close' in d) return closeDialog();
+  if (d.tab){ ui.tab = d.tab; return renderView(); }
+  if (d.type){ ui.type = d.type; ui.draft = null; return renderPad(); }
+  if (d.seg){ setK(ui.draft, d.seg, d.v); return renderPad(); }
+  if (d.tog){ setK(ui.draft, d.tog, !getK(ui.draft, d.tog)); return renderPad(); }
+  if (d.chip){ setK(ui.draft, d.chip, d.v); return renderPad(); }
+  if ('td' in d){ ui.draft.y = String(Math.ceil(100 - ui.ctx.st.spot)); ui.draft.yn = 'gain'; return renderPad(); }
+  if ('undo' in d) return undo();
+  if ('cancelEdit' in d){ ui.editing = null; ui.draft = null; ui.type = null; ui.qedit = false; ui.qtext = ''; return refresh(); }
+  if (d.timeout){
+    g.plays.push({t:'to', side:d.timeout, ...(R.st.q <= 4 ? {clk:Math.ceil(clockNow())} : {})});
+    g.clk = {s:clockNow(), run:false, at:Date.now()}; ui.type = null; ui.draft = null;
+    save(); refresh(); return toast(`Timeout ${ab(d.timeout)}`);
+  }
+  if ('endqAsk' in d){
+    const st = R.st;
+    if (st.q === 2) ui.ask = 'half'; else if (st.q === 4 && st.score.A === st.score.H) ui.ask = 'ot'; else return endq();
+    return renderPad();
+  }
+  if (d.endq) return endq(d.endq);
+  if ('ask' in d){ ui.ask = d.ask || null; return renderPad(); }
+  if ('final' in d){ g.plays.push({t:'final'}); g.clk.run = false; ui.ask = null; save(); refresh(); return toast('Game ended'); }
+  if (d.row){ const i = +d.row; ui.open = ui.open === i ? null : i; ui.confirm = null; return renderView(); }
+  if (d.edit) return startEdit(+d.edit);
+  if (d.del){
+    const i = +d.del;
+    if (ui.confirm !== i){ ui.confirm = i; return renderView(); }
+    g.plays.splice(i, 1); resetUi(); save(); refresh(); return toast('Play deleted');
+  }
+  if (d.side){ ui.side = d.side; return renderView(); }
+  if (d.kick){ t.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === t))); return; }
+  if (d.saveSetup) return saveSetup(d.saveSetup === '1');
+  if (d.openGame){ g = db.games[d.openGame]; resetUi(); setCurrent(); closeDialog(); return refresh(); }
+  if ('sync' in d) return sync.state === 'signed-out' ? signIn() : openDialog('games');
+  if ('signin' in d) return signIn();
+  if ('signout' in d) return signOutSync();
+  if (d.delGame){
+    const id = d.delGame;
+    if (ui.confirm !== 'g:' + id){ ui.confirm = 'g:' + id; dlg().innerHTML = dlgGames(); return; }
+    delete db.games[id]; ui.confirm = null; syncDelete(id);
+    if (id === g.id){ g = Object.values(db.games)[0] || sampleGame(); resetUi(); }
+    setCurrent(); refresh(); dlg().innerHTML = dlgGames(); return toast('Game deleted');
+  }
+  if (d.copy) return copyFrom(d.copy);
+  if ('download' in d) return download();
+  if ('import' in d) return importText($('#x-imp').value);
+  if ('print' in d) return printAll();
+});
+document.addEventListener('input', e => {
+  const el = e.target, k = el.dataset && el.dataset.k;
+  if (el.id === 'qk'){ ui.qtext = el.value; return quickPreview(); }
+  if (!k || !ui.draft) return;
+  setK(ui.draft, k, el.value);
+  if (k === 'pen.name'){
+    const x = PENALTIES.find(p => p.name === el.value), st = ui.ctx.st;
+    if (x){ Object.assign(ui.draft.pen, {y:x.y, a:x.a, l:x.l}); if (x.s === 'O') ui.draft.pen.side = st.poss; if (x.s === 'D') ui.draft.pen.side = other(st.poss); }
+    return renderPad();
+  }
+  const who = document.querySelector(`[data-who="${k}"]`);
+  if (who) who.textContent = rosterName(el.dataset.side, el.value.replace(/\D/g, ''));
+  updatePreview();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.id === 'qk'){ e.preventDefault(); return recordQuick(); }
+  if (e.key === 'Enter' && e.target.matches && e.target.matches('#pad input.inp')){ e.preventDefault(); record(); }
+});
+// Shorthand keys insert text without pulling focus (and the phone keyboard) away from the entry box.
+document.addEventListener('mousedown', e => { if (e.target.closest && e.target.closest('.qkey')) e.preventDefault(); });
+document.addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('cheat')) ui.cheat = e.target.open; }, true);
+document.addEventListener('change', e => { if (e.target.id === 'x-file' && e.target.files[0]) e.target.files[0].text().then(importText); });
+dlg().addEventListener('close', () => { ui.dlg = null; });
+setInterval(() => {
+  if (!g || !g.clk.run) return;
+  const s = clockNow(), el = $('#clk');
+  if (s <= 0){ setClock(0, false); return renderBoard(); }
+  if (el && el.tagName === 'BUTTON') el.textContent = mmss(s);
+}, 250);
+
+/* ================================================================
+   Sync. Games follow a Google sign-in through the stats project's own
+   Firebase (fb-stats, kept apart from the Pick 'ems pool): collection
+   "pressbox", one document per game, private to its owner. The copy in
+   this browser stays the working copy, so the page keeps running with
+   no signal; when two copies meet, whichever was edited last wins.
+   Rules live in firestore.rules in the STATS folder.
+   ================================================================ */
+const FIREBASE_VERSION = '10.14.1';
+const firebaseConfig = {
+  apiKey:            'AIzaSyBnIdA4E1hhAOCIR51bjXHJKoAQ4kBIr3Q',
+  authDomain:        'fb-stats-dc058.firebaseapp.com',
+  projectId:         'fb-stats-dc058',
+  storageBucket:     'fb-stats-dc058.firebasestorage.app',
+  messagingSenderId: '1096629098263',
+  appId:             '1:1096629098263:web:6e0b8989816b0f7c09c952'
+};
+// Google refuses sign-in inside Facebook, Instagram, X and similar in-app browsers.
+const IN_APP_BROWSER = /FBAN|FBAV|FB_IAB|Instagram|Twitter|LinkedInApp|Snapchat|Line\/|MicroMessenger|GSA\//i.test(navigator.userAgent)
+  || /Android.*;\s*wv\)/i.test(navigator.userAgent);
+const sync = {state:'off', user:null, api:null, unsub:null, first:true, timers:{}, pending:0, err:''};
+
+async function startSync(){
+  if (location.protocol === 'file:'){ sync.state = 'unavailable'; return renderSync(); }
+  try {
+    const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
+    const load = Promise.all(['app', 'auth', 'firestore'].map(m => import(base + m + '.js')));
+    const [appM, authM, fsM] = await Promise.race([load, new Promise((_, no) => setTimeout(() => no(new Error('timeout')), 12000))]);
+    const app = appM.initializeApp(firebaseConfig);
+    sync.api = {authM, fsM, auth:authM.getAuth(app), fsdb:fsM.getFirestore(app)};
+  } catch (e) { sync.state = 'unavailable'; return renderSync(); }
+  const {authM, auth} = sync.api;
+  authM.getRedirectResult(auth).catch(err => { sync.err = friendlySync(err); renderSync(); });
+  authM.onAuthStateChanged(auth, user => {
+    if (sync.unsub){ sync.unsub(); sync.unsub = null; }
+    sync.user = user; sync.first = true; sync.err = '';
+    sync.state = user ? 'saving' : 'signed-out';
+    if (user) listen();
+    renderSync();
+  });
+  addEventListener('online', renderSync);
+  addEventListener('offline', renderSync);
+}
+
+const newestGame = () => Object.values(db.games).filter(x => !x.sample).sort((a, b) => (b.updated || 0) - (a.updated || 0))[0];
+
+function listen(){
+  const {fsM, fsdb} = sync.api;
+  const q = fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('owner', '==', sync.user.uid));
+  sync.unsub = fsM.onSnapshot(q, snap => {
+    let changed = false, current = null;
+    snap.docChanges().forEach(ch => {
+      if (ch.type === 'removed' || ch.doc.metadata.hasPendingWrites) return;
+      const id = ch.doc.id, d = ch.doc.data(), local = db.games[id];
+      const lu = local ? local.updated || 0 : -1, ru = d.updated || 0;
+      if (ru > lu){
+        if (d.deleted){ if (local){ delete db.games[id]; changed = true; if (g && g.id === id) current = 'gone'; } return; }
+        let remote; try { remote = JSON.parse(d.json); } catch (e) { return; }
+        db.games[id] = remote; changed = true;
+        if (g && g.id === id) current = 'updated';
+      } else if (local && lu > ru) syncPush(local, 0);
+    });
+    if (sync.first){
+      sync.first = false;
+      // Games made on this device before signing in go up to the account.
+      const remoteIds = new Set(snap.docs.map(x => x.id));
+      Object.values(db.games).forEach(x => { if (!x.sample && !remoteIds.has(x.id)) syncPush(x, 0); });
+      // A device still showing the sample opens the latest real game instead.
+      if (g && g.sample && newestGame()){ g = newestGame(); resetUi(); current = 'opened'; changed = true; }
+    }
+    if (current === 'updated') g = db.games[g.id];
+    if (current === 'gone'){ g = newestGame() || sampleGame(); resetUi(); }
+    if (changed){ db.games[g.id] = g; db.cur = g.id; persist(); }
+    if (current){
+      if (ui.editing != null && ui.editing >= g.plays.length) resetUi();
+      refresh();
+      toast(current === 'opened' ? 'Opened your latest game' : current === 'gone' ? 'That game was deleted on another device' : 'Updated from another device');
+    }
+    if (ui.dlg === 'games') dlg().innerHTML = dlgGames();
+    if (!sync.pending && !Object.keys(sync.timers).length && !sync.err) sync.state = 'on';
+    renderSync();
+  }, err => { sync.state = 'error'; sync.err = friendlySync(err); renderSync(); });
+}
+
+function syncPush(game, delay = 700){
+  if (!sync.user || !game || game.sample) return;
+  clearTimeout(sync.timers[game.id]);
+  sync.timers[game.id] = setTimeout(() => pushNow(game.id), delay);
+  sync.state = 'saving'; renderSync();
+}
+async function pushNow(id){
+  delete sync.timers[id];
+  const game = db.games[id];
+  if (!game || !sync.user) return;
+  const {fsM, fsdb} = sync.api;
+  sync.pending++;
+  try {
+    await fsM.setDoc(fsM.doc(fsdb, 'pressbox', id), {owner:sync.user.uid, updated:game.updated || Date.now(),
+      title:`${game.teams.A.abbr} at ${game.teams.H.abbr}`, json:JSON.stringify(game)});
+    sync.err = '';
+  } catch (e) { sync.err = friendlySync(e); }
+  sync.pending--;
+  sync.state = sync.err ? 'error' : sync.pending || Object.keys(sync.timers).length ? 'saving' : 'on';
+  renderSync();
+}
+// Deleting leaves a marker rather than removing the document, so other devices learn about it too.
+function syncDelete(id){
+  if (!sync.user || id === 'sample') return;
+  clearTimeout(sync.timers[id]); delete sync.timers[id];
+  const {fsM, fsdb} = sync.api;
+  fsM.setDoc(fsM.doc(fsdb, 'pressbox', id), {owner:sync.user.uid, updated:Date.now(), deleted:true, json:''})
+    .catch(e => { sync.err = friendlySync(e); sync.state = 'error'; renderSync(); });
+}
+
+async function signIn(){
+  if (!sync.api) return openDialog('games');
+  if (IN_APP_BROWSER) return toast('Open this page in Safari or Chrome to sign in');
+  const {authM, auth} = sync.api, provider = new authM.GoogleAuthProvider();
+  // Embedded browsers may block IndexedDB; walk down to whatever storage this one allows.
+  for (const p of [authM.indexedDBLocalPersistence, authM.browserLocalPersistence, authM.browserSessionPersistence, authM.inMemoryPersistence]){
+    try { await authM.setPersistence(auth, p); break; } catch (e) { /* try the next */ }
+  }
+  try { await authM.signInWithPopup(auth, provider); }
+  catch (err){
+    let e = err;
+    // Phones routinely block the popup; a redirect works where it doesn't.
+    if (/popup-blocked|popup-closed-by-user|operation-not-supported/.test(err?.code || '')){
+      try { await authM.signInWithRedirect(auth, provider); return; } catch (e2) { e = e2; }
+    }
+    sync.err = friendlySync(e); if (sync.err) toast(sync.err); renderSync();
+  }
+}
+async function signOutSync(){
+  if (!sync.api) return;
+  try { await sync.api.authM.signOut(sync.api.auth); toast('Signed out. Games stay on this device.'); } catch (e) { toast(friendlySync(e)); }
+}
+function friendlySync(e){
+  const code = e?.code || '';
+  if (code.includes('permission-denied')) return 'Firebase turned the save down. The Press Box rules may not be published yet.';
+  if (code.includes('not-found') || /database .*does not exist/i.test(e?.message || '')) return 'The stats project has no Firestore database yet. Create one in the Firebase console.';
+  if (code.includes('operation-not-allowed')) return 'Google sign-in isn’t switched on in the stats project yet (Authentication → Sign-in method).';
+  if (code.includes('unauthorized-domain')) return 'Google sign-in isn’t allowed at this address yet. Add it in the stats Firebase project under Authentication → Settings → Authorized domains.';
+  if (code.includes('disallowed-useragent') || code.includes('operation-not-supported')) return 'This browser can’t complete Google sign-in. Open the page in Safari or Chrome.';
+  if (code.includes('web-storage-unsupported')) return 'This browser is blocking site storage, which sign-in needs. Open the page in Safari or Chrome.';
+  if (code.includes('unavailable') || code.includes('network')) return 'Can’t reach the server. Your games are still saved on this device.';
+  if (code.includes('cancelled') || code.includes('popup-closed')) return '';
+  return e?.message || 'Something went wrong with sync.';
+}
+
+function renderSync(){
+  const el = $('#sync'); if (!el) return;
+  let s = sync.state;
+  if (s === 'off'){ el.innerHTML = ''; return; }
+  if (sync.user && navigator.onLine === false) s = 'offline';
+  const label = {unavailable:'This device only', 'signed-out':'Sign in to sync', on:'Synced', saving:'Saving…', offline:'Offline · saved here', error:'Sync problem'}[s];
+  const cls = {on:'ok', saving:'busy', offline:'busy', error:'bad'}[s] || '';
+  const tip = sync.err || (sync.user ? `Signed in as ${sync.user.email || ''}` : s === 'unavailable' ? 'Syncing works on your own site' : 'Keep your games on every device');
+  el.innerHTML = `<button class="abtn syncbtn ${cls}" data-sync title="${esc(tip)}"><i></i>${label}</button>`;
+  if (ui.dlg === 'games' && dlg().open){ const a = $('#acct'); if (a) a.outerHTML = syncBlock(); }
+}
+function syncBlock(){
+  const s = sync.state, u = sync.user;
+  if (s === 'off') return '<div id="acct"></div>';
+  if (s === 'unavailable') return `<div class="acct" id="acct"><p class="hint">Games are saved in this browser only. To keep them on every device, open Press Box from your own site and sign in with Google.</p></div>`;
+  if (!u) return `<div class="acct" id="acct"><div><b>Keep your games on every device</b>
+    <p class="hint">Sign in with your Google account and your games follow you to any phone or computer where you sign in.</p></div>
+    <button class="btn small primary" data-signin>Sign in with Google</button></div>`;
+  return `<div class="acct" id="acct"><div><b>Syncing to ${esc(u.email || 'your account')}</b>
+    <p class="hint">${sync.err ? esc(sync.err) : 'Every change is saved here and to your account. Sign in on another device to pick up where you left off.'}</p></div>
+    <button class="btn small" data-signout>Sign out</button></div>`;
+}
+/* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
+function sampleGame(){
+  const A = {name:'North Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
+  const H = {name:'South Rams', abbr:'SOU', color:'#8A1C2B', roster:{3:'Brody Kemp', 28:'Isaiah Ford', 1:'Kade Sims', 80:'Nolan Beck', 19:'Ryan Kast', 44:'Drew Lang', 5:'Cam Ward', 97:'Trey Hale'}};
+  const s = {id:'sample', sample:2, created:Date.now(), teams:{A, H}, set:{qtr:12, ot:10, firstKick:'H'}, plays:[], clk:{s:156, run:false, at:0}};
+  const lines = [
+    [720, 'N ball at N32 1-10'], [712, '22-5 @44'], [688, '7-11-14 @5'], [655, '22--2 @97'], [630, '7-inc-84 @5'],
+    [624, '7-84-16 @44'], [590, '22-9 @44 @5'], [561, '7-3'], [535, '7-11-23-td'], [535, '15-xp'],
+    [535, 'S ball at S20'], [520, '28-4 @54'], [489, '3-sack-7-90'], [470, 'to S'], [470, '3-1-9 @24'],
+    [441, 'S punt'], [441, 'N ball at N39'], [418, '22-12 @5 pen N 10 hold 72 np'], [396, '7-int-5-12'],
+    [396, 'S ball at N35'], [370, '28-7 @54'], [352, 'pen S 5 fs'], [350, '3-80-12 @24'], [318, '28-21-td'],
+    [318, '3-1-no'], [318, 'N ball at N28'], [300, '22-6 @97'], [276, '7-11-31 @5'], [250, '22--1 @44'],
+    [226, '7-inc'], [220, '7-84-8 @44'], [185, '15-fg'], [185, 'S ball at S26'], [171, '28-3 @90 @54']];
+  const keep = g; g = s;
+  try {
+    for (const [clk, line] of lines){
+      const r = parseQuick(line, replay(s).st);
+      if (r && r.play) s.plays.push(JSON.parse(JSON.stringify({...r.play, clk})));
+    }
+  } finally { g = keep; }
+  return s;
+}
+
+/* ---------- boot ---------- */
+load();
+if (db.games.sample && db.games.sample.sample !== 2) db.games.sample = sampleGame();
+g = db.games[db.cur] || Object.values(db.games)[0];
+if (!g) g = sampleGame();
+setCurrent();
+refresh();
+startSync();
+</script>
