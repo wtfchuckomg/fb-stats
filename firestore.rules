@@ -1,0 +1,38 @@
+rules_version = '2';
+
+// Press Box — Firestore security rules for the stats Firebase project
+// (fb-stats-dc058). Paste into Firebase console → Firestore Database →
+// Rules, then Publish. The Pick 'ems pool (ks-picks) has its own rules in
+// the PICKS folder; nothing here touches it.
+//
+// index.html keeps each game as one document holding the whole game as
+// text. Anyone signed in with Google can keep games, and only the owner
+// can read or change their own.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    match /pressbox/{gameId} {
+      allow read: if signedIn() && resource.data.owner == request.auth.uid;
+
+      allow create: if signedIn()
+                    && request.resource.data.owner == request.auth.uid
+                    && request.resource.data.json is string
+                    && request.resource.data.json.size() < 900000;
+
+      allow update: if signedIn()
+                    && resource.data.owner == request.auth.uid
+                    && request.resource.data.owner == request.auth.uid
+                    && request.resource.data.json is string
+                    && request.resource.data.json.size() < 900000;
+
+      allow delete: if signedIn() && resource.data.owner == request.auth.uid;
+    }
+
+    // Anything not matched above is denied by default.
+  }
+}
