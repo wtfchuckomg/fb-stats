@@ -654,13 +654,22 @@ function replay(g, upto = g.plays.length){
 
   function kickoff(p){
     const K = st.poss, R = other(K), kf = st.kickFrom, k = pl(K, p.k), tk = S.team[K];
+    // A kickoff typed with no distance ("ko") takes it from the spot typed next.
+    const unknown = p.d == null && !['tb', 'oob', 'onside'].includes(p.res);
     let d = +p.d || 0;
     if (p.res === 'tb' && !d) d = 100 - kf;
-    bump(k, 'ko'); bump(k, 'koy', d); tk.koN++; tk.koY += d;
+    bump(k, 'ko'); tk.koN++;
+    if (!unknown && p.res !== 'oob'){ bump(k, 'koy', d); tk.koY += d; }
     const what = st.kickKind === 'free' ? 'free kick' : 'kickoff';
-    let txt = `${nm(K, p.k)} ${what} ${plural(d, 'yard')}`;
+    let txt = unknown || (p.res === 'oob' && !p.d) ? `${nm(K, p.k)} ${what}` : `${nm(K, p.k)} ${what} ${plural(d, 'yard')}`;
+    if (p.bs != null){ newSeries(R, clamp(+p.bs, 1, 99)); return `${nm(K, p.k)} ${what}. ${ab(R)} ball at the ${yl(R, st.spot)}.`; }
+    if (unknown){ newSeries(R, 100 - kf); return txt + '.'; }
     const at = 100 - (kf + d);
     switch (p.res){
+      case 'spot': {
+        const s = at <= 0 ? NFHS.touchback : at; newSeries(R, s);
+        return txt + (at <= 0 ? ', into the end zone. Touchback.' : ` to the ${yl(R, s)}.`);
+      }
       case 'tb': bump(k, 'ktb'); tk.koTB++; newSeries(R, NFHS.touchback); return txt + `, touchback. ${ab(R)} ball at the ${yl(R, NFHS.touchback)}.`;
       case 'oob': { const s = 100 - (kf + NFHS.oobFreeKick); newSeries(R, s); return txt + `, out of bounds. ${ab(R)} ball at the ${yl(R, s)}.`; }
       case 'onside': { const s = kf + d; bump(pl(K, p.ret), 'fr'); newSeries(K, s); tags.push(['to', 'Onside']);
@@ -833,6 +842,10 @@ function replay(g, upto = g.plays.length){
     if (p.t === 'punt' && p.d == null && p.res !== 'tb' && p.res !== 'blk' && st.phase === 'play'){
       const nx = g.plays[i + 1];
       if (nx && nx.t === 'set' && nx.poss === other(st.poss)) p = {...p, d:Math.max(0, 100 - nx.spot - st.spot + (+p.ry || 0))};
+    }
+    if (p.t === 'ko' && p.d == null && !['tb', 'oob', 'onside'].includes(p.res) && st.phase === 'kick'){
+      const nx = g.plays[i + 1];
+      if (nx && nx.t === 'set' && nx.poss === other(st.poss)) p = {...p, d:Math.max(0, 100 - st.kickFrom - nx.spot + (+p.ry || 0))};
     }
     const pre = {sit: sit(), q: st.q, poss: st.poss};
     const r = apply(p);
@@ -1234,11 +1247,15 @@ function parseQuick(raw, st){
   let toks = tokenize(line).map(t => TD_WORDS.includes(t) ? 'td' : t);
   const {map, key} = quickTeams();
   const T = t => map[t], L = s => key[s].toUpperCase();
+  // "N5", "sou35": a yard line named by team.
+  const spotOf = t => { const m = String(t).match(/^([a-z]+)(\d+(?:\.5)?)$/); return m && T(m[1]) ? {side:T(m[1]), n:+m[2]} : null; };
   const isNum = t => /^-?\d+(\.\d+)?$/.test(t);
   const has = (...w) => w.some(x => toks.includes(x));
   const O = st.poss, D = other(O);
   let clk;
-  if (/^\d{1,2}:\d{2}$/.test(toks[0] || '')) clk = parseClock(toks.shift());
+  // A clock time can sit anywhere on the line: "8:40 3-10", "ko-c25-3:25".
+  const ci = toks.findIndex(t => /^\d{1,2}:\d{2}$/.test(t));
+  if (ci >= 0){ clk = parseClock(toks[ci]); toks.splice(ci, 1); }
   const tk = [];
   toks = toks.filter(t => { const m = t.match(/^(?:@|tk)(\d+)$/); if (m){ tk.push(m[1]); return false; } return true; });
   const bad = msg => ({error:msg});
@@ -1279,7 +1296,9 @@ function parseQuick(raw, st){
   }
 
   /* ---- clock and game control ---- */
-  if (has('timeout', 'tmo') || (has('to') && !toks.some(isNum))){
+  // Only "to N", "N timeout" and the like: a "to" inside a play ("kick to N5") isn't a timeout.
+  const nonTeam = toks.filter(t => !T(t));
+  if (nonTeam.length && nonTeam.every(t => ['to', 'timeout', 'tmo'].includes(t))){
     const side = toks.map(T).find(Boolean);
     if (!side) return bad(`Whose timeout? Type to ${L('A')} or to ${L('H')}.`);
     return ok({t:'to', side});
@@ -1316,23 +1335,30 @@ function parseQuick(raw, st){
   if (toks.some(isNum)) toks = toks.filter(t => !FILLER.includes(t));
 
   /* ---- kickoffs ---- */
-  const kickWord = toks.findIndex(t => ['ko', 'kickoff', 'onside'].includes(t) || (t === 'kick' && st.phase === 'kick'));
+  const kickWord = toks.findIndex(t => ['ko', 'kickoff', 'kicks', 'kicked', 'onside'].includes(t) || (t === 'kick' && st.phase === 'kick'));
   if (st.phase === 'kick' && kickWord < 0){
     const R = L(other(st.poss));
-    return bad(`${L(st.poss)} is kicking off. Type where the ball ends up — ${R} ball at ${R}25 — or the kick itself, like 15-ko-tb.`);
+    return bad(`${L(st.poss)} is kicking off. Type the kick (15-ko-tb, 15-ko-55-28-21, or just ko) or where the ball ends up: ${R} ball at ${R}25.`);
   }
   if (kickWord >= 0){
-    if (st.phase !== 'kick') return bad(`No kickoff is due — ${L(O)} has the ball.`);
-    const before = toks.slice(0, kickWord).filter(isNum), after = toks.slice(kickWord + 1).filter(isNum);
-    const p = {t:'ko', res:'down'};
+    if (st.phase === 'try') return bad('Extra point first: 15-xp (or 15-xp-no, or 3 / 7-88 for a two-point try). Then the kickoff.');
+    if (st.phase !== 'kick') return bad(`No kickoff is due — ${L(O)} has the ball. If there was one, type where it ended: ${L(O)} ball at ${L(O)}25.`);
+    const Rk = other(st.poss), rest = toks.slice(kickWord + 1);
+    const before = toks.slice(0, kickWord).filter(isNum), after = rest.filter(isNum);
+    const sp = rest.map(spotOf).find(Boolean);             // a yard line instead of a distance
+    const p = {t:'ko', res:'spot'};
     if (before[0] != null) p.k = before[0];
-    if (after[0] != null) p.d = Math.abs(+after[0]);
+    if (sp) p.d = Math.max(0, (sp.side === Rk ? 100 - sp.n : sp.n) - st.kickFrom);
+    else if (after[0] != null) p.d = Math.abs(+after[0]);
+    const nx = sp ? after : after.slice(1);                // then the returner and return yards
+    // "ko-C25": no kick details, just where the receiving team's drive starts.
+    if (sp && !nx.length && !has('tb', 'oob', 'onside', 'fc')){ delete p.d; p.bs = sp.side === Rk ? sp.n : 100 - sp.n; return flag(p); }
     if (has('tb')) p.res = 'tb';
     else if (has('oob')) p.res = 'oob';
-    else if (has('onside')){ p.res = 'onside'; if (after[1] != null) p.ret = after[1]; }
-    else if (has('fc')){ p.res = 'fc'; if (after[1] != null) p.ret = after[1]; }
-    else if (after[1] != null){ p.res = 'ret'; p.ret = after[1]; p.ry = +(after[2] || 0); }
-    if (p.d == null && !['tb', 'oob'].includes(p.res)) return bad('How far was the kick? Like 15-ko-55-28-21, or 15-ko-tb.');
+    else if (has('onside')){ p.res = 'onside'; if (nx[0] != null) p.ret = nx[0]; if (p.d == null) p.d = 10; }
+    else if (has('fc')){ p.res = 'fc'; if (nx[0] != null) p.ret = nx[0]; }
+    else if (nx[0] != null){ p.res = 'ret'; p.ret = nx[0]; p.ry = Math.abs(+(nx[1] || 0)); }
+    if (p.res === 'ret' && p.d == null) return bad('Put the kick distance before the returner: 15-ko-55-28-21.');
     if (p.res === 'ret' && has('td')) p.ry = st.kickFrom + p.d;
     return flag(p);
   }
@@ -1361,12 +1387,15 @@ function parseQuick(raw, st){
       return flag(p);
     }
     if (has('tb')){ p.res = 'tb'; return flag(p); }
-    if (after[0] != null) p.d = Math.abs(+after[0]);
-    if (has('fc')){ p.res = 'fc'; if (after[1] != null) p.ret = after[1]; }
+    const sp = toks.slice(i + 1).map(spotOf).find(Boolean);   // "punt to S10"
+    if (sp) p.d = Math.max(0, (sp.side === D ? 100 - sp.n : sp.n) - st.spot);
+    else if (after[0] != null) p.d = Math.abs(+after[0]);
+    const nx = sp ? after : after.slice(1);
+    if (has('fc')){ p.res = 'fc'; if (nx[0] != null) p.ret = nx[0]; }
     else if (has('oob')) p.res = 'oob';
     else if (has('down', 'downed')) p.res = 'down';
-    else if (after[1] != null){ p.res = 'ret'; p.ret = after[1]; p.ry = +(after[2] || 0);
-      if (has('td')) p.ry = 100 - (100 - (st.spot + p.d)); }
+    else if (nx[0] != null){ p.res = 'ret'; p.ret = nx[0]; p.ry = Math.abs(+(nx[1] || 0));
+      if (has('td')) p.ry = st.spot + p.d; }
     return flag(p);
   }
   if (has('fg')){
@@ -1445,12 +1474,13 @@ function cheatHtml(a, h){
     ['19-punt-40-11-6', '#19 punts 40, #11 returns it 6 (also: punt-tb, punt-fc, punt-oob, punt-blk)'],
     ['15-fg &nbsp;·&nbsp; 15-fg-no', 'Field goal good / no good (distance fills in)'],
     ['15-xp &nbsp;·&nbsp; 15-xp-no', 'Kick after a touchdown. For 2 points: 3 (run) or 7-88 (pass), add -no if it failed'],
-    ['15-ko-tb &nbsp;·&nbsp; 15-ko-55-28-21', 'Kickoff: touchback / 55 yards, #28 returns 21. Or skip it and type the spot.'],
+    [`ko-${a}25 &nbsp;·&nbsp; ko-${a}25-3:25`, `Kickoff; the drive starts at the ${a} 25 (with 3:25 left). No need to say who kicked. After a touchdown, enter the extra point first.`],
+    ['15-ko-tb &nbsp;·&nbsp; 15-ko-55-28-21', 'Kickoff with details: touchback / 55 yards, #28 returns it 21. Also 15-ko-oob, 15-ko-onside-44.'],
     [`pen ${h} 15 pf`, `15 yards on ${h}. Codes: fs off hold pi pf fm uc rtp ig dog and more. Add 1st for an automatic first down.`],
     [`3-12 pen ${a} 10 hold np`, 'Flag wipes out the play (np = no play). Without np, the yards add on to the end of the play.'],
     [`to ${a}`, `${g.teams.A.name} timeout`],
     ['eoq', 'End of the quarter (at halftime: eoq S = S kicks off)'],
-    ['8:40 3-10 @54', 'Optional: clock time first, tacklers with @'],
+    ['3-10 8:40 @54', 'Optional: a clock time anywhere on the line (it also sets the game clock), tacklers with @'],
     ['undo', 'Remove the last play']];
   return `<p class="hint" style="margin-top:6px"><b>td</b> always means a touchdown was scored. On a run or pass it's the offense's; on an interception or a fumble the other team recovered, it's the defense's. A line marked td that doesn't score is refused.</p>
     <div class="tbl-wrap"><table><tbody>${rows.map(([c, m]) => `<tr><td><code>${c}</code></td><td>${esc(m)}</td></tr>`).join('')}</tbody></table></div>`;
@@ -1495,6 +1525,14 @@ function quickPreview(){
     const R = quickTeams().key[other(ui.ctx.st.poss)].toUpperCase();
     tip = `<div class="hint">Next, type where it ended up — ${R} ball at ${R}__ — and the punt distance fills in.</div>`;
   }
+  if (r.play.t === 'ko' && r.play.d == null && r.play.res === 'spot'){
+    const R = quickTeams().key[other(ui.ctx.st.poss)].toUpperCase();
+    tip = `<div class="hint">Next, type where the return ended — ${R} ball at ${R}__ — and the kick fills in.</div>`;
+  }
+  if (r.play.t === 'set' && ui.ctx.st.phase === 'try'){
+    const S = quickTeams().key[ui.ctx.st.poss].toUpperCase();
+    tip = `<div class="hint">No extra point recorded for ${S}. If there was one, type it first: 15-xp or 15-xp-no.</div>`;
+  }
   el.className = 'qprev ok';
   el.innerHTML = `<div>${last.wiped ? `<s>${esc(last.wiped)}</s> ` : ''}${esc(last.text)}</div><div class="next">Then: ${esc(rr.sit)}</div>${tip}`;
 }
@@ -1512,6 +1550,8 @@ function recordQuick(){
     save(); refresh(); return toast('Play updated');
   }
   if (p.t === 'endq'){ endq(p.kick, p.q); return focusQuick(); }
+  // A time typed on the line also resets the scoreboard clock to it.
+  if (p.clk != null && R.st.q <= 4) g.clk = {s:p.clk, run:g.clk.run, at:Date.now()};
   if (p.clk == null && R.st.q <= 4) p.clk = Math.ceil(clockNow());
   if (p.t === 'to' || p.t === 'final') g.clk = {s:clockNow(), run:false, at:Date.now()};
   g.plays.push(p); save(); refresh(); focusQuick();
