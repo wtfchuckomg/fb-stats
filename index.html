@@ -69,6 +69,18 @@ button{cursor:pointer}
 .abtn{background:none;border:1px solid var(--board-line);color:var(--board-ink);border-radius:3px;
   padding:6px 11px;font:600 13px/1 var(--cond);text-transform:uppercase;letter-spacing:.04em}
 .abtn:hover{border-color:var(--board-muted)}
+.abtn.live{display:inline-flex;align-items:center;gap:7px;border-color:#FF5A4F}
+.abtn.live i,.livebadge i{width:8px;height:8px;border-radius:50%;background:#FF5A4F;flex:none}
+.livebadge{display:inline-flex;align-items:center;gap:7px;font:700 13px/1 var(--cond);text-transform:uppercase;
+  letter-spacing:.06em;color:var(--board-ink);white-space:nowrap}
+.livebadge i{animation:pulse 1.6s ease-in-out infinite}
+.livebadge.final i{animation:none;background:var(--board-muted)}
+@keyframes pulse{50%{opacity:.3}}
+body.viewer .abtns,body.viewer .pad{display:none}
+body.viewer .work{grid-template-columns:minmax(0,1fr);max-width:960px}
+body.viewer .pl{cursor:default}
+body.viewer .pl:hover{background:none}
+a.btn{text-decoration:none;display:inline-block;color:inherit}
 .syncbtn{display:inline-flex;align-items:center;gap:7px}
 .syncbtn i{width:8px;height:8px;border-radius:50%;background:var(--board-muted);flex:none}
 .syncbtn.ok i{background:#3DBE6E}
@@ -319,8 +331,10 @@ dialog::backdrop{background:rgba(8,10,12,.55)}
   <div class="appbar-in">
     <div class="mark"><b>Press<i>·</i>Box</b><span>Play-by-play · NFHS rules</span></div>
     <div class="gtitle" id="gtitle"></div>
+    <div class="livebadge" id="livebadge" hidden></div>
     <div class="abtns">
       <span id="sync"></span>
+      <button class="abtn" data-open="share" id="sharebtn">Share</button>
       <button class="abtn" data-open="games">Games</button>
       <button class="abtn" data-open="setup">Setup</button>
       <button class="abtn" data-open="export">Export</button>
@@ -865,7 +879,7 @@ function replay(g, upto = g.plays.length){
     }
     const pre = {sit: sit(), q: st.q, poss: st.poss};
     const r = apply(p);
-    log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q});
+    log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q, A:st.score.A, H:st.score.H});
   }
   const open = st.drive ? [{...st.drive, res:'In progress', open:true}] : [];
   return {st, S, log, scoring, drives:drives.concat(open), sit:sit(), yl, nm, ab, FL, RU};
@@ -1175,13 +1189,14 @@ function periodHtml(st){
 }
 
 function renderPad(){
+  if (ui.viewer) return;              // the live look-in is read-only
   const ctx = ui.ctx, st = ctx.st, pad = $('#pad');
   // While editing, the pad stays on that play's type even if earlier edits changed the situation.
   const types = ui.editing != null ? [ui.type] : typesFor(st);
   if (!types.length){
     pad.innerHTML = `<div class="final-card"><span class="eyebrow">Final</span><b class="num">${esc(ab('A'))} ${st.score.A} · ${esc(ab('H'))} ${st.score.H}</b>
       <p class="hint">Everything is saved on this device. Export has the box score and play-by-play to copy.</p>
-      <div class="line"><button class="btn small" data-undo>Undo last to reopen</button></div></div>`;
+      <div class="line">${framed ? '' : '<button class="btn small primary" data-xlsx>Download Excel file</button>'}<button class="btn small" data-undo>Undo last to reopen</button></div></div>`;
     return;
   }
   const editing0 = ui.editing != null;
@@ -1728,7 +1743,7 @@ const framed = (() => { try { return window.self !== window.top; } catch (e) { r
 const dlgHead = t => `<div class="dlg-hd"><h2>${t}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>`;
 function openDialog(kind){
   ui.dlg = kind; ui.confirm = null;
-  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : dlgSetup(kind === 'new');
+  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : dlgSetup(kind === 'new');
   if (!dlg().open) dlg().showModal();
 }
 function closeDialog(){ if (dlg().open) dlg().close(); ui.dlg = null; }
@@ -1789,8 +1804,27 @@ function dlgGames(){
     <p class="hint">Every game is saved in this browser${sync.user ? ' and to your Google account' : ''}. Export makes a backup you can keep anywhere.</p></div>
     <div class="dlg-ft"><button class="btn primary" data-open="new">New game</button></div>`;
 }
+// The live look-in: a link anyone can open to watch this game, read-only.
+function dlgShare(){
+  const link = `${location.origin}${location.pathname}?live=${encodeURIComponent(g.id)}`;
+  let body;
+  if (g.sample) body = '<p class="hint">The sample game can’t be shared. Start a real game and share that.</p>';
+  else if (sync.state === 'unavailable') body = '<p class="hint">Live links work from your own site (stats.kansasmediarankings.com), where games sync to your Google account.</p>';
+  else if (!sync.user) body = `<div class="acct"><div><b>Sign in to share</b><p class="hint">The live link reads the game from your account, so sign in with Google first.</p></div>
+    <button class="btn small primary" data-signin>Sign in with Google</button></div>`;
+  else body = `<div class="acct"><div><b>Live link is ${g.share ? 'on' : 'off'}</b>
+      <p class="hint">${g.share ? 'Anyone with the link can watch the score, play-by-play and stats update as you enter plays. They can’t change anything.'
+        : 'Turn it on to get a link people can watch this game from. They can’t change anything.'}</p></div>
+      <button class="btn small ${g.share ? '' : 'primary'}" data-share="${g.share ? 'off' : 'on'}">${g.share ? 'Turn off' : 'Turn on'}</button></div>
+    ${g.share ? `<div class="fld"><label class="eyebrow" for="x-link">Link to share</label><input class="inp" id="x-link" readonly value="${esc(link)}" style="font:500 15px/1.2 Barlow,sans-serif"></div>
+      <div class="line"><button class="btn small" data-copy="x-link">Copy link</button><a class="btn small" href="${esc(link)}" target="_blank" rel="noopener">Open the viewer</a></div>
+      <p class="hint">Viewers see any roster names you’ve entered. Turning the link off stops it working right away.</p>` : ''}`;
+  return `${dlgHead('Share live')}<div class="dlg-bd">${body}</div>`;
+}
 function dlgExport(){
   return `${dlgHead('Export')}<div class="dlg-bd">
+    <div class="grp"><h3>Excel workbook</h3><p class="hint">Line score, team stats, every player stat group, drives and the full play-by-play, one sheet each.</p>
+      <div class="line">${framed ? '<span class="hint">Excel downloads work on your own site.</span>' : '<button class="btn small primary" data-xlsx>Download Excel file</button>'}</div></div>
     <div class="grp"><h3>Box score and play-by-play</h3><textarea class="inp num" id="x-txt" rows="8" readonly style="font:13px/1.35 ui-monospace,Menlo,Consolas,monospace">${esc(summaryText())}</textarea>
       <div class="line"><button class="btn small" data-copy="x-txt">Copy text</button><button class="btn small" data-print>Print</button></div></div>
     <div class="grp"><h3>Back up this game</h3><p class="hint">A backup restores the game on any device through Import below.</p>
@@ -1834,8 +1868,10 @@ function refresh(){
   R = replay(g);
   ui.ctx = ui.editing != null ? Object.assign(replay(g, ui.editing), {}) : R;
   $('#gtitle').textContent = `${g.teams.A.name} at ${g.teams.H.name}${rulesOf(g).men === 8 ? ' · 8-man' : ''}`;
-  $('#sample').hidden = !g.sample;
-  renderBoard(); renderField(); renderPad(); renderView();
+  $('#sample').hidden = !g.sample || !!ui.viewer;
+  const sb = $('#sharebtn');
+  if (sb){ sb.classList.toggle('live', !!g.share); sb.innerHTML = g.share ? '<i></i>Live' : 'Share'; }
+  renderBoard(); renderField(); renderPad(); renderView(); renderLive();
 }
 let toastT;
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 1700); }
@@ -1883,6 +1919,13 @@ document.addEventListener('click', e => {
   if (e.target === dlg()){ closeDialog(); return; }
   const t = e.target.closest('button'); if (!t) return;
   const d = t.dataset;
+  if (ui.viewer && !d.tab && !d.side) return;     // viewers can switch tabs and nothing else
+  if ('xlsx' in d) return downloadXlsx();
+  if (d.share){
+    g.share = d.share === 'on'; save(); refresh();
+    dlg().innerHTML = dlgShare();
+    return toast(g.share ? 'Live link on' : 'Live link off');
+  }
   if (t.id === 'clk') return editClock();
   if (t.id === 'clkgo'){ setClock(clockNow(), !g.clk.run); return renderBoard(); }
   if (t.id === 'rec') return record();
@@ -1974,10 +2017,151 @@ dlg().addEventListener('close', () => { ui.dlg = null; });
 setInterval(() => {
   if (!g || !g.clk.run) return;
   const s = clockNow(), el = $('#clk');
-  if (s <= 0){ setClock(0, false); return renderBoard(); }
+  if (s <= 0 && !ui.viewer){ setClock(0, false); return renderBoard(); }
   if (el && el.tagName === 'BUTTON') el.textContent = mmss(s);
 }, 250);
 
+/* ================================================================
+   Excel export: a real .xlsx workbook built in the browser — a zip
+   of spreadsheet XML, one sheet per stat group — with no library.
+   ================================================================ */
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++){ let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; }
+  return t;
+})();
+function crc32(b){ let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_TABLE[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+
+// An uncompressed ("stored") zip: exactly what Excel expects inside an .xlsx.
+function zipStore(files){
+  const enc = new TextEncoder(), parts = [], central = [];
+  const d = new Date();
+  const time = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+  const date = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  let offset = 0;
+  for (const f of files){
+    const name = enc.encode(f.name), data = enc.encode(f.data), crc = crc32(data);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint16(10, time, true); h.setUint16(12, date, true); h.setUint32(14, crc, true);
+    h.setUint32(18, data.length, true); h.setUint32(22, data.length, true); h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+    parts.push(new Uint8Array(h.buffer), name, data);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+    c.setUint16(12, time, true); c.setUint16(14, date, true); c.setUint32(16, crc, true);
+    c.setUint32(20, data.length, true); c.setUint32(24, data.length, true); c.setUint16(28, name.length, true);
+    c.setUint32(42, offset, true);
+    central.push(new Uint8Array(c.buffer), name);
+    offset += 30 + name.length + data.length;
+  }
+  const size = central.reduce((n, p) => n + p.length, 0), e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true);
+  e.setUint32(12, size, true); e.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, new Uint8Array(e.buffer)], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+
+const xesc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]))
+  .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');   // characters XML can't hold
+const colName = i => { let s = ''; for (i++; i; i = Math.floor((i - 1) / 26)) s = String.fromCharCode(65 + (i - 1) % 26) + s; return s; };
+const XL_NS = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+const XL_REL = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+const XL_HEAD = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+const XL_STYLES = `${XL_HEAD}<styleSheet xmlns="${XL_NS}"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>`
+  + '<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>'
+  + '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'
+  + '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+  + '<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>'
+  + '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+
+// rows: arrays of cells (numbers stay numbers so Excel can sort and sum); a row marked .bold is a header.
+function sheetXml(rows){
+  const widths = [];
+  const body = rows.map((row, r) => `<row r="${r + 1}">${(row || []).map((v, c) => {
+    if (v === '' || v == null) return '';
+    widths[c] = Math.max(widths[c] || 0, String(v).length);
+    const ref = colName(c) + (r + 1), s = row.bold ? ' s="1"' : '';
+    return typeof v === 'number' && isFinite(v) ? `<c r="${ref}"${s}><v>${v}</v></c>`
+      : `<c r="${ref}" t="inlineStr"${s}><is><t xml:space="preserve">${xesc(v)}</t></is></c>`;
+  }).join('')}</row>`).join('');
+  const cols = Array.from(widths, (w, i) => `<col min="${i + 1}" max="${i + 1}" width="${Math.min(70, Math.max(6, (w || 0) + 2))}" customWidth="1"/>`).join('');
+  return `${XL_HEAD}<worksheet xmlns="${XL_NS}">${cols ? `<cols>${cols}</cols>` : ''}<sheetData>${body}</sheetData></worksheet>`;
+}
+function xlsxBlob(sheets){
+  const used = new Set();
+  sheets.forEach(s => { let n = s.name.replace(/[\[\]:*?\/\\]/g, '').slice(0, 31) || 'Sheet'; while (used.has(n)) n = n.slice(0, 29) + '_'; used.add(n); s.name = n; });
+  const files = [
+    {name:'[Content_Types].xml', data:`${XL_HEAD}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">`
+      + '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>'
+      + '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+      + '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+      + sheets.map((s, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')
+      + '</Types>'},
+    {name:'_rels/.rels', data:`${XL_HEAD}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${XL_REL}/officeDocument" Target="xl/workbook.xml"/></Relationships>`},
+    {name:'xl/workbook.xml', data:`${XL_HEAD}<workbook xmlns="${XL_NS}" xmlns:r="${XL_REL}"><sheets>${sheets.map((s, i) => `<sheet name="${xesc(s.name)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('')}</sheets></workbook>`},
+    {name:'xl/_rels/workbook.xml.rels', data:`${XL_HEAD}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`
+      + sheets.map((s, i) => `<Relationship Id="rId${i + 1}" Type="${XL_REL}/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('')
+      + `<Relationship Id="rId${sheets.length + 1}" Type="${XL_REL}/styles" Target="styles.xml"/></Relationships>`},
+    {name:'xl/styles.xml', data:XL_STYLES},
+    ...sheets.map((s, i) => ({name:`xl/worksheets/sheet${i + 1}.xml`, data:sheetXml(s.rows)}))
+  ];
+  return zipStore(files);
+}
+
+// The open game as sheets: summary, team stats, each player stat group, drives, play-by-play.
+function gameSheets(){
+  const st = R.st, T = g.teams, S = R.S, both = ['A', 'H'];
+  const hdr = a => Object.assign(a, {bold:true});
+  const num = n => /^\d+$/.test(String(n)) ? Number(n) : String(n);
+  const cell = v => typeof v === 'number' ? v : /^-?\d+(\.\d+)?$/.test(String(v)) ? Number(v) : String(v);
+  const avg1 = (y, n) => n ? Math.round(y / n * 10) / 10 : 0;
+  const P = (name, heads, keep, row, key) => ({name, rows:[hdr(['Team', '#', 'Name', ...heads]),
+    ...both.flatMap(s => Object.values(S.pl[s]).filter(keep).sort((a, b) => (b[key] || 0) - (a[key] || 0))
+      .map(p => [T[s].abbr, num(p.n), rosterName(s, p.n), ...row(p)]))]});
+  const cols = [0, 1, 2, 3].concat(st.q > 4 || st.lines.A[4] || st.lines.H[4] ? [4] : []);
+  const summary = [
+    hdr([`${T.A.name} at ${T.H.name}`]),
+    ['Date', new Date(g.created).toLocaleDateString()],
+    ['Game', rulesOf(g).men === 8 ? '8-man' : '11-man'],
+    ['Status', st.final ? 'Final' : `In progress, ${perLabel(st.q)}`],
+    [],
+    hdr(['Team', ...cols.map(i => i < 4 ? `Q${i + 1}` : 'OT'), 'Total']),
+    ...both.map(s => [T[s].name, ...cols.map(i => st.lines[s][i]), st.score[s]]),
+    [],
+    hdr(['Scoring plays']),
+    hdr(['Qtr', 'Clock', 'Team', 'Play', T.A.abbr, T.H.abbr]),
+    ...R.scoring.map(e => [perLabel(e.q), e.clk != null ? mmss(e.clk) : '', T[e.side].abbr, e.desc, e.A, e.H])];
+  return [
+    {name:'Summary', rows:summary},
+    {name:'Team stats', rows:[hdr(['Team stats', T.A.abbr, T.H.abbr]), ...teamRows().map(([l, f]) => [l, cell(f('A')), cell(f('H'))])]},
+    P('Passing', ['Comp', 'Att', 'Yds', 'TD', 'Int', 'Long', 'Sacked', 'Sack yds'], p => p.pa || p.psk, p => [p.pc, p.pa, p.py, p.ptd, p.pint, p.plg, p.psk, p.pskY], 'py'),
+    P('Rushing', ['Car', 'Yds', 'Avg', 'TD', 'Long'], p => p.ru, p => [p.ru, p.ry, avg1(p.ry, p.ru), p.rtd, p.rlg], 'ry'),
+    P('Receiving', ['Rec', 'Yds', 'Avg', 'TD', 'Long'], p => p.re, p => [p.re, p.rey, avg1(p.rey, p.re), p.retd, p.relg], 'rey'),
+    P('Defense', ['Solo', 'Ast', 'Total', 'TFL', 'Sacks', 'Int', 'Int yds', 'PBU', 'FF', 'FR', 'Blocked kicks'],
+      p => p.tk || p.ast || p.sk || p.dint || p.pbu || p.ff || p.fr || p.bk,
+      p => [p.tk, p.ast, p.tk + p.ast, p.tfl, p.sk, p.dint, p.dintY, p.pbu, p.ff, p.fr, p.bk], 'tk'),
+    P('Kicking', ['FGM', 'FGA', 'FG long', 'XPM', 'XPA', 'Kickoffs', 'KO yds', 'Touchbacks'], p => p.fga || p.xpa || p.ko,
+      p => [p.fgm, p.fga, p.fglg, p.xpm, p.xpa, p.ko, p.koy, p.ktb], 'fga'),
+    P('Punting', ['Punts', 'Yds', 'Avg', 'Long', 'Inside 20', 'Touchbacks'], p => p.pu, p => [p.pu, p.puy, avg1(p.puy, p.pu), p.pulg, p.pi20, p.ptb], 'pu'),
+    P('Returns', ['KR', 'KR yds', 'KR long', 'KR TD', 'PR', 'PR yds', 'PR long', 'PR TD'], p => p.kr || p.pr,
+      p => [p.kr, p.kry, p.krlg, p.krtd, p.pr, p.pry, p.prlg, p.prtd], 'kry'),
+    P('Scoring', ['TD', '2-pt', 'XP', 'FG', 'Points'], p => p.pts, p => [p.tds, p.two, p.xpm, p.fgm, p.pts], 'pts'),
+    {name:'Drives', rows:[hdr(['Team', 'Qtr', 'Clock', 'Start', 'Plays', 'Yards', 'Time', 'Result']),
+      ...R.drives.map(d => [T[d.team].abbr, perLabel(d.q), d.clk != null ? mmss(d.clk) : '', R.yl(d.team, d.start), d.plays,
+        Math.round(d.last - d.start), d.time != null ? mmss(d.time) : '', d.res])]},
+    {name:'Play-by-play', rows:[hdr(['Play', 'Qtr', 'Clock', 'Offense', 'Situation', 'Typed', 'Play', T.A.abbr, T.H.abbr]),
+      ...R.log.map(e => [e.i + 1, perLabel(e.q), e.clk != null ? mmss(e.clk) : '', T[e.poss] ? T[e.poss].abbr : '', e.sit, e.src || '',
+        (e.wiped ? `[${e.wiped}] ` : '') + e.text, e.A, e.H])]}];
+}
+function saveBlob(blob, name){
+  const a = document.createElement('a'), url = URL.createObjectURL(blob);
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+function downloadXlsx(){
+  const name = `${g.teams.A.abbr}-at-${g.teams.H.abbr}-${new Date(g.created).toISOString().slice(0, 10)}.xlsx`.toLowerCase().replace(/[^a-z0-9.\-]+/g, '-');
+  saveBlob(xlsxBlob(gameSheets()), name);
+  toast('Excel file saved');
+}
 /* ================================================================
    Sync. Games follow a Google sign-in through the stats project's own
    Firebase (fb-stats, kept apart from the Pick 'ems pool): collection
@@ -2075,7 +2259,7 @@ async function pushNow(id){
   const {fsM, fsdb} = sync.api;
   sync.pending++;
   try {
-    await fsM.setDoc(fsM.doc(fsdb, 'pressbox', id), {owner:sync.user.uid, updated:game.updated || Date.now(),
+    await fsM.setDoc(fsM.doc(fsdb, 'pressbox', id), {owner:sync.user.uid, updated:game.updated || Date.now(), public:!!game.share,
       title:`${game.teams.A.abbr} at ${game.teams.H.abbr}`, json:JSON.stringify(game)});
     sync.err = '';
   } catch (e) { sync.err = friendlySync(e); }
@@ -2137,6 +2321,44 @@ function renderSync(){
   const tip = sync.err || (sync.user ? `Signed in as ${sync.user.email || ''}` : s === 'unavailable' ? 'Syncing works on your own site' : 'Keep your games on every device');
   el.innerHTML = `<button class="abtn syncbtn ${cls}" data-sync title="${esc(tip)}"><i></i>${label}</button>`;
   if (ui.dlg === 'games' && dlg().open){ const a = $('#acct'); if (a) a.outerHTML = syncBlock(); }
+  if (ui.dlg === 'share' && dlg().open) dlg().innerHTML = dlgShare();
+}
+
+/* ---------- live look-in: ?live=<game id> shows a shared game, read-only ---------- */
+const LIVE_ID = new URLSearchParams(location.search).get('live');
+async function startViewer(id){
+  ui.viewer = true; document.body.classList.add('viewer');
+  $('#sample').hidden = true;
+  $('#gtitle').textContent = 'Live game';
+  $('#view').innerHTML = '<div class="panel"><div class="empty">Loading the live game…</div></div>';
+  let fsM, fsdb;
+  try {
+    const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
+    const [appM, fs] = await Promise.all([import(base + 'app.js'), import(base + 'firestore.js')]);
+    fsM = fs; fsdb = fs.getFirestore(appM.initializeApp(firebaseConfig));
+  } catch (e) { return viewerMessage('Can’t reach the live game. Check your connection and reload.'); }
+  const gone = () => viewerMessage('This game isn’t being shared right now.');
+  fsM.onSnapshot(fsM.doc(fsdb, 'pressbox', id), snap => {
+    const d = snap.exists() ? snap.data() : null;
+    if (!d || d.deleted || !d.public) return gone();
+    let game; try { game = JSON.parse(d.json); } catch (e) { return; }
+    g = game; $('#tabs').hidden = false;
+    refresh();
+  }, gone);
+  setInterval(renderLive, 5000);
+}
+function viewerMessage(msg){
+  g = null;
+  $('#sb').innerHTML = ''; $('#field').innerHTML = ''; $('#tabs').hidden = true;
+  $('#view').innerHTML = `<div class="panel"><div class="empty">${esc(msg)}</div></div>`;
+  renderLive();
+}
+function renderLive(){
+  const el = $('#livebadge'); if (!el) return;
+  if (!ui.viewer || !g){ el.hidden = true; return; }
+  const final = R && R.st.final, ago = Math.max(0, Math.round((Date.now() - (g.updated || Date.now())) / 1000));
+  el.hidden = false; el.classList.toggle('final', !!final);
+  el.innerHTML = `<i></i>${final ? 'Final' : 'Live'} · updated ${ago < 60 ? `${ago}s` : `${Math.round(ago / 60)} min`} ago`;
 }
 function syncBlock(){
   const s = sync.state, u = sync.user;
@@ -2173,11 +2395,14 @@ function sampleGame(){
 }
 
 /* ---------- boot ---------- */
-load();
-if (db.games.sample && db.games.sample.sample !== 2) db.games.sample = sampleGame();
-g = db.games[db.cur] || Object.values(db.games)[0];
-if (!g) g = sampleGame();
-setCurrent();
-refresh();
-startSync();
+if (LIVE_ID) startViewer(LIVE_ID);      // a shared link: watch that game, read-only
+else {
+  load();
+  if (db.games.sample && db.games.sample.sample !== 2) db.games.sample = sampleGame();
+  g = db.games[db.cur] || Object.values(db.games)[0];
+  if (!g) g = sampleGame();
+  setCurrent();
+  refresh();
+  startSync();
+}
 </script>
