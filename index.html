@@ -652,7 +652,7 @@ function replay(g, upto = g.plays.length){
       if (ry) txt += `, returned ${plural(ry, 'yard')}`;
       if (fin >= FL) return txt + '.' + touchdown(D, `${p.ib ? nm(D, p.ib) : ab(D)} interception return`, dp);
       if (fin <= 0){ newSeries(D, RU.tb); return txt + '. Touchback.'; }
-      newSeries(D, fin); return txt + ` to the ${yl(D, fin)}.`;
+      newSeries(D, fin); return txt + (ry ? ` to the ${yl(D, fin)}.` : '.');
     }
     // complete
     const rec = pl(O, p.to), g = clamp(+p.y || 0, -st.spot, FL - st.spot), end = st.spot + g, td = end >= FL;
@@ -1474,7 +1474,13 @@ function parseQuick(raw, st){
   if (has('int', 'pick', 'picked', 'intercepted')){
     const p = {t:'pass', qb:nums[0], res:'x', at:0, ry:nums[2] != null ? Math.abs(+nums[2]) : 0};
     if (nums[1] != null) p.ib = nums[1];
-    if (td) p.ry = st.spot;
+    // "2-int-2-S10": where it was picked off ("ez" = in the end zone); a second yard line is where the return ended.
+    const spots = toks.map(spotOf).filter(Boolean), ez = has('ez', 'endzone');
+    const posO = s => s.side === O ? s.n : FL - s.n;              // yards from the passing team's goal
+    if (ez) p.at = FL - st.spot; else if (spots[0]) p.at = posO(spots[0]) - st.spot;
+    const endAt = spots[ez ? 0 : 1], caught = st.spot + p.at;
+    if (endAt) p.ry = caught - posO(endAt);                        // the defense runs back toward the passer's goal
+    if (td) p.ry = caught;
     return flag(p);
   }
   if (has('sack', 'sacked', 'sk')){
@@ -1504,7 +1510,8 @@ function cheatHtml(a, h){
     ['15-0-50-td', '#15 to #0, 50-yard touchdown'],
     ['7-inc &nbsp;·&nbsp; 7-inc-88', 'Incomplete (intended for #88)'],
     ['7-sack-6-90', '#7 sacked for a loss of 6 by #90'],
-    ['7-int-24-12 &nbsp;·&nbsp; 7-int-24-td', '#7 intercepted by #24, returned 12 / returned for a touchdown'],
+    [`7-int-24-${h}10 &nbsp;·&nbsp; 7-int-24-${h}10-${h}40`, `#7 intercepted by #24 at the ${h} 10 / and returned to the ${h} 40. Without a yard line the pick is placed at the line of scrimmage.`],
+    [`7-int-24-${h}10-12 &nbsp;·&nbsp; 7-int-24-td &nbsp;·&nbsp; 7-int-24-ez`, 'Returned 12 yards / returned for a touchdown / picked off in the end zone (a touchback if not returned)'],
     [`3-3-fumble ${h} rec`, `#3 runs for 3, fumbles, ${h} recovers (add a number for who: fum ${h} 44)`],
     [`10-0 fum ${h} rec td`, `Fumble, ${h} recovers and returns it for a touchdown (fum ${h} 44 12 = #44 returns it 12)`],
     [`${a} punt`, `Punt. Then type where it ended up (${h} ball at ${h}10) and the distance fills in.`],
