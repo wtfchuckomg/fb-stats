@@ -3555,7 +3555,7 @@ function deleteScore(id){
 
 /* ---------- shared games for the week, live from Firestore ---------- */
 const scores = {api:null, key:null, unsub:null, docs:{}, seen:null};
-function scoresReady(api){ scores.api = api; scores.key = null; watchHidden(api); watchTeamRecs(api); renderScores(); }
+function scoresReady(api){ scores.api = api; scores.key = null; watchHidden(api); watchTeamRecs(api); watchAllGames(api); renderScores(); }
 
 /* ---------- games the admin has hidden from the scoreboards ---------- */
 // One shared list, in a document only the admin's account can change (the rules let only a document's owner write
@@ -3576,7 +3576,10 @@ function watchHidden(api){
     hideList.ids = new Set(ids); hiddenChanged();
   }, () => { hideList.unsub = null; });
 }
-function hiddenChanged(){ renderScores(); renderScoreboard(); renderHome(); if (ui.county) renderCounty(); }
+function hiddenChanged(){
+  if (allGames.list) indexGames();   // a hidden game no longer counts toward a team's record or schedule
+  renderScores(); renderScoreboard(); renderHome(); renderTeamPage(); if (ui.county) renderCounty();
+}
 async function toggleHide(id){
   if (!ui.admin || !hideList.api) return;
   const ids = new Set(hideList.ids), hide = !ids.has(id);
@@ -3610,8 +3613,9 @@ function shownWeek(){
   return weekKey(Date.now());
 }
 // Shared copies first; this device's own copy wins, since it's the working copy.
-// The admin's hidden games are left out, unless asked for (the admin's own view of a scoreboard).
-function weekGames(key, withHidden){
+// The admin's hidden games are left out, unless asked for (the admin's own view of a scoreboard); so are the
+// opponents' own games (the State Scoreboard asks for those).
+function weekGames(key, withHidden, withOpp){
   const out = {};
   Object.entries(scores.docs).forEach(([id, x]) => { if (x && x.teams) out[id] = Object.assign(x, {id}); });
   if (!ui.viewer){
@@ -3623,7 +3627,7 @@ function weekGames(key, withHidden){
   const pair = x => [x.teams.A.name, x.teams.H.name].map(canonSchool).sort().join('|');
   // (A hidden game doesn't take its schedule entry's place.)
   const statted = new Set(Object.values(out).filter(x => x.kind !== 'score' && !isHidden(x)).map(pair));
-  Object.values(out).forEach(x => { if ((x.kind === 'score' && statted.has(pair(x))) || (!withHidden && isHidden(x))) delete out[x.id]; });
+  Object.values(out).forEach(x => { if ((x.kind === 'score' && statted.has(pair(x))) || (!withHidden && isHidden(x)) || (x.opp && !withOpp)) delete out[x.id]; });
   return Object.values(out).sort((a, b) => gameDay(a) - gameDay(b) || (a.created || 0) - (b.created || 0));
 }
 // Every week of this season, plus any week this device has a game or score in.
@@ -3642,7 +3646,7 @@ function weekOptions(cur){
 // A game still to come (current) with no record typed in shows the team's record from its team page.
 function recordText(t, s, current){
   let rec = t && t.rec, hrec = t && t.hrec;
-  if (current && t && !rec && !hrec){ const r = teamRecord(t.name); if (r){ rec = r.rec || ''; hrec = (s === 'A' ? r.away : r.home) || ''; } }
+  if (current && t && !rec && !hrec){ const r = shownRecord(t.name); if (r){ rec = r.rec || ''; hrec = (s === 'A' ? r.away : r.home) || ''; } }
   const where = s === 'A' ? 'Away' : 'Home', ha = hrec ? `${hrec} ${where}` : '';
   return rec || ha ? [rec, ha].filter(Boolean).join(', ') : '';
 }
@@ -3934,7 +3938,7 @@ function renderScoreboard(){
   const tabs = keys.map(k => `<button type="button" class="bw${k === key ? ' on' : ''}" data-bweek="${k}"${k === key ? ' aria-current="true"' : ''}>
     <b>${esc(weekLabel(k).toUpperCase())}</b><span>${weekRange(k)}</span></button>`).join('');
   // The State Scoreboard: games with stats kept on them, and games still to come. The admin also sees hidden games, faded.
-  const games = weekGames(key, ui.admin).filter(x => !ui.state || onStateBoard(x)), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
+  const games = weekGames(key, ui.admin, ui.state).filter(x => !ui.state || onStateBoard(x)), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (board.err) body = note(board.err);
   else if (scores.ready !== key) body = note('Loading scores…');
@@ -5072,17 +5076,57 @@ document.addEventListener('click', e => {
 /* ================================================================
    Teams: an index of every school (?teams) and a page for each one
    (?team=<name>) with its record, schedule and results. The admin
-   keeps each team's record here, once, and the scoreboards show it on
-   the team's games still to come.
+   sets each team's record here once; from then on every final on the
+   site adds to it, and the scoreboards show it on the team's games
+   still to come.
    ================================================================ */
 const TEAM_PAGE = (PAGE_Q.has('team') || PAGE_Q.has('teams')) && !PAGE_Q.has('stats');
-const tpage = {games:null, err:'', edit:false, draft:null, sug:null, name:''};
+const tpage = {edit:false, draft:null, sug:null, name:''};
+
+/* ---------- every shared game, for the schools' schedules and their records ---------- */
+// The home page and BUCO Stats don't need it; the scoreboards, game pages, tracker and team pages do.
+const allGames = {list:null, idx:null, err:'', unsub:null};
+function watchAllGames(api){
+  if (allGames.unsub || ui.home || ui.county) return;
+  const {fsM, fsdb} = api;
+  allGames.unsub = fsM.onSnapshot(fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true)), snap => {
+    const out = [];
+    snap.forEach(d => {
+      const v = d.data(); if (v.deleted || !v.json) return;
+      try { const x = JSON.parse(v.json); if (x.teams && x.teams.A && x.teams.H) out.push(Object.assign(x, {id:d.id})); } catch (e) {}
+    });
+    allGames.list = out; allGames.err = ''; indexGames(); recordsChanged();
+  }, () => { allGames.err = 'Can’t load the games right now. Reload to try again.'; allGames.list = allGames.list || []; renderTeamPage(); });
+}
+// Each school's games, one per week and opponent: the one with stats if there is one, else the newest copy.
+function indexGames(){
+  const idx = new Map();
+  (allGames.list || []).forEach(x => {
+    if (isHidden(x)) return;
+    const stats = x.kind !== 'score' && ((x.plays && x.plays.length) || !!x.box), wk = gameWeek(x);
+    ['A', 'H'].forEach(side => {
+      const opp = side === 'A' ? 'H' : 'A', k = canonSchool(x.teams[side].name), key = wk + '|' + canonSchool(x.teams[opp].name);
+      let m = idx.get(k); if (!m) idx.set(k, m = {});
+      const was = m[key];
+      if (!was || (stats && !was.stats) || (stats === was.stats && (x.updated || 0) > (was.x.updated || 0))) m[key] = {x, side, opp, wk, stats, key};
+    });
+  });
+  allGames.idx = idx; recCache.clear();
+}
+const schoolRows = name => Object.values((allGames.idx && allGames.idx.get(canonSchool(name))) || {}).sort((a, b) => gameDay(a.x) - gameDay(b.x));
+// Whether a game is final and its score, worked out once per version of the game (a replay isn't free).
+const finMemo = new Map();
+function finalOf(x){
+  const k = `${x.id}:${x.updated || 0}`;
+  let v = finMemo.get(k);
+  if (!v){ const m = summary(x); v = {fin:m.fin, live:m.live, score:m.score, status:m.status, q:m.q}; finMemo.set(k, v); }
+  return v;
+}
 
 /* ---------- team records, kept by the admin ---------- */
 // One shared list, like the hidden games: only the admin's account can change it, and anyone can read it.
 const RECS_DOC = 'team-records';
 const teamRecs = {map:{}, api:null, unsub:null};
-const teamRecord = name => name ? teamRecs.map[canonSchool(name)] || null : null;
 function watchTeamRecs(api){
   teamRecs.api = api;
   if (teamRecs.unsub) return;
@@ -5091,15 +5135,46 @@ function watchTeamRecs(api){
   teamRecs.unsub = fsM.onSnapshot(fsM.doc(fsdb, 'pressbox', RECS_DOC), snap => {
     const d = snap.exists() ? snap.data() : null;
     let map = {}; if (d && d.owner === ADMIN_UID && !d.deleted){ try { map = JSON.parse(d.json).teams || {}; } catch (e) {} }
-    teamRecs.map = map; recordsChanged();
+    teamRecs.map = map; recCache.clear(); recordsChanged();
   }, () => { teamRecs.unsub = null; });
 }
 function recordsChanged(){ renderScores(); renderScoreboard(); renderTeamPage(); if (g && R && !ui.board) renderBoard(); }
+
+// "3-1" or "3-1-1" as numbers, or null when it's something else (left as typed).
+const parseRec = s => { const m = String(s || '').trim().match(/^(\d+)\s*-\s*(\d+)(?:\s*-\s*(\d+))?$/); return m ? [+m[1], +m[2], +(m[3] || 0)] : null; };
+const fmtRec = ([w, l, t]) => `${w}-${l}${t ? '-' + t : ''}`;
+// The record as shown: what the admin saved, plus every final on the site since. Saving notes the finals already on
+// the site (those are in what was typed); after that a final counts if it's dated on or after the day it was saved.
+const recCache = new Map();
+function shownRecord(name){
+  const k = name && canonSchool(name); if (!k) return null;
+  if (recCache.has(k)) return recCache.get(k);
+  const base = teamRecs.map[k]; let out = null;
+  if (base){
+    out = {rec:base.rec || '', home:base.home || '', away:base.away || ''};
+    if (allGames.idx){
+      const seen = new Set(base.seen || []), from = new Date(base.asOf || base.updated || 0); from.setHours(0, 0, 0, 0);
+      const P = {rec:parseRec(base.rec), home:parseRec(base.home), away:parseRec(base.away)};
+      schoolRows(name).forEach(r => {
+        if (seen.has(r.key) || gameDay(r.x) < from) return;
+        const f = finalOf(r.x); if (!f.fin) return;
+        const a = f.score[r.side], b = f.score[r.opp], i = a > b ? 0 : a < b ? 1 : 2;
+        [P.rec, r.side === 'H' ? P.home : P.away].forEach(p => { if (p) p[i]++; });
+      });
+      ['rec', 'home', 'away'].forEach(kk => { if (P[kk]) out[kk] = fmtRec(P[kk]); });
+    }
+  }
+  recCache.set(k, out);
+  return out;
+}
 async function saveTeamRecord(name, rec){
   if (!ui.admin || !teamRecs.api) return toast('Sign in on the Game Tracker to edit records');
   const map = Object.assign({}, teamRecs.map), k = canonSchool(name);
-  if (rec.rec || rec.home || rec.away) map[k] = Object.assign({name}, rec, {updated:Date.now()}); else delete map[k];
-  teamRecs.map = map; recordsChanged();
+  if (rec.rec || rec.home || rec.away){
+    const seen = schoolRows(name).filter(r => finalOf(r.x).fin).map(r => r.key);
+    map[k] = Object.assign({name}, rec, {asOf:Date.now(), seen, updated:Date.now()});
+  } else delete map[k];
+  teamRecs.map = map; recCache.clear(); recordsChanged();
   const {fsM, fsdb} = teamRecs.api;
   try {
     await fsM.setDoc(fsM.doc(fsdb, 'pressbox', RECS_DOC), {owner:ADMIN_UID, updated:Date.now(), public:true, kind:'records',
@@ -5122,18 +5197,8 @@ async function startTeamPage(){
     const [appM, fsM, authM] = await Promise.all(['app', 'firestore', ...(admin ? ['auth'] : [])].map(m => import(base + m + '.js')));
     const app = appM.initializeApp(firebaseConfig);
     if (authM) authM.onAuthStateChanged(authM.getAuth(app), u => { ui.admin = !!u && u.uid === ADMIN_UID; renderTeamPage(); });
-    const fsdb = fsM.getFirestore(app);
-    scoresReady({fsM, fsdb});   // the week's scores strip, and the records
-    // Every shared game and schedule entry, for the schools and their schedules.
-    fsM.onSnapshot(fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true)), snap => {
-      const out = [];
-      snap.forEach(d => {
-        const v = d.data(); if (v.deleted || !v.json) return;
-        try { const x = JSON.parse(v.json); if (x.teams && x.teams.A && x.teams.H) out.push(Object.assign(x, {id:d.id})); } catch (e) {}
-      });
-      tpage.games = out; renderTeamPage();
-    }, () => { tpage.err = 'Can’t load the games right now. Reload to try again.'; renderTeamPage(); });
-  } catch (e) { tpage.err = 'Can’t reach the games. Check your connection and reload.'; renderTeamPage(); }
+    scoresReady({fsM, fsdb:fsM.getFirestore(app)});   // the scores strip, the records and every shared game
+  } catch (e) { allGames.err = 'Can’t reach the games. Check your connection and reload.'; allGames.list = []; renderTeamPage(); }
 }
 
 function renderTeamPage(){
@@ -5142,50 +5207,36 @@ function renderTeamPage(){
   $('#board').innerHTML = name ? teamPageHtml(name) : teamsIndexHtml();
 }
 
-// A team's games, one per week and opponent: the one with stats if there is one, else the newest copy.
-function teamSchedule(name){
-  const k = canonSchool(name), rows = {};
-  (tpage.games || []).forEach(x => {
-    if (isHidden(x)) return;
-    const side = canonSchool(x.teams.A.name) === k ? 'A' : canonSchool(x.teams.H.name) === k ? 'H' : null;
-    if (!side) return;
-    const opp = side === 'A' ? 'H' : 'A', wk = gameWeek(x), key = wk + '|' + canonSchool(x.teams[opp].name);
-    const stats = x.kind !== 'score' && ((x.plays && x.plays.length) || !!x.box), was = rows[key];
-    if (!was || (stats && !was.stats) || (stats === was.stats && (x.updated || 0) > (was.x.updated || 0))) rows[key] = {x, side, opp, wk, stats};
-  });
-  return Object.values(rows).sort((a, b) => gameDay(a.x) - gameDay(b.x));
-}
-
 function teamsIndexHtml(){
   document.title = 'Teams · Kansas Media Stats';
   const seen = new Map(), add = n => { const k = n && canonSchool(n); if (k && !seen.has(k)) seen.set(k, n); };
-  (tpage.games || []).forEach(x => { add(x.teams.A.name); add(x.teams.H.name); });
+  (allGames.list || []).forEach(x => { add(x.teams.A.name); add(x.teams.H.name); });
   const county = new Set(COUNTY.map(canonSchool));
   const others = [...seen.entries()].filter(([k]) => !county.has(k)).map(([, n]) => n).sort((a, b) => a.localeCompare(b));
-  const card = (n, size) => { const r = recParts(teamRecord(n));
+  const card = (n, size) => { const r = recParts(shownRecord(n));
     return `<a class="tp-card" href="?team=${encodeURIComponent(n)}">${markFor({name:n, abbr:shortName(n), color:'#4A4B4D'}, size)}<b>${esc(n)}</b>${r.length ? `<span>${esc(r[0])}</span>` : ''}</a>`; };
   return `<section class="bcard bhead"><div class="bhead-top"><h1>Teams</h1></div><p class="h-note" style="margin:0">Each team’s record, schedule and results.</p></section>
     <section class="bcard"><h2 class="tp-h">Butler County</h2><div class="tp-grid">${COUNTY.map(n => card(n, 56)).join('')}</div></section>
-    <section class="bcard"><h2 class="tp-h">Opponents</h2>${tpage.games ? `<div class="tp-grid small">${others.map(n => card(n, 28)).join('')}</div>`
-      : `<p class="bempty">${esc(tpage.err || 'Loading…')}</p>`}</section>`;
+    <section class="bcard"><h2 class="tp-h">Opponents</h2>${allGames.list ? `<div class="tp-grid small">${others.map(n => card(n, 28)).join('')}</div>`
+      : `<p class="bempty">${esc(allGames.err || 'Loading…')}</p>`}</section>`;
 }
 
 function teamPageHtml(nameIn){
-  const k = canonSchool(nameIn), rows = teamSchedule(nameIn), any = rows[0], tm = any ? any.x.teams[any.side] : null;
+  const k = canonSchool(nameIn), rows = schoolRows(nameIn), any = rows[0], tm = any ? any.x.teams[any.side] : null;
   const name = COUNTY.find(n => canonSchool(n) === k) || (tm && tm.name) || nameIn;
   tpage.name = name; document.title = `${name} · Kansas Media Stats`;
   const mascot = rows.map(r => r.x.teams[r.side].mascot).find(Boolean) || '';
-  const inCounty = COUNTY.some(n => canonSchool(n) === k), r = teamRecord(name);
+  const inCounty = COUNTY.some(n => canonSchool(n) === k), r = shownRecord(name);
   const mark = {name, abbr:(tm && tm.abbr) || shortName(name), color:(tm && tm.color) || '#4A4B4D'};
   // The record from the finals on the site, offered when entering one (it misses any game that isn't on the site).
   const c = {w:0, l:0, t:0, hw:0, hl:0, aw:0, al:0};
   rows.forEach(({x, side, opp}) => {
-    const m = summary(x); if (!m.fin) return;
-    const a = m.score[side], b = m.score[opp], res = a > b ? 'w' : a < b ? 'l' : 't';
+    const f = finalOf(x); if (!f.fin) return;
+    const a = f.score[side], b = f.score[opp], res = a > b ? 'w' : a < b ? 'l' : 't';
     c[res]++; if (res !== 't') c[(side === 'H' ? 'h' : 'a') + res]++;
   });
-  const f = (w, l, t) => `${w}-${l}${t ? '-' + t : ''}`;
-  tpage.sug = {rec:f(c.w, c.l, c.t), home:f(c.hw, c.hl), away:f(c.aw, c.al)};
+  const f2 = (w, l, t) => `${w}-${l}${t ? '-' + t : ''}`;
+  tpage.sug = {rec:f2(c.w, c.l, c.t), home:f2(c.hw, c.hl), away:f2(c.aw, c.al)};
   const val = kk => esc(tpage.draft && kk in tpage.draft ? tpage.draft[kk] : (r && r[kk]) || '');
   const recBox = (kk, label) => `<div class="tp-rec"><b>${esc((r && r[kk]) || '–')}</b><span>${label}</span></div>`;
   const form = ui.admin && tpage.edit ? `<div class="tp-form">
@@ -5193,9 +5244,9 @@ function teamPageHtml(nameIn){
         `<div class="fld"><label class="eyebrow" for="tp-${kk}">${l}</label><input class="inp" id="tp-${kk}" maxlength="9" autocomplete="off" value="${val(kk)}" placeholder="${ph}"></div>`).join('')}</div>
       <p class="h-note">From the finals on the site: <b>${esc(tpage.sug.rec)}</b> (${esc(tpage.sug.home)} home, ${esc(tpage.sug.away)} away). <button type="button" class="linkbtn" data-tp-use>Use these</button></p>
       <div class="tp-acts"><button type="button" class="btn primary" data-tp-save>Save record</button><button type="button" class="btn" data-tp-cancel>Cancel</button></div>
-      <p class="h-note">It shows on the scoreboards on ${esc(name)}’s games still to come. A record typed into one game wins for that game.</p></div>` : '';
+      <p class="h-note">Enter the record as it stands today. From then on each final on the site adds to it on its own, and it shows on the scoreboards on ${esc(name)}’s games still to come. A record typed into one game wins for that game.</p></div>` : '';
   const sched = rows.map(({x, side, opp, wk, stats}) => {
-    const m = summary(x), o = x.teams[opp], a = m.score[side], b = m.score[opp];
+    const m = finalOf(x), o = x.teams[opp], a = m.score[side], b = m.score[opp];
     const res = m.fin ? `<b class="${a > b ? 'w' : a < b ? 'l' : ''}">${a > b ? 'W' : a < b ? 'L' : 'T'}</b> ${a}-${b}${m.q > 4 ? ' (OT)' : ''}`
       : m.live ? `<span class="live">${esc(m.status)}</span> ${a}-${b}` : esc(dayShort(gameDay(x)));
     const go = stats ? `<a class="tp-go" href="?game=${encodeURIComponent(x.id)}${x.box ? '&amp;tab=box' : ''}">${x.box ? 'Box Score' : 'Gamecast'}</a>` : '';
@@ -5210,8 +5261,8 @@ function teamPageHtml(nameIn){
       ${inCounty ? `<div class="tp-links"><a class="h-btn" href="?stats&amp;team=${encodeURIComponent(name)}">Player stats</a><a class="h-btn" href="?stats=team&amp;team=${encodeURIComponent(name)}">Team stats</a></div>` : ''}
     </section>
     <section class="bcard"><h2 class="tp-h">Schedule &amp; Results</h2>
-      ${tpage.games ? (sched ? `<div class="tbl-x"><table class="tp-sched"><tbody>${sched}</tbody></table></div>` : `<p class="bempty">No games for ${esc(name)} on the site yet.</p>`)
-        : `<p class="bempty">${esc(tpage.err || 'Loading…')}</p>`}
+      ${allGames.list ? (sched ? `<div class="tbl-x"><table class="tp-sched"><tbody>${sched}</tbody></table></div>` : `<p class="bempty">No games for ${esc(name)} on the site yet.</p>`)
+        : `<p class="bempty">${esc(allGames.err || 'Loading…')}</p>`}
     </section>`;
 }
 
@@ -5231,6 +5282,272 @@ document.addEventListener('input', e => {
   const id = e.target.id || '';
   if (ui.teamPage && /^tp-(rec|home|away)$/.test(id)){ tpage.draft = tpage.draft || {}; tpage.draft[id.slice(3)] = e.target.value; }
 });
+/* Generated from the MaxPreps Kansas football scores pages (Thursday through Saturday, 2026 regular season):
+   every game of the Butler County schools' opponents that doesn't include a county school.
+   [date, away, home, away score, home score]; the scores are null until the game is played. */
+const OPP_SCHEDULE_2026 = [
+  ["2026-09-03", "Haysville Campus", "Goddard", 12, 36],
+  ["2026-09-04", "Abilene", "Concordia", 0, 33],
+  ["2026-09-04", "Belle Plaine", "Hutchinson Trinity", 14, 30],
+  ["2026-09-04", "Chanute", "Mulvane", 12, 24],
+  ["2026-09-04", "Clearwater", "Wellington", 48, 7],
+  ["2026-09-04", "Colony-Crest", "Yates Center", 0, 48],
+  ["2026-09-04", "Columbus", "Independence", 36, 33],
+  ["2026-09-04", "Derby", "Eisenhower", 45, 21],
+  ["2026-09-04", "Doniphan West", "Onaga", 24, 20],
+  ["2026-09-04", "Eureka", "Caney Valley", 58, 0],
+  ["2026-09-04", "Fredonia/Elk Valley", "Cherryvale", 36, 16],
+  ["2026-09-04", "Garden Plain", "Cheney", 27, 28],
+  ["2026-09-04", "Halstead", "Hesston", 35, 6],
+  ["2026-09-04", "Hillsboro", "Hoisington", 8, 26],
+  ["2026-09-04", "Lakin", "Holcomb", 40, 0],
+  ["2026-09-04", "Madison", "Lebo", 30, 6],
+  ["2026-09-04", "Maize South", "Buhler", 28, 7],
+  ["2026-09-04", "Marmaton Valley", "Oswego", 32, 56],
+  ["2026-09-04", "Medicine Lodge", "Chaparral", 47, 22],
+  ["2026-09-04", "Mission Valley", "Council Grove", 6, 62],
+  ["2026-09-04", "Moundridge", "Sterling", 21, 53],
+  ["2026-09-04", "Newton", "Valley Center", 36, 34],
+  ["2026-09-04", "Nickerson", "Haven", 7, 46],
+  ["2026-09-04", "Oxford", "Chase County", 12, 26],
+  ["2026-09-04", "Salina Central", "Salina South", 35, 33],
+  ["2026-09-04", "Sedan", "Central Burden", 26, 40],
+  ["2026-09-04", "Sedgwick", "Inman", 71, 0],
+  ["2026-09-04", "St. Paul", "Pleasanton", 30, 38],
+  ["2026-09-04", "Syracuse", "Ulysses", 0, 60],
+  ["2026-09-04", "Uniontown", "Jayhawk Linn", 8, 44],
+  ["2026-09-04", "Winfield", "Arkansas City", 27, 6],
+  ["2026-09-11", "Abilene", "Wamego", 57, 13],
+  ["2026-09-11", "Central Burden", "Chase County", 52, 14],
+  ["2026-09-11", "Conway Springs", "Cheney", 0, 37],
+  ["2026-09-11", "Eisenhower", "Haysville Campus", 32, 28],
+  ["2026-09-11", "Eureka", "Humboldt", 0, 42],
+  ["2026-09-11", "Field Kindley", "Chanute", 8, 43],
+  ["2026-09-11", "Holcomb", "Garden Plain", 21, 25],
+  ["2026-09-11", "Hutchinson", "Derby", 13, 55],
+  ["2026-09-11", "Kingman", "Belle Plaine", 8, 42],
+  ["2026-09-11", "Lakin", "Syracuse", 0, 13],
+  ["2026-09-11", "Larned", "Hillsboro", 0, 37],
+  ["2026-09-11", "Madison", "Waverly", 44, 40],
+  ["2026-09-11", "Maize South", "Valley Center", 48, 20],
+  ["2026-09-11", "Marion", "Inman", 0, 41],
+  ["2026-09-11", "Marmaton Valley", "Yates Center", 58, 50],
+  ["2026-09-11", "McPherson", "Great Bend", 3, 21],
+  ["2026-09-11", "Mission Valley", "West Franklin", 43, 13],
+  ["2026-09-11", "Mulvane", "Buhler", 23, 28],
+  ["2026-09-11", "Neodesha", "Cherryvale", 49, 22],
+  ["2026-09-11", "Newton", "Arkansas City", 25, 48],
+  ["2026-09-11", "Nickerson", "Halstead", 6, 56],
+  ["2026-09-11", "Oswego", "St. Paul", 59, 14],
+  ["2026-09-11", "Pratt", "Haven", 41, 42],
+  ["2026-09-11", "Salina Central", "Goddard", 34, 20],
+  ["2026-09-11", "Salina South", "Maize", 48, 6],
+  ["2026-09-11", "Sedan", "Cedar Vale/Dexter", 74, 24],
+  ["2026-09-11", "Sedgwick", "Moundridge", 0, 41],
+  ["2026-09-11", "Southeast", "Colony-Crest", 52, 44],
+  ["2026-09-11", "Sterling", "Hutchinson Trinity", 55, 0],
+  ["2026-09-11", "Udall", "West Elk", 0, 48],
+  ["2026-09-11", "Wellington", "Wichita Collegiate", 33, 13],
+  ["2026-09-18", "Abilene", "Chapman", null, null],
+  ["2026-09-18", "Andale", "Wellington", null, null],
+  ["2026-09-18", "Arkansas City", "Salina Central", null, null],
+  ["2026-09-18", "Buhler", "McPherson", null, null],
+  ["2026-09-18", "Central Heights", "Uniontown", null, null],
+  ["2026-09-18", "Chanute", "Louisburg", null, null],
+  ["2026-09-18", "Chaparral", "Conway Springs", null, null],
+  ["2026-09-18", "Eisenhower", "Goddard", null, null],
+  ["2026-09-18", "Ellinwood", "Moundridge", null, null],
+  ["2026-09-18", "Eureka", "Neodesha", null, null],
+  ["2026-09-18", "Fort Scott", "Independence", null, null],
+  ["2026-09-18", "Garden Plain", "Trinity Academy", null, null],
+  ["2026-09-18", "Goodland", "Lakin", null, null],
+  ["2026-09-18", "Halstead", "Larned", null, null],
+  ["2026-09-18", "Hesston", "Pratt", null, null],
+  ["2026-09-18", "Hillsboro", "Haven", null, null],
+  ["2026-09-18", "Humboldt", "Caney Valley", null, null],
+  ["2026-09-18", "Hutchinson Trinity", "Marion", null, null],
+  ["2026-09-18", "Inman", "Sterling", null, null],
+  ["2026-09-18", "Madison", "Northern Heights", null, null],
+  ["2026-09-18", "Maize South", "Maize", null, null],
+  ["2026-09-18", "Medicine Lodge", "Kingman", null, null],
+  ["2026-09-18", "Olpe", "Mission Valley", null, null],
+  ["2026-09-18", "Oswego", "Colony-Crest", null, null],
+  ["2026-09-18", "Oxford", "Southeast", null, null],
+  ["2026-09-18", "Pleasanton", "Marmaton Valley", null, null],
+  ["2026-09-18", "Salina South", "Hutchinson", null, null],
+  ["2026-09-18", "Southwestern Heights", "Syracuse", null, null],
+  ["2026-09-18", "St. Paul", "Yates Center", null, null],
+  ["2026-09-18", "Udall", "Stafford", null, null],
+  ["2026-09-18", "Wabaunsee", "Onaga", null, null],
+  ["2026-09-18", "West Elk", "Sedan", null, null],
+  ["2026-09-18", "Winfield", "Mulvane", null, null],
+  ["2026-09-24", "Medicine Lodge", "Belle Plaine", null, null],
+  ["2026-09-25", "Abilene", "Rock Creek", null, null],
+  ["2026-09-25", "Buhler", "Great Bend", null, null],
+  ["2026-09-25", "Cedar Vale/Dexter", "Central Burden", null, null],
+  ["2026-09-25", "Clearwater", "Cheney", null, null],
+  ["2026-09-25", "Conway Springs", "Moundridge", null, null],
+  ["2026-09-25", "Erie", "Udall", null, null],
+  ["2026-09-25", "Field Kindley", "Independence", null, null],
+  ["2026-09-25", "Fredonia/Elk Valley", "Humboldt", null, null],
+  ["2026-09-25", "Galena", "Cherryvale", null, null],
+  ["2026-09-25", "Garden Plain", "Halstead", null, null],
+  ["2026-09-25", "Haysville Campus", "Hutchinson", null, null],
+  ["2026-09-25", "Hutchinson Trinity", "Inman", null, null],
+  ["2026-09-25", "Lakin", "Cimarron", null, null],
+  ["2026-09-25", "Larned", "Pratt", null, null],
+  ["2026-09-25", "Maize", "Derby", null, null],
+  ["2026-09-25", "Marion", "Chaparral", null, null],
+  ["2026-09-25", "Mulvane", "Wamego", null, null],
+  ["2026-09-25", "Newton", "Goddard", null, null],
+  ["2026-09-25", "Northeast", "Uniontown", null, null],
+  ["2026-09-25", "Onaga", "Mission Valley", null, null],
+  ["2026-09-25", "SS (CO-OP)", "Oxford", null, null],
+  ["2026-09-25", "Salina Central", "Eisenhower", null, null],
+  ["2026-09-25", "Salina South", "Valley Center", null, null],
+  ["2026-09-25", "Sedgwick", "Sterling", null, null],
+  ["2026-09-25", "St. Paul", "Marmaton Valley", null, null],
+  ["2026-09-25", "Trinity Academy", "Syracuse", null, null],
+  ["2026-09-25", "Wichita Collegiate", "Andale", null, null],
+  ["2026-10-02", "Andale", "Cheney", null, null],
+  ["2026-10-02", "Baxter Springs", "Cherryvale", null, null],
+  ["2026-10-02", "Belle Plaine", "Reno County HomeSchool", null, null],
+  ["2026-10-02", "Central Burden", "South Sumner", null, null],
+  ["2026-10-02", "Central Heights", "Humboldt", null, null],
+  ["2026-10-02", "Clay Center", "Abilene", null, null],
+  ["2026-10-02", "Clearwater", "Trinity Academy", null, null],
+  ["2026-10-02", "Colony-Crest", "St. Paul", null, null],
+  ["2026-10-02", "Conway Springs", "Medicine Lodge", null, null],
+  ["2026-10-02", "Derby", "Maize South", null, null],
+  ["2026-10-02", "Field Kindley", "Winfield", null, null],
+  ["2026-10-02", "Haven", "Marion", null, null],
+  ["2026-10-02", "Haysville Campus", "Valley Center", null, null],
+  ["2026-10-02", "Hillsboro", "Inman", null, null],
+  ["2026-10-02", "Hoisington", "Pratt", null, null],
+  ["2026-10-02", "Hutchinson", "Maize", null, null],
+  ["2026-10-02", "Hutchinson Trinity", "Moundridge", null, null],
+  ["2026-10-02", "Madison", "Sedan", null, null],
+  ["2026-10-02", "Newton", "Salina Central", null, null],
+  ["2026-10-02", "Olpe", "Eureka", null, null],
+  ["2026-10-02", "Osawatomie", "Uniontown", null, null],
+  ["2026-10-02", "Oxford", "Udall", null, null],
+  ["2026-10-02", "Salina South", "Arkansas City", null, null],
+  ["2026-10-02", "Sedgwick", "Nickerson", null, null],
+  ["2026-10-02", "Southeast of Saline", "Wichita Collegiate", null, null],
+  ["2026-10-02", "Southwestern Heights", "Lakin", null, null],
+  ["2026-10-02", "Sterling", "Halstead", null, null],
+  ["2026-10-02", "Valley Falls", "Onaga", null, null],
+  ["2026-10-02", "Wellington", "Mulvane", null, null],
+  ["2026-10-08", "Newton", "Eisenhower", null, null],
+  ["2026-10-09", "Chanute", "Fort Scott", null, null],
+  ["2026-10-09", "Cherryvale", "Caney Valley", null, null],
+  ["2026-10-09", "Clearwater", "Osage City", null, null],
+  ["2026-10-09", "Conway Springs", "Belle Plaine", null, null],
+  ["2026-10-09", "Derby", "Valley Center", null, null],
+  ["2026-10-09", "Garden Plain", "Marion", null, null],
+  ["2026-10-09", "Hillsboro", "Moundridge", null, null],
+  ["2026-10-09", "Hutchinson", "Salina Central", null, null],
+  ["2026-10-09", "Independence", "Ottawa", null, null],
+  ["2026-10-09", "Kingman", "Lakin", null, null],
+  ["2026-10-09", "Larned", "Haven", null, null],
+  ["2026-10-09", "Madison", "Marmaton Valley", null, null],
+  ["2026-10-09", "Maize", "Haysville Campus", null, null],
+  ["2026-10-09", "Medicine Lodge", "Syracuse", null, null],
+  ["2026-10-09", "Mulvane", "McPherson", null, null],
+  ["2026-10-09", "Neodesha", "Humboldt", null, null],
+  ["2026-10-09", "Nickerson", "Pratt", null, null],
+  ["2026-10-09", "Northeast", "Eureka", null, null],
+  ["2026-10-09", "Onaga", "Jackson Heights", null, null],
+  ["2026-10-09", "Oxford", "Lincoln", null, null],
+  ["2026-10-09", "Sacred Heart", "Hutchinson Trinity", null, null],
+  ["2026-10-09", "Salina South", "Maize South", null, null],
+  ["2026-10-09", "Sedan", "Colony-Crest", null, null],
+  ["2026-10-09", "St. Marys", "Mission Valley", null, null],
+  ["2026-10-09", "Trinity Academy", "Andale", null, null],
+  ["2026-10-09", "Udall", "Central Burden", null, null],
+  ["2026-10-09", "Uniontown", "St. Mary's-Colgan", null, null],
+  ["2026-10-09", "Wellington", "Buhler", null, null],
+  ["2026-10-09", "Wichita Collegiate", "Cheney", null, null],
+  ["2026-10-16", "Arkansas City", "Eisenhower", null, null],
+  ["2026-10-16", "Central Burden", "Oxford", null, null],
+  ["2026-10-16", "Chanute", "Pittsburg", null, null],
+  ["2026-10-16", "Cherryvale", "Humboldt", null, null],
+  ["2026-10-16", "Clearwater", "Andale", null, null],
+  ["2026-10-16", "Conway Springs", "Sedgwick", null, null],
+  ["2026-10-16", "Eureka", "Uniontown", null, null],
+  ["2026-10-16", "Garden Plain", "Haven", null, null],
+  ["2026-10-16", "Goddard", "Derby", null, null],
+  ["2026-10-16", "Halstead", "Marion", null, null],
+  ["2026-10-16", "Hillsboro", "Hutchinson Trinity", null, null],
+  ["2026-10-16", "Hutchinson", "Maize South", null, null],
+  ["2026-10-16", "Independence", "Labette County", null, null],
+  ["2026-10-16", "Inman", "Council Grove", null, null],
+  ["2026-10-16", "Marmaton Valley", "Sedan", null, null],
+  ["2026-10-16", "Medicine Lodge", "Ellinwood", null, null],
+  ["2026-10-16", "Onaga", "Valley Heights", null, null],
+  ["2026-10-16", "Pratt", "Cheney", null, null],
+  ["2026-10-16", "Rossville", "Mission Valley", null, null],
+  ["2026-10-16", "Syracuse", "Sterling", null, null],
+  ["2026-10-16", "Tonganoxie", "McPherson", null, null],
+  ["2026-10-16", "Udall", "Cedar Vale/Dexter", null, null],
+  ["2026-10-16", "Valley Center", "Maize", null, null],
+  ["2026-10-16", "Wellington", "Fort Scott", null, null],
+  ["2026-10-16", "Wichita Collegiate", "Trinity Academy", null, null],
+  ["2026-10-16", "Winfield", "Buhler", null, null],
+  ["2026-10-23", "Abilene", "Marysville", null, null],
+  ["2026-10-23", "Andale", "Reno County HomeSchool", null, null],
+  ["2026-10-23", "Central Burden", "Oswego", null, null],
+  ["2026-10-23", "Chaparral", "Lakin", null, null],
+  ["2026-10-23", "Clearwater", "Wichita Collegiate", null, null],
+  ["2026-10-23", "Colony-Crest", "Marmaton Valley", null, null],
+  ["2026-10-23", "Eureka", "St. Mary's-Colgan", null, null],
+  ["2026-10-23", "Goddard", "Arkansas City", null, null],
+  ["2026-10-23", "Haven", "Halstead", null, null],
+  ["2026-10-23", "Haysville Campus", "Maize South", null, null],
+  ["2026-10-23", "Hoisington", "Garden Plain", null, null],
+  ["2026-10-23", "Hutchinson", "Valley Center", null, null],
+  ["2026-10-23", "Jayhawk Linn", "Humboldt", null, null],
+  ["2026-10-23", "Labette County", "Chanute", null, null],
+  ["2026-10-23", "Lyons", "Pratt", null, null],
+  ["2026-10-23", "Maize", "Newton", null, null],
+  ["2026-10-23", "McPherson", "Winfield", null, null],
+  ["2026-10-23", "Medicine Lodge", "Sterling", null, null],
+  ["2026-10-23", "Moundridge", "Inman", null, null],
+  ["2026-10-23", "Olpe", "Uniontown", null, null],
+  ["2026-10-23", "Onaga", "Centralia", null, null],
+  ["2026-10-23", "Oxford", "Cedar Vale/Dexter", null, null],
+  ["2026-10-23", "Riverton", "Cherryvale", null, null],
+  ["2026-10-23", "Sedan", "St. Paul", null, null],
+  ["2026-10-23", "Sedgwick", "Belle Plaine", null, null],
+  ["2026-10-23", "Smoky Valley", "Hillsboro", null, null],
+  ["2026-10-23", "Syracuse", "Ellinwood", null, null],
+  ["2026-10-23", "Udall", "SS (CO-OP)", null, null],
+  ["2026-10-23", "Wabaunsee", "Mission Valley", null, null]
+];
+
+/* ================================================================
+   The 2026 schedules of the Butler County schools' opponents (from the
+   MaxPreps Kansas scores pages, OPP_SCHEDULE_2026 in 22-oppdata.js),
+   loaded like the county schedule: a scheduled game, or the final
+   score once played, each with a fixed id so a second device makes no
+   duplicates and any later edit wins. They fill the team pages, count
+   toward records and show on the State Scoreboard; the BUCO Scoreboard,
+   the scores strip and the tracker's start screen leave them out.
+   ================================================================ */
+const OPP_STAMP = Date.UTC(2026, 8, 14, 12);
+function seedOppSchedule(){
+  const lib = qsLib(); let added = false;
+  const team = name => { const t = findTeam(name); return {name, abbr:(t && t.abbr) || shortName(name), color:(t && t.color) || '#4A4B4D'}; };
+  OPP_SCHEDULE_2026.forEach(([date, A, H, a, h]) => {
+    const id = `opp26-${date}-${teamKey(A)}-${teamKey(H)}`;
+    if (lib[id]) return;
+    const fin = a != null && h != null;
+    lib[id] = {id, kind:'score', sched:true, opp:true, created:OPP_STAMP, updated:OPP_STAMP, date,
+      teams:{A:team(A), H:team(H)}, A:fin ? a : 0, H:fin ? h : 0, per:fin ? 'final' : 'pre', clk:''};
+    added = true;
+  });
+  if (added) persist();
+}
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
@@ -5265,6 +5582,7 @@ else {
   if (db.games.sample && db.games.sample.sample !== 2) db.games.sample = sampleGame();
   seedTeamLibrary();
   seedSchedule();         // the 2026 Butler County schedule, loaded once as scheduled games
+  seedOppSchedule();      // and the schedules of the teams they play
   // ?edit=<id>, from the Edit button on a game's own page: open that game here, then tidy the address.
   const EDIT_ID = new URLSearchParams(location.search).get('edit');
   g = (EDIT_ID && db.games[EDIT_ID]) || db.games[db.cur] || Object.values(db.games)[0];
