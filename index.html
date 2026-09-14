@@ -258,7 +258,8 @@ body.bpage .sample,body.bpage .scores,body.bpage .strip,body.bpage .gtabs,body.b
   .bw span{font-size:12px}
   .bday{font-size:17px;padding-bottom:12px}
   .bgame{grid-template-columns:minmax(0,1fr) auto;gap:0 12px;padding:12px 0}
-  .b-hd,.bt-q,.bt-sub{display:none}
+  .b-hd,.bt-q,.bt-sub:not(.rec){display:none}
+  .bt-sub.rec{font-size:12.5px}
   .bt{grid-template-columns:minmax(0,1fr) auto 12px;padding:3px 0}
   .bt-team{gap:10px}
   .bt-team .tlogo,.bt-team .tmono{width:26px!important;height:26px!important;font-size:9px!important}
@@ -293,6 +294,19 @@ body.bpage .sample,body.bpage .scores,body.bpage .strip,body.bpage .gtabs,body.b
 .st-id{position:relative;flex:1;min-width:0}
 .st-name{font:600 17px/1.2 var(--sans);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .st-rec{font-size:12px;color:var(--muted);margin-top:2px}
+/* like ESPN's: each name and record sits by its score; once it's final the loser is grayed and an arrow points at the winner */
+.st-side.away .st-id{text-align:right}
+.st-side.home .st-id{text-align:left}
+.st-side.lose .st-name,.st-side.lose .st-score{color:var(--muted)}
+.st-win{flex:none;width:0;height:0;border-style:solid;border-width:7px 8px 7px 0;border-color:transparent var(--ink-2) transparent transparent}
+.st-side.home .st-win{border-width:7px 0 7px 8px;border-color:transparent transparent transparent var(--ink-2)}
+/* a finished game's line score, under Final */
+.st-ls{margin-top:6px;border-collapse:collapse;font:400 13.5px/1.45 var(--sans);font-variant-numeric:tabular-nums;color:var(--muted)}
+.st-ls th{font-weight:400;padding:0 7px 1px;border-bottom:1px solid var(--line)}
+.st-ls td{padding:1px 7px 0;text-align:center}
+.st-ls th:first-child,.st-ls td:first-child{padding-left:0;text-align:left;font-weight:700;color:var(--ink-2)}
+.st-ls td:last-child{font-weight:700;color:var(--ink-2)}
+@media (max-width:640px){.st-ls{display:none}}
 .st-scorebox{position:relative;display:flex;flex-direction:column;align-items:center;gap:7px;min-width:60px}
 .st-score{display:flex;align-items:center;gap:7px;font:800 44px/1 var(--cond);color:var(--ink-2);font-variant-numeric:tabular-nums}
 /* The possession dot faces the middle of the strip: after the visitors' score, before the home score. */
@@ -1227,13 +1241,16 @@ function setClock(s, run){ g.clk = {s:Math.max(0, s), run:!!run && s > 0, at:Dat
 function renderBoard(){
   const st = R.st, T = g.teams;
   const dots = s => Array.from({length: st.q > 4 ? 1 : 3}, (_, i) => `<i class="${i < st.to[s] ? 'on' : ''}"></i>`).join('');
+  // Like ESPN's: school and mascot, the record under it, beside the score. Once it's final the loser is grayed, an
+  // arrow points at the winner, and the timeouts go.
+  const won = st.final && st.score.A !== st.score.H ? (st.score.A > st.score.H ? 'A' : 'H') : null;
   const side = s => {
     const has = !st.final && st.poss === s && st.phase !== 'kick';
-    return `<div class="st-side ${s === 'H' ? 'home' : 'away'}" style="--tc:${esc(T[s].color)}">
+    return `<div class="st-side ${s === 'H' ? 'home' : 'away'}${won && won !== s ? ' lose' : ''}" style="--tc:${esc(T[s].color)}">
       <div class="st-logo">${teamMark(s, 64)}</div>
-      <div class="st-id"><div class="st-name">${esc(T[s].name)}</div><div class="st-rec">${s === 'A' ? 'Away' : 'Home'}</div></div>
-      <div class="st-scorebox"><div class="st-score"><span>${st.score[s]}</span>${has ? '<span class="st-poss" title="Has the ball"></span>' : ''}</div>
-        <div class="st-tos" title="${st.to[s]} timeout${st.to[s] === 1 ? '' : 's'} left">${dots(s)}</div></div></div>`;
+      <div class="st-id"><div class="st-name">${esc([T[s].name, T[s].mascot].filter(Boolean).join(' '))}</div><div class="st-rec">${esc(recordText(T[s], s) || (s === 'A' ? 'Away' : 'Home'))}</div></div>
+      <div class="st-scorebox"><div class="st-score"><span>${st.score[s]}</span>${has ? '<span class="st-poss" title="Has the ball"></span>' : ''}${won === s ? '<i class="st-win" title="Won"></i>' : ''}</div>
+        ${st.final ? '' : `<div class="st-tos" title="${st.to[s]} timeout${st.to[s] === 1 ? '' : 's'} left">${dots(s)}</div>`}</div></div>`;
   };
   const clockOn = !st.final && st.q <= 4;
   const per = st.final ? `Final${st.q > 4 ? '/OT' : ''}` : perShort(st.q);
@@ -1250,8 +1267,16 @@ function renderBoard(){
     else if (st.phase === 'try'){ l2 = 'Try'; l3 = R.yl(st.poss, st.spot); }
   }
   $('#sb').innerHTML = `<div class="strip-in">${side('A')}
-    <div class="st-mid"><div class="st-line1">${line1}</div>${l2 ? `<div class="st-sit">${esc(l2)}</div>` : ''}${l3 ? `<div class="st-sit">${esc(l3)}</div>` : ''}</div>
+    <div class="st-mid"><div class="st-line1">${line1}</div>${l2 ? `<div class="st-sit">${esc(l2)}</div>` : ''}${l3 ? `<div class="st-sit">${esc(l3)}</div>` : ''}${st.final ? stripLines() : ''}</div>
     ${side('H')}</div>${driveBar()}`;
+}
+// A finished game's line score under Final, as ESPN has it, with every overtime period together in one OT column.
+function stripLines(){
+  const st = R.st, L = st.lines; if (!L) return '';
+  const cols = Array.from({length:st.q > 4 ? 5 : 4}, (_, i) => i);
+  const pts = (s, i) => i < 4 ? L[s][i] || 0 : L[s].slice(4).reduce((a, b) => a + (b || 0), 0);
+  const row = s => `<tr><td>${esc(g.teams[s].abbr || g.teams[s].name)}</td>${cols.map(i => `<td>${pts(s, i)}</td>`).join('')}<td>${st.score[s]}</td></tr>`;
+  return `<table class="st-ls"><thead><tr><th></th>${cols.map(i => `<th>${i < 4 ? i + 1 : 'OT'}</th>`).join('')}<th>T</th></tr></thead><tbody>${row('A')}${row('H')}</tbody></table>`;
 }
 // The thin bar under the strip on phones: where the ball is, the line to gain, and this drive so far.
 function driveBar(){
@@ -2186,7 +2211,8 @@ function dlgSetup(isNew){
   // Started from a scheduled game or quick score: its schools (with anything saved about them) and date.
   const from = isNew && ui.fromSched ? qsLib()[ui.fromSched] : null;
   if (from && from.teams) ['A', 'H'].forEach(s => { const t = findTeam(from.teams[s].name) || {};
-    src.teams[s] = {name:from.teams[s].name, mascot:t.mascot || '', abbr:t.abbr || from.teams[s].abbr, color:t.color || from.teams[s].color, roster:t.roster || {}}; });
+    src.teams[s] = {name:from.teams[s].name, mascot:t.mascot || '', abbr:t.abbr || from.teams[s].abbr, color:t.color || from.teams[s].color, roster:t.roster || {},
+      rec:from.teams[s].rec || '', hrec:from.teams[s].hrec || ''}; });
   const ru = rulesOf(src);
   const rosterTxt = s => Object.entries(src.teams[s].roster || {}).sort((a, b) => a[0] - b[0]).map(([n, v]) => `${n} ${v}`).join('\n');
   const teamRow = (s, label) => `<div class="grp"><h3>${label}</h3><div class="teamset">
@@ -2194,6 +2220,7 @@ function dlgSetup(isNew){
       <div class="fld"><label class="eyebrow" for="s-${s}-mascot">Mascot</label><input class="inp" id="s-${s}-mascot" value="${esc(src.teams[s].mascot || '')}" placeholder="e.g. Bulldogs"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-abbr">Short</label><input class="inp" id="s-${s}-abbr" maxlength="5" value="${esc(src.teams[s].abbr)}" placeholder="${s === 'A' ? 'VIS' : 'HOME'}"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-color">Color</label><input type="color" id="s-${s}-color" value="${esc(src.teams[s].color)}"></div></div>
+      <div class="row">${recFields('s', s, src.teams[s])}</div>
       <div class="fld"><label class="eyebrow" for="s-${s}-roster">Roster, optional · one player per line, number then name</label>
       <textarea class="inp" id="s-${s}-roster" rows="4" placeholder="7 Cole Brandt&#10;22 Mason Ortiz">${esc(rosterTxt(s))}</textarea><div class="hint" id="s-${s}-lib"></div></div></div>`;
   return `${dlgHead(isNew ? 'New game' : 'Game setup')}<div class="dlg-bd">${teamRow('A', 'Visitors')}${teamRow('H', 'Home')}
@@ -2212,7 +2239,8 @@ function saveSetup(isNew){
   const parseRoster = txt => { const o = {}; txt.split('\n').forEach(l => { const m = l.match(/^\s*#?(\d{1,2})\s*[-–,.:)]?\s*(.+?)\s*$/); if (m) o[m[1]] = m[2]; }); return o; };
   const team = (s, def) => {
     const name = v(`s-${s}-name`) || def;
-    return {name, mascot:v(`s-${s}-mascot`), abbr:(v(`s-${s}-abbr`) || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(), color:$(`#s-${s}-color`).value, roster:parseRoster($(`#s-${s}-roster`).value)};
+    return {name, mascot:v(`s-${s}-mascot`), abbr:(v(`s-${s}-abbr`) || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(), color:$(`#s-${s}-color`).value, roster:parseRoster($(`#s-${s}-roster`).value),
+      rec:recValue('s', s, 'rec'), hrec:recValue('s', s, 'hrec')};
   };
   const kick = $('#s-kick [aria-pressed="true"]');
   // Only the format is saved; its kickoff, touchback, safety and overtime spots come from FORMATS.
@@ -3320,7 +3348,8 @@ function dlgScore(id){
   const side = (s, label) => `<div class="qs-side"><div class="fld"><label class="eyebrow" for="qs-${s}-name">${label}</label>
       <input class="inp qs-name" id="qs-${s}-name" list="qslib" autocomplete="off" value="${esc(x ? x.teams[s].name : '')}" placeholder="${s === 'A' ? 'Visiting school' : 'Home school'}"></div>
     <div class="fld qs-pts"><label class="eyebrow" for="qs-${s}-pts">Score</label>
-      <input class="inp" id="qs-${s}-pts" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" value="${x ? +x[s] || 0 : ''}" placeholder="0"></div></div>`;
+      <input class="inp" id="qs-${s}-pts" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" value="${x ? +x[s] || 0 : ''}" placeholder="0"></div></div>
+    <div class="row qs-rec">${recFields('qs', s, x && x.teams[s])}</div>`;
   const note = sync.user ? 'Shows on everyone’s scoreboard as soon as you save.'
     : sync.state === 'unavailable' ? 'Saved on this device. From your own site, signed in, scores go on everyone’s scoreboard.'
     : `Saved on this device. Sign in to put it on everyone’s scoreboard.${sync.api ? ' <button type="button" class="linkbtn" data-signin>Sign in</button>' : ''}`;
@@ -3343,13 +3372,14 @@ function saveScore(id){
   if (!A || !H) return toast('Enter both schools');
   const lib = qsLib(), old = id && lib[id] && !lib[id].deleted ? lib[id] : null;
   // A saved team brings its short name and color; otherwise keep what this score had, or make one up.
-  const team = (name, was) => { const t = findTeam(name), same = was && was.name === name;
-    return {name, abbr:(t && t.abbr) || (same && was.abbr) || shortName(name), color:(t && t.color) || (same && was.color) || '#4A4B4D'}; };
+  const team = (s, name, was) => { const t = findTeam(name), same = was && was.name === name;
+    return {name, abbr:(t && t.abbr) || (same && was.abbr) || shortName(name), color:(t && t.color) || (same && was.color) || '#4A4B4D',
+      rec:recValue('qs', s, 'rec'), hrec:recValue('qs', s, 'hrec')}; };
   const pts = s => { const el = $(`#qs-${s}-pts`); return clamp(parseInt(el.value || el.dataset.was || '0', 10) || 0, 0, 199); };
   const perBtn = $('#qs-per [aria-pressed="true"]'), per = perBtn ? perBtn.dataset.qsPer : '1', c = parseClock($('#qs-clk').value);
   const dv = $('#qs-date').value, date = /^\d{4}-\d\d-\d\d$/.test(dv) ? dv : ymd(new Date());
   const x = Object.assign(old || {id:'s' + Date.now().toString(36), kind:'score', created:Date.now()}, {
-    teams:{A:team(A, old && old.teams.A), H:team(H, old && old.teams.H)}, A:pts('A'), H:pts('H'),
+    teams:{A:team('A', A, old && old.teams.A), H:team('H', H, old && old.teams.H)}, A:pts('A'), H:pts('H'),
     per, clk:inQuarter(per) && c != null ? mmss(c) : '', date, updated:Date.now()});
   lib[x.id] = x; persist(); pushScore(x); closeDialog();
   // Show the week it went into, in case that isn't the week on screen.
@@ -3408,6 +3438,20 @@ function weekOptions(cur){
   seasonKeys(new Date().getFullYear()).forEach(k => ks.add(k));   // the whole season, so a game or score can go in any week
   return [...ks].sort();
 }
+
+/* ---------- team records, typed in by the scorer ---------- */
+// ESPN style, "1-2, 0-1 Away": the season record, then the road or home record. Empty until one is entered.
+function recordText(t, s){
+  const where = s === 'A' ? 'Away' : 'Home', ha = t && t.hrec ? `${t.hrec} ${where}` : '';
+  return t && (t.rec || ha) ? [t.rec, ha].filter(Boolean).join(', ') : '';
+}
+// The two record boxes for a team, in Setup (pre "s") or a quick score (pre "qs").
+function recFields(pre, s, t){
+  const where = s === 'A' ? 'Away' : 'Home';
+  return `<div class="fld"><label class="eyebrow" for="${pre}-${s}-rec">Record, optional</label><input class="inp" id="${pre}-${s}-rec" maxlength="9" autocomplete="off" value="${esc(t && t.rec || '')}" placeholder="1-2"></div>
+    <div class="fld"><label class="eyebrow" for="${pre}-${s}-hrec">${where} record</label><input class="inp" id="${pre}-${s}-hrec" maxlength="9" autocomplete="off" value="${esc(t && t.hrec || '')}" placeholder="0-1"></div>`;
+}
+const recValue = (pre, s, k) => { const el = $(`#${pre}-${s}-${k}`); return el ? el.value.trim().slice(0, 9) : ''; };
 
 /* ---------- the strip ---------- */
 // What a strip card or a scoreboard row needs from a game or a quick score: status, score, line score, stats.
@@ -3606,9 +3650,10 @@ function boardGame(x){
   const cells = f => Array.from({length:nq}, (_, i) => `<span>${f(i)}</span>`).join('');
   const team = s => {
     const cls = m.fin && lead ? (lead === s ? ' won' : ' lose') : '';
-    const sub = [T[s].mascot, s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
+    // The record as entered, ESPN style "(1-2, 0-1 Away)"; until then the mascot and Away or Home.
+    const rec = recordText(T[s], s), sub = rec ? `(${rec})` : [T[s].mascot, s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
     return `<div class="bt${cls}"><div class="bt-team">${markFor(T[s], 36)}<div class="bt-id">
-        <div class="bt-name"><span>${esc(T[s].name)}</span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub">${esc(sub)}</div></div></div>
+        <div class="bt-name"><span>${esc(T[s].name)}</span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub${rec ? ' rec' : ''}">${esc(sub)}</div></div></div>
       <div class="bt-q">${cells(i => i < played ? m.lines[s][i] : '')}</div><div class="bt-t">${m.pre ? '' : m.score[s]}</div><i class="sc-win"></i></div>`;
   };
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
@@ -4083,7 +4128,7 @@ function saveBox(){
   const team = s => {
     const t = findTeam(names[s]) || {}, was = base && sameSchool(base[s].name, names[s]) ? base[s] : {};
     return {name:names[s], mascot:t.mascot || was.mascot || '', abbr:t.abbr || was.abbr || shortName(names[s]), color:t.color || was.color || '#4A4B4D',
-      roster:(old && old.teams[s].roster) || t.roster || {}};
+      roster:(old && old.teams[s].roster) || t.roster || {}, rec:was.rec || '', hrec:was.hrec || ''};
   };
   // Opened from a game or a card, the date in the window; found on its own, that game's date.
   const typed = /^\d{4}-\d\d-\d\d$/.test(dv) ? dv : ymd(new Date());
