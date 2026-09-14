@@ -110,6 +110,7 @@ div.sc-game:hover{background:none}
 .qs-side{display:grid;grid-template-columns:minmax(0,1fr) 84px;gap:10px;align-items:end}
 .qs-pts .inp{text-align:center;font-size:26px}
 #qs-per button{flex:1 1 0;padding:10px 4px}
+.qs-stats{align-self:flex-start}
 .sc-full{flex:none;display:flex;align-items:center;justify-content:center;text-align:center;width:92px;padding:0 10px;border-left:1px solid var(--line);
   color:var(--blue);font:600 12.5px/1.35 var(--sans);text-decoration:none}
 .sc-full:hover{background:#F1F5FD}
@@ -455,6 +456,10 @@ a.btn{text-decoration:none;display:inline-block}
 dialog{border:0;border-radius:12px;background:var(--card);color:var(--ink);padding:0;box-shadow:0 10px 40px rgba(0,0,0,.35);
   width:min(620px,calc(100vw - 24px));max-height:calc(100vh - 40px)}
 dialog::backdrop{background:rgba(8,10,12,.55)}
+/* the same box on phones that can't open a pop-up window: centered on screen over a dimmed page */
+dialog:not([open]){display:none}
+dialog.fallback[open]{display:block;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;margin:0;
+  max-height:calc(100% - 32px);overflow:auto;box-shadow:0 0 0 100vmax rgba(8,10,12,.55),0 10px 40px rgba(0,0,0,.35)}
 .dlg-hd{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
 .dlg-hd h2{margin:0;font:700 19px/1 var(--cond);text-transform:uppercase;color:var(--ink-2)}
 .dlg-bd{padding:14px 16px;display:flex;flex-direction:column;gap:14px}
@@ -2062,9 +2067,19 @@ const dlgHead = t => `<div class="dlg-hd"><h2>${t}</h2><button class="x" type="b
 function openDialog(kind){
   ui.dlg = kind; ui.confirm = null;
   dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : dlgSetup(kind === 'new');
-  if (!dlg().open) dlg().showModal();
+  if (!dlg().hasAttribute('open')) showDialog();
 }
-function closeDialog(){ if (dlg().open) dlg().close(); ui.dlg = null; }
+// Phones without the pop-up window feature (iPhones before iOS 15.4, among others) get the same box, opened plainly.
+function showDialog(){
+  const d = dlg();
+  if (typeof d.showModal === 'function'){ try { d.showModal(); return; } catch (e) { /* fall through */ } }
+  d.classList.add('fallback'); d.setAttribute('open', '');
+}
+function closeDialog(){
+  const d = dlg();
+  if (d.hasAttribute('open')){ if (typeof d.close === 'function' && !d.classList.contains('fallback')) d.close(); else d.removeAttribute('open'); }
+  d.classList.remove('fallback'); ui.dlg = null; ui.fromSched = null;
+}
 
 // The spots come with the format; Setup only shows them, it doesn't ask.
 const ruleHint = men => men === 8
@@ -2073,6 +2088,10 @@ const ruleHint = men => men === 8
 function dlgSetup(isNew){
   // A new game starts in the same format as the one open now, since most weeks are all 8-man or all 11-man.
   const src = isNew ? {teams:{A:{name:'', mascot:'', abbr:'', color:'#1F4E9C', roster:{}}, H:{name:'', mascot:'', abbr:'', color:'#B0151B', roster:{}}}, set:{qtr:12, firstKick:'H', men:g.sample ? 11 : rulesOf(g).men}} : g;
+  // Started from a scheduled game or quick score: its schools (with anything saved about them) and date.
+  const from = isNew && ui.fromSched ? qsLib()[ui.fromSched] : null;
+  if (from && from.teams) ['A', 'H'].forEach(s => { const t = findTeam(from.teams[s].name) || {};
+    src.teams[s] = {name:from.teams[s].name, mascot:t.mascot || '', abbr:t.abbr || from.teams[s].abbr, color:t.color || from.teams[s].color, roster:t.roster || {}}; });
   const ru = rulesOf(src);
   const rosterTxt = s => Object.entries(src.teams[s].roster || {}).sort((a, b) => a[0] - b[0]).map(([n, v]) => `${n} ${v}`).join('\n');
   const teamRow = (s, label) => `<div class="grp"><h3>${label}</h3><div class="teamset">
@@ -2088,6 +2107,7 @@ function dlgSetup(isNew){
       <div class="row">
       <div class="fld"><span class="eyebrow">Opening kickoff by</span><div class="seg" id="s-kick">${['A', 'H'].map(s => `<button type="button" data-kick="${s}" aria-pressed="${src.set.firstKick === s}">${s === 'A' ? 'Visitors' : 'Home'}</button>`).join('')}</div></div>
       <div class="fld"><label class="eyebrow" for="s-qtr">Quarter, minutes</label><input class="inp" id="s-qtr" inputmode="numeric" value="${src.set.qtr}"></div></div>
+      <div class="fld"><label class="eyebrow" for="s-date">Game date · sets its week on the scoreboard</label><input class="inp" type="date" id="s-date" value="${from && from.date ? from.date : isNew ? ymd(new Date()) : ymd(gameDay(g))}"></div>
       <p class="hint" id="s-rulehint">${ruleHint(ru.men)}</p></div></div>
     <datalist id="teamlib">${savedTeams().map(t => `<option value="${esc(t.name)}"></option>`).join('')}</datalist>
     <div class="dlg-ft"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" data-save-setup="${isNew ? 1 : 0}">${isNew ? 'Start game' : 'Save'}</button></div>`;
@@ -2106,8 +2126,10 @@ function saveSetup(isNew){
   const teams = {A:team('A', 'Visitors'), H:team('H', 'Home')};
   const keptA = rememberTeam(teams.A), keptH = rememberTeam(teams.H);
   if (keptA || keptH) syncTeams();
-  if (isNew){ g = {id:'g' + Date.now().toString(36), created:Date.now(), teams, set, plays:[], clk:{s:set.qtr * 60, run:false, at:0}}; resetUi(); }
-  else { if (!g.plays.length && set.qtr !== g.set.qtr) g.clk = {s:set.qtr * 60, run:false, at:0}; Object.assign(g, {teams, set}); }
+  const date = /^\d{4}-\d\d-\d\d$/.test(v('s-date')) ? v('s-date') : ymd(new Date());
+  // A game started from the scoreboard goes live for fans right away (its card there opens once plays come in).
+  if (isNew){ g = {id:'g' + Date.now().toString(36), created:Date.now(), date, teams, set, plays:[], clk:{s:set.qtr * 60, run:false, at:0}, share:!!ui.fromSched}; resetUi(); }
+  else { if (!g.plays.length && set.qtr !== g.set.qtr) g.clk = {s:set.qtr * 60, run:false, at:0}; Object.assign(g, {teams, set, date}); }
   save(); closeDialog(); refresh(); toast(isNew ? 'Game started' : 'Setup saved');
 }
 
@@ -2115,7 +2137,7 @@ function dlgGames(){
   const list = Object.values(db.games).sort((a, b) => (b.updated || 0) - (a.updated || 0));
   const items = list.map(x => { const r = replay(x);
     return `<div class="gitem"><div><b>${esc(x.teams.A.abbr)} ${r.st.score.A} at ${esc(x.teams.H.abbr)} ${r.st.score.H}</b>${x.id === g.id ? '<span class="cur-tag">Open</span>' : ''}${x.sample ? '<span class="cur-tag" style="color:var(--flag-ink)">Sample</span>' : ''}
-      <div class="meta">${esc(x.teams.A.name)} at ${esc(x.teams.H.name)} · ${rulesOf(x).men === 8 ? '8-man · ' : ''}${new Date(x.created).toLocaleDateString()} · ${r.st.final ? 'Final' : perLabel(r.st.q)} · ${x.plays.length} plays</div></div>
+      <div class="meta">${esc(x.teams.A.name)} at ${esc(x.teams.H.name)} · ${rulesOf(x).men === 8 ? '8-man · ' : ''}${gameDay(x).toLocaleDateString()} · ${r.st.final ? 'Final' : perLabel(r.st.q)} · ${x.plays.length} plays</div></div>
       <div class="acts">${x.id !== g.id ? `<button class="btn small" data-open-game="${x.id}">Open</button>` : ''}<button class="btn small danger" data-del-game="${x.id}">${ui.confirm === 'g:' + x.id ? 'Tap again' : 'Delete'}</button></div></div>`; }).join('');
   return `${dlgHead('Games')}<div class="dlg-bd">${syncBlock()}<div class="grp"><h3>Games</h3><div class="glist">${items}</div></div>${teamsBlock()}
     <p class="hint">Every game is saved in this browser${sync.user ? ' and to your Google account' : ''}. Export makes a backup you can keep anywhere.</p></div>
@@ -3102,13 +3124,16 @@ function weekLabel(k){
   const f = fromYmd(k); f.setDate(f.getDate() + 3);   // that week's Friday
   return 'Week of ' + f.toLocaleDateString(undefined, {month:'short', day:'numeric'});
 }
-const gameWeek = x => weekKey(x.created || x.updated || Date.now());
+// A game's date: the one set in Setup or on the score form, else the day it was set up. Its week follows.
+const gameDay = x => x.date ? fromYmd(x.date) : new Date(x.created || x.updated || Date.now());
+const gameWeek = x => weekKey(gameDay(x).getTime());
 
 /* ---------- quick scores: a game's score and nothing else ---------- */
 // Kept apart from the games (db.scores), synced as their own documents (kind 'score'), always public.
 const qsLib = () => db.scores || (db.scores = {});
 const QS_PER = [['pre', 'Pre'], ['1', '1st'], ['2', '2nd'], ['half', 'Half'], ['3', '3rd'], ['4', '4th'], ['ot', 'OT'], ['final', 'Final']];
 const QS_STATUS = {pre:'Pregame', half:'Halftime', ot:'OT', final:'Final'};
+const dayShort = d => `${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]} ${d.getMonth() + 1}/${d.getDate()}`;
 const inQuarter = per => /^[1-4]$/.test(String(per));
 // A short name for a school with none saved: initials for two or more words, else the first letters.
 function shortName(name){
@@ -3121,7 +3146,11 @@ function pushScore(x){
   const {fsM, fsdb} = sync.api;
   const doc = x.deleted ? {owner:sync.user.uid, updated:x.updated, deleted:true, kind:'score', json:''}
     : {owner:sync.user.uid, updated:x.updated, public:true, week:gameWeek(x), kind:'score', title:`${x.teams.A.abbr} at ${x.teams.H.abbr}`, json:JSON.stringify(x)};
-  fsM.setDoc(fsM.doc(fsdb, 'pressbox', x.id), doc).catch(e => { sync.err = friendlySync(e); sync.state = 'error'; renderSync(); });
+  fsM.setDoc(fsM.doc(fsdb, 'pressbox', x.id), doc).catch(e => {
+    // A schedule entry another account already put up can't be written from this one; that's expected.
+    if (x.sched && /permission/.test(e?.code || '')) return;
+    sync.err = friendlySync(e); sync.state = 'error'; renderSync();
+  });
 }
 // From the account: whichever copy was saved last wins, and a deletion sticks.
 function mergeScore(id, d){
@@ -3132,8 +3161,15 @@ function mergeScore(id, d){
     persist(); renderScores();
   } else if (a && lu > ru) pushScore(a);
 }
+// A new score goes on today, unless the strip is showing another week: then on that week's Friday.
+function scoreDefaultDate(){
+  const k = ui.week;
+  if (!k || k === weekKey(Date.now())) return ymd(new Date());
+  const f = fromYmd(k); f.setDate(f.getDate() + 3); return ymd(f);
+}
 function dlgScore(id){
   const x = id && qsLib()[id] && !qsLib()[id].deleted ? qsLib()[id] : null, per = x ? String(x.per) : '1';
+  const date = x ? ymd(gameDay(x)) : scoreDefaultDate();
   // Saved teams and every school with a logo, so a typed name finds its logo.
   const names = [...new Set([...savedTeams().map(t => t.name), ...(logoLib.list || []).map(t => t.name)])].sort((a, b) => a.localeCompare(b));
   const side = (s, label) => `<div class="qs-side"><div class="fld"><label class="eyebrow" for="qs-${s}-name">${label}</label>
@@ -3147,6 +3183,8 @@ function dlgScore(id){
     ${side('A', 'Visitors')}${side('H', 'Home')}
     <div class="fld"><span class="eyebrow">Status</span><div class="seg" id="qs-per">${QS_PER.map(([v, l]) => `<button type="button" data-qs-per="${v}" aria-pressed="${per === v}">${l}</button>`).join('')}</div></div>
     <div class="fld"${inQuarter(per) ? '' : ' hidden'}><label class="eyebrow" for="qs-clk">Time left, optional</label><input class="inp" id="qs-clk" inputmode="numeric" placeholder="4:12" value="${esc(x && x.clk || '')}"></div>
+    <div class="fld"><label class="eyebrow" for="qs-date">Game date</label><input class="inp" type="date" id="qs-date" value="${date}"></div>
+    ${x ? `<button type="button" class="btn small qs-stats" data-qs-stats="${esc(x.id)}">Keep stats on this game</button>` : ''}
     <p class="hint">${note}</p>
     <datalist id="qslib">${names.map(n => `<option value="${esc(n)}"></option>`).join('')}</datalist></div>
     <div class="dlg-ft">${x ? `<button type="button" class="btn danger" data-qs-del="${esc(x.id)}" style="margin-right:auto">Delete</button>` : ''}
@@ -3161,10 +3199,14 @@ function saveScore(id){
     return {name, abbr:(t && t.abbr) || (same && was.abbr) || shortName(name), color:(t && t.color) || (same && was.color) || '#4A4B4D'}; };
   const pts = s => { const el = $(`#qs-${s}-pts`); return clamp(parseInt(el.value || el.dataset.was || '0', 10) || 0, 0, 199); };
   const perBtn = $('#qs-per [aria-pressed="true"]'), per = perBtn ? perBtn.dataset.qsPer : '1', c = parseClock($('#qs-clk').value);
+  const dv = $('#qs-date').value, date = /^\d{4}-\d\d-\d\d$/.test(dv) ? dv : ymd(new Date());
   const x = Object.assign(old || {id:'s' + Date.now().toString(36), kind:'score', created:Date.now()}, {
     teams:{A:team(A, old && old.teams.A), H:team(H, old && old.teams.H)}, A:pts('A'), H:pts('H'),
-    per, clk:inQuarter(per) && c != null ? mmss(c) : '', updated:Date.now()});
-  lib[x.id] = x; persist(); pushScore(x); closeDialog(); renderScores(); toast('Score saved');
+    per, clk:inQuarter(per) && c != null ? mmss(c) : '', date, updated:Date.now()});
+  lib[x.id] = x; persist(); pushScore(x); closeDialog();
+  // Show the week it went into, in case that isn't the week on screen.
+  const wk = gameWeek(x); if (wk !== shownWeek()) ui.week = wk;
+  renderScores(); toast(`Score saved to ${weekLabel(wk)}`);
 }
 function deleteScore(id){
   qsLib()[id] = {id, kind:'score', deleted:true, updated:Date.now()};
@@ -3202,17 +3244,20 @@ function weekGames(key){
     Object.values(qsLib()).forEach(x => { if (x.deleted) delete out[x.id]; else if (x.teams && gameWeek(x) === key) out[x.id] = x; });
   }
   if (g && !g.sample && gameWeek(g) === key) out[g.id] = g;
-  return Object.values(out).sort((a, b) => (a.created || 0) - (b.created || 0));
+  // A game someone is keeping stats on takes the place of its schedule entry or quick score.
+  const pair = x => [x.teams.A.name, x.teams.H.name].map(teamKey).sort().join('|');
+  const statted = new Set(Object.values(out).filter(x => x.kind !== 'score').map(pair));
+  Object.values(out).forEach(x => { if (x.kind === 'score' && statted.has(pair(x))) delete out[x.id]; });
+  return Object.values(out).sort((a, b) => gameDay(a) - gameDay(b) || (a.created || 0) - (b.created || 0));
 }
-// Every week of this season so far, plus any week this device has a game or score in.
+// Every week of this season, plus any week this device has a game or score in.
 function weekOptions(cur){
   const ks = new Set([cur, weekKey(Date.now())]);
   if (!ui.viewer){
     Object.values(db.games).forEach(x => { if (!x.sample) ks.add(gameWeek(x)); });
     Object.values(qsLib()).forEach(x => { if (!x.deleted && x.created) ks.add(gameWeek(x)); });
   }
-  const now = Date.now();
-  for (let t = week1(new Date(now).getFullYear()).getTime(); t <= now; t += WEEK_MS) ks.add(weekKey(t + 3 * 864e5));   // mid-week, clear of DST
+  seasonKeys(new Date().getFullYear()).forEach(k => ks.add(k));   // the whole season, so a game or score can go in any week
   return [...ks].sort();
 }
 
@@ -3220,9 +3265,11 @@ function weekOptions(cur){
 // What a strip card or a scoreboard row needs from a game or a quick score: status, score, line score, stats.
 function summary(x){
   if (x.kind === 'score'){
-    const fin = x.per === 'final';
-    return {quick:true, fin, live:x.per !== 'pre' && !fin, q:{pre:0, half:2, ot:5, final:4}[x.per] ?? +x.per,
-      status:QS_STATUS[x.per] || `${x.clk ? x.clk + ' - ' : ''}${ord(+x.per)}`, score:{A:+x.A || 0, H:+x.H || 0}, poss:null, lines:null, S:null, men:0};
+    // Before kickoff a scheduled game shows its day ("Fri 9/18") and no score.
+    const fin = x.per === 'final', pre = x.per === 'pre';
+    return {quick:true, fin, pre, live:!pre && !fin, q:{pre:0, half:2, ot:5, final:4}[x.per] ?? +x.per,
+      status:pre ? x.time || dayShort(gameDay(x)) : QS_STATUS[x.per] || `${x.clk ? x.clk + ' - ' : ''}${ord(+x.per)}`,
+      score:{A:+x.A || 0, H:+x.H || 0}, poss:null, lines:null, S:null, men:0};
   }
   const r = replay(x), st = r.st;
   let status, live = false;
@@ -3235,17 +3282,22 @@ function summary(x){
     else if (st.q > 4) status = perShort(st.q);
     else status = `${c ? mmss(c.run ? c.s - (Date.now() - c.at) / 1000 : c.s) + ' - ' : ''}${ord(st.q)}`;
   }
-  return {quick:false, fin:st.final, live, q:st.q, status, score:st.score, poss:live && st.phase !== 'kick' ? st.poss : null,
+  return {quick:false, fin:st.final, pre:!x.plays.length, live, q:st.q, status, score:st.score, poss:live && st.phase !== 'kick' ? st.poss : null,
     lines:st.lines, S:r.S, men:rulesOf(x).men};
 }
 const leadOf = m => m.score.A === m.score.H ? null : m.score.A > m.score.H ? 'A' : 'H';
 function scoreCard(x){
   const m = summary(x), T = x.teams, lead = leadOf(m), cur = !m.quick && !!g && x.id === g.id;
   const row = s => `<div class="sc-row${m.fin && lead ? (lead === s ? ' won' : ' lose') : ''}">${markFor(T[s], 20)}<span class="sc-ab">${esc(T[s].abbr || T[s].name)}</span>`
-    + `${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}<span class="sc-pts">${m.score[s]}</span><i class="sc-win"></i></div>`;
+    + `${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}<span class="sc-pts">${m.pre ? '' : m.score[s]}</span><i class="sc-win"></i></div>`;
   const inner = `<div class="sc-st">${esc(m.status)}${m.men === 8 ? '<span class="sc-8">8-man</span>' : ''}</div>${row('A')}${row('H')}`;
   const cls = `sc-game${m.quick ? ' qs' : ''}${cur ? ' cur' : ''}${m.live ? ' live' : ''}`;
-  if (!m.quick) return `<a class="${cls}" href="?live=${encodeURIComponent(x.id)}" data-sc="${esc(x.id)}" title="${esc(`${T.A.name} at ${T.H.name}`)}">${inner}</a>`;
+  // A game opens once stats are being kept on it; the scorer can always open their own.
+  if (!m.quick){
+    const title = esc(`${T.A.name} at ${T.H.name}`);
+    return x.plays.length || (!ui.viewer && db.games[x.id]) ? `<a class="${cls}" href="?live=${encodeURIComponent(x.id)}" data-sc="${esc(x.id)}" title="${title}">${inner}</a>`
+      : `<div class="${cls}" title="${title}">${inner}</div>`;
+  }
   // A quick score: the scorer taps it to update; for fans there's no game behind it to open.
   const title = esc(`${T.A.name} at ${T.H.name} · score updated ${new Date(x.updated).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})}`);
   return ui.viewer ? `<div class="${cls}" title="${title}">${inner}</div>` : `<a class="${cls}" href="#" role="button" data-qs="${esc(x.id)}" title="${title}">${inner}</a>`;
@@ -3266,7 +3318,7 @@ function renderScores(){
     <div class="sc-wrap"><div class="sc-list">${games.length ? games.map(scoreCard).join('') : `<div class="sc-empty">No games for ${esc(weekLabel(key))} yet.</div>`}</div>
       <button type="button" class="sc-arrow l" data-scroll="-1" aria-label="Earlier games" hidden>${chev('M9 1L1 9l8 8')}</button>
       <button type="button" class="sc-arrow r" data-scroll="1" aria-label="More games" hidden>${chev('M1 1l8 8-8 8')}</button></div>
-    <a class="sc-full" href="?scores=${key}">Full Scoreboard&nbsp;»</a>
+    <a class="sc-full" href="?scores=${key}">Full Scoreboard »</a>
     ${ui.viewer ? '' : `<button type="button" class="sc-add" data-qs-new aria-label="Add a score from another game"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 2v14M2 9h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>Score</span></button>`}</div>`;
   const list = box.querySelector('.sc-list');
   // A redraw keeps the strip where it was; a new week brings the open game into view.
@@ -3292,6 +3344,9 @@ document.addEventListener('click', e => {
     const q = t.closest('[data-qs]');
     if (q){ e.preventDefault(); ui.qsId = q.dataset.qs; return openDialog('score'); }
     if (t.closest('[data-qs-new]')){ ui.qsId = null; return openDialog('score'); }
+    // Start a stat game from a scheduled game or quick score: Setup opens with its schools and date.
+    const ks = t.closest('[data-qs-stats]');
+    if (ks){ ui.fromSched = ks.dataset.qsStats; return openDialog('new'); }
     const per = t.closest('[data-qs-per]');
     if (per){
       per.parentNode.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === per)));
@@ -3393,10 +3448,11 @@ function boardGame(x){
     const sub = [T[s].mascot, s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
     return `<div class="bt${cls}"><div class="bt-team">${markFor(T[s], 36)}<div class="bt-id">
         <div class="bt-name"><span>${esc(T[s].name)}</span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub">${esc(sub)}</div></div></div>
-      <div class="bt-q">${cells(i => i < played ? m.lines[s][i] : '')}</div><div class="bt-t">${m.score[s]}</div><i class="sc-win"></i></div>`;
+      <div class="bt-q">${cells(i => i < played ? m.lines[s][i] : '')}</div><div class="bt-t">${m.pre ? '' : m.score[s]}</div><i class="sc-win"></i></div>`;
   };
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
-  const acts = m.quick ? '' : `<a class="bbtn" href="?live=${id}">Gamecast</a><a class="bbtn box" href="?live=${id}&amp;tab=box">Box Score</a>`;
+  // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
+  const acts = m.quick || !x.plays.length ? '' : `<a class="bbtn" href="?live=${id}">Gamecast</a><a class="bbtn box" href="?live=${id}&amp;tab=box">Box Score</a>`;
   return `<article class="bgame${m.live ? ' live' : ''}">
     <div class="b-main"><div class="b-hd"><span class="b-st">${status}</span><div class="bt-q b-qh">${cells(i => i < 4 ? i + 1 : 'OT')}</div><span class="b-th">T</span><i></i></div>
       ${team('A')}${team('H')}</div>
@@ -3421,7 +3477,7 @@ function renderScoreboard(){
   else {
     const days = [];
     games.forEach(x => {
-      const d = new Date(x.created || x.updated), k = ymd(d);
+      const d = gameDay(x), k = ymd(d);
       let day = days.find(y => y.k === k); if (!day) days.push(day = {k, d, games:[]});
       day.games.push(x);
     });
@@ -3448,6 +3504,105 @@ document.addEventListener('click', e => {
 });
 // Live games' clocks keep moving between updates.
 setInterval(() => { if (ui.board && !document.hidden && $('#board .bgame.live')) renderScoreboard(); }, 5000);
+/* ================================================================
+   The 2026 Butler County schedule (from "2026 FOOTBALL SCHEDULES.xlsx"),
+   loaded once on the scorer's devices as scheduled games: quick scores
+   at Pregame, dated that week's Friday, on everyone's scoreboard. Each
+   has a fixed id and an old timestamp, so loading on a second device
+   makes no duplicates, and any later edit or deletion wins.
+   A game between two Butler County schools is listed once.
+   ================================================================ */
+const SCHEDULE_2026 = [   // [week, away, home]
+  [1, 'Andover', 'Hutchinson'],
+  [1, 'Andover Central', 'Maize'],
+  [1, 'Augusta', 'McPherson'],
+  [1, 'Humboldt', 'Bluestem'],
+  [1, 'Circle', 'Pratt'],
+  [1, 'Douglass', 'Conway Springs'],
+  [1, 'Wichita Collegiate', 'El Dorado'],
+  [1, 'Udall', 'Flinthills'],
+  [1, 'Remington', 'Marion'],
+  [1, 'Rose Hill', 'Andale'],
+  [2, 'Andover', 'Andover Central'],
+  [2, 'Independence', 'Augusta'],
+  [2, 'Uniontown', 'Bluestem'],
+  [2, 'Winfield', 'Circle'],
+  [2, 'Medicine Lodge', 'Douglass'],
+  [2, 'El Dorado', 'Andale'],
+  [2, 'Oxford', 'Flinthills'],
+  [2, 'Onaga', 'Remington'],
+  [2, 'Clearwater', 'Rose Hill'],
+  [3, 'Valley Center', 'Andover'],
+  [3, 'Newton', 'Andover Central'],
+  [3, 'Circle', 'Augusta'],
+  [3, 'Bluestem', 'Cherryvale'],
+  [3, 'Douglass', 'Belle Plaine'],
+  [3, 'Clearwater', 'El Dorado'],
+  [3, 'Flinthills', 'Central Burden'],
+  [3, 'Remington', 'Sedgwick'],
+  [3, 'Wichita Collegiate', 'Rose Hill'],
+  [4, 'Arkansas City', 'Andover'],
+  [4, 'Andover Central', 'Maize South'],
+  [4, 'Augusta', 'Winfield'],
+  [4, 'Bluestem', 'Eureka'],
+  [4, 'Circle', 'McPherson'],
+  [4, 'Douglass', 'Haven'],
+  [4, 'El Dorado', 'Wellington'],
+  [4, 'Flinthills', 'Sedan'],
+  [4, 'Remington', 'Hillsboro'],
+  [4, 'Rose Hill', 'Chanute'],
+  [5, 'Eisenhower', 'Andover'],
+  [5, 'Goddard', 'Andover Central'],
+  [5, 'Rose Hill', 'Augusta'],
+  [5, 'Syracuse', 'Bluestem'],
+  [5, 'Buhler', 'Circle'],
+  [5, 'Garden Plain', 'Douglass'],
+  [5, 'McPherson', 'El Dorado'],
+  [5, 'Marmaton Valley', 'Flinthills'],
+  [5, 'Remington', 'Mission Valley'],
+  [6, 'Andover', 'Goddard'],
+  [6, 'Andover Central', 'Arkansas City'],
+  [6, 'Augusta', 'Abilene'],
+  [6, 'Sedgwick', 'Bluestem'],
+  [6, 'Circle', 'El Dorado'],
+  [6, 'Douglass', 'Halstead'],
+  [6, 'Flinthills', 'St. Paul'],
+  [6, 'Inman', 'Remington'],
+  [6, 'Winfield', 'Rose Hill'],
+  [7, 'Andover', 'Newton'],
+  [7, 'Andover Central', 'Salina Central'],
+  [7, 'Mulvane', 'Augusta'],
+  [7, 'Bluestem', 'Belle Plaine'],
+  [7, 'Abilene', 'Circle'],
+  [7, 'Lakin', 'Douglass'],
+  [7, 'El Dorado', 'Rose Hill'],
+  [7, 'Flinthills', 'Colony-Crest'],
+  [7, 'Remington', 'Moundridge'],
+  [8, 'Salina Central', 'Andover'],
+  [8, 'Eisenhower', 'Andover Central'],
+  [8, 'Augusta', 'Buhler'],
+  [8, 'Bluestem', 'Conway Springs'],
+  [8, 'Mulvane', 'Circle'],
+  [8, 'Marion', 'Douglass'],
+  [8, 'El Dorado', 'Independence'],
+  [8, 'Madison', 'Flinthills'],
+  [8, 'Hutchinson Trinity', 'Remington'],
+  [8, 'Rose Hill', 'Wellington']
+];
+const SCHED_STAMP = Date.UTC(2026, 8, 14);
+function seedSchedule(){
+  const lib = qsLib(); let added = false;
+  const team = name => { const t = findTeam(name); return {name, abbr:(t && t.abbr) || shortName(name), color:(t && t.color) || '#4A4B4D'}; };
+  SCHEDULE_2026.forEach(([w, A, H]) => {
+    const id = `sch26-w${w}-${teamKey(A)}-${teamKey(H)}`;
+    if (lib[id]) return;
+    const fri = week1(2026); fri.setDate(fri.getDate() + 3 + (w - 1) * 7);
+    lib[id] = {id, kind:'score', sched:true, created:SCHED_STAMP, updated:SCHED_STAMP, date:ymd(fri),
+      teams:{A:team(A), H:team(H)}, A:0, H:0, per:'pre', clk:''};
+    added = true;
+  });
+  if (added) persist();
+}
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
@@ -3478,6 +3633,7 @@ else {
   load();
   if (db.games.sample && db.games.sample.sample !== 2) db.games.sample = sampleGame();
   seedTeamLibrary();
+  seedSchedule();         // the 2026 Butler County schedule, loaded once as scheduled games
   g = db.games[db.cur] || Object.values(db.games)[0];
   if (!g) g = sampleGame();
   setCurrent();
