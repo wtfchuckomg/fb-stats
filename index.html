@@ -153,25 +153,46 @@ body.board .sample,body.board .scores,body.board .strip,body.board .gtabs,body.b
 .bhead-top h1{margin:0 0 14px;font:800 36px/1.1 var(--sans);letter-spacing:-.015em;color:var(--ink-2)}
 .bhead-link{color:var(--blue);font:600 14px/1 var(--sans);text-decoration:none;white-space:nowrap}
 /* ---------- county stats page (?stats) ---------- */
-.c-sub{margin:-4px 0 14px;color:var(--muted);font:400 14px/1.45 var(--sans)}
-.c-team{-webkit-appearance:none;appearance:none;border:1px solid var(--line);border-radius:20px;cursor:pointer;padding:9px 34px 9px 14px;font:600 14px/1 var(--sans);color:var(--ink-2);
+.c-sub{margin:2px 0 0;color:var(--muted);font:400 13.5px/1.45 var(--sans)}
+.bhead-top h1.c-title{font:800 30px/1.15 var(--sans)}
+.c-tabs{display:flex;border-bottom:1px solid var(--line);margin:2px 0 16px;overflow-x:auto;scrollbar-width:none}
+.c-tabs::-webkit-scrollbar{display:none}
+.c-tabs button{flex:1 0 auto;border:0;background:none;padding:13px 16px;border-bottom:3px solid transparent;font:700 16px/1 var(--sans);color:var(--muted);cursor:pointer;white-space:nowrap}
+.c-tabs button.on{color:var(--ink-2);border-bottom-color:var(--red)}
+.c-pills{display:inline-flex;background:#EEEFF1;border-radius:26px;padding:4px;margin:0 0 12px}
+.c-pills button{border:0;background:none;border-radius:22px;padding:11px 20px;font:600 15px/1 var(--sans);color:var(--ink-2);cursor:pointer}
+.c-pills button.on{background:#FFFFFF;color:var(--red);box-shadow:0 1px 5px rgba(0,0,0,.16)}
+.c-filters{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.c-sel{-webkit-appearance:none;appearance:none;border:1px solid var(--line);border-radius:20px;cursor:pointer;padding:9px 34px 9px 14px;font:600 14px/1 var(--sans);color:var(--ink-2);
   background:#FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%233772DF' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 13px center}
 .ccard{padding:16px 0 6px}
 .ccard-hd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 20px 10px}
 .ccard-hd h2{margin:0;font:700 19px/1.2 var(--sans);color:var(--ink-2)}
 .ccard-hd span{color:var(--muted);font:500 13px/1 var(--sans)}
-.ctbl{width:100%;border-collapse:collapse;font:400 14px/1.3 var(--sans);font-variant-numeric:tabular-nums}
-.ctbl th{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;font:600 12px/1 var(--sans);text-transform:uppercase;letter-spacing:.03em;color:var(--muted);cursor:pointer;white-space:nowrap;user-select:none}
-.ctbl th.on{color:var(--ink-2)}
-.ctbl td{padding:8px 10px;border-bottom:1px solid #EEEFF0;text-align:right;color:var(--ink-2);white-space:nowrap}
+/* stat tables, ESPN style: rank and name stay put while the numbers scroll; the sorted column is shaded */
+.ctbl{width:100%;border-collapse:separate;border-spacing:0;font:400 15px/1.3 var(--sans);font-variant-numeric:tabular-nums}
+.ctbl th{padding:10px 12px;border-bottom:1px solid var(--line);text-align:right;font:600 13px/1 var(--sans);text-transform:uppercase;letter-spacing:.03em;color:var(--ink-2);cursor:pointer;white-space:nowrap;user-select:none;background:var(--card)}
+.ctbl th.num span{text-decoration:underline;text-underline-offset:3px}
+.ctbl th i{font-style:normal;margin-left:4px;font-size:11px}
+.ctbl td{padding:10px 12px;border-bottom:1px solid #EEEFF0;text-align:right;color:var(--ink-2);white-space:nowrap;background:var(--card)}
+.ctbl tbody tr:nth-child(even) td{background:#FAFAFB}
+.ctbl th.on,.ctbl td.on,.ctbl tbody tr:nth-child(even) td.on{background:#E8F0FB}
+.ctbl tr.hi td,.ctbl tr.hi td.on{background:#F1F5FD}
 .ctbl tr:last-child td{border-bottom:0}
-.ctbl .cn{text-align:left;padding-left:20px;cursor:default}
+.ctbl .rk{position:sticky;left:0;z-index:1;width:40px;min-width:40px;text-align:left;padding-left:16px;padding-right:4px;color:var(--muted);cursor:default}
+.ctbl .nm{position:sticky;left:56px;z-index:1;text-align:left;border-right:1px solid var(--line);cursor:default}
+.ctbl th.rk,.ctbl th.nm{color:var(--ink-2)}
 .ctbl th:last-child,.ctbl td:last-child{padding-right:20px}
+.ctbl tr.grp th{text-align:center;cursor:default;font:700 13px/1 var(--sans);letter-spacing:.08em;padding:12px}
+.ctbl tr.grp th + th + th{border-left:1px solid var(--line)}
 .cn-in{display:flex;align-items:center;gap:10px}
-.c-pl{display:flex;flex-direction:column;line-height:1.2}
-.c-pl small{color:var(--muted);font-size:12px}
-.ctbl tr.hi td{background:#F1F5FD}
-@media (max-width:640px){.bhead-top h1{font-size:28px;margin-bottom:10px}.ccard-hd{padding:0 14px 8px}.ctbl .cn{padding-left:14px}.ctbl th:last-child,.ctbl td:last-child{padding-right:14px}}
+.c-pl{display:flex;align-items:baseline;gap:6px}
+.c-pl b{font-weight:500}
+.c-pl small{color:var(--muted);font-size:13px}
+@media (max-width:640px){.bhead-top h1.c-title{font-size:24px;margin-bottom:10px}.ccard-hd{padding:0 14px 8px}
+  .c-tabs button{padding:12px 12px;font-size:15px}.c-pills button{padding:10px 14px;font-size:14px}
+  .ctbl{font-size:14px}.ctbl th,.ctbl td{padding:9px 9px}.ctbl .rk{padding-left:12px;width:30px;min-width:30px}.ctbl .nm{left:46px}
+  .ctbl th:last-child,.ctbl td:last-child{padding-right:14px}}
 .bday{margin:0;padding-bottom:16px;border-bottom:1px dotted var(--line);font:600 21px/1.2 var(--sans);color:var(--ink-2)}
 .bgame{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) 190px;gap:0 22px;padding:18px 0;border-bottom:1px dotted var(--line)}
 .bgame:last-child{border-bottom:0;padding-bottom:2px}
@@ -2417,7 +2438,8 @@ const logoSlug = s => String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g
 function loadLogos(){
   if (logoLib.list || logoLib.busy || typeof fetch !== 'function') return;
   logoLib.busy = true;
-  Promise.all(LOGO_SRC.map(src => fetch(src.base + 'teams.json').then(r => r.ok ? r.json() : []).catch(() => [])
+  // Check for a newer list every time (a changed school name or logo shows right away, not after the browser's cache).
+  Promise.all(LOGO_SRC.map(src => fetch(src.base + 'teams.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : []).catch(() => [])
     .then(list => { src.list = Array.isArray(list) ? list : []; })))
     .then(() => { logoLib.list = LOGO_SRC.flatMap(src => src.list); if (g && R) refresh(); else { renderScoreboard(); renderCounty(); } });
 }
@@ -3324,7 +3346,7 @@ function weekGames(key){
   }
   if (g && !g.sample && gameWeek(g) === key) out[g.id] = g;
   // A game someone is keeping stats on takes the place of its schedule entry or quick score.
-  const pair = x => [x.teams.A.name, x.teams.H.name].map(teamKey).sort().join('|');
+  const pair = x => [x.teams.A.name, x.teams.H.name].map(canonSchool).sort().join('|');
   const statted = new Set(Object.values(out).filter(x => x.kind !== 'score').map(pair));
   Object.values(out).forEach(x => { if (x.kind === 'score' && statted.has(pair(x))) delete out[x.id]; });
   return Object.values(out).sort((a, b) => gameDay(a) - gameDay(b) || (a.created || 0) - (b.created || 0));
@@ -3705,7 +3727,13 @@ function seedSchedule(){
    ================================================================ */
 const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const lastName = n => String(n).trim().split(/\s+/).pop().toLowerCase();
-const sameSchool = (a, b) => { const x = logoSlug(a), y = logoSlug(b); return !!x && !!y && (x === y || x.startsWith(y) || y.startsWith(x)); };
+// A school's name as the logo library knows it, so "Collegiate" and "Wichita Collegiate" read as one school.
+function canonSchool(n){
+  const k = logoSlug(n);
+  for (const t of logoLib.list || []) if (t.slug === k || logoSlug(t.name) === k || (t.aliases || []).some(a => logoSlug(a) === k)) return logoSlug(t.name);
+  return k;
+}
+const sameSchool = (a, b) => { const x = logoSlug(a), y = logoSlug(b); return !!x && !!y && (x === y || x.startsWith(y) || y.startsWith(x) || canonSchool(a) === canonSchool(b)); };
 
 // Points and kind for one scoring-summary line, e.g. "Will Quinn 79 run (Pete Vega kick)".
 function scoreLine(d){
@@ -3844,6 +3872,8 @@ function parseBox(txt){
   const RUN = [new RegExp(String.raw`^(.+?)\s+${YD}\s+run\b`, 'i'), new RegExp(String.raw`^${YD}\s+run\s+(?:by\s+)?(.+)$`, 'i')];
   const PASS = [[new RegExp(String.raw`^(.+?)\s+${YD}\s+pass\s+from\s+(.+)$`, 'i'), 1, 2],        // receiver, passer
                 [new RegExp(String.raw`^${YD}\s+pass\s+(?:from\s+)?(.+?)\s+to\s+(.+)$`, 'i'), 2, 1]];  // passer, receiver
+  const RETS = String.raw`(?:fumble|interception|int|kickoff|kick|punt|blocked\s+(?:punt|kick|field\s+goal|fg))`;
+  const RET = [new RegExp(String.raw`^(.+?)\s+${YD}\s+${RETS}\s+return\b`, 'i'), new RegExp(String.raw`^${YD}\s+${RETS}\s+return\s+(?:by\s+)?(.+)$`, 'i')];
   ['A', 'H'].forEach(s => {
     const has = k => Object.values(out.pl[s]).some(p => p[k]), noR = !has('rtd'), noRe = !has('retd'), noP = !has('ptd');
     out.scoring.filter(e => e.side === s && e.how === 'TD').map(e => e.desc.split('(')[0].trim()).forEach(d => {
@@ -3853,6 +3883,9 @@ function parseBox(txt){
         const m = d.match(re);
         if (m){ if (noRe) add(player(s, m[ri]), 'retd', 1); if (noP) add(player(s, m[qi]), 'ptd', 1); return; }
       }
+      // Return touchdowns ("Higgins 4 fumble return", "22 yd punt return Smith"); no stat line carries these.
+      const t = RET.map(re => d.match(re)).find(Boolean);
+      if (t) add(player(s, t[1]), 'rettd', 1);
     });
   });
   // Kickers, from the scoring summary: "Vega 29 FG", "(Pete Vega kick)".
@@ -3867,6 +3900,12 @@ function parseBox(txt){
     if (e.how === 'TD'){
       const i = e.desc.lastIndexOf('('), km = (i >= 0 ? e.desc.slice(i + 1) : e.desc).match(/([A-Z][\w'’.-]*(?: [A-Z][\w'’.-]*)?)\s+kick\b(.*)$/);
       if (km){ const p = kicker(e.side, km[1]); add(p, 'xpa', 1); if (!/fail|no good|miss|block/i.test(km[2])) add(p, 'xpm', 1); }
+      // A good two-point try goes to whoever scored it: "(Ecot pass from Meeker)", "(Ast pass to Green)", "(Carter Green run)".
+      if (e.pts === 8){
+        const j = e.desc.lastIndexOf('('), t = j >= 0 ? e.desc.slice(j + 1).replace(/\)\s*$/, '').trim() : '';
+        const m2 = t.match(/^(.+?)\s+pass\s+from\b/i) || t.match(/\bto\s+(.+)$/i) || t.match(/^(.+?)\s+(?:run|rush)\b/i);
+        if (m2) add(player(e.side, m2[1]), 'two', 1);
+      }
     }
   });
   ['A', 'H'].forEach(s => {
@@ -4023,21 +4062,28 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('input', e => { if (e.target.id === 'bx-txt' || e.target.id === 'bx-date') $('#bx-prev').innerHTML = boxPreview(parseBox($('#bx-txt').value)); });
 /* ================================================================
-   County stats (?stats): season totals for the Butler County schools,
-   from every game that's been statted, live or entered from a box
-   score. Quick scores have no stats, so they aren't counted. Built from
-   the shared games, like the scoreboard, so everyone sees the same page.
+   BUCO Stats (?stats, or ?stats=rushing etc.): season stats for the
+   Butler County schools, laid out like ESPN's stats pages, from every
+   game that's been statted, live or entered from a box score. Quick
+   scores have no stats, so they aren't counted. Built from the shared
+   games, like the scoreboard, so everyone sees the same page.
+   No defense: tackles and sacks are never complete (box scores don't
+   carry them). Nor first downs, third downs, penalties or fumbles,
+   which only live-statted games have.
    ================================================================ */
 const COUNTY_PAGE = new URLSearchParams(location.search).has('stats');
 const COUNTY = ['Andover', 'Andover Central', 'Augusta', 'Bluestem', 'Circle', 'Douglass', 'El Dorado', 'Flinthills', 'Remington', 'Rose Hill'];
 const COUNTY_ALIASES = {Bluestem:['Leon-Bluestem'], Circle:['Towanda-Circle'], Remington:['Whitewater-Remington']};
 const countyOf = name => COUNTY.find(c => [c, ...(COUNTY_ALIASES[c] || [])].some(a => logoSlug(a) === logoSlug(name))) || null;
-const county = {games:null, err:'', team:'all', sort:{}};
+const C_VIEWS = ['passing', 'rushing', 'receiving', 'scoring', 'kicking', 'team'];
+const county = {games:null, err:'', team:'all', season:new Date().getFullYear(), view:'passing', sort:{}};
 
 async function startCounty(){
   ui.viewer = true; ui.county = true; document.body.classList.add('viewer', 'board');
   $('#board').hidden = false; $('#gtitle').textContent = '';
   document.title = 'BUCO Stats · Kansas Media Stats';
+  const want = new URLSearchParams(location.search).get('stats');
+  if (C_VIEWS.includes(want)) county.view = want;
   loadLogos(); renderCounty();
   try {
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
@@ -4054,24 +4100,30 @@ async function startCounty(){
   } catch (e) { county.err = 'Can’t reach the stats. Check your connection and reload.'; renderCounty(); }
 }
 
-// This season's statted games, one per matchup a week: a game entered twice counts once, the newest copy.
+/* ---------- the numbers ---------- */
+const seasonOf = x => fromYmd(gameWeek(x)).getFullYear();
+function countySeasons(){
+  const ys = new Set([new Date().getFullYear()]);
+  (county.games || []).forEach(x => ys.add(seasonOf(x)));
+  return [...ys].sort((a, b) => b - a);
+}
+// The season's statted games, one per matchup a week: a game entered twice counts once, the newest copy.
 function countyGames(){
-  const season = new Set(seasonKeys(new Date().getFullYear())), pick = {};
+  const season = new Set(seasonKeys(county.season)), pick = {};
   (county.games || []).forEach(x => {
     if (!season.has(gameWeek(x))) return;
-    const k = gameWeek(x) + '|' + [x.teams.A.name, x.teams.H.name].map(teamKey).sort().join('|');
+    const k = gameWeek(x) + '|' + [x.teams.A.name, x.teams.H.name].map(canonSchool).sort().join('|');
     if (!pick[k] || (x.updated || 0) > (pick[k].updated || 0)) pick[k] = x;
   });
   return Object.values(pick);
 }
-// No defense: tackles and sacks are never complete (box scores don't carry them), so they aren't totaled.
-const C_KEYS = ['pc', 'pa', 'py', 'ptd', 'pint', 'ru', 'ry', 'rtd', 're', 'rey', 'retd', 'fgm', 'fga', 'xpm', 'xpa'];
+const T_KEYS = ['rushN', 'rushY', 'passC', 'passA', 'passY', 'passTD', 'passInt'];
+const C_KEYS = ['pc', 'pa', 'py', 'ptd', 'pint', 'ru', 'ry', 'rtd', 're', 'rey', 'retd', 'ret', 'two', 'fgm', 'fga', 'xpm', 'xpa'];
 function countyStats(games){
   // Each team's own offense and, from the other side of the same games, what opponents did against it ('o' keys).
   const blank = c => Object.assign({name:c, gp:0, w:0, l:0, t:0, pf:0, pa:0, qf:[0, 0, 0, 0, 0], qa:[0, 0, 0, 0, 0], ot:false},
     zeros(T_KEYS), zeros(T_KEYS.map(k => 'o' + k)));
-  const teams = Object.fromEntries(COUNTY.map(c => [c, blank(c)]));
-  const players = {};
+  const teams = Object.fromEntries(COUNTY.map(c => [c, blank(c)])), players = {};
   for (const x of games){
     const r = replay(x), st = r.st;
     ['A', 'H'].forEach(s => {
@@ -4086,12 +4138,12 @@ function countyStats(games){
         if (p.n === 'team') return;
         // A statted game keys players by number (named from its roster); a box score keys them by name.
         const name = /^\d+$/.test(p.n) ? (x.teams[s].roster || {})[p.n] || `#${p.n}` : p.n;
-        const tds = Math.max(+p.tds || 0, (+p.rtd || 0) + (+p.retd || 0) + (+p.krtd || 0) + (+p.prtd || 0));
-        const pts = +p.pts || tds * 6 + (+p.xpm || 0) + 3 * (+p.fgm || 0);
-        if (!C_KEYS.some(k => +p[k]) && !tds) return;
+        // Return touchdowns: a box score's own count, or a statted game's touchdowns that weren't runs or catches.
+        const row = Object.assign({}, p, {ret:(+p.rettd || 0) + Math.max(0, (+p.tds || 0) - (+p.rtd || 0) - (+p.retd || 0)), two:+p.two || 0});
+        if (!C_KEYS.some(k => +row[k])) return;
         const key = `${c}|${name.toLowerCase()}`;
-        const P = players[key] || (players[key] = Object.assign({name, team:c, gp:0, tds:0, pts:0}, zeros(C_KEYS)));
-        P.gp++; P.tds += tds; P.pts += pts; C_KEYS.forEach(k => { P[k] += +p[k] || 0; });
+        const P = players[key] || (players[key] = Object.assign({name, team:c, gp:0}, zeros(C_KEYS)));
+        P.gp++; C_KEYS.forEach(k => { P[k] += +row[k] || 0; });
       });
     });
   }
@@ -4100,99 +4152,118 @@ function countyStats(games){
     if (P.name.includes(' ') || P.name.startsWith('#')) return;
     const k = P.name.toLowerCase(), full = Object.values(players).filter(Q => Q !== P && Q.team === P.team && Q.name.includes(' ') && lastName(Q.name) === k);
     if (full.length !== 1) return;
-    const Q = full[0]; Q.gp += P.gp; Q.tds += P.tds; Q.pts += P.pts; C_KEYS.forEach(n => { Q[n] += P[n]; });
+    const Q = full[0]; Q.gp += P.gp; C_KEYS.forEach(n => { Q[n] += P[n]; });
     delete players[`${P.team}|${k}`];
   });
   return {teams:Object.values(teams), players:Object.values(players)};
 }
 
-/* ---------- tables: [heading, shown value, sort value] per column ---------- */
-const avg1 = (a, b) => b ? (a / b).toFixed(1) : '—';
-// Team numbers every game has, pasted or statted. First downs, third downs, penalties and fumbles only come
-// from live-statted games, so like defense they'd always be incomplete, and aren't shown.
-const T_KEYS = ['rushN', 'rushY', 'passC', 'passA', 'passY', 'passTD', 'passInt'];
-const perG = (v, t) => t.gp ? v / t.gp : 0;
+/* ---------- views. A column is [heading, value to sort by (null: none), decimals, text to show instead] ---------- */
+const num = v => v == null || Number.isNaN(v) ? null : v;
+const per = (a, b) => b ? a / b : null;
+const tdAll = p => p.rtd + p.retd + p.ret;
+const ptsOf = p => 6 * tdAll(p) + 3 * p.fgm + p.xpm + 2 * p.two;
+// Passer rating, the NCAA formula high schools use.
+const rating = p => p.pa ? (8.4 * p.py + 330 * p.ptd + 100 * p.pc - 200 * p.pint) / p.pa : null;
+const P_VIEWS = {
+  passing:{label:'Passing', keep:p => p.pa > 0, def:3, cols:[['CMP', p => p.pc], ['ATT', p => p.pa], ['CMP%', p => per(100 * p.pc, p.pa), 1], ['YDS', p => p.py],
+    ['AVG', p => per(p.py, p.pa), 1], ['TD', p => p.ptd], ['INT', p => p.pint], ['RTG', rating, 1]]},
+  rushing:{label:'Rushing', keep:p => p.ru > 0, def:1, cols:[['ATT', p => p.ru], ['YDS', p => p.ry], ['AVG', p => per(p.ry, p.ru), 1], ['TD', p => p.rtd]]},
+  receiving:{label:'Receiving', keep:p => p.re > 0 || p.rey !== 0, def:1, cols:[['REC', p => p.re], ['YDS', p => p.rey], ['AVG', p => per(p.rey, p.re), 1], ['TD', p => p.retd]]},
+  scoring:{label:'Scoring', keep:p => ptsOf(p) > 0, def:7, groups:[['TOUCHDOWNS', 4], ['SCORING', 5]], cols:[['RUSH', p => p.rtd], ['REC', p => p.retd], ['RET', p => p.ret], ['TD', tdAll],
+    ['FG', p => p.fgm], ['XP', p => p.xpm], ['2PT', p => p.two], ['PTS', ptsOf], ['PTS/G', p => per(ptsOf(p), p.gp), 1]]},
+  kicking:{label:'Kicking', keep:p => p.fga > 0 || p.xpa > 0, def:6, cols:[['FGM', p => p.fgm], ['FGA', p => p.fga], ['FG%', p => per(100 * p.fgm, p.fga), 1],
+    ['XPM', p => p.xpm], ['XPA', p => p.xpa], ['XP%', p => per(100 * p.xpm, p.xpa), 1], ['PTS', p => 3 * p.fgm + p.xpm]]}};
+const C_TABS = [['offense', 'Offense', 'passing'], ['scoring', 'Scoring', 'scoring'], ['special', 'Special Teams', 'kicking'], ['team', 'Team Stats', 'team']];
+const tabOf = v => ({passing:'offense', rushing:'offense', receiving:'offense', scoring:'scoring', kicking:'special', team:'team'})[v];
 const signed = v => `${v > 0 ? '+' : ''}${v.toFixed(1)}`;
-const T_COLS = [
-  ['GP', t => t.gp, t => t.gp],
-  ['W-L', t => t.gp ? `${t.w}-${t.l}${t.t ? `-${t.t}` : ''}` : '—', t => t.gp ? (t.w + t.t / 2) / t.gp + t.w / 1000 : -1],
-  ['PF', t => t.pf, t => t.pf], ['PA', t => t.pa, t => t.pa],
-  ['PF/G', t => avg1(t.pf, t.gp), t => perG(t.pf, t)], ['PA/G', t => avg1(t.pa, t.gp), t => perG(t.pa, t)],
-  ['Margin/G', t => t.gp ? signed((t.pf - t.pa) / t.gp) : '—', t => perG(t.pf - t.pa, t)]];
+const T_COLS = [['GP', t => t.gp], ['W-L', t => t.gp ? (t.w + t.t / 2) / t.gp + t.w / 1000 : null, 0, t => `${t.w}-${t.l}${t.t ? `-${t.t}` : ''}`],
+  ['PF', t => t.pf], ['PA', t => t.pa], ['PF/G', t => per(t.pf, t.gp), 1], ['PA/G', t => per(t.pa, t.gp), 1],
+  ['MARGIN/G', t => per(t.pf - t.pa, t.gp), 1, t => signed((t.pf - t.pa) / t.gp)]];
 // The same columns for a team's own offense (p '') and for what its opponents did against it (p 'o').
 function yardCols(p){
   const k = (t, n) => t[p + n], ry = t => k(t, 'rushY'), py = t => k(t, 'passY'), plays = t => k(t, 'rushN') + k(t, 'passA');
-  return [
-    ['Rush', t => k(t, 'rushN'), t => k(t, 'rushN')],
-    ['Rush Yds', ry, ry],
-    ['Rush/G', t => avg1(ry(t), t.gp), t => perG(ry(t), t)],
-    ['Yds/Car', t => avg1(ry(t), k(t, 'rushN')), t => k(t, 'rushN') ? ry(t) / k(t, 'rushN') : 0],
-    ['C/Att', t => `${k(t, 'passC')}/${k(t, 'passA')}`, t => k(t, 'passC')],
-    ['Pass Yds', py, py],
-    ['Pass/G', t => avg1(py(t), t.gp), t => perG(py(t), t)],
-    ['Pass TD', t => k(t, 'passTD'), t => k(t, 'passTD')],
-    [p ? 'INT Made' : 'INT', t => k(t, 'passInt'), t => k(t, 'passInt')],
-    ['Total Yds', t => ry(t) + py(t), t => ry(t) + py(t)],
-    ['Yds/G', t => avg1(ry(t) + py(t), t.gp), t => perG(ry(t) + py(t), t)],
-    ['Yds/Play', t => avg1(ry(t) + py(t), plays(t)), t => plays(t) ? (ry(t) + py(t)) / plays(t) : 0]];
+  return [['RUSH', t => k(t, 'rushN')], ['RUSH YDS', ry], ['RUSH/G', t => per(ry(t), t.gp), 1], ['YDS/CAR', t => per(ry(t), k(t, 'rushN')), 1],
+    ['C/ATT', t => k(t, 'passC'), 0, t => `${k(t, 'passC')}/${k(t, 'passA')}`], ['PASS YDS', py], ['PASS/G', t => per(py(t), t.gp), 1], ['PASS TD', t => k(t, 'passTD')],
+    [p ? 'INT MADE' : 'INT', t => k(t, 'passInt')], ['TOTAL YDS', t => ry(t) + py(t)], ['YDS/G', t => per(ry(t) + py(t), t.gp), 1], ['YDS/PLAY', t => per(ry(t) + py(t), plays(t)), 1]];
 }
-const O_COLS = yardCols(''), A_COLS = yardCols('o');
 // Points for and against each quarter ("21-7"), sorted by the margin; halves after, and OT once there's been one.
 function quarterCols(ot){
-  const q = (t, ...i) => [i.reduce((a, n) => a + t.qf[n], 0), i.reduce((a, n) => a + t.qa[n], 0)];
-  const col = (label, ...i) => [label, t => t.gp ? q(t, ...i).join('-') : '—', t => { const [f, a] = q(t, ...i); return f - a; }];
-  return [col('1st', 0), col('2nd', 1), col('3rd', 2), col('4th', 3), ...(ot ? [col('OT', 4)] : []), col('1st Half', 0, 1), col('2nd Half', 2, 3)];
+  const q = (t, i) => [i.reduce((a, n) => a + t.qf[n], 0), i.reduce((a, n) => a + t.qa[n], 0)];
+  const col = (label, ...i) => [label, t => { const [f, a] = q(t, i); return f - a; }, 0, t => q(t, i).join('-')];
+  return [col('1ST', 0), col('2ND', 1), col('3RD', 2), col('4TH', 3), ...(ot ? [col('OT', 4)] : []), col('1ST HALF', 0, 1), col('2ND HALF', 2, 3)];
 }
-const C_TABLES = [   // id, title, who's in it, default sort column, columns
-  ['pass', 'Passing', p => p.pa > 0, 2, [['C/Att', p => `${p.pc}/${p.pa}`, p => p.pc], ['Pct', p => p.pa ? `${Math.round(p.pc / p.pa * 100)}%` : '—', p => p.pa ? p.pc / p.pa : 0],
-    ['Yds', p => p.py, p => p.py], ['TD', p => p.ptd, p => p.ptd], ['Int', p => p.pint, p => p.pint], ['Yds/G', p => avg1(p.py, p.gp), p => p.py / p.gp]]],
-  ['rush', 'Rushing', p => p.ru > 0, 1, [['Car', p => p.ru, p => p.ru], ['Yds', p => p.ry, p => p.ry], ['Avg', p => avg1(p.ry, p.ru), p => p.ru ? p.ry / p.ru : 0],
-    ['TD', p => p.rtd, p => p.rtd], ['Yds/G', p => avg1(p.ry, p.gp), p => p.ry / p.gp]]],
-  ['rec', 'Receiving', p => p.re > 0 || p.rey > 0, 1, [['Rec', p => p.re, p => p.re], ['Yds', p => p.rey, p => p.rey], ['Avg', p => avg1(p.rey, p.re), p => p.re ? p.rey / p.re : 0],
-    ['TD', p => p.retd, p => p.retd], ['Yds/G', p => avg1(p.rey, p.gp), p => p.rey / p.gp]]],
-  ['score', 'Scoring', p => p.pts > 0, 1, [['TD', p => p.tds, p => p.tds], ['Pts', p => p.pts, p => p.pts]]],
-  ['kick', 'Kicking', p => p.fga > 0 || p.xpa > 0, 2, [['FG', p => `${p.fgm}/${p.fga}`, p => p.fgm], ['XP', p => `${p.xpm}/${p.xpa}`, p => p.xpm], ['Pts', p => p.fgm * 3 + p.xpm, p => p.fgm * 3 + p.xpm]]]];
+
+/* ---------- the table, ESPN style: rank, name, then numbers; the sorted column shaded ---------- */
+function statTable(id, rows, cols, def, o){
+  const s = county.sort[id] || {i:def, desc:!o.asc}, key = r => num(cols[s.i][1](r));
+  // A team with no games yet always sorts to the bottom, whichever way the column runs; so do blanks.
+  const sorted = rows.slice().sort((a, b) => {
+    if ((a.gp === 0) !== (b.gp === 0)) return a.gp === 0 ? 1 : -1;
+    const x = key(a), y = key(b);
+    if (x == null || y == null) return (x == null) - (y == null) || a.name.localeCompare(b.name);
+    return (s.desc ? y - x : x - y) || a.name.localeCompare(b.name);
+  });
+  let rank = 0, prev;   // ties share a rank
+  const rk = sorted.map((r, i) => { const v = key(r); if (i === 0 || v !== prev) rank = i + 1; prev = v; return rank; });
+  const cell = (c, r) => {
+    if (r.gp === 0 && c[0] !== 'GP') return '—';
+    if (c[3]) return c[3](r);
+    const v = num(c[1](r)); return v == null ? '—' : c[2] ? v.toFixed(c[2]) : Math.round(v * 10) / 10;
+  };
+  const groups = o.groups ? `<tr class="grp"><th class="rk"></th><th class="nm"></th>${o.groups.map(([g, n]) => `<th colspan="${n}">${g}</th>`).join('')}</tr>` : '';
+  return `<div class="tbl-wrap"><table class="ctbl"><thead>${groups}<tr><th class="rk">RK</th><th class="nm">${o.first || 'NAME'}</th>
+      ${cols.map((c, i) => `<th class="num${i === s.i ? ' on' : ''}" data-csort="${id}:${i}"><span>${c[0]}</span>${i === s.i ? `<i>${s.desc ? '▾' : '▴'}</i>` : ''}</th>`).join('')}</tr></thead>
+    <tbody>${sorted.map((r, j) => `<tr${o.hi && o.hi(r) ? ' class="hi"' : ''}><td class="rk">${rk[j]}</td><td class="nm"><div class="cn-in">${o.name(r)}</div></td>
+      ${cols.map((c, i) => `<td class="num${i === s.i ? ' on' : ''}">${esc(String(cell(c, r)))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
 const cMark = name => markFor({name, abbr:shortName(name), color:'#4A4B4D'}, 22);
-function ctable(id, title, rows, cols, def, first, cell, hi, asc){
-  const s = county.sort[id] || {i:def, desc:!asc}, v = cols[s.i][2];
-  // A team with no games yet always sorts to the bottom, whichever way the column runs.
-  const sorted = rows.slice().sort((a, b) => ((a.gp === 0) - (b.gp === 0)) || (s.desc ? v(b) - v(a) : v(a) - v(b)) || a.name.localeCompare(b.name));
-  // Team tables show every team; player lists show each list's top 20, or everyone on one team.
-  const shown = first === 'Team' || county.team !== 'all' ? sorted : sorted.slice(0, 20);
-  return `<section class="bcard ccard"><div class="ccard-hd"><h2>${title}</h2>${shown.length < sorted.length ? `<span>Top ${shown.length} of ${sorted.length}</span>` : ''}</div>
-    <div class="tbl-wrap"><table class="ctbl"><thead><tr><th class="cn">${first}</th>${cols.map((c, i) => `<th data-csort="${id}:${i}"${i === s.i ? ' class="on"' : ''}>${c[0]}${i === s.i ? (s.desc ? ' ▾' : ' ▴') : ''}</th>`).join('')}</tr></thead>
-    <tbody>${shown.map(r => `<tr${hi && hi(r) ? ' class="hi"' : ''}><td class="cn"><div class="cn-in">${cell(r)}</div></td>${cols.map(c => `<td>${esc(String(c[1](r)))}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section>`;
-}
 function renderCounty(){
   if (!ui.county) return;
-  const box = $('#board'), games = countyGames();
-  const opts = ['all', ...COUNTY].map(c => `<option value="${esc(c)}"${county.team === c ? ' selected' : ''}>${c === 'all' ? 'All county teams' : esc(c)}</option>`).join('');
+  const box = $('#board'), v = county.view, tab = tabOf(v), games = countyGames();
+  const who = county.team === 'all' ? 'All County Teams' : county.team;
+  const title = v === 'team' ? `${who} Team Stats ${county.season}` : `${who} Player ${P_VIEWS[v].label} Stats ${county.season}`;
+  document.title = `${title} · BUCO Stats`;
+  const head = `<section class="bcard bhead"><div class="bhead-top"><h1 class="c-title">${esc(title)}</h1><a class="bhead-link" href="?scores">Scoreboard »</a></div>
+    <nav class="c-tabs">${C_TABS.map(([k, label, first]) => `<button type="button"${k === tab ? ' class="on"' : ''} data-cview="${first}">${label}</button>`).join('')}</nav>
+    ${tab === 'offense' ? `<div class="c-pills">${['passing', 'rushing', 'receiving'].map(k => `<button type="button"${k === v ? ' class="on"' : ''} data-cview="${k}">${P_VIEWS[k].label}</button>`).join('')}</div>` : ''}
+    <div class="c-filters"><select class="c-sel" id="cseason" aria-label="Season">${countySeasons().map(y => `<option value="${y}"${y === county.season ? ' selected' : ''}>${y}</option>`).join('')}</select>
+      <select class="c-sel" id="cteam" aria-label="Team">${['all', ...COUNTY].map(c => `<option value="${esc(c)}"${county.team === c ? ' selected' : ''}>${c === 'all' ? 'All County Teams' : esc(c)}</option>`).join('')}</select></div>
+    <p class="c-sub">Butler County · from ${county.games ? `${games.length} game${games.length === 1 ? '' : 's'}` : 'the games'} statted live or entered from a box score.</p></section>`;
   let body;
   if (county.err) body = `<section class="bcard"><p class="bempty">${esc(county.err)}</p></section>`;
   else if (!county.games) body = '<section class="bcard"><p class="bempty">Loading stats…</p></section>';
   else {
-    const {teams, players} = countyStats(games), mine = county.team === 'all' ? players : players.filter(p => p.team === county.team);
-    const pname = p => `${cMark(p.team)}<span class="c-pl"><b>${esc(p.name)}</b><small>${esc(p.team)}</small></span>`;
-    const tables = C_TABLES.map(([id, title, keep, def, cols]) => { const rows = mine.filter(keep); return rows.length ? ctable(id, title, rows, cols, def, 'Player', pname) : ''; }).join('');
-    const tcell = t => `${cMark(t.name)}<b>${esc(t.name)}</b>`, thi = t => t.name === county.team, qcols = quarterCols(teams.some(t => t.ot));
-    body = ctable('team', 'Team Totals', teams, T_COLS, 1, 'Team', tcell, thi)
-      + ctable('off', 'Offense', teams, O_COLS, 10, 'Team', tcell, thi)
-      + ctable('allow', 'Allowed (what opponents did)', teams, A_COLS, 10, 'Team', tcell, thi, true)
-      + ctable('qtr', 'Scoring by Quarter (for-against)', teams, qcols, qcols.length - 2, 'Team', tcell, thi)
-      + (tables || `<section class="bcard"><p class="bempty">No player stats yet${county.team === 'all' ? '' : ` for ${esc(county.team)}`}.</p></section>`);
+    const {teams, players} = countyStats(games);
+    if (v === 'team'){
+      const o = {first:'TEAM', name:t => `${cMark(t.name)}<b>${esc(t.name)}</b>`, hi:t => t.name === county.team};
+      const card = (title, id, cols, def, asc) => `<section class="bcard ccard"><div class="ccard-hd"><h2>${title}</h2></div>${statTable(id, teams, cols, def, {...o, asc})}</section>`;
+      const qcols = quarterCols(teams.some(t => t.ot));
+      body = card('Team Totals', 'team', T_COLS, 1) + card('Offense', 'off', yardCols(''), 10) + card('Defensive Team Stats', 'allow', yardCols('o'), 10, true)
+        + card('Scoring by Quarter (for-against)', 'qtr', qcols, qcols.length - 2);
+    } else {
+      const V = P_VIEWS[v], rows = players.filter(p => V.keep(p) && (county.team === 'all' || p.team === county.team));
+      const name = p => `${cMark(p.team)}<span class="c-pl"><b>${esc(p.name)}</b><small>${esc(shortName(p.team))}</small></span>`;
+      body = `<section class="bcard ccard">${rows.length ? statTable(v, rows, V.cols, V.def, {name, groups:V.groups})
+        : `<p class="bempty" style="padding:4px 20px 10px">No ${V.label.toLowerCase()} stats yet${county.team === 'all' ? '' : ` for ${esc(county.team)}`}.</p>`}</section>`;
+    }
   }
-  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>BUCO Stats</h1><a class="bhead-link" href="?scores">Scoreboard »</a></div>
-    <p class="c-sub">Butler County · ${new Date().getFullYear()} season${county.games ? ` · ${games.length} game${games.length === 1 ? '' : 's'} statted` : ''}. Totals and records come from games statted live or entered from a box score.</p>
-    <select class="c-team" id="cteam" aria-label="Team">${opts}</select></section>${body}`;
+  box.innerHTML = head + body;
 }
 document.addEventListener('click', e => {
   if (!ui.county || !e.target.closest) return;
+  const vb = e.target.closest('[data-cview]');
+  if (vb){ county.view = vb.dataset.cview; history.replaceState(null, '', `?stats=${county.view}`); return renderCounty(); }
   const th = e.target.closest('[data-csort]'); if (!th) return;
   const [id, i] = th.dataset.csort.split(':'), cur = county.sort[id];
   county.sort[id] = {i:+i, desc:cur && cur.i === +i ? !cur.desc : true};
   renderCounty();
 });
-document.addEventListener('change', e => { if (ui.county && e.target.id === 'cteam'){ county.team = e.target.value; renderCounty(); } });
+document.addEventListener('change', e => {
+  if (!ui.county) return;
+  if (e.target.id === 'cteam'){ county.team = e.target.value; renderCounty(); }
+  if (e.target.id === 'cseason'){ county.season = +e.target.value; renderCounty(); }
+});
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
