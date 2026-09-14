@@ -75,8 +75,8 @@ a.abtn{display:inline-block;text-decoration:none}
 
 /* ---------- menu bar under the scores strip, like ESPN's: the site's pages on the left, the scorer's buttons on the right ---------- */
 .navbar{background:#2B2C2D;color:#FFFFFF}
-.navbar-in{max-width:1280px;margin:0 auto;padding:0 16px;min-height:54px;display:flex;align-items:center;flex-wrap:wrap;column-gap:24px}
-.navlinks{display:flex;align-self:stretch;gap:28px;margin-right:auto;overflow-x:auto;scrollbar-width:none}
+.navbar-in{max-width:1280px;margin:0 auto;padding:0 16px;min-height:54px;display:flex;align-items:center;flex-wrap:wrap;column-gap:20px}
+.navlinks{display:flex;align-self:stretch;gap:24px;margin-right:auto;overflow-x:auto;scrollbar-width:none}
 .navlinks::-webkit-scrollbar{display:none}
 .navlink{display:flex;align-items:center;padding-top:3px;border-bottom:3px solid transparent;font:700 16px/1 var(--sans);color:#FFFFFF;text-decoration:none;white-space:nowrap}
 .navlink:hover{border-bottom-color:rgba(255,255,255,.45)}
@@ -93,7 +93,7 @@ a.abtn{display:inline-block;text-decoration:none}
 .navmenu a.on{color:var(--ink-2);font-weight:600}
 .navtools{display:flex;align-items:center;gap:4px}
 .navbar .abtns,.navbar .vbtns{gap:4px}
-.navbar .abtn{background:none;border:0;border-radius:6px;color:#FFFFFF;padding:9px 11px;font:600 14.5px/1 var(--sans);white-space:nowrap}
+.navbar .abtn{background:none;border:0;border-radius:6px;color:#FFFFFF;padding:9px 9px;font:600 14.5px/1 var(--sans);white-space:nowrap}
 .navbar .abtn:hover{background:rgba(255,255,255,.12)}
 .navbar .abtn.live{box-shadow:inset 0 0 0 1.5px #FF4436}
 .navbar .livebadge{color:#FFFFFF;margin-right:8px}
@@ -101,6 +101,16 @@ a.abtn{display:inline-block;text-decoration:none}
 body.bpage .navtools{display:none}
 /* except on a scorer's device (signed in on the Game Tracker): its buttons show on every page, and open the tracker */
 body.bpage.scorer .navtools{display:flex}
+/* signed out: a Sign in link there instead */
+body.bpage.signin .navtools{display:flex}
+@media (max-width:640px){body.bpage.signin .navtools{justify-content:flex-end}}
+/* laptop-width windows: a touch tighter, so the pages and the scorer's buttons share one row */
+@media (min-width:641px) and (max-width:1100px){
+  .navlinks{gap:20px}
+  .navlink{font-size:15px}
+  .navbar .abtn{padding:8px 7px;font-size:14px}
+  .navbar .livebadge{margin-right:4px}
+}
 /* phones: the pages on one row, the buttons spread across the row below */
 @media (max-width:640px){
   .navbar-in{padding:0 12px}
@@ -744,7 +754,7 @@ dialog.fallback[open]{display:block;position:fixed;top:50%;left:50%;transform:tr
 /* ---------- viewer (live link) ---------- */
 body.viewer .abtns,body.viewer #sync,body.viewer #pad{display:none}
 body.viewer.scorer .abtns{display:flex}
-body.viewer.scorer #sync{display:inline}
+body.viewer.scorer #sync,body.viewer.signin #sync{display:inline}
 body.viewer .pl{cursor:default}
 body.viewer .pl:hover{background:none}
 
@@ -3311,7 +3321,8 @@ function renderLive(){
   if (!ui.viewer || !g){ el.hidden = true; return; }
   const final = R && R.st.final, ago = Math.max(0, Math.round((Date.now() - (g.updated || Date.now())) / 1000));
   el.hidden = false; el.classList.toggle('final', !!final);
-  el.innerHTML = `<i></i>${final ? 'Final' : 'Live'} · updated ${ago < 60 ? `${ago}s` : `${Math.round(ago / 60)} min`} ago`;
+  // Short, so it sits on the menu bar's one row: a final is just Final; a live game says how fresh it is.
+  el.innerHTML = `<i></i>${final ? 'Final' : `Live · ${ago < 60 ? `${ago}s` : `${Math.round(ago / 60)} min`} ago`}`;
 }
 function syncBlock(){
   const s = sync.state, u = sync.user;
@@ -4956,9 +4967,14 @@ function scorerBar(){
     const d = JSON.parse(localStorage.getItem(STORE) || 'null'), cur = d && d.games && d.games[d.cur];
     live = !!(cur && cur.share && !cur.sample);
   } catch (e) {}
-  if (!signedIn) return;
-  document.body.classList.add('scorer');
   const go = k => `?tracker&amp;open=${k}`;
+  // Signed out: just a Sign in link, to the tracker's Games window with its Sign in with Google button.
+  if (!signedIn){
+    document.body.classList.add('signin');
+    $('#sync').innerHTML = `<a class="abtn" href="${go('games')}" title="Sign in to keep stats and put your games on the scoreboard">Sign in</a>`;
+    return;
+  }
+  document.body.classList.add('scorer');
   $('#sync').innerHTML = `<a class="abtn syncbtn ok" href="${go('games')}" title="Your games are kept in your account"><i></i>Synced</a>`;
   document.querySelector('.navtools .abtns').innerHTML = `<a class="abtn${live ? ' live' : ''}" href="${go('share')}">${live ? '<i></i>Live' : 'Share'}</a>`
     + `<a class="abtn" href="${go('games')}">Games</a><a class="abtn" href="${go('setup')}">Setup</a><a class="abtn" href="${go('export')}">Export</a>`;
