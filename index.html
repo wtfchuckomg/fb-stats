@@ -151,7 +151,7 @@ textarea.inp.bx-txt{min-height:220px;font:13px/1.45 ui-monospace,Menlo,Consolas,
 @media (max-width:640px){.sc-full{width:66px;padding:0 6px;font-size:11.5px}.sc-add{width:52px}}
 
 /* ---------- the full scoreboard page (?scores), like ESPN's ---------- */
-body.bpage .sample,body.bpage .scores,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.bpage .livebadge{display:none!important}
+body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.bpage .livebadge{display:none!important}
 /* width:100% keeps the page to the screen; only the week tabs scroll sideways */
 .board{box-sizing:border-box;width:100%;max-width:1280px;margin:0 auto;padding:16px 16px 40px;display:flex;flex-direction:column;gap:14px}
 .bcard{box-sizing:border-box;min-width:0;max-width:100%;background:var(--card);border-radius:14px;box-shadow:0 1px 2px rgba(18,18,19,.06);padding:20px 26px}
@@ -1244,11 +1244,12 @@ function renderBoard(){
   // Like ESPN's: school and mascot, the record under it, beside the score. Once it's final the loser is grayed, an
   // arrow points at the winner, and the timeouts go.
   const won = st.final && st.score.A !== st.score.H ? (st.score.A > st.score.H ? 'A' : 'H') : null;
+  const fullName = t => t.mascot && !String(t.name).toLowerCase().endsWith(t.mascot.toLowerCase()) ? `${t.name} ${t.mascot}` : t.name;
   const side = s => {
     const has = !st.final && st.poss === s && st.phase !== 'kick';
     return `<div class="st-side ${s === 'H' ? 'home' : 'away'}${won && won !== s ? ' lose' : ''}" style="--tc:${esc(T[s].color)}">
       <div class="st-logo">${teamMark(s, 64)}</div>
-      <div class="st-id"><div class="st-name">${esc([T[s].name, T[s].mascot].filter(Boolean).join(' '))}</div><div class="st-rec">${esc(recordText(T[s], s) || (s === 'A' ? 'Away' : 'Home'))}</div></div>
+      <div class="st-id"><div class="st-name">${esc(fullName(T[s]))}</div><div class="st-rec">${esc(recordText(T[s], s) || (s === 'A' ? 'Away' : 'Home'))}</div></div>
       <div class="st-scorebox"><div class="st-score"><span>${st.score[s]}</span>${has ? '<span class="st-poss" title="Has the ball"></span>' : ''}${won === s ? '<i class="st-win" title="Won"></i>' : ''}</div>
         ${st.final ? '' : `<div class="st-tos" title="${st.to[s]} timeout${st.to[s] === 1 ? '' : 's'} left">${dots(s)}</div>`}</div></div>`;
   };
@@ -3508,7 +3509,6 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
 function renderScores(){
   const box = $('#scores'); if (!box) return;
   const key = shownWeek(); watchWeek(key);
-  if (ui.board){ box.hidden = true; return; }   // the full scoreboard page shows the week itself
   const games = weekGames(key);
   // The scorer always gets the strip, for its Add a score button; fans only when there's something to show.
   const any = !ui.viewer || games.length > 0;
@@ -3520,7 +3520,7 @@ function renderScores(){
     <div class="sc-wrap"><div class="sc-list">${games.length ? games.map(scoreCard).join('') : `<div class="sc-empty">No games for ${esc(weekLabel(key))} yet.</div>`}</div>
       <button type="button" class="sc-arrow l" data-scroll="-1" aria-label="Earlier games" hidden>${chev('M9 1L1 9l8 8')}</button>
       <button type="button" class="sc-arrow r" data-scroll="1" aria-label="More games" hidden>${chev('M1 1l8 8-8 8')}</button></div>
-    <a class="sc-full" href="?scores=${key}">Full Scoreboard »</a>
+    ${ui.board ? '' : `<a class="sc-full" href="?scores=${key}">Full Scoreboard »</a>`}
     ${ui.viewer ? '' : `<button type="button" class="sc-add" data-qs-new aria-label="Add a score from another game"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 2v14M2 9h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>Score</span></button>`}</div>`;
   const list = box.querySelector('.sc-list');
   // A redraw keeps the strip where it was; a new week brings the open game into view.
@@ -3574,7 +3574,12 @@ document.addEventListener('click', e => {
   if (a.classList.contains('cur')) return;
   g = x; resetUi(); setCurrent(); refresh();
 });
-document.addEventListener('change', e => { if (e.target.id === 'scweek'){ ui.week = e.target.value; renderScores(); } });
+document.addEventListener('change', e => {
+  if (e.target.id !== 'scweek') return;
+  ui.week = e.target.value; renderScores();
+  // On the scoreboard page the page below follows the strip to that week.
+  if (ui.board){ history.replaceState(null, '', `?scores=${ui.week}`); renderScoreboard(); }
+});
 // Tapping a score clears it for the new one, with the old one showing faintly; leave it blank to keep it.
 // (Selecting the text instead is unreliable on phones, where lifting the finger drops the selection.)
 const isQsPts = el => /^qs-[AH]-pts$/.test(el.id || '');
@@ -3704,7 +3709,7 @@ function renderScoreboard(){
 document.addEventListener('click', e => {
   if (!ui.board || !e.target.closest) return;
   const w = e.target.closest('[data-bweek]');
-  if (w){ ui.week = w.dataset.bweek; history.replaceState(null, '', `?scores=${ui.week}`); return renderScoreboard(); }
+  if (w){ ui.week = w.dataset.bweek; history.replaceState(null, '', `?scores=${ui.week}`); renderScores(); return renderScoreboard(); }
   const a = e.target.closest('[data-bscroll]');
   if (a){ const wk = $('#board .bweeks'); wk.scrollBy({left:+a.dataset.bscroll * wk.clientWidth * .7, behavior:'smooth'}); }
 });
@@ -4191,6 +4196,7 @@ async function startCounty(){
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
     const [appM, fsM] = await Promise.all([import(base + 'app.js'), import(base + 'firestore.js')]);
     const fsdb = fsM.getFirestore(appM.initializeApp(firebaseConfig));
+    scoresReady({fsM, fsdb});   // the week's scores strip, above the menu bar
     fsM.onSnapshot(fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true)), snap => {
       const games = [];
       snap.forEach(d => {
