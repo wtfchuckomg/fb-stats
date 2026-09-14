@@ -422,6 +422,7 @@ function replay(g, upto = g.plays.length){
   const ab = s => T[s].abbr || s;
   const nm = (s, n) => {
     if (n === '' || n == null) return ab(s);
+    if (n === 'team') return 'TEAM';
     const who = (T[s].roster || {})[n];
     return who ? `#${n} ${who.split(' ').slice(-1)[0]}` : `#${n}`;
   };
@@ -550,14 +551,16 @@ function replay(g, upto = g.plays.length){
     if (st.drive && st.drive.team === cs) closeDrive('Fumble', pos);
     if (st.ot) { otEnd(); return txt + ' (ball dead).'; }
     const ry = +f.ry || 0, fin = FL - pos + ry;
-    if (ry) txt += `, returned ${plural(ry, 'yard')}`;
+    if (ry) txt += ry > 0 ? `, returned ${plural(ry, 'yard')}` : `, lost ${plural(-ry, 'yard')}`;
     if (fin >= FL) return txt + '.' + touchdown(rs, `${f.by ? nm(rs, f.by) : ab(rs)} fumble return`, pl(rs, f.by));
     if (fin <= 0){ newSeries(rs, RU.tb); return txt + '. Touchback.'; }
     newSeries(rs, fin); return txt + '.';
   }
-  function fumbleKept(cs, cn, f){
+  // The offense gets its own fumble back; a teammate's advance moves the ball but isn't the carrier's yardage.
+  function fumbleKept(cs, cn, f, end){
     bump(pl(cs, cn), 'fum'); S.team[cs].fum++;
-    return ` Fumble, recovered by ${f.by ? nm(cs, f.by) : ab(cs)}.`;
+    const adv = end != null ? +f.ry || 0 : 0;
+    return ` Fumble, recovered by ${f.by ? nm(cs, f.by) : ab(cs)}${adv ? `, ${adv > 0 ? 'advanced ' + plural(adv, 'yard') : 'lost ' + plural(-adv, 'yard')} to the ${yl(cs, clamp(end + adv, 0, FL))}` : ''}.`;
   }
 
   /* ---- penalties ---- */
@@ -610,7 +613,8 @@ function replay(g, upto = g.plays.length){
     let txt = td ? `${nm(O, p.r)} ${fy(g)}-yard rush` : `${nm(O, p.r)} rush ${yds(g)} to the ${yl(O, end)}${tackleTxt(D, p.tk)}.`;
     if (p.fum){
       if (p.fum.lost) return txt + fumbleLost(O, p.r, end, p.fum);
-      txt += fumbleKept(O, p.r, p.fum);
+      txt += fumbleKept(O, p.r, p.fum, end);
+      if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), 'R');
     }
     if (td){ bump(r, 'rtd'); return txt + '.' + progress(end, 'R', `${nm(O, p.r)} ${fy(g)}-yard run`, r); }
     return txt + progress(end, 'R');
@@ -630,7 +634,7 @@ function replay(g, upto = g.plays.length){
       by.forEach(n => { const d = pl(D, n); d.sk += 1 / by.length; });
       tackles(D, by, g); conversion(end);
       let txt = `${nm(O, p.qb)} sacked${by.length ? ` by ${by.map(n => nm(D, n)).join(' and ')}` : ''} ${yds(g)} to the ${yl(O, end)}.`;
-      if (p.fum){ if (p.fum.lost) return txt + fumbleLost(O, p.qb, end, p.fum); txt += fumbleKept(O, p.qb, p.fum); }
+      if (p.fum){ if (p.fum.lost) return txt + fumbleLost(O, p.qb, end, p.fum); txt += fumbleKept(O, p.qb, p.fum, end); if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), null); }
       return txt + progress(end, null);
     }
     t.passA++; bump(qb, 'pa');
@@ -661,7 +665,7 @@ function replay(g, upto = g.plays.length){
     tackles(D, p.tk, g); conversion(end);
     let txt = td ? `${nm(O, p.qb)} ${fy(g)}-yard pass to ${nm(O, p.to)}`
                  : `${nm(O, p.qb)} pass complete to ${nm(O, p.to)} ${yds(g)} to the ${yl(O, end)}${tackleTxt(D, p.tk)}.`;
-    if (p.fum){ if (p.fum.lost) return txt + fumbleLost(O, p.to, end, p.fum); txt += fumbleKept(O, p.to, p.fum); }
+    if (p.fum){ if (p.fum.lost) return txt + fumbleLost(O, p.to, end, p.fum); txt += fumbleKept(O, p.to, p.fum, end); if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), 'P'); }
     if (td){ t.passTD++; bump(qb, 'ptd'); bump(rec, 'retd');
       return txt + '.' + progress(end, 'P', `${nm(O, p.to)} ${fy(g)}-yard pass from ${nm(O, p.qb)}`, rec); }
     return txt + progress(end, 'P');
@@ -989,7 +993,7 @@ const ROLE = {rush:p => p.ru, qb:p => p.pa + p.psk, rec:p => p.re, kick:p => p.k
   ret:p => p.kr + p.pr, def:p => p.tk + p.ast + p.sk + p.dint + p.pbu};
 function recent(side, role){
   const f = ROLE[role]; if (!f) return [];
-  return Object.values(ui.ctx.S.pl[side]).filter(p => f(p) > 0).sort((a, b) => f(b) - f(a)).slice(0, 5).map(p => p.n);
+  return Object.values(ui.ctx.S.pl[side]).filter(p => p.n !== 'team' && f(p) > 0).sort((a, b) => f(b) - f(a)).slice(0, 5).map(p => p.n);
 }
 const first = (side, role) => recent(side, role)[0] || '';
 function penBlank(side, enf){ return {side, name:'Holding', y:10, a:false, l:false, n:'', enf}; }
@@ -1286,7 +1290,8 @@ function tokenize(s){
 
 function parseQuick(raw, st){
   const line = String(raw || '').trim(); if (!line) return null;
-  let toks = tokenize(line).map(t => TD_WORDS.includes(t) ? 'td' : t);
+  // "team" (or "tm") stands in for a player number: kneel-downs, snaps over the punter's head.
+  let toks = tokenize(line).map(t => TD_WORDS.includes(t) ? 'td' : t === 'tm' ? 'team' : t);
   const {map, key} = quickTeams();
   const T = t => map[t], L = s => key[s].toUpperCase();
   const FL = rulesOf(g).len, HALF = FL / 2;
@@ -1312,7 +1317,7 @@ function parseQuick(raw, st){
   if (has('undo')) return {undo:true};
 
   /* ---- whose ball, where: "N ball at N35 1-10" ---- */
-  if (has('ball') && !has('punt')){
+  if (has('ball') && !has('punt') && !has('fum', 'fumble', 'fumbled', 'fumbles')){
     const bi = toks.indexOf('ball');
     const side = T(toks[bi - 1]) || T(toks[bi + 1]);
     if (!side) return bad(`Start with the team letter, like ${L('A')} ball at ${L('A')}35.`);
@@ -1374,7 +1379,8 @@ function parseQuick(raw, st){
     pen.enf = offset ? 'off' : pt.some(t => ['np', 'noplay', 'nullified', 'replay'].includes(t)) ? 'prev'
       : pt.some(t => ['dec', 'declined'].includes(t)) ? 'dec' : 'end';
   }
-  const flag = p => { if (pen) p.pen = pen; return ok(p); };
+  let fumErr = null;                       // set when a fumble's "ball on" spot can't be right
+  const flag = p => { if (fumErr) return bad(fumErr); if (pen) p.pen = pen; return ok(p); };
   // Drop filler words, but never a team letter: for Augusta, "a" is the team, not the article.
   if (toks.some(isNum)) toks = toks.filter(t => !FILLER.includes(t) || T(t));
 
@@ -1497,22 +1503,53 @@ function parseQuick(raw, st){
   let fum = null;
   const fi = toks.findIndex(t => ['fum', 'fumble', 'fumbled', 'fumbles'].includes(t));
   if (fi >= 0){
-    const ft = toks.slice(fi + 1); toks = toks.slice(0, fi);
-    const fn = ft.filter(isNum), side = ft.map(T).find(Boolean), lost = !side || side !== O;
+    let ft = toks.slice(fi + 1); toks = toks.slice(0, fi);
+    // "… ball on I24": where the next snap is; the advance is the difference.
+    let endSpot = null;
+    const bi = ft.indexOf('ball');
+    if (bi >= 0){
+      const tail = ft.slice(bi + 1);
+      endSpot = tail.map(spotOf).find(Boolean) || (tail.includes(String(HALF)) ? {side:null, n:HALF} : null);
+      if (!endSpot) return bad(`Say where the ball ended up, like ball on ${L(D)}24.`);
+      ft = ft.slice(0, bi);
+    }
+    // "A31" is team A's #31 recovering; a bare "A" is just the team.
+    const who = ft.map(spotOf).find(Boolean), fn = ft.filter(isNum);
+    const side = who ? who.side : ft.map(T).find(Boolean), lost = !side || side !== O;
+    const by = who ? String(who.n) : fn[0], adv = who ? fn[0] : fn[1];
     // td anywhere on a lost-fumble line is the defense's score; on a kept fumble it's the offense's.
     const tdLine = ft.includes('td') || toks.includes('td');
     if (lost) toks = toks.filter(t => t !== 'td'); else if (tdLine && !toks.includes('td')) toks.push('td');
-    fum = {lost, by:fn[0], ry:Math.abs(+(fn[1] || 0)), td:lost && tdLine};
+    fum = {lost, by, ry:Math.abs(+(adv || 0)), td:lost && tdLine, endSpot};
   }
   const withFum = p => {
     if (!fum) return p;
-    let ry = fum.lost ? fum.ry : 0;
-    // The recovering team runs it back the whole way from where it picked the ball up.
-    if (fum.td){ const y = p.res === 's' ? -Math.min(p.sy, st.spot) : (+p.y || 0); ry = clamp(st.spot + y, 0, FL); }
+    // Where the ball came loose, in the offense's frame.
+    const y = p.res === 's' ? -Math.min(p.sy, st.spot) : (+p.y || 0), at = clamp(st.spot + y, 0, FL);
+    let ry = fum.ry;
+    if (fum.endSpot){
+      const mine = fum.lost ? D : O, e = fum.endSpot;
+      const endPos = e.side == null ? HALF : e.side === mine ? e.n : FL - e.n;   // in the recovering team's frame
+      ry = endPos - (fum.lost ? FL - at : at);
+      // Far behind the recovery is almost always the wrong team letter on the yard line.
+      if (ry < -10){
+        const recPos = fum.lost ? FL - at : at;
+        // Team short names, not letters: "where I recovered it" reads like the pronoun.
+        const nameOf = s => g.teams[s].abbr || L(s);
+        const ylq = pos => pos === HALF ? String(HALF) : pos < HALF ? `${nameOf(mine)} ${fy(pos)}` : `${nameOf(other(mine))} ${fy(FL - pos)}`;
+        fumErr = `That's ${fy(-ry)} yards backward from where ${nameOf(mine)} recovered it (the ${ylq(recPos)}). Check the yard line${e.side ? `: ball on ${L(other(e.side))}${e.n}?` : '.'}`;
+      }
+    }
+    if (fum.td) ry = at;                     // the recovering team runs it back the whole way
     p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ry};
     return p;
   };
-  const nums = toks.filter(isNum), td = has('td'), toGoal = FL - st.spot;
+  const nums = toks.filter(t => isNum(t) || t === 'team'), td = has('td'), toGoal = FL - st.spot;
+  // A kneel-down is TEAM's, never the quarterback's: "kneel" loses 1 unless told otherwise.
+  if (has('kneel', 'kneels', 'kneeled', 'kn', 'victory')){
+    const n = nums.find(x => x !== 'team');
+    return flag(withFum({t:'run', r:'team', y:-Math.abs(n != null ? +n : 1)}));
+  }
   if (has('inc', 'incomplete', 'incomp')) return flag({t:'pass', qb:nums[0], res:'i', ...(nums[1] != null ? {to:nums[1]} : {}), ...(tk[0] ? {pbu:tk[0]} : {})});
   if (has('int', 'pick', 'picked', 'intercepted')){
     const p = {t:'pass', qb:nums[0], res:'x', at:0, ry:nums[2] != null ? Math.abs(+nums[2]) : 0};
@@ -1548,6 +1585,8 @@ function cheatHtml(a, h){
     [`${a} ball at ${a}35 1-10`, `${g.teams.A.name} ball, 1st & 10 at its own 35. Down and distance are optional (1st & 10 if left off; use 1-g for goal to go).`],
     ['3-10', '#3 runs for 10'],
     ['3--1 &nbsp;or&nbsp; 3-(-1)', '#3 runs for a loss of 1'],
+    ['kneel &nbsp;·&nbsp; kneel-2', 'Kneel-down, charged to TEAM, not the quarterback: a 1-yard loss unless you give the yards'],
+    ['team--20', 'A team play, like a snap over the punter’s head: TEAM rush for a loss of 20. It counts in team rushing, not against any player.'],
     ['3-td', '#3 runs it in from wherever the ball is'],
     ['7-88-5', '#7 completes to #88 for 5'],
     ['15-0-50-td', '#15 to #0, 50-yard touchdown'],
@@ -1555,8 +1594,9 @@ function cheatHtml(a, h){
     ['7-sack-6-90', '#7 sacked for a loss of 6 by #90'],
     [`7-int-24-${h}10 &nbsp;·&nbsp; 7-int-24-${h}10-${h}40`, `#7 intercepted by #24 at the ${h} 10 / and returned to the ${h} 40. Without a yard line the pick is placed at the line of scrimmage.`],
     [`7-int-24-${h}10-12 &nbsp;·&nbsp; 7-int-24-td &nbsp;·&nbsp; 7-int-24-ez`, 'Returned 12 yards / returned for a touchdown / picked off in the end zone (a touchback if not returned)'],
-    [`3-3-fumble ${h} rec`, `#3 runs for 3, fumbles, ${h} recovers (add a number for who: fum ${h} 44)`],
-    [`10-0 fum ${h} rec td`, `Fumble, ${h} recovers and returns it for a touchdown (fum ${h} 44 12 = #44 returns it 12)`],
+    [`5-5-fum-rec-${h}31-1`, `#5 runs for 5 and fumbles; ${h}'s #31 recovers and advances 1. Just fum ${h} rec if you don't know who.`],
+    [`5-5-fum-rec-${h}10 ball on ${h}24`, 'Same, with the advance worked out from where the next snap is.'],
+    [`10-0 fum ${h} rec td`, `Fumble, ${h} recovers and returns it for a touchdown.`],
     [`${a} punt ${h} ball at ${h}25`, `Punt with no return: ${h}'s drive starts at its 25. Or just ${a} punt, then ${h} ball at ${h}25 on the next line.`],
     [`${a} punt to ${h}25-${h}2 return-10`, `Fielded at the ${h} 25, #2 returns it 10. Leave off the yards and type the drive start next (${h} ball at ${h}35); the return fills in.`],
     ['19-punt-40-11-6', '#19 punts 40, #11 returns it 6. Also punt-tb, punt-fc, punt-oob, punt-blk.'],
@@ -1722,7 +1762,7 @@ function viewBox(){
 function viewPlayers(side = ui.side){
   const s = side, P = Object.values(R.S.pl[s]);
   // Players go by name; a number only stands in for someone not on the roster yet.
-  const who = p => rosterName(s, p.n) ? esc(rosterName(s, p.n)) : `#${p.n}`;
+  const who = p => p.n === 'team' ? 'Team' : rosterName(s, p.n) ? esc(rosterName(s, p.n)) : `#${p.n}`;
   const by = (f, k) => P.filter(f).sort((a, b) => b[k] - a[k]);
   const sect = (title, heads, rows) => rows.length ? `<div class="sect"><div class="sect-hd"><h3>${title}</h3></div><div class="tbl-wrap"><table>
     <thead><tr><th>Player</th>${heads.map(h => `<th>${h}</th>`).join('')}</tr></thead>
@@ -1744,9 +1784,10 @@ function viewPlayers(side = ui.side){
 
 function viewDrives(){
   if (!R.drives.length) return '<div class="panel"><div class="empty">Drives appear once a team runs a play from scrimmage.</div></div>';
-  return `<div class="panel"><div class="tbl-wrap"><table><thead><tr><th>Team</th><th>Qtr</th><th>Start</th><th>Plays</th><th>Yds</th><th>Time</th><th>Result</th></tr></thead>
-    <tbody>${R.drives.map(d => `<tr><td><b>${esc(ab(d.team))}</b></td><td>${perLabel(d.q)}${d.clk != null ? ' ' + mmss(d.clk) : ''}</td><td>${esc(R.yl(d.team, d.start))}</td>
-      <td>${d.plays}</td><td>${Math.round(d.last - d.start)}</td><td>${d.time != null ? mmss(d.time) : '—'}</td><td>${esc(d.res)}</td></tr>`).join('')}</tbody></table></div></div>`;
+  // Quarter only: the clock at the start and the drive's length aren't wanted here.
+  return `<div class="panel"><div class="tbl-wrap"><table><thead><tr><th>Team</th><th>Qtr</th><th>Start</th><th>Plays</th><th>Yds</th><th>Result</th></tr></thead>
+    <tbody>${R.drives.map(d => `<tr><td><b>${esc(ab(d.team))}</b></td><td>${perLabel(d.q)}</td><td>${esc(R.yl(d.team, d.start))}</td>
+      <td>${d.plays}</td><td>${Math.round(d.last - d.start)}</td><td>${esc(d.res)}</td></tr>`).join('')}</tbody></table></div></div>`;
 }
 
 function viewScoring(){
@@ -1773,7 +1814,7 @@ function summaryText(){
   out += '\n' + rp('TEAM STATS', 28) + lp(T.A.abbr, 10) + lp(T.H.abbr, 10) + '\n';
   teamRows().forEach(([l, f]) => out += rp(l, 28) + lp(f('A'), 10) + lp(f('H'), 10) + '\n');
   ['A', 'H'].forEach(s => {
-    const P = Object.values(R.S.pl[s]), nmx = p => rosterName(s, p.n) || '#' + p.n;
+    const P = Object.values(R.S.pl[s]), nmx = p => p.n === 'team' ? 'TEAM' : rosterName(s, p.n) || '#' + p.n;
     const line = (label, arr) => arr.length ? `${label}: ${arr.join('; ')}\n` : '';
     out += `\n${T[s].name.toUpperCase()}\n`;
     out += line('Passing', P.filter(p => p.pa).sort((a, b) => b.py - a.py).map(p => `${nmx(p)} ${p.pc}-${p.pa}-${p.pint}, ${p.py} yds${p.ptd ? `, ${p.ptd} TD` : ''}`));
@@ -2170,7 +2211,7 @@ function gameSheets(){
   const avg1 = (y, n) => n ? Math.round(y / n * 10) / 10 : 0;
   const P = (name, heads, keep, row, key) => ({name, rows:[hdr(['Team', '#', 'Name', ...heads]),
     ...both.flatMap(s => Object.values(S.pl[s]).filter(keep).sort((a, b) => (b[key] || 0) - (a[key] || 0))
-      .map(p => [T[s].abbr, num(p.n), rosterName(s, p.n), ...row(p)]))]});
+      .map(p => [T[s].abbr, p.n === 'team' ? '' : num(p.n), p.n === 'team' ? 'TEAM' : rosterName(s, p.n), ...row(p)]))]});
   const cols = [0, 1, 2, 3].concat(st.q > 4 || st.lines.A[4] || st.lines.H[4] ? [4] : []);
   const summary = [
     hdr([`${T.A.name} at ${T.H.name}`]),
