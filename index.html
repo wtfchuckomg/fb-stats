@@ -339,7 +339,8 @@ dialog::backdrop{background:rgba(8,10,12,.55)}
 .dlg-bd{padding:14px 16px;display:flex;flex-direction:column;gap:14px}
 .dlg-ft{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--line-2)}
 .x{background:none;border:0;font-size:24px;line-height:1;color:var(--muted);padding:2px 6px}
-.teamset{display:grid;grid-template-columns:minmax(0,1fr) 84px 54px;gap:8px;align-items:end}
+.teamset{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 84px 54px;gap:8px;align-items:end}
+@media (max-width:560px){.teamset{grid-template-columns:minmax(0,1fr) 84px 54px}.teamset>.fld:first-child{grid-column:1/-1}}
 .teamset input[type=color]{width:100%;height:44px;border:1px solid var(--line);border-radius:6px;padding:3px;background:var(--surface)}
 .grp{display:flex;flex-direction:column;gap:8px}
 .grp h3{margin:0;font:700 15px/1 var(--cond);text-transform:uppercase;color:var(--ink-2)}
@@ -468,7 +469,7 @@ function replay(g, upto = g.plays.length){
     spot:0, down:1, ltg:10, score:{A:0,H:0}, lines:{A:[0,0,0,0,0],H:[0,0,0,0,0]}, to:{A:3,H:3},
     ot:null, final:false, drive:null, fresh:false};
   let S = {team:{A:zeros(TEAM_KEYS), H:zeros(TEAM_KEYS)}, pl:{A:{}, H:{}}};
-  let scoring = [], drives = [], clk = null, tags = [], curI = 0;   // curI: the play being replayed
+  let scoring = [], drives = [], clk = null, tags = [], trace = [], curI = 0;   // curI: the play being replayed
   const log = [];
 
   const ab = s => T[s].abbr || s;
@@ -490,6 +491,13 @@ function replay(g, upto = g.plays.length){
   const bump = (o, k, v = 1) => { if (o) o[k] += v; };
   const long = (o, k, v) => { if (o && v > o[k]) o[k] = v; };
   const list = a => (a || []).filter(x => x !== '' && x != null);
+  // The ball's path on this play, for the field drawing: legs along the ground ('run') or in the air ('pass',
+  // 'kick'), from and to in team s's frame, kept in yards from the visitors' goal. x marks a pass or kick that failed.
+  const leg = (k, s, from, to, x = false) => {
+    const out = k === 'run' ? 3 : 9;   // a runner stops just over the goal line; a kick carries to the posts
+    const f = v => { v = clamp(v, -out, FL + out); return s === 'A' ? v : FL - v; };
+    trace.push({k, s, a:f(from), b:f(to), x});
+  };
   const tackleTxt = (s, a) => { a = list(a); return a.length ? ` (${a.map(n => nm(s, n)).join(', ')})` : ''; };
   function tackles(s, a, gain){
     a = list(a);
@@ -603,6 +611,7 @@ function replay(g, upto = g.plays.length){
     if (st.drive && st.drive.team === cs) closeDrive('Fumble', pos);
     if (st.ot) { otEnd(); return txt + ' (ball dead).'; }
     const ry = +f.ry || 0, fin = FL - pos + ry;
+    if (ry) leg('run', rs, FL - pos, fin);
     if (ry) txt += ry > 0 ? `, returned ${plural(ry, 'yard')}` : `, lost ${plural(-ry, 'yard')}`;
     if (fin >= FL) return txt + '.' + touchdown(rs, `${f.by ? nm(rs, f.by) : ab(rs)} fumble return`, pl(rs, f.by));
     if (fin <= 0){ newSeries(rs, RU.tb); return txt + '. Touchback.'; }
@@ -612,6 +621,7 @@ function replay(g, upto = g.plays.length){
   function fumbleKept(cs, cn, f, end){
     bump(pl(cs, cn), 'fum'); S.team[cs].fum++;
     const adv = end != null ? +f.ry || 0 : 0;
+    if (adv) leg('run', cs, end, clamp(end + adv, 0, FL));
     return ` Fumble, recovered by ${f.by ? nm(cs, f.by) : ab(cs)}${adv ? `, ${adv > 0 ? 'advanced ' + plural(adv, 'yard') : 'lost ' + plural(-adv, 'yard')} to the ${yl(cs, clamp(end + adv, 0, FL))}` : ''}.`;
   }
 
@@ -658,6 +668,7 @@ function replay(g, upto = g.plays.length){
   function run(p){
     const O = st.poss, D = other(O), t = S.team[O], r = pl(O, p.r);
     const g = clamp(+p.y || 0, -st.spot, FL - st.spot), end = st.spot + g, td = end >= FL;
+    leg('run', O, st.spot, end);
     if (st.phase === 'try') return twoPoint(p, end >= FL, `${nm(O, p.r)} rush`);
     driveTouch(); t.plays++;
     t.rushN++; t.rushY += g; bump(r, 'ru'); bump(r, 'ry', g); long(r, 'rlg', g);
@@ -676,11 +687,13 @@ function replay(g, upto = g.plays.length){
     const O = st.poss, D = other(O), t = S.team[O], qb = pl(O, p.qb);
     if (st.phase === 'try'){
       const g = p.res === 'c' ? +p.y || 0 : -1;
+      leg('pass', O, st.spot, p.res === 'c' ? st.spot + (g || FL - st.spot + 2) : FL + 3, p.res !== 'c');
       return twoPoint(p, p.res === 'c' && st.spot + g >= FL, `${nm(O, p.qb)} pass to ${nm(O, p.to)}`);
     }
     driveTouch(); t.plays++;
     if (p.res === 's'){
       const g = -clamp(+p.sy || 0, 0, st.spot), end = st.spot + g, by = list(p.by);
+      leg('run', O, st.spot, end);
       t.sk++; t.skY -= g; t.rushN++; t.rushY += g;
       bump(qb, 'psk'); bump(qb, 'pskY', -g); bump(qb, 'ru'); bump(qb, 'ry', g);
       by.forEach(n => { const d = pl(D, n); d.sk += 1 / by.length; });
@@ -692,6 +705,7 @@ function replay(g, upto = g.plays.length){
     t.passA++; bump(qb, 'pa');
     if (p.res === 'i'){
       conversion(st.spot);
+      leg('pass', O, st.spot, Math.min(st.spot + 10, FL + 5), true);   // an incompletion keeps no landing spot
       if (p.pbu) bump(pl(D, p.pbu), 'pbu');
       return `${nm(O, p.qb)} pass incomplete${p.to ? `, intended for ${nm(O, p.to)}` : ''}${p.pbu ? ` (broken up by ${nm(D, p.pbu)})` : ''}.` + progress(st.spot, null);
     }
@@ -699,12 +713,14 @@ function replay(g, upto = g.plays.length){
       conversion(st.spot);
       t.passInt++; bump(qb, 'pint');
       const dp = pl(D, p.ib), at = clamp(st.spot + (+p.at || 0), 0, (FL + 10)), ry = st.ot ? 0 : (+p.ry || 0);
+      leg('pass', O, st.spot, at);
       bump(dp, 'dint'); bump(dp, 'dintY', ry); S.team[D].intN++; S.team[D].intY += ry;
       tags.push(['to', 'INT']);
       let txt = `${nm(O, p.qb)} pass intercepted by ${p.ib ? nm(D, p.ib) : ab(D)} at the ${at >= FL ? `${ab(D)} end zone` : yl(O, at)}`;
       closeDrive('INT', st.spot);
       if (st.ot){ otEnd(); return txt + ' (ball dead).'; }
       const fin = FL - at + ry;
+      if (ry) leg('run', D, FL - at, fin);
       if (ry) txt += `, returned ${plural(ry, 'yard')}`;
       if (fin >= FL) return txt + '.' + touchdown(D, `${p.ib ? nm(D, p.ib) : ab(D)} interception return`, dp);
       if (fin <= 0){ newSeries(D, RU.tb); return txt + '. Touchback.'; }
@@ -712,6 +728,7 @@ function replay(g, upto = g.plays.length){
     }
     // complete
     const rec = pl(O, p.to), g = clamp(+p.y || 0, -st.spot, FL - st.spot), end = st.spot + g, td = end >= FL;
+    leg('pass', O, st.spot, end);
     t.passC++; t.passY += g; bump(qb, 'pc'); bump(qb, 'py', g); long(qb, 'plg', g);
     bump(rec, 're'); bump(rec, 'rey', g); long(rec, 'relg', g);
     tackles(D, p.tk, g); conversion(end);
@@ -726,6 +743,7 @@ function replay(g, upto = g.plays.length){
   // A kicked ball the receiving team R fields at `at` (R frame) and returns.
   function kickReturn(R, kind, p, at){
     const K = other(R), ret = pl(R, p.ret), ry = +p.ry || 0, fin = at + ry;
+    if (ry) leg('run', R, at, fin);
     const k1 = kind === 'kr' ? 'kr' : 'pr';
     bump(ret, k1); bump(ret, k1 + 'y', ry); long(ret, k1 + 'lg', ry);
     S.team[R][k1 === 'kr' ? 'krN' : 'prN']++; S.team[R][k1 === 'kr' ? 'krY' : 'prY'] += ry;
@@ -748,8 +766,11 @@ function replay(g, upto = g.plays.length){
     if (!unknown && p.res !== 'oob'){ bump(k, 'koy', d); tk.koY += d; }
     const what = st.kickKind === 'free' ? 'free kick' : 'kickoff';
     let txt = unknown || (p.res === 'oob' && !p.d) ? `${nm(K, p.k)} ${what}` : `${nm(K, p.k)} ${what} ${plural(d, 'yard')}`;
-    if (p.bs != null){ newSeries(R, clamp(+p.bs, 1, (FL - 1))); return `${nm(K, p.k)} ${what}. ${ab(R)} ball at the ${yl(R, st.spot)}.`; }
+    if (p.bs != null){ newSeries(R, clamp(+p.bs, 1, (FL - 1))); leg('kick', K, kf, FL - st.spot); return `${nm(K, p.k)} ${what}. ${ab(R)} ball at the ${yl(R, st.spot)}.`; }
     if (unknown){ newSeries(R, FL - kf); return txt + '.'; }
+    if (p.res === 'onside') leg('run', K, kf, kf + d);
+    else if (p.res === 'tb') leg('kick', K, kf, Math.max(kf + d, FL + 5));
+    else if (p.res !== 'oob' || p.d) leg('kick', K, kf, kf + d);
     const at = FL - (kf + d);
     switch (p.res){
       case 'spot': {
@@ -775,6 +796,7 @@ function replay(g, upto = g.plays.length){
     if (p.res === 'blk'){
       t.pntBlk++; bump(pl(R, p.by), 'bk'); tags.push(['to', 'Blocked']);
       const at = clamp(FL - (st.spot - (+p.b || 0)), 1, FL), ry = +p.ry || 0, fin = at + ry;
+      if (ry) leg('run', R, at, fin);
       let txt = `${nm(O, p.k)} punt BLOCKED${p.by ? ` by ${nm(R, p.by)}` : ''}, recovered by ${p.ret ? nm(R, p.ret) : ab(R)} at the ${yl(R, at)}`;
       if (ry) txt += `, returned ${plural(ry, 'yard')}`;
       if (fin >= FL) return txt + '.' + touchdown(R, `${p.ret ? nm(R, p.ret) : ab(R)} blocked punt return`, pl(R, p.ret));
@@ -786,6 +808,7 @@ function replay(g, upto = g.plays.length){
     if (unknown){ newSeries(R, FL - st.spot); return `${nm(O, p.k)} punt.`; }
     bump(k, 'puy', d); long(k, 'pulg', d); t.pntY += d;
     const at = FL - (st.spot + d);
+    leg('kick', O, st.spot, p.res === 'tb' || at <= 0 ? Math.max(st.spot + d, FL + 5) : st.spot + d);
     let txt = `${nm(O, p.k)} punt ${plural(d, 'yard')}`;
     if (p.res === 'tb' || at <= 0){ bump(k, 'ptb'); t.pntTB++; newSeries(R, RU.tb); return txt + `, touchback. ${ab(R)} ball at the ${yl(R, RU.tb)}.`; }
     if (p.res === 'ret'){
@@ -802,6 +825,7 @@ function replay(g, upto = g.plays.length){
     const O = st.poss, D = other(O), t = S.team[O], k = pl(O, p.k);
     const dist = +p.d || Math.round(FL - st.spot + NFHS.fgExtra);
     driveTouch(); t.plays++; bump(k, 'fga');
+    if (p.res !== 'blk') leg('kick', O, st.spot - 7, FL + 9, p.res !== 'good');   // held 7 yards back, to the posts on the end line
     if (p.res === 'good'){
       bump(k, 'fgm'); long(k, 'fglg', dist); if (k) k.pts += 3;
       closeDrive('FG', st.spot);
@@ -815,6 +839,7 @@ function replay(g, upto = g.plays.length){
       let txt = `${nm(O, p.k)} ${dist}-yard field goal BLOCKED${p.by ? ` by ${nm(D, p.by)}` : ''}`;
       if (st.ot){ otEnd(); return txt + '.'; }
       const at = clamp(FL - (st.spot - (+p.b || 0)), 1, FL), ry = +p.ry || 0, fin = at + ry;
+      if (ry) leg('run', D, at, fin);
       txt += `, recovered by ${p.ret ? nm(D, p.ret) : ab(D)} at the ${yl(D, at)}`;
       if (ry) txt += `, returned ${plural(ry, 'yard')}`;
       if (fin >= FL) return txt + '.' + touchdown(D, `${p.ret ? nm(D, p.ret) : ab(D)} blocked field goal return`, pl(D, p.ret));
@@ -839,13 +864,15 @@ function replay(g, upto = g.plays.length){
     if (p.kind === 'kick'){
       const k = pl(O, p.k); bump(k, 'xpa');
       const good = p.res === 'good';
+      if (p.res !== 'blk') leg('kick', O, st.spot - 7, FL + 9, !good);
       if (good){ bump(k, 'xpm'); bump(k, 'pts', 1); score(O, 1, 'try'); amendTry(`${nm(O, p.k)} kick`); }
       else amendTry(p.res === 'blk' ? 'kick blocked' : 'kick failed');
       const txt = `${nm(O, p.k)} kick is ${good ? 'GOOD' : p.res === 'blk' ? 'BLOCKED' : 'NO GOOD'}.`;
       afterTry(); return txt;
     }
     const good = p.res === 'good';
-    if (p.kind === 'pass') return twoPoint({t:'pass', res:'c', to:p.to}, good, `${nm(O, p.qb)} pass to ${nm(O, p.to)}`);
+    if (p.kind === 'pass'){ leg('pass', O, st.spot, FL + 3, !good); return twoPoint({t:'pass', res:'c', to:p.to}, good, `${nm(O, p.qb)} pass to ${nm(O, p.to)}`); }
+    leg('run', O, st.spot, good ? FL + 2 : FL - 1);
     return twoPoint({t:'run', r:p.r}, good, `${nm(O, p.r)} rush`);
   }
 
@@ -898,15 +925,15 @@ function replay(g, upto = g.plays.length){
   }
   // Describe a play on a throwaway copy, for flags that wipe it out.
   function dry(p){
-    const keep = [st, S, scoring, drives, tags];
+    const keep = [st, S, scoring, drives, tags, trace];
     st = structuredClone(st); S = {team:{A:zeros(TEAM_KEYS), H:zeros(TEAM_KEYS)}, pl:{A:{}, H:{}}};
-    scoring = []; drives = []; tags = [];
+    scoring = []; drives = []; tags = []; trace = [];
     let t = '';
-    try { t = core({...p, pen:null}); } finally { [st, S, scoring, drives, tags] = keep; }
+    try { t = core({...p, pen:null}); } finally { [st, S, scoring, drives, tags, trace] = keep; }
     return t;
   }
   function apply(p){
-    clk = p.clk ?? null; tags = [];
+    clk = p.clk ?? null; tags = []; trace = [];
     const pen = p.pen && PLAY[p.t] ? p.pen : null;
     if (pen && (pen.enf === 'prev' || pen.enf === 'off')){
       const wiped = dry(p);
@@ -944,7 +971,7 @@ function replay(g, upto = g.plays.length){
     curI = i;
     const pre = {sit: sit(), q: st.q, poss: st.poss};
     const r = apply(p);
-    log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q, A:st.score.A, H:st.score.H});
+    log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, trace, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q, A:st.score.A, H:st.score.H});
   }
   const open = st.drive ? [{...st.drive, res:'In progress', open:true}] : [];
   return {st, S, log, scoring, drives:drives.concat(open), sit:sit(), yl, nm, ab, FL, RU};
@@ -1016,6 +1043,49 @@ function driveBar(){
 }
 
 /* ---------- field: the light gamecast field, end zones in team colors ---------- */
+let fieldFontsHooked = false;
+
+// The last play's path as the engine traced it, the way ESPN's gamecast shows it: passes and kicks sail,
+// runs and returns stay on the ground. A score (or a good kick) flashes the end zone.
+function playTrace(){
+  const e = lastPlay(), legs = e && e.trace ? e.trace.filter(l => Math.abs(l.b - l.a) >= 1) : [];
+  return legs.length ? {key:`${g.id}:${e.i}`, legs, flash:/TOUCHDOWN|is GOOD/.test(e.text || '')} : null;
+}
+// The curve's first t of its length (de Casteljau), and the ball's place, heading and size at t.
+function arcAt(P, t, lift = true){
+  const u = 1 - t, [x0, y0, cx, cy, x1, y1] = P, f = v => v.toFixed(1);
+  const qx = x0 + (cx - x0) * t, qy = y0 + (cy - y0) * t;
+  const bx = u * u * x0 + 2 * u * t * cx + t * t * x1, by = u * u * y0 + 2 * u * t * cy + t * t * y1;
+  const ang = Math.atan2(2 * u * (cy - y0) + 2 * t * (y1 - cy), 2 * u * (cx - x0) + 2 * t * (x1 - cx)) * 180 / Math.PI;
+  const sc = lift ? 1 + .35 * Math.sin(Math.PI * t) : 1;   // a ball in the air grows a little at the top, as if nearer
+  return {d:`M${f(x0)} ${f(y0)} Q${f(qx)} ${f(qy)} ${f(bx)} ${f(by)}`, tf:`translate(${f(bx)} ${f(by)}) rotate(${f(ang)}) scale(${sc.toFixed(3)})`};
+}
+const PLAY_FADE = 300, PLAY_FLASH = 1000;
+let anim = {key:'', t0:0, raf:0, calm:false};
+// One frame of the last play: each leg drawn as far as the ball has gone, the ball on its leg, then a fade,
+// and for a score two flashes of the end zone. Each new play runs once; a redraw mid-play picks up where it was.
+function stepTrace(){
+  anim.raf = 0;
+  const box = $('#field'), legs = box ? [...box.querySelectorAll('.leg')] : [];
+  if (!legs.length) return;
+  const el = anim.calm ? Infinity : performance.now() - anim.t0;
+  let end = 0, pos = null;
+  legs.forEach(l => {
+    const at = +l.dataset.start, dur = +l.dataset.dur, t = clamp((el - at) / dur, 0, 1);
+    const a = arcAt(l.dataset.pts.split(',').map(Number), t, !!l.dataset.air);
+    l.querySelectorAll('path').forEach(p => p.setAttribute('d', t > 0 ? a.d : ''));
+    if (el >= at) pos = a;
+    end = at + dur;
+  });
+  const ball = box.querySelector('.pl-ball'), fl = box.querySelector('.ez-flash');
+  if (ball){
+    if (el >= end + PLAY_FADE) ball.remove();
+    else { ball.setAttribute('transform', pos.tf); ball.style.opacity = el < end ? 1 : (1 - (el - end) / PLAY_FADE).toFixed(3); }
+  }
+  if (fl){ const f = (el - end) / PLAY_FLASH; fl.style.opacity = f > 0 && f < 1 ? (.6 * Math.abs(Math.sin(f * Math.PI * 2))).toFixed(3) : 0; }
+  if (el < end + (fl ? PLAY_FLASH : PLAY_FADE)) anim.raf = requestAnimationFrame(stepTrace);
+}
+
 function renderField(){
   const box = $('#field'); if (!box || !R) return;
   const st = R.st, T = g.teams, FL = R.FL, HALF = FL / 2;
@@ -1026,16 +1096,42 @@ function renderField(){
   let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Field position">`;
   for (let i = 0; i < FL / 10; i++) s += `<rect x="${X(i * 10)}" y="${top}" width="${10 * k}" height="${bot - top}" style="fill:var(${i % 2 ? '--fld-b' : '--fld-a'})"/>`;
   for (let y = 5; y < FL; y += 5) s += `<line x1="${X(y)}" y1="${top}" x2="${X(y)}" y2="${bot}" style="stroke:var(--fld-line);stroke-width:${y === HALF ? 3 : y % 10 === 0 ? 1.6 : .8}"/>`;
+  // The mascot if one is set, else the school. Sized from an estimate here, then measured below.
+  const room = bot - top - 16;
   const ez = (side, x, rot) => {
-    const name = String(T[side].name || T[side].abbr).toUpperCase(), fs = Math.min(34, Math.max(15, 2.2 * (bot - top) / Math.max(4, name.length)));
+    const name = String(T[side].mascot || T[side].name || T[side].abbr).toUpperCase(), fs = Math.min(34, room / (0.56 * Math.max(1, name.length)));
     return `<rect x="${x}" y="${top}" width="${EZ}" height="${bot - top}" style="fill:${esc(T[side].color)}"/>`
-      + `<text x="${x + EZ / 2}" y="${mid}" transform="rotate(${rot} ${x + EZ / 2} ${mid})" text-anchor="middle" dominant-baseline="central" style="fill:#fff;font:800 ${Math.round(fs)}px ${cond};letter-spacing:1px">${esc(name)}</text>`;
+      + `<text class="ez-name" x="${x + EZ / 2}" y="${mid}" transform="rotate(${rot} ${x + EZ / 2} ${mid})" text-anchor="middle" dominant-baseline="central" style="fill:#fff;font:800 ${fs.toFixed(1)}px ${cond};letter-spacing:1px">${esc(name)}</text>`;
   };
   s += ez('A', 0, -90) + ez('H', W - EZ, 90);
   s += `<path d="M3 ${mid - 36} v72 M${W - 3} ${mid - 36} v72" style="stroke:var(--ltg);stroke-width:5;stroke-linecap:round"/>`;
   const lbl = (x, t) => `<text x="${x}" y="${H - 8}" text-anchor="middle" style="fill:var(--fld-num);font:500 19px ${sans}">${esc(t)}</text>`;
   s += lbl(X(0), T.A.abbr) + lbl(X(FL), T.H.abbr);
   for (let y = 10; y < FL; y += 10) s += lbl(X(y), y <= HALF ? y : FL - y);
+  // The last play's legs, one after another; stepTrace() draws each as far as the ball has gone.
+  const tr = playTrace();
+  let ball = '';
+  if (tr){
+    if (tr.key !== anim.key) anim = {key:tr.key, t0:performance.now(), raf:anim.raf};
+    anim.calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const y = mid + 30;
+    let at = 0;
+    tr.legs.forEach(l => {
+      const x0 = X(l.a), x1 = X(l.b), dx = Math.abs(x1 - x0), yd = Math.abs(l.b - l.a), air = l.k !== 'run';
+      const h = l.k === 'kick' ? clamp(dx * .28 + 36, 44, 104) : air ? clamp(dx * .3 + 14, 22, 74) : 0;
+      const dur = l.k === 'kick' ? clamp(800 + yd * 16, 900, 1800) : air ? clamp(500 + yd * 22, 600, 1500) : clamp(350 + yd * 30, 450, 1500);
+      const P = [x0, y, (x0 + x1) / 2, y - 2 * h, x1, y].map(v => v.toFixed(1));
+      s += `<g class="leg" data-pts="${P}" data-start="${at}" data-dur="${dur}" data-air="${air ? 1 : ''}">`
+        + `<path style="fill:none;stroke:#fff;stroke-width:7;stroke-linecap:round;opacity:.85"/>`
+        + `<path style="fill:none;stroke:${l.x ? 'var(--muted)' : esc(T[l.s].color)};stroke-width:3.5;stroke-linecap:round${l.x ? ';stroke-dasharray:7 8' : ''}"/></g>`;
+      at += dur;
+    });
+    const b = tr.legs[tr.legs.length - 1].b;
+    if (tr.flash && (b >= FL || b <= 0)) s += `<rect class="ez-flash" x="${b >= FL ? W - EZ : 0}" y="${top}" width="${EZ}" height="${bot - top}" style="fill:var(--ltg);opacity:0"/>`;
+    if (!anim.calm && performance.now() - anim.t0 < at + PLAY_FADE)
+      ball = `<g class="pl-ball"><ellipse rx="13" ry="7.5" style="fill:#7A3E1D;stroke:#4A2410;stroke-width:1.5"/>`
+        + `<path d="M-5 0H5M-3 -2.6v5.2M0 -2.6v5.2M3 -2.6v5.2" style="stroke:#fff;stroke-width:1.3;fill:none"/></g>`;
+  }
   if (!st.final){
     const side = st.poss, pos = st.phase === 'kick' ? st.kickFrom : st.spot, bx = X(abs(side, pos)), dir = side === 'A' ? 1 : -1, d = openDrive();
     if (st.phase === 'play' && st.ltg < FL) s += `<line x1="${X(abs(side, st.ltg))}" y1="${top}" x2="${X(abs(side, st.ltg))}" y2="${bot}" style="stroke:var(--ltg);stroke-width:5"/>`;
@@ -1050,7 +1146,15 @@ function renderField(){
     s += url ? `<image href="${esc(url)}" x="${bx - 17}" y="${cy - 17}" width="34" height="34" preserveAspectRatio="xMidYMid meet"/>`
       : `<circle cx="${bx}" cy="${cy}" r="17" style="fill:${esc(T[side].color)}"/><text x="${bx}" y="${cy}" text-anchor="middle" dominant-baseline="central" style="fill:#fff;font:800 13px ${cond}">${esc(String(T[side].abbr).slice(0, 4))}</text>`;
   }
-  box.innerHTML = s + '</svg>';
+  box.innerHTML = s + ball + '</svg>';
+  if (tr){ if (anim.raf) cancelAnimationFrame(anim.raf); stepTrace(); }
+  // Shrink any end-zone name that still runs past the end zone (the 1px letter spacing doesn't scale).
+  box.querySelectorAll('.ez-name').forEach(t => {
+    const len = t.getComputedTextLength(), n = t.textContent.length, fs = parseFloat(t.style.fontSize);
+    if (len > room) t.style.fontSize = (fs * (room - n) / (len - n)).toFixed(1) + 'px';
+  });
+  // Widths change once the web font arrives, so draw once more then.
+  if (!fieldFontsHooked && document.fonts){ fieldFontsHooked = true; document.fonts.ready.then(() => renderField()); }
 }
 
 /* ---------- pad: drafts ---------- */
@@ -1845,11 +1949,12 @@ const ruleHint = men => men === 8
   : '11-man: 100-yard field. Kickoff from the 40, touchback at the 20, safety kick from the 20, overtime from the 10.';
 function dlgSetup(isNew){
   // A new game starts in the same format as the one open now, since most weeks are all 8-man or all 11-man.
-  const src = isNew ? {teams:{A:{name:'', abbr:'', color:'#1F4E9C', roster:{}}, H:{name:'', abbr:'', color:'#B0151B', roster:{}}}, set:{qtr:12, firstKick:'H', men:g.sample ? 11 : rulesOf(g).men}} : g;
+  const src = isNew ? {teams:{A:{name:'', mascot:'', abbr:'', color:'#1F4E9C', roster:{}}, H:{name:'', mascot:'', abbr:'', color:'#B0151B', roster:{}}}, set:{qtr:12, firstKick:'H', men:g.sample ? 11 : rulesOf(g).men}} : g;
   const ru = rulesOf(src);
   const rosterTxt = s => Object.entries(src.teams[s].roster || {}).sort((a, b) => a[0] - b[0]).map(([n, v]) => `${n} ${v}`).join('\n');
   const teamRow = (s, label) => `<div class="grp"><h3>${label}</h3><div class="teamset">
       <div class="fld"><label class="eyebrow" for="s-${s}-name">School</label><input class="inp" id="s-${s}-name" list="teamlib" autocomplete="off" value="${esc(src.teams[s].name)}" placeholder="${s === 'A' ? 'Visiting school' : 'Home school'}"></div>
+      <div class="fld"><label class="eyebrow" for="s-${s}-mascot">Mascot</label><input class="inp" id="s-${s}-mascot" value="${esc(src.teams[s].mascot || '')}" placeholder="e.g. Bulldogs"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-abbr">Short</label><input class="inp" id="s-${s}-abbr" maxlength="5" value="${esc(src.teams[s].abbr)}" placeholder="${s === 'A' ? 'VIS' : 'HOME'}"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-color">Color</label><input type="color" id="s-${s}-color" value="${esc(src.teams[s].color)}"></div></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-roster">Roster, optional · one player per line, number then name</label>
@@ -1869,7 +1974,7 @@ function saveSetup(isNew){
   const parseRoster = txt => { const o = {}; txt.split('\n').forEach(l => { const m = l.match(/^\s*#?(\d{1,2})\s*[-–,.:)]?\s*(.+?)\s*$/); if (m) o[m[1]] = m[2]; }); return o; };
   const team = (s, def) => {
     const name = v(`s-${s}-name`) || def;
-    return {name, abbr:(v(`s-${s}-abbr`) || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(), color:$(`#s-${s}-color`).value, roster:parseRoster($(`#s-${s}-roster`).value)};
+    return {name, mascot:v(`s-${s}-mascot`), abbr:(v(`s-${s}-abbr`) || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(), color:$(`#s-${s}-color`).value, roster:parseRoster($(`#s-${s}-roster`).value)};
   };
   const kick = $('#s-kick [aria-pressed="true"]');
   // Only the format is saved; its kickoff, touchback, safety and overtime spots come from FORMATS.
@@ -2169,7 +2274,7 @@ function playTitle(e){
     case 'pass': return p.res === 'c' ? `${+p.y || 0}-yd Pass` : p.res === 'i' ? 'Incomplete Pass' : p.res === 's' ? 'Sack' : 'Pass';
     case 'punt': return 'Punt';
     case 'ko': return 'Kickoff';
-    case 'fg': return /GOOD/.test(txt) ? 'Field Goal' : /BLOCKED/.test(txt) ? 'Blocked Field Goal' : 'Missed Field Goal';
+    case 'fg': return /BLOCKED/.test(txt) ? 'Blocked Field Goal' : /NO GOOD/.test(txt) ? 'Missed Field Goal' : 'Field Goal';
     case 'try': return p.kind === 'kick' ? 'Extra Point' : 'Two-Point Try';
     case 'to': return 'Timeout';
     case 'endq': return 'End of Period';
@@ -2729,13 +2834,14 @@ function parseRosterText(txt){
   String(txt || '').split('\n').forEach(l => { const m = l.match(/^\s*#?(\d{1,2})\s*[-–,.:)]?\s*(.+?)\s*$/); if (m) o[m[1]] = m[2]; });
   return o;
 }
-// From a game's Setup. A newer save wins, and an empty roster never wipes out a saved one.
+// From a game's Setup. A newer save wins, and an empty roster or mascot never wipes out a saved one.
 function rememberTeam(t, when = Date.now()){
   const k = teamKey(t.name); if (DEFAULT_TEAM_NAMES.includes(k)) return false;
   const cur = teamLib()[k];
   if (cur && (cur.updated || 0) > when) return false;
-  const keep = cur && !cur.deleted ? cur.roster : {};
-  teamLib()[k] = {name:t.name, abbr:t.abbr, color:t.color, roster:{...(Object.keys(t.roster || {}).length ? t.roster : keep)}, updated:when};
+  const keep = cur && !cur.deleted ? cur : {};
+  teamLib()[k] = {name:t.name, mascot:t.mascot || keep.mascot || '', abbr:t.abbr, color:t.color,
+    roster:{...(Object.keys(t.roster || {}).length ? t.roster : keep.roster)}, updated:when};
   return true;
 }
 function forgetTeam(k){ teamLib()[k] = {deleted:true, name:'', updated:Date.now()}; }
@@ -2780,15 +2886,16 @@ function teamsBlock(){
   return `<div class="grp"><h3>Saved teams</h3>
     <p class="hint">A school's short name, color and roster are saved whenever you set up a game. Type a saved school's name in a new game and they fill in.</p>
     ${list.length ? `<div class="glist">${list.map(t => { const k = teamKey(t.name);
-      return `<div class="gitem"><div><b>${esc(t.name)}</b><div class="meta">${esc(t.abbr || '')} · ${plural2(Object.keys(t.roster || {}).length, 'player')}</div></div>
+      return `<div class="gitem"><div><b>${esc(t.name)}</b><div class="meta">${esc(t.abbr || '')}${t.mascot ? ' · ' + esc(t.mascot) : ''} · ${plural2(Object.keys(t.roster || {}).length, 'player')}</div></div>
         <div class="acts"><button class="btn small" data-team-edit="${esc(k)}">Edit</button><button class="btn small danger" data-team-del="${esc(k)}">${ui.confirm === 't:' + k ? 'Tap again' : 'Delete'}</button></div></div>`; }).join('')}</div>`
       : '<p class="hint">No saved teams yet.</p>'}
     <div class="line"><button class="btn small" data-team-edit="">Add a team</button></div></div>`;
 }
 function dlgTeam(key){
-  const t = (key && findTeam(key)) || {name:'', abbr:'', color:'#1F4E9C', roster:{}};
+  const t = (key && findTeam(key)) || {name:'', mascot:'', abbr:'', color:'#1F4E9C', roster:{}};
   return `${dlgHead(key ? 'Edit team' : 'Add a team')}<div class="dlg-bd"><div class="grp"><div class="teamset">
       <div class="fld"><label class="eyebrow" for="t-name">School</label><input class="inp" id="t-name" value="${esc(t.name)}" placeholder="School name"></div>
+      <div class="fld"><label class="eyebrow" for="t-mascot">Mascot</label><input class="inp" id="t-mascot" value="${esc(t.mascot || '')}" placeholder="e.g. Bulldogs"></div>
       <div class="fld"><label class="eyebrow" for="t-abbr">Short</label><input class="inp" id="t-abbr" maxlength="5" value="${esc(t.abbr || '')}"></div>
       <div class="fld"><label class="eyebrow" for="t-color">Color</label><input type="color" id="t-color" value="${esc(t.color || '#1F4E9C')}"></div></div>
     <div class="fld"><label class="eyebrow" for="t-roster">Roster · one player per line, number then name</label>
@@ -2798,7 +2905,7 @@ function dlgTeam(key){
 function saveTeamDialog(oldKey){
   const name = $('#t-name').value.trim();
   if (!name) return toast('Give the team a name');
-  const t = {name, abbr:($('#t-abbr').value.trim() || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(), color:$('#t-color').value, roster:parseRosterText($('#t-roster').value)};
+  const t = {name, mascot:$('#t-mascot').value.trim(), abbr:($('#t-abbr').value.trim() || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(), color:$('#t-color').value, roster:parseRosterText($('#t-roster').value)};
   if (oldKey && oldKey !== teamKey(name)) forgetTeam(oldKey);
   teamLib()[teamKey(name)] = {...t, updated:Date.now()};   // an edit here replaces the saved roster outright
   persist(); syncTeams(); openDialog('games'); toast('Team saved');
@@ -2819,11 +2926,12 @@ document.addEventListener('click', e => {
     if (t){ $(`#s-${s}-roster`).value = rosterToText(t.roster); $(`#s-${s}-lib`).textContent = 'Using the saved roster.'; }
   }
 });
-// Typing a saved school's name in Setup fills its short name, color and (if the box is empty) roster.
+// Typing a saved school's name in Setup fills its mascot, short name, color and (if the box is empty) roster.
 document.addEventListener('input', e => {
   const el = e.target; if (!el.id || !/^s-[AH]-name$/.test(el.id)) return;
   const s = el.id[2], t = findTeam(el.value), hint = $(`#s-${s}-lib`);
   if (!t){ if (hint) hint.textContent = ''; return; }
+  $(`#s-${s}-mascot`).value = t.mascot || '';
   $(`#s-${s}-abbr`).value = t.abbr || '';
   $(`#s-${s}-color`).value = t.color || '#1F4E9C';
   const box = $(`#s-${s}-roster`), n = Object.keys(t.roster || {}).length;
@@ -2833,8 +2941,8 @@ document.addEventListener('input', e => {
 });
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
-  const A = {name:'North Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
-  const H = {name:'South Rams', abbr:'SOU', color:'#8A1C2B', roster:{3:'Brody Kemp', 28:'Isaiah Ford', 1:'Kade Sims', 80:'Nolan Beck', 19:'Ryan Kast', 44:'Drew Lang', 5:'Cam Ward', 97:'Trey Hale'}};
+  const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
+  const H = {name:'South Rams', mascot:'Rams', abbr:'SOU', color:'#8A1C2B', roster:{3:'Brody Kemp', 28:'Isaiah Ford', 1:'Kade Sims', 80:'Nolan Beck', 19:'Ryan Kast', 44:'Drew Lang', 5:'Cam Ward', 97:'Trey Hale'}};
   const s = {id:'sample', sample:2, created:Date.now(), teams:{A, H}, set:{qtr:12, ot:10, firstKick:'H'}, plays:[], clk:{s:156, run:false, at:0}};
   const lines = [
     [720, 'N ball at N32 1-10'], [712, '22-5 @44'], [688, '7-11-14 @5'], [655, '22--2 @97'], [630, '7-inc-84 @5'],
