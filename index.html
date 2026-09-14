@@ -4478,6 +4478,8 @@ async function startCounty(){
   // &team=<school>, from a team's page: that team's stats.
   const pickTeam = new URLSearchParams(location.search).get('team');
   if (COUNTY.includes(pickTeam)) county.team = pickTeam;
+  const pickSeason = +new URLSearchParams(location.search).get('season');   // &season=2025
+  if (pickSeason) county.season = pickSeason;
   loadLogos(); renderCounty();
   try {
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
@@ -4498,7 +4500,7 @@ async function startCounty(){
 /* ---------- the numbers ---------- */
 const seasonOf = x => fromYmd(gameWeek(x)).getFullYear();
 function countySeasons(){
-  const ys = new Set([new Date().getFullYear()]);
+  const ys = new Set([new Date().getFullYear(), 2025]);   // 2025: the season leaderboard (25-stats2025.js)
   (county.games || []).forEach(x => ys.add(seasonOf(x)));
   return [...ys].sort((a, b) => b - a);
 }
@@ -4568,6 +4570,20 @@ function countyStats(games){
   }));
   return {teams:Object.values(teams), players:Object.values(players)};
 }
+// 2025: players' season totals from the leaderboard, with no games behind them; each team's offense is its players
+// added up. Games played aren't known, so gp stays blank (per-game columns show a dash).
+function countyStats2025(){
+  const players = STATS_2025.map(r => Object.assign({gp:undefined, ret:0, two:0, fgm:0, fga:0, xpm:0, xpa:0}, r));
+  const teams = COUNTY.map(c => {
+    const T = Object.assign({name:c, gp:undefined, w:0, l:0, t:0, pf:0, pa:0, qf:[0, 0, 0, 0, 0], qa:[0, 0, 0, 0, 0], ot:false},
+      zeros(T_KEYS), zeros(T_KEYS.map(k => 'o' + k)));
+    players.filter(p => p.team === c).forEach(p => {
+      T.rushN += p.ru; T.rushY += p.ry; T.passC += p.pc; T.passA += p.pa; T.passY += p.py; T.passTD += p.ptd; T.passInt += p.pint;
+    });
+    return T;
+  });
+  return {teams, players};
+}
 
 /* ---------- views. A column is [heading, value to sort by (null: none), decimals, text to show instead] ---------- */
 const num = v => v == null || Number.isNaN(v) ? null : v;
@@ -4589,6 +4605,9 @@ const P_VIEWS = {
     ['FG', p => p.fgm], ['XP', p => p.xpm], ['2PT', p => p.two], ['PTS', ptsOf], ['PTS/G', p => per(ptsOf(p), p.gp), 1]]},
   kicking:{label:'Kicking', keep:p => p.fga > 0 || p.xpa > 0, def:6, cols:[['FGM', p => p.fgm], ['FGA', p => p.fga], ['FG%', p => per(100 * p.fgm, p.fga), 1],
     ['XPM', p => p.xpm], ['XPA', p => p.xpa], ['XP%', p => per(100 * p.xpm, p.xpa), 1], ['PTS', p => 3 * p.fgm + p.xpm]]}};
+// 2025's Scoring: the leaderboard has rushing and receiving touchdowns, no kicks or two-point tries.
+const SCORING_25 = {label:'Scoring', keep:p => p.rtd + p.retd > 0, def:2, groups:[['TOUCHDOWNS', 3]],
+  cols:[['RUSH', p => p.rtd], ['REC', p => p.retd], ['TD', p => p.rtd + p.retd]]};
 const C_TABS = [['offense', 'Offense', 'passing'], ['scoring', 'Scoring', 'scoring'], ['special', 'Special Teams', 'kicking'], ['team', 'Team Stats', 'team']];
 const tabOf = v => ({passing:'offense', rushing:'offense', receiving:'offense', scoring:'scoring', kicking:'special', team:'team'})[v];
 const signed = v => `${v > 0 ? '+' : ''}${v.toFixed(1)}`;
@@ -4644,21 +4663,31 @@ function renderCounty(){
     ${tab === 'offense' ? `<div class="c-pills">${['passing', 'rushing', 'receiving'].map(k => `<button type="button"${k === v ? ' class="on"' : ''} data-cview="${k}">${P_VIEWS[k].label}</button>`).join('')}</div>` : ''}
     <div class="c-filters"><select class="c-sel" id="cseason" aria-label="Season">${countySeasons().map(y => `<option value="${y}"${y === county.season ? ' selected' : ''}>${y}</option>`).join('')}</select>
       <select class="c-sel" id="cteam" aria-label="Team">${['all', ...COUNTY].map(c => `<option value="${esc(c)}"${county.team === c ? ' selected' : ''}>${c === 'all' ? 'All County Teams' : esc(c)}</option>`).join('')}</select></div></section>`;
+  // 2025 comes from the season leaderboard, not games: passing, rushing, receiving and touchdowns, and nothing to load.
+  const y25 = county.season === 2025, note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
-  if (county.err) body = `<section class="bcard"><p class="bempty">${esc(county.err)}</p></section>`;
-  else if (!county.games) body = '<section class="bcard"><p class="bempty">Loading stats…</p></section>';
+  if (county.err && !y25) body = note(county.err);
+  else if (!county.games && !y25) body = note('Loading stats…');
   else {
-    const {teams, players} = countyStats(games);
+    const {teams, players} = y25 ? countyStats2025() : countyStats(games);
     if (v === 'team'){
       const o = {first:'TEAM', name:t => `${cMark(t.name)}<b>${esc(t.name)}</b>`, hi:t => t.name === county.team};
       const card = (title, id, cols, def, asc) => `<section class="bcard ccard"><div class="ccard-hd"><h2>${title}</h2></div>${statTable(id, teams, cols, def, {...o, asc})}</section>`;
-      const qcols = quarterCols(teams.some(t => t.ot));
-      body = card('Team Totals', 'team', T_COLS, 1) + card('Offense', 'off', yardCols(''), 10) + card('Defensive Team Stats', 'allow', yardCols('o'), 10, true)
-        + card('Scoring by Quarter (for-against)', 'qtr', qcols, qcols.length - 2);
-    } else {
-      const V = P_VIEWS[v], rows = players.filter(p => V.keep(p) && (county.team === 'all' || p.team === county.team));
-      const name = p => `${cMark(p.team)}<span class="c-pl"><b>${esc(p.name)}</b><small>${esc(shortName(p.team))}</small></span>`;
-      body = `<section class="bcard ccard">${rows.length ? statTable(v, rows, V.cols, V.def, {name, groups:V.groups})
+      if (y25){
+        const cols = yardCols('').filter(c => !c[0].endsWith('/G'));
+        body = card('Offense', 'off25', cols, cols.findIndex(c => c[0] === 'TOTAL YDS'))
+          + note('The 2025 leaderboard has each player’s season totals, so these are the players added up. Records, points and defense aren’t in it.');
+      } else {
+        const qcols = quarterCols(teams.some(t => t.ot));
+        body = card('Team Totals', 'team', T_COLS, 1) + card('Offense', 'off', yardCols(''), 10) + card('Defensive Team Stats', 'allow', yardCols('o'), 10, true)
+          + card('Scoring by Quarter (for-against)', 'qtr', qcols, qcols.length - 2);
+      }
+    } else if (y25 && v === 'kicking') body = note('The 2025 leaderboard has no kicking stats.');
+    else {
+      const V = y25 && v === 'scoring' ? SCORING_25 : P_VIEWS[v], rows = players.filter(p => V.keep(p) && (county.team === 'all' || p.team === county.team));
+      const name = p => `${cMark(p.team)}<span class="c-pl"><b>${esc(p.name)}</b><small>${esc(shortName(p.team))}${p.yr ? ` · ${esc(p.yr)}` : ''}</small></span>`;
+      // 2025's tables keep their own sort (its Scoring has fewer columns than this season's).
+      body = `<section class="bcard ccard">${rows.length ? statTable(y25 ? v + '25' : v, rows, V.cols, V.def, {name, groups:V.groups})
         : `<p class="bempty" style="padding:4px 20px 10px">No ${V.label.toLowerCase()} stats yet${county.team === 'all' ? '' : ` for ${esc(county.team)}`}.</p>`}</section>`;
     }
   }
@@ -5761,6 +5790,140 @@ document.addEventListener('click', e => {
   box.value = rosterToText(r.roster);
   toast(`Using the shared ${r.name} roster`);
 });
+/* 2025 season stats for the Butler County schools, from "2025 Butler County Leaderboard.xlsx" (its PLAYERS sheet):
+   each player's season totals. No games, records, points or kicking are in it. Passing pc/pa/py/ptd/pint, rushing
+   ru/ry/rtd, receiving re/rey/retd. */
+const STATS_2025 = [
+  {"name":"Ben Reynolds","team":"Andover","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":12,"rey":192,"retd":2},
+  {"name":"Barrett Hill","team":"Andover","yr":"SR","pc":0,"pa":1,"py":0,"ptd":0,"pint":1,"ru":51,"ry":516,"rtd":3,"re":7,"rey":191,"retd":2},
+  {"name":"Gatlin Tilson","team":"Andover","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":4,"rey":99,"retd":1},
+  {"name":"Leland Schmaucher","team":"Andover","yr":"JR","pc":0,"pa":1,"py":0,"ptd":0,"pint":0,"ru":18,"ry":62,"rtd":2,"re":2,"rey":11,"retd":0},
+  {"name":"Pete Vega","team":"Andover","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":213,"ry":1016,"rtd":7,"re":0,"rey":0,"retd":0},
+  {"name":"Will Quinn","team":"Andover","yr":"JR","pc":26,"pa":40,"py":504,"ptd":5,"pint":1,"ru":118,"ry":775,"rtd":17,"re":0,"rey":0,"retd":0},
+  {"name":"Nas Williams","team":"Andover","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":32,"ry":185,"rtd":5,"re":0,"rey":0,"retd":0},
+  {"name":"Kaeden Stuart","team":"Andover","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":6,"ry":89,"rtd":1,"re":0,"rey":0,"retd":0},
+  {"name":"Brooks Brown","team":"Andover","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":5,"ry":18,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Brody Bailey","team":"Andover","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":1,"ry":10,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Tyler Jones","team":"Andover","yr":"SO","pc":0,"pa":1,"py":0,"ptd":0,"pint":0,"ru":3,"ry":9,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Carson Goentzel","team":"Andover","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":2,"ry":9,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Daniel Beck","team":"Andover","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":1,"ry":4,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Jaxson Siroky","team":"Andover","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":1,"ry":1,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Cooper Mason","team":"Andover Central","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":2,"ry":4,"rtd":0,"re":27,"rey":308,"retd":3},
+  {"name":"Noah Sawdy","team":"Andover Central","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":24,"rey":288,"retd":2},
+  {"name":"Jett Thompson","team":"Andover Central","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":8,"rey":118,"retd":0},
+  {"name":"Caden Rubio","team":"Andover Central","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":6,"rey":101,"retd":1},
+  {"name":"Jaxson Green","team":"Andover Central","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":170,"ry":1314,"rtd":14,"re":6,"rey":68,"retd":1},
+  {"name":"Bryce Skahan","team":"Andover Central","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":2,"rey":6,"retd":0},
+  {"name":"Aiden Jordan","team":"Andover Central","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":1,"rey":3,"retd":0},
+  {"name":"Bubba Hall","team":"Andover Central","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":32,"ry":85,"rtd":1,"re":0,"rey":0,"retd":0},
+  {"name":"Max Olson","team":"Andover Central","yr":"SR","pc":75,"pa":156,"py":900,"ptd":7,"pint":5,"ru":54,"ry":79,"rtd":3,"re":0,"rey":0,"retd":0},
+  {"name":"Bobby Sands","team":"Andover Central","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":1,"ry":2,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Trey DeGarmo","team":"Andover Central","yr":"FR","pc":0,"pa":1,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Brecken Albert","team":"Augusta","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":34,"rey":745,"retd":9},
+  {"name":"Cade Camac","team":"Augusta","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":3,"ry":7,"rtd":0,"re":12,"rey":265,"retd":2},
+  {"name":"Roman Bridwell","team":"Augusta","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":3,"ry":44,"rtd":0,"re":11,"rey":153,"retd":1},
+  {"name":"Jett Highfill","team":"Augusta","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":1,"ry":12,"rtd":0,"re":5,"rey":101,"retd":1},
+  {"name":"Bryce Schwinn","team":"Augusta","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":8,"rey":97,"retd":0},
+  {"name":"Owen Roberts","team":"Augusta","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":130,"ry":816,"rtd":7,"re":9,"rey":92,"retd":0},
+  {"name":"Cade Wills","team":"Augusta","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":5,"rey":86,"retd":0},
+  {"name":"Rylee McMichael","team":"Augusta","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":2,"rey":40,"retd":0},
+  {"name":"Jackson Ingram","team":"Augusta","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":6,"ry":9,"rtd":3,"re":4,"rey":33,"retd":1},
+  {"name":"Cyrus Hubbard","team":"Augusta","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":1,"rey":8,"retd":0},
+  {"name":"Gunner Highfill","team":"Augusta","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":4,"ry":8,"rtd":0,"re":1,"rey":2,"retd":0},
+  {"name":"Nick Robbins","team":"Augusta","yr":"FR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":1,"rey":0,"retd":0},
+  {"name":"Brody Haskell","team":"Augusta","yr":"SR","pc":97,"pa":169,"py":1628,"ptd":13,"pint":11,"ru":79,"ry":503,"rtd":5,"re":0,"rey":0,"retd":0},
+  {"name":"Jaydyn Harris","team":"Augusta","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":18,"ry":118,"rtd":3,"re":0,"rey":0,"retd":0},
+  {"name":"Cannon Terry","team":"Augusta","yr":"FR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":10,"ry":31,"rtd":1,"re":0,"rey":0,"retd":0},
+  {"name":"Mason Skov","team":"Augusta","yr":"SO","pc":2,"pa":2,"py":2,"ptd":0,"pint":0,"ru":1,"ry":16,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Cooper Witty","team":"Bluestem","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":1,"rey":46,"retd":1},
+  {"name":"Axton Vice","team":"Bluestem","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":113,"ry":769,"rtd":8,"re":5,"rey":25,"retd":0},
+  {"name":"Hunter Thompson","team":"Bluestem","yr":"SR","pc":0,"pa":1,"py":0,"ptd":0,"pint":1,"ru":2,"ry":41,"rtd":1,"re":1,"rey":23,"retd":1},
+  {"name":"Dallyn Ashley-Moore","team":"Bluestem","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":1,"rey":23,"retd":0},
+  {"name":"Evan Worrell","team":"Bluestem","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":9,"ry":12,"rtd":0,"re":1,"rey":10,"retd":1},
+  {"name":"Logan Squier","team":"Bluestem","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":51,"ry":459,"rtd":4,"re":1,"rey":3,"retd":0},
+  {"name":"Emmett Brice","team":"Bluestem","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":1,"rey":3,"retd":0},
+  {"name":"Ayson Shepherd","team":"Bluestem","yr":"JR","pc":11,"pa":21,"py":137,"ptd":3,"pint":1,"ru":84,"ry":385,"rtd":2,"re":0,"rey":0,"retd":0},
+  {"name":"Myles Highbarger","team":"Bluestem","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":12,"ry":105,"rtd":2,"re":0,"rey":0,"retd":0},
+  {"name":"Tucker Reed","team":"Bluestem","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":3,"ry":14,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Dominic Sawyer","team":"Circle","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":2,"ry":-3,"rtd":0,"re":33,"rey":555,"retd":5},
+  {"name":"Jason Smith","team":"Circle","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":64,"ry":669,"rtd":7,"re":11,"rey":233,"retd":2},
+  {"name":"Jay Bonewitz","team":"Circle","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":4,"ry":16,"rtd":0,"re":15,"rey":169,"retd":2},
+  {"name":"Rocky Cosby","team":"Circle","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":12,"rey":128,"retd":0},
+  {"name":"Bodie Janzen","team":"Circle","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":5,"rey":101,"retd":1},
+  {"name":"Frank Ekue","team":"Circle","yr":"SR","pc":0,"pa":1,"py":0,"ptd":0,"pint":0,"ru":86,"ry":343,"rtd":3,"re":7,"rey":62,"retd":0},
+  {"name":"Aymon Oliver","team":"Circle","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":14,"ry":25,"rtd":0,"re":3,"rey":42,"retd":0},
+  {"name":"Gabe Duncan","team":"Circle","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":3,"rey":19,"retd":0},
+  {"name":"Cody Hoefer","team":"Circle","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":1,"rey":1,"retd":0},
+  {"name":"Cole Wilbur","team":"Circle","yr":"SO","pc":48,"pa":101,"py":632,"ptd":4,"pint":5,"ru":45,"ry":85,"rtd":1,"re":0,"rey":0,"retd":0},
+  {"name":"Jarrion Johnson","team":"Circle","yr":"FR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":1,"ry":3,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Mason Stobart","team":"Circle","yr":"SR","pc":42,"pa":95,"py":678,"ptd":6,"pint":6,"ru":6,"ry":-39,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Bronsyn Knisley","team":"Douglass","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":22,"rey":531,"retd":7},
+  {"name":"Carter Green","team":"Douglass","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":105,"ry":724,"rtd":12,"re":10,"rey":99,"retd":2},
+  {"name":"Wyatt Moore","team":"Douglass","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":2,"ry":-4,"rtd":0,"re":8,"rey":82,"retd":0},
+  {"name":"Brody Rush","team":"Douglass","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":2,"rey":65,"retd":0},
+  {"name":"Justin West","team":"Douglass","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":8,"rey":57,"retd":0},
+  {"name":"Charlie Kielhorn","team":"Douglass","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":30,"ry":140,"rtd":1,"re":2,"rey":38,"retd":0},
+  {"name":"Ryan Stiner","team":"Douglass","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":14,"ry":101,"rtd":1,"re":2,"rey":37,"retd":0},
+  {"name":"Hunter West","team":"Douglass","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":61,"ry":215,"rtd":0,"re":2,"rey":3,"retd":0},
+  {"name":"Kane Ast","team":"Douglass","yr":"JR","pc":54,"pa":114,"py":910,"ptd":10,"pint":9,"ru":56,"ry":224,"rtd":1,"re":0,"rey":0,"retd":0},
+  {"name":"Oliver Tilton","team":"Douglass","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":8,"ry":20,"rtd":1,"re":0,"rey":0,"retd":0},
+  {"name":"Cooper Prather","team":"Douglass","yr":"FR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":2,"ry":5,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Jaxson Brewer","team":"Douglass","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":1,"ry":4,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Peyton Wight","team":"El Dorado","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":23,"ry":-18,"rtd":0,"re":16,"rey":149,"retd":0},
+  {"name":"Nellieon Williams","team":"El Dorado","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":8,"rey":100,"retd":0},
+  {"name":"Hunter Conrad","team":"El Dorado","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":44,"ry":160,"rtd":0,"re":8,"rey":69,"retd":1},
+  {"name":"Kingston Klein","team":"El Dorado","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":4,"rey":54,"retd":0},
+  {"name":"DJ Mitchell","team":"El Dorado","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":5,"ry":-6,"rtd":0,"re":3,"rey":48,"retd":0},
+  {"name":"Maddix Soper","team":"El Dorado","yr":"JR","pc":0,"pa":1,"py":0,"ptd":0,"pint":0,"ru":3,"ry":4,"rtd":0,"re":5,"rey":46,"retd":1},
+  {"name":"Kolby Cooper","team":"El Dorado","yr":"FR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":2,"rey":28,"retd":0},
+  {"name":"Cameron Fullerton","team":"El Dorado","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":2,"rey":14,"retd":0},
+  {"name":"Daniel Bowlin","team":"El Dorado","yr":"JR","pc":53,"pa":130,"py":508,"ptd":2,"pint":9,"ru":74,"ry":11,"rtd":1,"re":1,"rey":13,"retd":0},
+  {"name":"Jaxson Markowitz","team":"El Dorado","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":8,"ry":3,"rtd":0,"re":1,"rey":-1,"retd":0},
+  {"name":"Britton Wescott","team":"El Dorado","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":3,"rey":-3,"retd":0},
+  {"name":"Skyler Demel","team":"El Dorado","yr":"SO","pc":1,"pa":2,"py":13,"ptd":0,"pint":1,"ru":2,"ry":-18,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Ty Finley","team":"Flinthills","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":11,"ry":40,"rtd":0,"re":13,"rey":201,"retd":6},
+  {"name":"Beau Hall","team":"Flinthills","yr":"JR","pc":2,"pa":4,"py":13,"ptd":0,"pint":0,"ru":151,"ry":1331,"rtd":22,"re":12,"rey":159,"retd":1},
+  {"name":"Hunter Davis","team":"Flinthills","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":1,"ry":-4,"rtd":0,"re":6,"rey":78,"retd":0},
+  {"name":"Garrett Jackson","team":"Flinthills","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":4,"rey":70,"retd":0},
+  {"name":"Taylor Carroll","team":"Flinthills","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":3,"ry":9,"rtd":1,"re":5,"rey":43,"retd":0},
+  {"name":"Deken Girty","team":"Flinthills","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":7,"rey":40,"retd":0},
+  {"name":"Jaxon Swafford","team":"Flinthills","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":4,"ry":16,"rtd":0,"re":2,"rey":25,"retd":0},
+  {"name":"Tripp Carney","team":"Flinthills","yr":"JR","pc":37,"pa":86,"py":498,"ptd":6,"pint":3,"ru":47,"ry":252,"rtd":6,"re":3,"rey":19,"retd":0},
+  {"name":"Cody Wells","team":"Flinthills","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":1,"ry":8,"rtd":0,"re":1,"rey":8,"retd":0},
+  {"name":"Newell Marsh","team":"Flinthills","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":3,"ry":-9,"rtd":0,"re":3,"rey":0,"retd":0},
+  {"name":"Kaleb Grunder","team":"Flinthills","yr":"SO","pc":11,"pa":24,"py":96,"ptd":1,"pint":3,"ru":14,"ry":26,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Mason Randall","team":"Flinthills","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":1,"ry":3,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Shawn Kenneson","team":"Flinthills","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":1,"ry":1,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Aiden Davis","team":"Flinthills","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":1,"ry":-4,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Talon Scribner","team":"Flinthills","yr":"JR","pc":2,"pa":2,"py":8,"ptd":0,"pint":0,"ru":2,"ry":-8,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Parker Sutton","team":"Flinthills","yr":"SR","pc":0,"pa":1,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Sam Tillotson","team":"Remington","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":15,"rey":200,"retd":0},
+  {"name":"Elliott Hochstetler","team":"Remington","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":11,"rey":162,"retd":1},
+  {"name":"Ryder Armstrong","team":"Remington","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":14,"ry":8,"rtd":0,"re":14,"rey":146,"retd":0},
+  {"name":"Severo De La Rosa","team":"Remington","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":1,"ry":1,"rtd":0,"re":14,"rey":140,"retd":0},
+  {"name":"Skylar Knowles","team":"Remington","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":4,"ry":14,"rtd":0,"re":10,"rey":134,"retd":0},
+  {"name":"Ethan Zeurcher","team":"Remington","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":6,"ry":15,"rtd":0,"re":7,"rey":70,"retd":0},
+  {"name":"Asher Irving","team":"Remington","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":4,"rey":61,"retd":0},
+  {"name":"Ethan Koehn","team":"Remington","yr":"FR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":2,"ry":4,"rtd":0,"re":6,"rey":58,"retd":1},
+  {"name":"Darian Schwind","team":"Remington","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":75,"ry":413,"rtd":2,"re":8,"rey":22,"retd":0},
+  {"name":"Breeson George","team":"Remington","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":1,"rey":9,"retd":0},
+  {"name":"Pius Graf","team":"Remington","yr":"SR","pc":92,"pa":179,"py":994,"ptd":5,"pint":12,"ru":92,"ry":244,"rtd":5,"re":0,"rey":0,"retd":0},
+  {"name":"Darius Hancock","team":"Remington","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":51,"ry":207,"rtd":1,"re":0,"rey":0,"retd":0},
+  {"name":"Kaden Kramer","team":"Remington","yr":"FR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":3,"ry":22,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Rueben Jury","team":"Remington","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":4,"ry":19,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Caleb Klingenberg","team":"Remington","yr":"FR","pc":4,"pa":7,"py":52,"ptd":0,"pint":0,"ru":6,"ry":-1,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Sebastian Bentley","team":"Rose Hill","yr":"SR","pc":0,"pa":1,"py":0,"ptd":0,"pint":0,"ru":7,"ry":30,"rtd":1,"re":13,"rey":185,"retd":1},
+  {"name":"Cooper Dees","team":"Rose Hill","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":8,"rey":165,"retd":2},
+  {"name":"KJ Jones","team":"Rose Hill","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":108,"ry":985,"rtd":17,"re":6,"rey":144,"retd":2},
+  {"name":"Leven Jones","team":"Rose Hill","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":2,"rey":33,"retd":1},
+  {"name":"Kai Kirchhoff-Jones","team":"Rose Hill","yr":"JR","pc":0,"pa":1,"py":0,"ptd":0,"pint":0,"ru":80,"ry":618,"rtd":7,"re":1,"rey":25,"retd":0},
+  {"name":"Remington Merlau","team":"Rose Hill","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":16,"ry":32,"rtd":1,"re":2,"rey":16,"retd":0},
+  {"name":"Andrew Poss","team":"Rose Hill","yr":"JR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":0,"ry":0,"rtd":0,"re":1,"rey":7,"retd":0},
+  {"name":"Kaden Stuhr","team":"Rose Hill","yr":"SR","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":9,"ry":167,"rtd":2,"re":1,"rey":1,"retd":0},
+  {"name":"Isaac Hill","team":"Rose Hill","yr":"JR","pc":0,"pa":2,"py":0,"ptd":0,"pint":0,"ru":8,"ry":115,"rtd":0,"re":0,"rey":0,"retd":0},
+  {"name":"Zander Ford","team":"Rose Hill","yr":"JR","pc":30,"pa":75,"py":531,"ptd":6,"pint":4,"ru":34,"ry":113,"rtd":2,"re":0,"rey":0,"retd":0},
+  {"name":"Elias Hernandez","team":"Rose Hill","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":12,"ry":34,"rtd":0,"re":0,"rey":0,"retd":0}
+];
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
