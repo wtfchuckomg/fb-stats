@@ -111,6 +111,12 @@ div.sc-game:hover{background:none}
 .qs-pts .inp{text-align:center;font-size:26px}
 #qs-per button{flex:1 1 0;padding:10px 4px}
 .qs-stats{align-self:flex-start}
+/* paste-a-box-score window */
+textarea.inp.bx-txt{min-height:220px;font:13px/1.45 ui-monospace,Menlo,Consolas,monospace}
+.bx-prev{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--surface)}
+.bx-sum{font:500 14px/1.4 var(--sans);color:var(--ink-2)}
+.bx-sum .muted{color:var(--muted);font-size:13px}
+.bx-warn{margin:8px 0 0;color:#8A5A00}
 .sc-full{flex:none;display:flex;align-items:center;justify-content:center;text-align:center;width:92px;padding:0 10px;border-left:1px solid var(--line);
   color:var(--blue);font:600 12.5px/1.35 var(--sans);text-decoration:none}
 .sc-full:hover{background:#F1F5FD}
@@ -1101,8 +1107,9 @@ function replay(g, upto = g.plays.length){
     const r = apply(p);
     log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, trace, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q, A:st.score.A, H:st.score.H});
   }
+  if (g.box) boxInto(g, st, S, scoring);   // entered from a pasted box score: no plays, just its totals
   const open = st.drive ? [{...st.drive, res:'In progress', open:true}] : [];
-  return {st, S, log, scoring, drives:drives.concat(open), sit:sit(), yl, nm, ab, FL, RU};
+  return {st, S, log, scoring, drives:drives.concat(open), sit:sit(), yl, nm, ab, FL, RU, box:!!g.box};
 }
 /* ================================================================
    UI: scoreboard, field, and the play-entry pad.
@@ -1506,6 +1513,7 @@ function periodHtml(st){
 
 function renderPad(){
   if (ui.viewer) return;              // the live look-in is read-only
+  if (g.box){ $('#pad').innerHTML = boxPad(); return; }   // entered from a box score: nothing to record
   const ctx = ui.ctx, st = ctx.st, pad = $('#pad');
   // While editing, the pad stays on that play's type even if earlier edits changed the situation.
   const types = ui.editing != null ? [ui.type] : typesFor(st);
@@ -2066,7 +2074,7 @@ const framed = (() => { try { return window.self !== window.top; } catch (e) { r
 const dlgHead = t => `<div class="dlg-hd"><h2>${t}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>`;
 function openDialog(kind){
   ui.dlg = kind; ui.confirm = null;
-  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : dlgSetup(kind === 'new');
+  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : dlgSetup(kind === 'new');
   if (!dlg().hasAttribute('open')) showDialog();
 }
 // Phones without the pop-up window feature (iPhones before iOS 15.4, among others) get the same box, opened plainly.
@@ -2078,7 +2086,7 @@ function showDialog(){
 function closeDialog(){
   const d = dlg();
   if (d.hasAttribute('open')){ if (typeof d.close === 'function' && !d.classList.contains('fallback')) d.close(); else d.removeAttribute('open'); }
-  d.classList.remove('fallback'); ui.dlg = null; ui.fromSched = null;
+  d.classList.remove('fallback'); ui.dlg = null; ui.fromSched = null; ui.boxFrom = ui.boxGame = null;
 }
 
 // The spots come with the format; Setup only shows them, it doesn't ask.
@@ -2137,11 +2145,11 @@ function dlgGames(){
   const list = Object.values(db.games).sort((a, b) => (b.updated || 0) - (a.updated || 0));
   const items = list.map(x => { const r = replay(x);
     return `<div class="gitem"><div><b>${esc(x.teams.A.abbr)} ${r.st.score.A} at ${esc(x.teams.H.abbr)} ${r.st.score.H}</b>${x.id === g.id ? '<span class="cur-tag">Open</span>' : ''}${x.sample ? '<span class="cur-tag" style="color:var(--flag-ink)">Sample</span>' : ''}
-      <div class="meta">${esc(x.teams.A.name)} at ${esc(x.teams.H.name)} · ${rulesOf(x).men === 8 ? '8-man · ' : ''}${gameDay(x).toLocaleDateString()} · ${r.st.final ? 'Final' : perLabel(r.st.q)} · ${x.plays.length} plays</div></div>
+      <div class="meta">${esc(x.teams.A.name)} at ${esc(x.teams.H.name)} · ${rulesOf(x).men === 8 ? '8-man · ' : ''}${gameDay(x).toLocaleDateString()} · ${r.st.final ? 'Final' : perLabel(r.st.q)} · ${x.box ? 'box score' : `${x.plays.length} plays`}</div></div>
       <div class="acts">${x.id !== g.id ? `<button class="btn small" data-open-game="${x.id}">Open</button>` : ''}<button class="btn small danger" data-del-game="${x.id}">${ui.confirm === 'g:' + x.id ? 'Tap again' : 'Delete'}</button></div></div>`; }).join('');
   return `${dlgHead('Games')}<div class="dlg-bd">${syncBlock()}<div class="grp"><h3>Games</h3><div class="glist">${items}</div></div>${teamsBlock()}
     <p class="hint">Every game is saved in this browser${sync.user ? ' and to your Google account' : ''}. Export makes a backup you can keep anywhere.</p></div>
-    <div class="dlg-ft"><button class="btn primary" data-open="new">New game</button></div>`;
+    <div class="dlg-ft"><button class="btn" data-box-new>Paste a box score</button><button class="btn primary" data-open="new">New game</button></div>`;
 }
 // The live look-in: a link anyone can open to watch this game, read-only.
 function dlgShare(){
@@ -2364,40 +2372,46 @@ setInterval(() => {
    domain (picks.kansasmediarankings.com/logos/teams.json). A school
    with no logo there gets a monogram in its own team color.
    ================================================================ */
-const LOGO_BASE = 'https://picks.kansasmediarankings.com/logos/';
-const logoLib = {list:null, busy:false};
+// This site's own logos folder first (stats.kansasmediarankings.com/logos), then the Pick 'ems library for the rest.
+const LOGO_SRC = [{base:'logos/', list:[]}, {base:'https://picks.kansasmediarankings.com/logos/', list:[]}];
+const logoLib = {list:null, busy:false};   // list: every school from both, for the school-name suggestions
 const logoSlug = s => String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 function loadLogos(){
   if (logoLib.list || logoLib.busy || typeof fetch !== 'function') return;
   logoLib.busy = true;
-  fetch(LOGO_BASE + 'teams.json').then(r => r.ok ? r.json() : [])
-    .then(list => { logoLib.list = Array.isArray(list) ? list : []; if (g && R) refresh(); else renderScoreboard(); })
-    .catch(() => { logoLib.list = []; });
+  Promise.all(LOGO_SRC.map(src => fetch(src.base + 'teams.json').then(r => r.ok ? r.json() : []).catch(() => [])
+    .then(list => { src.list = Array.isArray(list) ? list : []; })))
+    .then(() => { logoLib.list = LOGO_SRC.flatMap(src => src.list); if (g && R) refresh(); else renderScoreboard(); });
 }
-// Match on the school name (or short name) against the library's names and aliases.
-function logoUrl(team){
-  const lib = logoLib.list; if (!team || !lib || !lib.length) return '';
+// Match on the school name (or short name) against each library's names and aliases: every match, nearest library first.
+function logoUrls(team){
+  if (!team || !logoLib.list) return [];
   const want = new Set([logoSlug(team.name), logoSlug(team.abbr)].filter(Boolean));
-  const hit = lib.find(t => t.file && (want.has(t.slug) || (t.aliases || []).some(a => want.has(logoSlug(a)))));
-  return hit ? LOGO_BASE + hit.file : '';
+  return LOGO_SRC.map(src => {
+    const hit = src.list.find(t => t.file && (want.has(t.slug) || want.has(logoSlug(t.name)) || (t.aliases || []).some(a => want.has(logoSlug(a)))));
+    return hit ? src.base + encodeURIComponent(hit.file) : '';   // some file names have spaces
+  }).filter(Boolean);
 }
+const logoUrl = team => logoUrls(team)[0] || '';
 function teamMark(s, size){ return markFor(g.teams[s], size); }
 // Any team's mark, for places that show other games (the scoreboard).
 function markFor(t, size){
-  const url = logoUrl(t);
+  const [url, alt = ''] = logoUrls(t);
   const txt = String(t.abbr || t.name || '?').slice(0, size >= 40 ? 4 : 3);
   const fs = Math.max(8, Math.round(size * (txt.length > 3 ? .28 : .36)));
   const mono = hide => `<span class="tmono" aria-hidden="true"${hide ? ' hidden' : ''} style="--tc:${esc(t.color)};width:${size}px;height:${size}px;font-size:${fs}px">${esc(txt)}</span>`;
   if (!url) return mono(false);
-  // If the logo file can't be loaded, show the monogram rather than a broken image.
-  return `<img class="tlogo" src="${esc(url)}" alt="" width="${size}" height="${size}" style="width:${size}px;height:${size}px" onerror="this.nextElementSibling.hidden=false;this.remove()">${mono(true)}`;
+  // If this site's logo can't be loaded, borrow the Pick 'ems one; failing that, show the monogram, never a broken image.
+  return `<img class="tlogo" src="${esc(url)}" data-alt="${esc(alt)}" alt="" width="${size}" height="${size}" style="width:${size}px;height:${size}px"`
+    + ` onerror="if(this.dataset.alt){this.src=this.dataset.alt;this.dataset.alt=''}else{this.nextElementSibling.hidden=false;this.remove()}">${mono(true)}`;
 }
 /* ================================================================
    Gamecast views: current drive and field, line score, play-by-play
    (scoring or all plays), box score, team stats, and the side rail
    (game leaders, team stat bars). Shared by the scorer and viewers.
    ================================================================ */
-const PT = (s, n) => n === 'team' ? 'Team' : rosterName(s, n) || `#${n}`;   // players go by name, number if none
+// Players go by name, number if none; a box score's players are keyed by their names.
+const PT = (s, n) => n === 'team' ? 'Team' : rosterName(s, n) || (/^\d+$/.test(n) ? `#${n}` : n);
 const whenTxt = (q, clk) => clk != null && q <= 4 ? `${mmss(clk)} - ${perShort(q)}` : q <= 4 ? `${ord(q)} Quarter` : perShort(q);
 const openDrive = () => { const d = R.drives[R.drives.length - 1]; return d && d.open ? d : null; };
 const plural2 = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
@@ -2553,7 +2567,9 @@ function cmpRows(full){
     ['3rd Down', s => frac(S[s].d3m, S[s].d3a), s => conv(S[s].d3m, S[s].d3a)],
     ['4th Down', s => frac(S[s].d4m, S[s].d4a), s => conv(S[s].d4m, S[s].d4a)]];
   if (S.A.top || S.H.top) rows.push(['Possession', s => S[s].top, s => mmss(S[s].top)]);
-  const keep = full ? rows : rows.filter(r => ['Total Yards', '1st Downs', 'Turnovers', 'Penalties', '3rd Down', 'Possession'].includes(r[0]));
+  // A box score only has yardage, so a box-score game shows just those rows.
+  const keep = R.box ? rows.filter(r => ['Total Yards', 'Passing Yards', 'Rushing Yards'].includes(r[0]))
+    : full ? rows : rows.filter(r => ['Total Yards', '1st Downs', 'Turnovers', 'Penalties', '3rd Down', 'Possession'].includes(r[0]));
   const T = g.teams;
   return keep.map(([label, v, show]) => {
     const a = Math.max(0, v('A')), h = Math.max(0, v('H')), tot = a + h, wa = tot ? a / tot * 100 : 50;
@@ -2606,7 +2622,12 @@ function renderView(){
   document.querySelectorAll('#tabs .gtab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
   if (!g || !R) return;
   const pbpCard = () => `<section class="card"><div class="card-hd"><h2 class="card-title">Play-by-Play</h2></div>${playsList()}</section>`;
-  const V = ui.printing ? () => cardLinescore() + viewBoxTab() + cardCmp(true) + cardTeamTable() + pbpCard()
+  // A game entered from a box score has no plays: Gamecast and Play-by-Play show its scoring summary.
+  const scoringCard = () => `<section class="card"><div class="card-hd"><h2 class="card-title">Scoring Summary</h2></div>${scoringList()}</section>`;
+  const V = g.box
+    ? (ui.printing ? () => cardLinescore() + scoringCard() + viewBoxTab() + cardCmp(true)
+      : ({gamecast:() => cardLinescore() + scoringCard(), box:viewBoxTab, pbp:scoringCard, team:() => cardLinescore() + cardCmp(true)})[ui.tab] || (() => ''))
+    : ui.printing ? () => cardLinescore() + viewBoxTab() + cardCmp(true) + cardTeamTable() + pbpCard()
     : ({gamecast:() => cardDrive() + cardLinescore() + cardPbp(), box:viewBoxTab, pbp:pbpCard,
         team:() => cardLinescore() + cardCmp(true) + cardTeamTable() + cardDrives()})[ui.tab] || (() => '');
   $('#view').innerHTML = V();
@@ -3184,7 +3205,8 @@ function dlgScore(id){
     <div class="fld"><span class="eyebrow">Status</span><div class="seg" id="qs-per">${QS_PER.map(([v, l]) => `<button type="button" data-qs-per="${v}" aria-pressed="${per === v}">${l}</button>`).join('')}</div></div>
     <div class="fld"${inQuarter(per) ? '' : ' hidden'}><label class="eyebrow" for="qs-clk">Time left, optional</label><input class="inp" id="qs-clk" inputmode="numeric" placeholder="4:12" value="${esc(x && x.clk || '')}"></div>
     <div class="fld"><label class="eyebrow" for="qs-date">Game date</label><input class="inp" type="date" id="qs-date" value="${date}"></div>
-    ${x ? `<button type="button" class="btn small qs-stats" data-qs-stats="${esc(x.id)}">Keep stats on this game</button>` : ''}
+    ${x ? `<div class="line qs-stats"><button type="button" class="btn small" data-qs-stats="${esc(x.id)}">Keep stats on this game</button>
+      <button type="button" class="btn small" data-qs-box="${esc(x.id)}">Paste box score</button></div>` : ''}
     <p class="hint">${note}</p>
     <datalist id="qslib">${names.map(n => `<option value="${esc(n)}"></option>`).join('')}</datalist></div>
     <div class="dlg-ft">${x ? `<button type="button" class="btn danger" data-qs-del="${esc(x.id)}" style="margin-right:auto">Delete</button>` : ''}
@@ -3282,7 +3304,7 @@ function summary(x){
     else if (st.q > 4) status = perShort(st.q);
     else status = `${c ? mmss(c.run ? c.s - (Date.now() - c.at) / 1000 : c.s) + ' - ' : ''}${ord(st.q)}`;
   }
-  return {quick:false, fin:st.final, pre:!x.plays.length, live, q:st.q, status, score:st.score, poss:live && st.phase !== 'kick' ? st.poss : null,
+  return {quick:false, fin:st.final, pre:!x.plays.length && !x.box, live, q:st.q, status, score:st.score, poss:live && st.phase !== 'kick' ? st.poss : null,
     lines:st.lines, S:r.S, men:rulesOf(x).men};
 }
 const leadOf = m => m.score.A === m.score.H ? null : m.score.A > m.score.H ? 'A' : 'H';
@@ -3295,7 +3317,7 @@ function scoreCard(x){
   // A game opens once stats are being kept on it; the scorer can always open their own.
   if (!m.quick){
     const title = esc(`${T.A.name} at ${T.H.name}`);
-    return x.plays.length || (!ui.viewer && db.games[x.id]) ? `<a class="${cls}" href="?live=${encodeURIComponent(x.id)}" data-sc="${esc(x.id)}" title="${title}">${inner}</a>`
+    return x.plays.length || x.box || (!ui.viewer && db.games[x.id]) ? `<a class="${cls}" href="?live=${encodeURIComponent(x.id)}" data-sc="${esc(x.id)}" title="${title}">${inner}</a>`
       : `<div class="${cls}" title="${title}">${inner}</div>`;
   }
   // A quick score: the scorer taps it to update; for fans there's no game behind it to open.
@@ -3423,10 +3445,11 @@ async function startScoreboard(){
 // Initial and last name, then the number: "I. Ford #28".
 function leaderName(x, s, n){
   if (n === 'team') return 'TEAM';
-  const full = String((x.teams[s].roster || {})[n] || '').trim();
+  // A box score's players are keyed by name and have no number.
+  const num = /^\d+$/.test(n), full = String((x.teams[s].roster || {})[n] || (num ? '' : n)).trim();
   if (!full) return `#${n}`;
   const p = full.split(/\s+/);
-  return `${p.length > 1 ? `${p[0][0]}. ${p.slice(1).join(' ')}` : full} #${n}`;
+  return `${p.length > 1 ? `${p[0][0]}. ${p.slice(1).join(' ')}` : full}${num ? ` #${n}` : ''}`;
 }
 function boardLeaders(x, S){
   const best = k => { let top = null; ['A', 'H'].forEach(s => Object.values(S.pl[s]).forEach(p => { if (p.n !== 'team' && p[k] > 0 && (!top || p[k] > top.p[k])) top = {s, p}; })); return top; };
@@ -3452,7 +3475,7 @@ function boardGame(x){
   };
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
   // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
-  const acts = m.quick || !x.plays.length ? '' : `<a class="bbtn" href="?live=${id}">Gamecast</a><a class="bbtn box" href="?live=${id}&amp;tab=box">Box Score</a>`;
+  const acts = m.quick || (!x.plays.length && !x.box) ? '' : x.box ? `<a class="bbtn" href="?live=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?live=${id}">Gamecast</a><a class="bbtn box" href="?live=${id}&amp;tab=box">Box Score</a>`;
   return `<article class="bgame${m.live ? ' live' : ''}">
     <div class="b-main"><div class="b-hd"><span class="b-st">${status}</span><div class="bt-q b-qh">${cells(i => i < 4 ? i + 1 : 'OT')}</div><span class="b-th">T</span><i></i></div>
       ${team('A')}${team('H')}</div>
@@ -3603,6 +3626,248 @@ function seedSchedule(){
   });
   if (added) persist();
 }
+/* ================================================================
+   Box scores: a game entered after the fact from a pasted newspaper
+   box score, with no plays. The line score, the scoring summary and the
+   RUSHING / PASSING / RECEIVING lines become the game's totals; the
+   replay reads them (boxInto), so the box score, team stats, leaders
+   and the scoreboard work as they do for a statted game.
+
+     Andover 7 7 8 10 — 32
+     Hutchinson 0 7 0 14 — 21
+     And – Will Quinn 79 run (Pete Vega kick)
+     RUSHING: Andover — Vega 14-94; Quinn 14-92, TD; Team 2-(-33). Totals: 39-190. Hutchinson — …
+     PASSING (cmp-att-yds-td-int): Andover — Quinn 6-8-87-1-0; …
+     RECEIVING: Andover — Goentzel 2-80, TD; …
+
+   The first team in the line score is the visitor. Players are keyed by
+   name; a last name in the stat lines takes the full name the scoring
+   summary gives it ("Vega" is "Pete Vega").
+   ================================================================ */
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const lastName = n => String(n).trim().split(/\s+/).pop().toLowerCase();
+const sameSchool = (a, b) => { const x = logoSlug(a), y = logoSlug(b); return !!x && !!y && (x === y || x.startsWith(y) || y.startsWith(x)); };
+
+// Points and kind for one scoring-summary line, e.g. "Will Quinn 79 run (Pete Vega kick)".
+function scoreLine(d){
+  const main = d.split('(')[0];
+  if (/\bFG\b|field goal/i.test(main)) return {how:'FG', pts:3};
+  if (/\bsafety\b/i.test(main)) return {how:'Safety', pts:2};
+  // The try is in the last parentheses, or a trailing "Vega kick)" when the "(" went missing.
+  const i = d.lastIndexOf('('), pat = i >= 0 ? d.slice(i + 1) : /\bkick\)?\s*$/i.test(d) ? 'kick' : '';
+  const extra = /fail|no good|miss|block|incomplete|no try|stopped|short/i.test(pat) ? 0 : /kick|good/i.test(pat) ? 1 : /\b(run|rush|pass|catch)\b/i.test(pat) ? 2 : 0;
+  return {how:'TD', pts:6 + extra};
+}
+
+function parseBox(txt){
+  const out = {ok:false, error:'', names:[], lines:{A:[], H:[]}, total:{A:0, H:0}, scoring:[], pl:{A:{}, H:{}}, team:{A:{}, H:{}}, warn:[]};
+  const rows = String(txt || '').replace(/\r/g, '').split('\n').map(l => l.replace(/[ \t]+/g, ' ').trim()).filter(Boolean);
+  const SEC = /^(RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|INTERCEPTIONS|TACKLES|DEFENSE|PUNTING|FUMBLES|SACKS)\b([^:]*):\s*(.*)$/i;
+  const QTR = /^(?:(first|second|third|fourth|1st|2nd|3rd|4th)\s+(?:quarter|qtr)|(ot|overtime))\b/i;
+  const QN = {first:1, '1st':1, second:2, '2nd':2, third:3, '3rd':3, fourth:4, '4th':4};
+  // Which team a label like "And", "Hutch" or "Andover" means.
+  const sideOf = label => {
+    const k = logoSlug(label); if (!k) return null;
+    const score = ['A', 'H'].map((s, i) => { const n = logoSlug(out.names[i] || ''), ini = n.split('-').map(w => w[0]).join('');
+      return !n ? 0 : n === k ? 3 : ini === k ? 2 : n.startsWith(k) || k.startsWith(n) ? 1 : 0; });
+    return score[0] > score[1] ? 'A' : score[1] > score[0] ? 'H' : null;
+  };
+  const sections = [];
+  let sec = null, curQ = 0;
+  for (const l of rows){
+    const m = l.match(SEC);
+    if (m){ sec = {kind:m[1].toUpperCase(), head:m[2], body:m[3]}; sections.push(sec); continue; }
+    // A stat section can run onto the next line ("Hutchinson — McCuan 12-56; …").
+    if (sec && /\d+\s*-\s*\(?-?\d+/.test(l)){ sec.body += ' ' + l; continue; }
+    if (out.names.length < 2){
+      const ls = l.match(/^(.*?[A-Za-z][^\d]*?)\s+((?:\d+\s+){2,7}\d+)(?:\s*[—–-]+\s*(\d+))?$/);
+      if (ls){
+        let q = ls[2].split(' ').map(Number), tot = ls[3] != null ? +ls[3] : null;
+        if (tot == null && q.length >= 5 && q[q.length - 1] === q.slice(0, -1).reduce((a, b) => a + b, 0)) tot = q.pop();
+        if (q.length > 5) q = [...q.slice(0, 4), q.slice(4).reduce((a, b) => a + b, 0)];   // every overtime together
+        const s = out.names.length ? 'H' : 'A', name = ls[1].replace(/[\s:,.—–-]+$/, ''), sum = q.reduce((a, b) => a + b, 0);
+        out.names.push(name); out.lines[s] = q; out.total[s] = tot ?? sum;
+        if (tot != null && tot !== sum) out.warn.push(`${name}’s quarters add up to ${sum}, but the total says ${tot}. Using ${tot}.`);
+        sec = null; continue;
+      }
+    }
+    const qh = l.match(QTR);
+    if (qh){ curQ = qh[2] ? 5 : QN[qh[1].toLowerCase()]; sec = null; continue; }
+    const sc = out.names.length === 2 && l.match(/^([A-Za-z][A-Za-z.'& ]{0,24}?)\s*[—–:-]\s+(.+)$/);
+    const side = sc && sideOf(sc[1]);
+    if (side){ out.scoring.push({side, label:sc[1].trim(), desc:sc[2].trim(), q:curQ, ...scoreLine(sc[2])}); sec = null; continue; }
+    if (sec) sec.body += ' ' + l;
+  }
+  if (out.names.length < 2){
+    out.error = 'Couldn’t find the line score: each team’s name, its quarter scores and the total, like “Andover 7 7 8 10 — 32”.';
+    return out;
+  }
+
+  // Full names from the scoring summary, so "Vega" in the stat lines reads as "Pete Vega". A "first name"
+  // that is some other player's last name ("from Quinn Vega kick", with a "(" missing) isn't one.
+  const full = {A:{}, H:{}};
+  out.scoring.forEach(e => (e.desc.match(/\b[A-Z][a-zA-Z'’.-]+(?: [A-Z][a-zA-Z'’.-]+)+/g) || []).forEach(n => {
+    const m = full[e.side], k = lastName(n); (m[k] = m[k] || {})[n] = (m[k][n] || 0) + 1; }));
+  ['A', 'H'].forEach(s => Object.values(full[s]).forEach(opts => Object.keys(opts).forEach(n => {
+    if (full[s][n.split(' ')[0].toLowerCase()]) delete opts[n]; })));
+  const display = (s, raw) => {
+    const opts = full[s][lastName(raw)];
+    if (raw.includes(' ') || !opts || !Object.keys(opts).length) return raw;
+    return Object.entries(opts).sort((a, b) => b[1] - a[1])[0][0];
+  };
+  const player = (s, raw) => {
+    if (/^team$/i.test(raw.trim())) return out.pl[s].team || (out.pl[s].team = {});
+    const name = display(s, raw.trim()), k = lastName(name);
+    const hit = Object.keys(out.pl[s]).find(n => n !== 'team' && lastName(n) === k);
+    return out.pl[s][hit || name] || (out.pl[s][name] = {});
+  };
+  const add = (o, k, v) => { o[k] = (o[k] || 0) + v; };
+  // Numbers in "14-94", "2-(-33)" or "3--5".
+  const nums = s => [...s.replace(/(\d)\s*-\s*-(\d+)/g, '$1-(-$2)').matchAll(/\((-?\d+)\)|(\d+)/g)].map(m => +(m[1] ?? m[2]));
+  const tds = rest => { const m = rest.match(/(\d+)?\s*TDs?\b/i); return m ? +(m[1] || 1) : 0; };
+  // A section's body, split at each team's name: "Andover — …. Hutchinson — …".
+  const splitTeams = body => {
+    const alts = [...new Set([...out.names, ...out.scoring.map(e => e.label)])].filter(Boolean).sort((a, b) => b.length - a.length);
+    const re = new RegExp(`(?:^|[.;]\\s*)(${alts.map(escRe).join('|')})\\s*(?:[—–:,]|\\s-)\\s*`, 'gi'), hits = [...body.matchAll(re)];
+    return hits.map((h, i) => [sideOf(h[1]), body.slice(h.index + h[0].length, i + 1 < hits.length ? hits[i + 1].index : undefined)]).filter(x => x[0]);
+  };
+  for (const sc of sections){
+    const kind = /^RUSH/.test(sc.kind) ? 'rush' : /^PASS/.test(sc.kind) ? 'pass' : /^REC/.test(sc.kind) ? 'rec' : '';
+    if (!kind){ out.warn.push(`${sc.kind[0]}${sc.kind.slice(1).toLowerCase()} lines aren’t read yet, so they’re left out.`); continue; }
+    // Passing columns follow the heading's "(cmp-att-yds-td-int)" when it has one.
+    const order = kind === 'pass' ? ((sc.head.match(/\(([a-z-]+)\)/i) || [])[1] || 'cmp-att-yds-td-int').toLowerCase().split('-') : null;
+    for (const [s, part] of splitTeams(sc.body)){
+      part.split(/;\s*|\.\s+(?=totals?\b)/i).map(x => x.trim().replace(/\.$/, '')).filter(Boolean).forEach(item => {
+        const tot = item.match(/^totals?:?\s*(.*)$/i);
+        if (tot){ const v = nums(tot[1]); if (kind === 'rush' && v.length >= 2) Object.assign(out.team[s], {rushN:v[0], rushY:v[1]}); return; }
+        const m = item.match(/^(.+?)\s+(\(?-?\d+\)?(?:\s*-\s*\(?-?\d+\)?)+)(.*)$/);
+        if (!m) return;
+        const v = nums(m[2]), p = player(s, m[1]), td = tds(m[3]);
+        if (kind === 'rush'){ add(p, 'ru', v[0] || 0); add(p, 'ry', v[1] || 0); add(p, 'rtd', td); }
+        if (kind === 'rec'){ add(p, 're', v[0] || 0); add(p, 'rey', v[1] || 0); add(p, 'retd', td); }
+        if (kind === 'pass'){
+          const f = {}; order.forEach((k, i) => { f[k] = v[i] || 0; });
+          add(p, 'pc', f.cmp || f.c || 0); add(p, 'pa', f.att || f.a || 0); add(p, 'py', f.yds || f.y || 0); add(p, 'ptd', f.td || 0); add(p, 'pint', f.int || f.i || 0);
+        }
+      });
+    }
+  }
+  // Kickers, from the scoring summary: "Vega 29 FG", "(Pete Vega kick)".
+  out.scoring.forEach(e => {
+    if (e.how === 'FG'){
+      const m = e.desc.match(/^(.+?)\s+(\d+)\s*(?:-?\s*(?:yd|yard)s?\.?)?\s*(?:FG|field goal)/i);
+      if (m){ const p = player(e.side, m[1]); add(p, 'fga', 1); add(p, 'fgm', 1); p.fglg = Math.max(p.fglg || 0, +m[2]); }
+    }
+    if (e.how === 'TD'){
+      const i = e.desc.lastIndexOf('('), km = (i >= 0 ? e.desc.slice(i + 1) : e.desc).match(/([A-Z][\w'’.-]*(?: [A-Z][\w'’.-]*)?)\s+kick\b(.*)$/);
+      if (km){ const p = player(e.side, km[1]); add(p, 'xpa', 1); if (!/fail|no good|miss|block/i.test(km[2])) add(p, 'xpm', 1); }
+    }
+  });
+  ['A', 'H'].forEach(s => {
+    const t = out.team[s], ps = Object.values(out.pl[s]), sum = k => ps.reduce((a, p) => a + (p[k] || 0), 0);
+    if (t.rushN == null){ t.rushN = sum('ru'); t.rushY = sum('ry'); }
+    Object.assign(t, {passC:sum('pc'), passA:sum('pa'), passY:sum('py'), passTD:sum('ptd'), passInt:sum('pint')});
+  });
+  // Quarters for the scoring plays, when the summary has no quarter headings: each team's running score
+  // against its line score, quarter by quarter.
+  if (!out.scoring.some(e => e.q)){
+    const nq = Math.max(out.lines.A.length, out.lines.H.length), run = {A:0, H:0}, thru = (s, i) => out.lines[s].slice(0, i + 1).reduce((a, b) => a + b, 0);
+    let q = 0;
+    out.scoring.forEach(e => { run[e.side] += e.pts; while (q < nq - 1 && thru(e.side, q) < run[e.side]) q++; e.q = q + 1; });
+  }
+  ['A', 'H'].forEach((s, i) => {
+    const pts = out.scoring.filter(e => e.side === s).reduce((a, e) => a + e.pts, 0);
+    if (out.scoring.length && pts !== out.total[s]) out.warn.push(`The scoring plays add up to ${pts} for ${out.names[i]}, but the line score says ${out.total[s]}. The line score is what counts.`);
+  });
+  out.ok = true;
+  return out;
+}
+function swapBox(p){
+  const sw = o => { const a = o.A; o.A = o.H; o.H = a; };
+  [p.lines, p.total, p.pl, p.team].forEach(sw); p.names.reverse();
+  p.scoring.forEach(e => { e.side = e.side === 'A' ? 'H' : 'A'; });
+}
+
+// The replay's totals for a box-score game (called from replay).
+function boxInto(game, st, S, scoring){
+  const b = game.box;
+  ['A', 'H'].forEach(s => {
+    const q = b.lines[s] || [];
+    st.lines[s] = [0, 1, 2, 3, 4].map(i => +q[i] || 0);
+    st.score[s] = b.total && b.total[s] != null ? +b.total[s] : st.lines[s].reduce((a, v) => a + v, 0);
+    Object.assign(S.team[s], b.team[s] || {});
+    S.pl[s] = {};
+    // Longest gains and sacks aren't in a box score: blank, not zero.
+    Object.entries(b.pl[s] || {}).forEach(([k, p]) => { S.pl[s][k] = Object.assign(zeros(PL_KEYS), {plg:'', rlg:'', relg:'', psk:''}, p, {n:k}); });
+  });
+  Object.assign(st, {final:true, phase:'final', q:Math.max(b.lines.A.length, b.lines.H.length) > 4 ? 5 : 4, drive:null});
+  const run = {A:0, H:0};
+  (b.scoring || []).forEach(e => { run[e.side] += e.pts || 0; scoring.push({q:e.q || 4, clk:null, side:e.side, how:e.how, desc:e.desc, A:run.A, H:run.H, i:-1}); });
+}
+
+/* ---------- the paste-a-box-score window ---------- */
+function boxPreview(p){
+  if (!p.names.length) return '<p class="hint" style="margin:0">Paste the box score above. It needs at least the line score: each team, its quarter scores and the total.</p>';
+  if (!p.ok) return `<p class="hint bx-warn" style="margin:0">${esc(p.error)}</p>`;
+  const players = ['A', 'H'].reduce((a, s) => a + Object.keys(p.pl[s]).filter(k => k !== 'team').length, 0);
+  return `<div class="bx-sum"><b>${esc(p.names[0])} ${p.total.A}, ${esc(p.names[1])} ${p.total.H}</b> · Final
+      <div class="muted">${p.scoring.length} scoring plays · ${players} players with stats</div></div>
+    ${p.warn.map(w => `<p class="hint bx-warn">${esc(w)}</p>`).join('')}`;
+}
+function dlgBox(){
+  const old = ui.boxGame && db.games[ui.boxGame], from = !old && ui.boxFrom ? qsLib()[ui.boxFrom] : null, who = old || from;
+  const src = old && old.box ? old.box.src || '' : '', date = who ? ymd(gameDay(who)) : ymd(new Date());
+  return `${dlgHead(old ? 'Edit box score' : 'Paste a box score')}<div class="dlg-bd">
+    ${who && who.teams ? `<p class="hint" style="margin:0"><b>${esc(who.teams.A.name)} at ${esc(who.teams.H.name)}</b>${from ? ' · from the scoreboard' : ''}</p>` : ''}
+    <div class="fld"><label class="eyebrow" for="bx-txt">Box score · line score, scoring plays, then RUSHING, PASSING, RECEIVING</label>
+      <textarea class="inp bx-txt" id="bx-txt" rows="12" spellcheck="false" placeholder="Andover 7 7 8 10 — 32&#10;Hutchinson 0 7 0 14 — 21&#10;And – Will Quinn 79 run (Pete Vega kick)&#10;…&#10;RUSHING: Andover — Vega 14-94; …&#10;PASSING (cmp-att-yds-td-int): Andover — Quinn 6-8-87-1-0; …&#10;RECEIVING: Andover — Goentzel 2-80, TD; …">${esc(src)}</textarea></div>
+    <div class="bx-prev" id="bx-prev">${boxPreview(parseBox(src))}</div>
+    <div class="fld"><label class="eyebrow" for="bx-date">Game date</label><input class="inp" type="date" id="bx-date" value="${date}"></div></div>
+    <div class="dlg-ft"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" data-box-save>Save box score</button></div>`;
+}
+function saveBox(){
+  const txt = $('#bx-txt').value, p = parseBox(txt);
+  if (!p.ok) return toast(p.error || 'Couldn’t read that box score');
+  const old = ui.boxGame && db.games[ui.boxGame], from = !old && ui.boxFrom ? qsLib()[ui.boxFrom] : null, base = (old || from || {}).teams;
+  // The scoreboard's (or the game's) school names when the pasted ones are the same schools, either way round.
+  let names = {A:p.names[0], H:p.names[1]};
+  if (base){
+    const straight = sameSchool(p.names[0], base.A.name) && sameSchool(p.names[1], base.H.name);
+    const flipped = sameSchool(p.names[0], base.H.name) && sameSchool(p.names[1], base.A.name);
+    if (flipped && !straight) swapBox(p);
+    if (straight || flipped) names = {A:base.A.name, H:base.H.name};
+  }
+  const team = s => {
+    const t = findTeam(names[s]) || {}, was = base && sameSchool(base[s].name, names[s]) ? base[s] : {};
+    return {name:names[s], mascot:t.mascot || was.mascot || '', abbr:t.abbr || was.abbr || shortName(names[s]), color:t.color || was.color || '#4A4B4D',
+      roster:(old && old.teams[s].roster) || t.roster || {}};
+  };
+  const dv = $('#bx-date').value, date = /^\d{4}-\d\d-\d\d$/.test(dv) ? dv : ymd(new Date());
+  const box = {lines:p.lines, total:p.total, scoring:p.scoring.map(({side, how, pts, desc, q}) => ({side, how, pts, desc, q})), pl:p.pl, team:p.team, src:txt};
+  // A new one goes on everyone's scoreboard, where its Box Score opens.
+  const x = old || {id:'g' + Date.now().toString(36), created:Date.now(), set:{qtr:12, men:11, firstKick:'H'}, plays:[], clk:{s:0, run:false, at:0}, share:true};
+  Object.assign(x, {teams:{A:team('A'), H:team('H')}, date, box, updated:Date.now()});
+  db.games[x.id] = x; persist(); syncPush(x, 0);
+  closeDialog();
+  if (g && g.id === x.id) refresh(); else renderScores();
+  toast(`Box score saved: ${x.teams.A.abbr} ${p.total.A}, ${x.teams.H.abbr} ${p.total.H}`);
+}
+// On the scorer's page a box-score game has nothing to record; it can be edited.
+function boxPad(){
+  return `<div class="card-hd"><h2 class="card-title">Box score</h2></div>
+    <p class="hint">This game was entered from a pasted box score, so there are no plays to record. Everyone sees its line score, scoring summary and stats.</p>
+    <div class="line"><button type="button" class="btn small primary" data-box-edit>Edit box score</button></div>`;
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('button'); if (!b || ui.viewer) return;
+  const d = b.dataset;
+  if (d.qsBox){ ui.boxFrom = d.qsBox; ui.boxGame = null; return openDialog('box'); }
+  if ('boxNew' in d){ ui.boxFrom = ui.boxGame = null; return openDialog('box'); }
+  if ('boxEdit' in d){ ui.boxGame = g.id; ui.boxFrom = null; return openDialog('box'); }
+  if ('boxSave' in d) return saveBox();
+});
+document.addEventListener('input', e => { if (e.target.id === 'bx-txt') $('#bx-prev').innerHTML = boxPreview(parseBox(e.target.value)); });
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
