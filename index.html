@@ -2633,7 +2633,7 @@ function renderView(){
   const scoringCard = () => `<section class="card"><div class="card-hd"><h2 class="card-title">Scoring Summary</h2></div>${scoringList()}</section>`;
   const V = g.box
     ? (ui.printing ? () => cardLinescore() + scoringCard() + viewBoxTab() + cardCmp(true)
-      : ({gamecast:() => cardLinescore() + scoringCard(), box:viewBoxTab, pbp:scoringCard, team:() => cardLinescore() + cardCmp(true)})[ui.tab] || (() => ''))
+      : ({gamecast:() => cardLinescore() + scoringCard() + viewBoxTab(), box:viewBoxTab, pbp:scoringCard, team:() => cardLinescore() + cardCmp(true)})[ui.tab] || (() => ''))
     : ui.printing ? () => cardLinescore() + viewBoxTab() + cardCmp(true) + cardTeamTable() + pbpCard()
     : ({gamecast:() => cardDrive() + cardLinescore() + cardPbp(), box:viewBoxTab, pbp:pbpCard,
         team:() => cardLinescore() + cardCmp(true) + cardTeamTable() + cardDrives()})[ui.tab] || (() => '');
@@ -3664,14 +3664,23 @@ function scoreLine(d){
   if (/\bsafety\b/i.test(main)) return {how:'Safety', pts:2};
   // The try is in the last parentheses, or a trailing "Vega kick)" when the "(" went missing.
   const i = d.lastIndexOf('('), pat = i >= 0 ? d.slice(i + 1) : /\bkick\)?\s*$/i.test(d) ? 'kick' : '';
-  const extra = /fail|no good|miss|block|incomplete|no try|stopped|short/i.test(pat) ? 0 : /kick|good/i.test(pat) ? 1 : /\b(run|rush|pass|catch)\b/i.test(pat) ? 2 : 0;
+  // "(Smith run)", "(Jones pass from Smith)" and "(Jones to Goentzel)" are two-point tries.
+  const extra = /fail|no good|miss|block|incomplete|no try|stopped|short/i.test(pat) ? 0 : /kick|good/i.test(pat) ? 1 : /\b(run|rush|pass|catch|to)\b/i.test(pat) ? 2 : 0;
   return {how:'TD', pts:6 + extra};
+}
+
+// Passing numbers with no column heading. AP style is cmp-att-int-yds(-td), "Meeker 4-7-1-93"; others write
+// cmp-att-yds-td-int, "Quinn 6-8-87-1-0". Yardage is nearly always the biggest number, which tells them apart.
+function passOrder(v){
+  const tail = v.slice(2), big = 2 + tail.indexOf(Math.max(...tail));
+  return big === 3 ? ['cmp', 'att', 'int', 'yds', 'td'] : ['cmp', 'att', 'yds', 'td', 'int'];
 }
 
 function parseBox(txt){
   const out = {ok:false, error:'', names:[], lines:{A:[], H:[]}, total:{A:0, H:0}, scoring:[], pl:{A:{}, H:{}}, team:{A:{}, H:{}}, warn:[]};
   const rows = String(txt || '').replace(/\r/g, '').split('\n').map(l => l.replace(/[ \t]+/g, ' ').trim()).filter(Boolean);
-  const SEC = /^(RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|INTERCEPTIONS|TACKLES|DEFENSE|PUNTING|FUMBLES|SACKS)\b([^:]*):\s*(.*)$/i;
+  // "RUSHING: Andover — …", "RUSHING – Winfield: …", "RUSHING—Winfield, …", "PASSING (cmp-att-yds-td-int): …"
+  const SEC = /^(RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|INTERCEPTIONS|TACKLES|DEFENSE|PUNTING|FUMBLES|SACKS)\b\s*(\([^)]*\))?\s*[:—–-]?\s*(.*)$/i;
   const QTR = /^(?:(first|second|third|fourth|1st|2nd|3rd|4th)\s+(?:quarter|qtr)|(ot|overtime))\b/i;
   const QN = {first:1, '1st':1, second:2, '2nd':2, third:3, '3rd':3, fourth:4, '4th':4};
   // Which team a label like "And", "Hutch" or "Andover" means.
@@ -3685,7 +3694,7 @@ function parseBox(txt){
   let sec = null, curQ = 0;
   for (const l of rows){
     const m = l.match(SEC);
-    if (m){ sec = {kind:m[1].toUpperCase(), head:m[2], body:m[3]}; sections.push(sec); continue; }
+    if (m){ sec = {kind:m[1].toUpperCase(), head:m[2] || '', body:m[3]}; sections.push(sec); continue; }
     // A stat section can run onto the next line ("Hutchinson — McCuan 12-56; …").
     if (sec && /\d+\s*-\s*\(?-?\d+/.test(l)){ sec.body += ' ' + l; continue; }
     if (out.names.length < 2){
@@ -3736,17 +3745,21 @@ function parseBox(txt){
   const tds = rest => { const m = rest.match(/(\d+)?\s*TDs?\b/i); return m ? +(m[1] || 1) : 0; };
   // A section's body, split at each team's name: "Andover — …. Hutchinson — …".
   const splitTeams = body => {
-    const alts = [...new Set([...out.names, ...out.scoring.map(e => e.label)])].filter(Boolean).sort((a, b) => b.length - a.length);
+    // One-letter labels ("W", "C") mark scoring plays but are too short to split a stat line on.
+    const alts = [...new Set([...out.names, ...out.scoring.map(e => e.label)])].filter(a => a && a.length > 1).sort((a, b) => b.length - a.length);
     const re = new RegExp(`(?:^|[.;]\\s*)(${alts.map(escRe).join('|')})\\s*(?:[—–:,]|\\s-)\\s*`, 'gi'), hits = [...body.matchAll(re)];
     return hits.map((h, i) => [sideOf(h[1]), body.slice(h.index + h[0].length, i + 1 < hits.length ? hits[i + 1].index : undefined)]).filter(x => x[0]);
   };
   for (const sc of sections){
     const kind = /^RUSH/.test(sc.kind) ? 'rush' : /^PASS/.test(sc.kind) ? 'pass' : /^REC/.test(sc.kind) ? 'rec' : '';
     if (!kind){ out.warn.push(`${sc.kind[0]}${sc.kind.slice(1).toLowerCase()} lines aren’t read yet, so they’re left out.`); continue; }
-    // Passing columns follow the heading's "(cmp-att-yds-td-int)" when it has one.
-    const order = kind === 'pass' ? ((sc.head.match(/\(([a-z-]+)\)/i) || [])[1] || 'cmp-att-yds-td-int').toLowerCase().split('-') : null;
+    // Passing columns follow the heading's "(cmp-att-yds-td-int)" when it has one; otherwise see passOrder.
+    const order = kind === 'pass' ? ((sc.head.match(/\(([a-z-]+)\)/i) || [])[1] || '').toLowerCase().split('-').filter(Boolean) : null;
     for (const [s, part] of splitTeams(sc.body)){
-      part.split(/;\s*|\.\s+(?=totals?\b)/i).map(x => x.trim().replace(/\.$/, '')).filter(Boolean).forEach(item => {
+      // Players are split by semicolons, or by commas when the next thing is another player ("Chattam 16-133, Bergeson
+      // 10-124"); a comma before "TD" or "3 TD" stays with its player.
+      part.split(/;\s*|\.\s+(?=totals?\b)/i).flatMap(x => x.split(/,\s*(?=[A-Za-z][A-Za-z.'’ -]*\s\(?-?\d+\)?\s*-\s*\(?-?\d)/))
+        .map(x => x.trim().replace(/\.$/, '')).filter(Boolean).forEach(item => {
         const tot = item.match(/^totals?:?\s*(.*)$/i);
         if (tot){ const v = nums(tot[1]); if (kind === 'rush' && v.length >= 2) Object.assign(out.team[s], {rushN:v[0], rushY:v[1]}); return; }
         const m = item.match(/^(.+?)\s+(\(?-?\d+\)?(?:\s*-\s*\(?-?\d+\)?)+)(.*)$/);
@@ -3755,7 +3768,7 @@ function parseBox(txt){
         if (kind === 'rush'){ add(p, 'ru', v[0] || 0); add(p, 'ry', v[1] || 0); add(p, 'rtd', td); }
         if (kind === 'rec'){ add(p, 're', v[0] || 0); add(p, 'rey', v[1] || 0); add(p, 'retd', td); }
         if (kind === 'pass'){
-          const f = {}; order.forEach((k, i) => { f[k] = v[i] || 0; });
+          const f = {}; (order.length ? order : passOrder(v)).forEach((k, i) => { f[k] = v[i] || 0; });
           add(p, 'pc', f.cmp || f.c || 0); add(p, 'pa', f.att || f.a || 0); add(p, 'py', f.yds || f.y || 0); add(p, 'ptd', f.td || 0); add(p, 'pint', f.int || f.i || 0);
         }
       });
@@ -3793,12 +3806,19 @@ function parseBox(txt){
 }
 // The scoreboard entry a pasted box score belongs to when it wasn't opened from one: a scheduled game or quick
 // score between the same two schools, in the week of the game date (or the only such game there is).
+const samePair = (p, x) => !!x.teams && ((sameSchool(p.names[0], x.teams.A.name) && sameSchool(p.names[1], x.teams.H.name))
+  || (sameSchool(p.names[0], x.teams.H.name) && sameSchool(p.names[1], x.teams.A.name)));
+const weekOfDate = date => /^\d{4}-\d\d-\d\d$/.test(date || '') ? weekKey(fromYmd(date).getTime()) : null;
 function boxMatch(p, date){
   if (!p.ok) return null;
-  const same = x => x.teams && ((sameSchool(p.names[0], x.teams.A.name) && sameSchool(p.names[1], x.teams.H.name))
-    || (sameSchool(p.names[0], x.teams.H.name) && sameSchool(p.names[1], x.teams.A.name)));
-  const all = Object.values(qsLib()).filter(x => !x.deleted && same(x)), wk = /^\d{4}-\d\d-\d\d$/.test(date || '') ? weekKey(fromYmd(date).getTime()) : null;
+  const all = Object.values(qsLib()).filter(x => !x.deleted && samePair(p, x)), wk = weekOfDate(date);
   return all.find(x => gameWeek(x) === wk) || (all.length === 1 ? all[0] : null);
+}
+// A box score this device already has for the same two schools that week: pasting again updates it.
+function boxPrior(p, date){
+  if (!p.ok) return null;
+  const wk = weekOfDate(date);
+  return Object.values(db.games).find(y => y.box && samePair(p, y) && gameWeek(y) === wk) || null;
 }
 function swapBox(p){
   const sw = o => { const a = o.A; o.A = o.H; o.H = a; };
@@ -3828,9 +3848,12 @@ function boxPreview(p){
   if (!p.names.length) return '<p class="hint" style="margin:0">Paste the box score above. It needs at least the line score: each team, its quarter scores and the total.</p>';
   if (!p.ok) return `<p class="hint bx-warn" style="margin:0">${esc(p.error)}</p>`;
   const players = ['A', 'H'].reduce((a, s) => a + Object.keys(p.pl[s]).filter(k => k !== 'team').length, 0);
-  // Pasted from anywhere but a card: say which scoreboard game it goes with.
-  const m = ui.boxGame || ui.boxFrom ? null : boxMatch(p, ($('#bx-date') || {}).value);
-  const goes = ui.boxGame || ui.boxFrom ? '' : `<div class="muted">${m ? `Replaces ${esc(m.teams.A.name)} at ${esc(m.teams.H.name)} on the scoreboard, ${esc(weekLabel(gameWeek(m)))}.` : 'Goes on the scoreboard as a new game.'}</div>`;
+  // Say where it goes: over an earlier box score for the same game, over its scoreboard card, or in as a new game.
+  const dateNow = ($('#bx-date') || {}).value, from = ui.boxGame ? null : ui.boxFrom ? qsLib()[ui.boxFrom] : boxMatch(p, dateNow);
+  const prior = ui.boxGame ? null : boxPrior(p, (from && from.date) || dateNow);
+  const where = w => `${esc(w.teams.A.name)} at ${esc(w.teams.H.name)}, ${esc(weekLabel(gameWeek(w)))}`;
+  const goes = ui.boxGame || (ui.boxFrom && !prior) ? '' : `<div class="muted">${prior ? `Updates your earlier box score for ${where(prior)}.`
+    : from ? `Replaces ${where(from)} on the scoreboard.` : 'Goes on the scoreboard as a new game.'}</div>`;
   return `<div class="bx-sum"><b>${esc(p.names[0])} ${p.total.A}, ${esc(p.names[1])} ${p.total.H}</b> · Final
       <div class="muted">${p.scoring.length} scoring plays · ${players} players with stats</div>${goes}</div>
     ${p.warn.map(w => `<p class="hint bx-warn">${esc(w)}</p>`).join('')}`;
@@ -3849,9 +3872,12 @@ function dlgBox(){
 function saveBox(){
   const txt = $('#bx-txt').value, p = parseBox(txt);
   if (!p.ok) return toast(p.error || 'Couldn’t read that box score');
-  const old = ui.boxGame && db.games[ui.boxGame], dv = $('#bx-date').value;
+  const dv = $('#bx-date').value;
   // Opened from a card, that card; otherwise the scheduled game or quick score it matches, if there is one.
-  const from = old ? null : ui.boxFrom ? qsLib()[ui.boxFrom] : boxMatch(p, dv), base = (old || from || {}).teams;
+  const from = ui.boxGame ? null : ui.boxFrom ? qsLib()[ui.boxFrom] : boxMatch(p, dv);
+  // Pasting again for the same game updates the earlier box score rather than adding a second game.
+  const old = ui.boxGame ? db.games[ui.boxGame] : boxPrior(p, (from && from.date) || dv), replaced = !!old && !ui.boxGame;
+  const base = (old || from || {}).teams;
   // The scoreboard's (or the game's) school names when the pasted ones are the same schools, either way round.
   let names = {A:p.names[0], H:p.names[1]};
   if (base){
@@ -3865,8 +3891,9 @@ function saveBox(){
     return {name:names[s], mascot:t.mascot || was.mascot || '', abbr:t.abbr || was.abbr || shortName(names[s]), color:t.color || was.color || '#4A4B4D',
       roster:(old && old.teams[s].roster) || t.roster || {}};
   };
-  // A match found on its own keeps that game's date.
-  const date = !old && !ui.boxFrom && from && from.date ? from.date : /^\d{4}-\d\d-\d\d$/.test(dv) ? dv : ymd(new Date());
+  // Opened from a game or a card, the date in the window; found on its own, that game's date.
+  const typed = /^\d{4}-\d\d-\d\d$/.test(dv) ? dv : ymd(new Date());
+  const date = ui.boxGame || ui.boxFrom ? typed : (from && from.date) || (old && old.date) || typed;
   const box = {lines:p.lines, total:p.total, scoring:p.scoring.map(({side, how, pts, desc, q}) => ({side, how, pts, desc, q})), pl:p.pl, team:p.team, src:txt};
   // A new one goes on everyone's scoreboard, where its Box Score opens.
   const x = old || {id:'g' + Date.now().toString(36), created:Date.now(), set:{qtr:12, men:11, firstKick:'H'}, plays:[], clk:{s:0, run:false, at:0}, share:true};
@@ -3875,8 +3902,11 @@ function saveBox(){
   closeDialog();
   // Show the week it went into, in case that isn't the week on screen.
   const wk = gameWeek(x); if (wk !== shownWeek()) ui.week = wk;
-  if (g && g.id === x.id) refresh(); else renderScores();
-  toast(`Box score saved to ${weekLabel(wk)}: ${x.teams.A.abbr} ${p.total.A}, ${x.teams.H.abbr} ${p.total.H}`);
+  // And open the game on its Box Score, so the stats are right there, unless a game is being scored right now.
+  const busy = g && g.id !== x.id && !g.sample && !g.box && g.plays.length && R && !R.st.final;
+  if (!busy){ g = x; resetUi(); ui.tab = 'box'; setCurrent(); refresh(); scrollTo({top:0, behavior:'smooth'}); }
+  else renderScores();
+  toast(`Box score ${replaced ? 'updated' : 'saved'} in ${weekLabel(wk)}: ${x.teams.A.abbr} ${p.total.A}, ${x.teams.H.abbr} ${p.total.H}${busy ? '. Tap its card to see it.' : ''}`);
 }
 // On the scorer's page a box-score game has nothing to record; it can be edited.
 function boxPad(){
