@@ -873,6 +873,14 @@ function replay(g, upto = g.plays.length){
       const nx = g.plays[i + 1];
       if (nx && nx.t === 'set' && nx.poss === other(st.poss)) p = {...p, d:Math.max(0, FL - nx.spot - st.spot + (+p.ry || 0))};
     }
+    // "punt to I25" then "I ball at I35": the difference is the return.
+    else if (p.t === 'punt' && p.d != null && (p.res === 'spot' || (p.res === 'ret' && p.ry == null)) && st.phase === 'play'){
+      const nx = g.plays[i + 1];
+      if (nx && nx.t === 'set' && nx.poss === other(st.poss)){
+        const ry = nx.spot - (FL - (st.spot + p.d));
+        if (ry > 0) p = {...p, res:'ret', ry};
+      }
+    }
     if (p.t === 'ko' && p.d == null && !['tb', 'oob', 'onside'].includes(p.res) && st.phase === 'kick'){
       const nx = g.plays[i + 1];
       if (nx && nx.t === 'set' && nx.poss === other(st.poss)) p = {...p, d:Math.max(0, FL - st.kickFrom - nx.spot + (+p.ry || 0))};
@@ -1304,7 +1312,7 @@ function parseQuick(raw, st){
   if (has('undo')) return {undo:true};
 
   /* ---- whose ball, where: "N ball at N35 1-10" ---- */
-  if (has('ball')){
+  if (has('ball') && !has('punt')){
     const bi = toks.indexOf('ball');
     const side = T(toks[bi - 1]) || T(toks[bi + 1]);
     if (!side) return bad(`Start with the team letter, like ${L('A')} ball at ${L('A')}35.`);
@@ -1367,7 +1375,8 @@ function parseQuick(raw, st){
       : pt.some(t => ['dec', 'declined'].includes(t)) ? 'dec' : 'end';
   }
   const flag = p => { if (pen) p.pen = pen; return ok(p); };
-  if (toks.some(isNum)) toks = toks.filter(t => !FILLER.includes(t));
+  // Drop filler words, but never a team letter: for Augusta, "a" is the team, not the article.
+  if (toks.some(isNum)) toks = toks.filter(t => !FILLER.includes(t) || T(t));
 
   /* ---- kickoffs ---- */
   const kickWord = toks.findIndex(t => ['ko', 'kickoff', 'kicks', 'kicked', 'onside'].includes(t) || (t === 'kick' && st.phase === 'kick'));
@@ -1412,27 +1421,61 @@ function parseQuick(raw, st){
   }
 
   /* ---- punts and field goals ---- */
-  const nameSide = toks.map(T).find(Boolean);
   if (has('punt')){
-    if (nameSide && nameSide !== O) return bad(`The log has ${L(O)} with the ball. Set it first: ${L(nameSide)} ball at …`);
-    const i = toks.indexOf('punt'), before = toks.slice(0, i).filter(isNum), after = toks.slice(i + 1).filter(isNum);
+    const i = toks.indexOf('punt'), before = toks.slice(0, i);
+    const kickSide = before.map(T).find(Boolean);
+    if (kickSide && kickSide !== O) return bad(`The log has ${L(O)} with the ball. Set it first: ${L(kickSide)} ball at …`);
     const p = {t:'punt'};
-    if (before[0] != null) p.k = before[0];
+    const kicker = before.filter(isNum)[0];
+    if (kicker != null) p.k = kicker;
+    const toR = s => s.side === D ? s.n : FL - s.n;              // a yard line as the receiving team sees it
+    let rest = toks.slice(i + 1);
+    // "… I ball at I35": where the receiving team's drive starts.
+    let start = null;
+    const bi = rest.indexOf('ball');
+    if (bi >= 0){
+      const tail = rest.slice(bi + 1);
+      start = tail.map(spotOf).find(Boolean) || (tail.includes(String(HALF)) ? {side:D, n:HALF} : null);
+      if (!start) return bad(`Say where the drive starts, like ${L(D)} ball at ${L(D)}35.`);
+      rest = rest.slice(0, bi).filter(t => !T(t));
+    }
     if (has('blk', 'blocked')){
+      const after = rest.filter(isNum);
       p.res = 'blk'; if (after[0] != null) p.by = after[0]; if (after[1] != null) p.ret = after[1];
       if (has('td')) p.ry = st.spot;          // picked up at the line and returned the whole way
       return flag(p);
     }
     if (has('tb')){ p.res = 'tb'; return flag(p); }
-    const sp = toks.slice(i + 1).map(spotOf).find(Boolean);   // "punt to S10"
-    if (sp) p.d = Math.max(0, (sp.side === D ? FL - sp.n : sp.n) - st.spot);
+    // "I2 return 10", "return-10", "return to I40": who returned it and how far.
+    // A team-lettered number right before "return" is the returner, not a yard line.
+    let retNo = null, retYds = null, retEnd = null;
+    const ri = rest.findIndex(t => ['return', 'returned', 'returns', 'ret', 'rt'].includes(t));
+    if (ri >= 0){
+      const prev = rest[ri - 1], ps = prev != null ? spotOf(prev) : null, ahead = rest.slice(ri + 1);
+      const n = ahead.find(isNum), s = ahead.map(spotOf).find(Boolean);
+      if (s) retEnd = s; else if (n != null) retYds = Math.abs(+n);
+      const kickNamed = rest.slice(0, Math.max(0, ri - 1)).some(t => isNum(t) || spotOf(t));
+      if (ps && ps.side === D) retNo = String(ps.n);
+      else if (prev != null && isNum(prev) && kickNamed) retNo = prev;
+      rest = rest.slice(0, retNo != null ? ri - 1 : ri);
+    }
+    const after = rest.filter(isNum), sp = rest.map(spotOf).find(Boolean);   // "punt to I25" or a distance
+    if (sp) p.d = Math.max(0, (FL - toR(sp)) - st.spot);
     else if (after[0] != null) p.d = Math.abs(+after[0]);
-    const nx = sp ? after : after.slice(1);
-    if (has('fc')){ p.res = 'fc'; if (nx[0] != null) p.ret = nx[0]; }
+    else if (start && retYds == null && !retEnd) p.d = Math.max(0, (FL - toR(start)) - st.spot);   // no return
+    const nx = sp ? after : after.slice(1);                  // the older "19-punt-40-11-6" form
+    const landR = p.d != null ? FL - (st.spot + p.d) : null;  // where the receiving team fielded it
+    if (has('fc')){ p.res = 'fc'; const r = retNo ?? nx[0]; if (r != null) p.ret = r; }
     else if (has('oob')) p.res = 'oob';
     else if (has('down', 'downed')) p.res = 'down';
-    else if (nx[0] != null){ p.res = 'ret'; p.ret = nx[0]; p.ry = Math.abs(+(nx[1] || 0));
-      if (has('td')) p.ry = st.spot + p.d; }
+    else {
+      if (retEnd && landR != null) retYds = toR(retEnd) - landR;
+      if (start && landR != null && retYds == null){ const r = toR(start) - landR; if (r > 0) retYds = r; }
+      if (retNo == null && nx[0] != null){ retNo = nx[0]; if (retYds == null && nx[1] != null) retYds = Math.abs(+nx[1]); }
+      if (retNo != null || retYds != null || ri >= 0){ p.res = 'ret'; if (retNo != null) p.ret = retNo; if (retYds != null) p.ry = retYds; }
+      else p.res = 'spot';
+      if (has('td') && p.d != null){ p.res = 'ret'; p.ry = st.spot + p.d; }
+    }
     return flag(p);
   }
   if (has('fg')){
@@ -1514,8 +1557,9 @@ function cheatHtml(a, h){
     [`7-int-24-${h}10-12 &nbsp;·&nbsp; 7-int-24-td &nbsp;·&nbsp; 7-int-24-ez`, 'Returned 12 yards / returned for a touchdown / picked off in the end zone (a touchback if not returned)'],
     [`3-3-fumble ${h} rec`, `#3 runs for 3, fumbles, ${h} recovers (add a number for who: fum ${h} 44)`],
     [`10-0 fum ${h} rec td`, `Fumble, ${h} recovers and returns it for a touchdown (fum ${h} 44 12 = #44 returns it 12)`],
-    [`${a} punt`, `Punt. Then type where it ended up (${h} ball at ${h}10) and the distance fills in.`],
-    ['19-punt-40-11-6', '#19 punts 40, #11 returns it 6 (also: punt-tb, punt-fc, punt-oob, punt-blk)'],
+    [`${a} punt ${h} ball at ${h}25`, `Punt with no return: ${h}'s drive starts at its 25. Or just ${a} punt, then ${h} ball at ${h}25 on the next line.`],
+    [`${a} punt to ${h}25-${h}2 return-10`, `Fielded at the ${h} 25, #2 returns it 10. Leave off the yards and type the drive start next (${h} ball at ${h}35); the return fills in.`],
+    ['19-punt-40-11-6', '#19 punts 40, #11 returns it 6. Also punt-tb, punt-fc, punt-oob, punt-blk.'],
     ['15-fg &nbsp;·&nbsp; 15-fg-no', 'Field goal good / no good (distance fills in)'],
     ['15-xp &nbsp;·&nbsp; 15-xp-no', 'Kick after a touchdown. For 2 points: 3 (run) or 7-88 (pass), add -no if it failed'],
     [`ko-${a}25 &nbsp;·&nbsp; ko-${a}25-3:25`, `Kickoff; the drive starts at the ${a} 25 (with 3:25 left). No need to say who kicked. After a touchdown, enter the extra point first.`],
@@ -1565,9 +1609,9 @@ function quickPreview(){
   if (r.undo){ el.textContent = g.plays.length ? 'Removes the last play.' : 'Nothing to undo yet.'; return; }
   const last = rr.log[rr.log.length - 1];
   let tip = '';
-  if (r.play.t === 'punt' && r.play.d == null && !['tb', 'blk'].includes(r.play.res)){
+  if (r.play.t === 'punt' && !/\bball\b/i.test(ui.qtext) && ['spot', 'ret'].includes(r.play.res) && (r.play.d == null || r.play.ry == null)){
     const R = quickTeams().key[other(ui.ctx.st.poss)].toUpperCase();
-    tip = `<div class="hint">Next, type where it ended up — ${R} ball at ${R}__ — and the punt distance fills in.</div>`;
+    tip = `<div class="hint">Next, type where the drive starts — ${R} ball at ${R}__ — and the ${r.play.d == null ? 'punt distance' : 'return'} fills in.</div>`;
   }
   if (r.play.t === 'ko' && r.play.d == null && r.play.res === 'spot'){
     const R = quickTeams().key[other(ui.ctx.st.poss)].toUpperCase();
@@ -1626,10 +1670,12 @@ function viewLog(){
   let h = '', lastQ = null;
   for (let k = R.log.length - 1; k >= 0; k--){
     const e = R.log[k], open = ui.open === e.i;
+    // Viewers get outcomes only: no typed shorthand, no bookkeeping tags.
+    const tags = ui.viewer ? e.tags.filter(([, t]) => t !== 'Spot') : e.tags;
     if (e.q !== lastQ){ h += `<div class="qhd">${qName(e.q)}</div>`; lastQ = e.q; }
     h += `<button type="button" class="pl ${open ? 'open' : ''}" data-row="${e.i}">
       <div><div class="pl-clk">${e.clk != null ? mmss(e.clk) : '—'}</div><span class="pl-no">Play ${e.i + 1}</span></div>
-      <div><div class="pl-sit">${esc(e.sit)}${e.src ? ` <code class="qsrc">${esc(e.src)}</code>` : ''}</div><div class="pl-txt">${e.wiped ? `<s>${esc(e.wiped)}</s> ` : ''}${esc(e.text)}${e.tags.length ? `<span class="tags">${tagHtml(e.tags)}</span>` : ''}</div></div></button>`;
+      <div><div class="pl-sit">${esc(e.sit)}${e.src && !ui.viewer ? ` <code class="qsrc">${esc(e.src)}</code>` : ''}</div><div class="pl-txt">${e.wiped ? `<s>${esc(e.wiped)}</s> ` : ''}${esc(e.text)}${tags.length ? `<span class="tags">${tagHtml(tags)}</span>` : ''}</div></div></button>`;
     if (open){
       const editable = !['endq', 'final', 'to'].includes(e.t);
       h += `<div class="pl-act">${editable ? `<button class="btn small" data-edit="${e.i}">Edit</button>` : ''}
