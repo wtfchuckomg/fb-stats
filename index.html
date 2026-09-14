@@ -59,7 +59,7 @@ button{cursor:pointer}
 .abtn{background:#FFFFFF;border:1px solid var(--line);color:var(--ink-2);border-radius:16px;padding:6px 12px;font:500 12.5px/1 var(--sans)}
 .abtn:hover{background:#F1F2F3}
 a.abtn{display:inline-block;text-decoration:none}
-/* a game's own page: Copy link, and Edit on the scorer's device */
+/* a game's own page: Edit, for its scorer signed in on their device */
 .vbtns{display:flex;gap:6px;align-items:center}
 .abtn.live,.syncbtn{display:inline-flex;align-items:center;gap:7px}
 .syncbtn i,.abtn.live i,.livebadge i{width:8px;height:8px;border-radius:50%;flex:none;background:var(--top-muted)}
@@ -3288,19 +3288,18 @@ async function startViewer(id){
   }, gone);
   setInterval(renderLive, 5000);
 }
-// On a game's own page: copy (or, on a phone, share) its link; and Edit, on the device where the game is kept.
+// On a game's own page: Edit, only for its scorer, signed in on the device where the game is kept. Everyone else
+// just watches (the address bar has the link).
 function viewerTools(id){
   const el = $('#vbtns'); if (!el) return;
-  let mine = false; try { const d = JSON.parse(localStorage.getItem(STORE) || 'null'); mine = !!(d && d.games && d.games[id]); } catch (e) {}
-  el.hidden = false;
-  el.innerHTML = `<button type="button" class="abtn" data-copylink="${esc(id)}">Copy link</button>${mine ? `<a class="abtn" href="${esc(location.pathname)}?edit=${encodeURIComponent(id)}">Edit</a>` : ''}`;
+  let mine = false;
+  try {
+    const d = JSON.parse(localStorage.getItem(STORE) || 'null');
+    mine = localStorage.getItem('pressbox.scorer') === '1' && !!(d && d.games && d.games[id]);
+  } catch (e) {}
+  el.hidden = !mine;
+  el.innerHTML = mine ? `<a class="abtn" href="${esc(location.pathname)}?edit=${encodeURIComponent(id)}">Edit</a>` : '';
 }
-document.addEventListener('click', e => {
-  const b = e.target.closest && e.target.closest('[data-copylink]'); if (!b) return;
-  const url = `${location.origin}${location.pathname}?game=${encodeURIComponent(b.dataset.copylink)}`;
-  if (navigator.share && matchMedia('(hover: none)').matches) return navigator.share({title:document.title, url}).catch(() => {});
-  (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => toast('Link copied'), () => prompt('Copy this link:', url));
-});
 function viewerMessage(msg){
   g = null;
   $('#sb').innerHTML = ''; $('#rail').innerHTML = ''; $('#tabs').hidden = true;
@@ -4949,20 +4948,18 @@ const HOME_PAGE = PAGE_Q.has('home') || (!TRACKER_PAGE && !['scores', 'state', '
 // On a scorer's device (signed in on the Game Tracker), the menu bar's scorer buttons show on every page too. Away
 // from the tracker they open it, with that window up: ?tracker&open=games, setup, export or share.
 function scorerBar(){
-  let signedIn = false, hasGames = false, live = false;
+  let signedIn = false, live = false;
   try {
-    // A scorer's device: signed in on the Game Tracker (it notes that at sign-in, and the admin's devices were noted
-    // before that), or with games of its own kept here, which a fan's never has.
-    signedIn = localStorage.getItem('pressbox.scorer') === '1' || localStorage.getItem('pressbox.admin') === '1';
+    // A scorer's device: signed in on the Game Tracker (it notes that at sign-in and clears it at sign-out). Signed
+    // out, the bar is just the site's pages, even with games kept here; the Game Tracker link still gets to them.
+    signedIn = localStorage.getItem('pressbox.scorer') === '1';
     const d = JSON.parse(localStorage.getItem(STORE) || 'null'), cur = d && d.games && d.games[d.cur];
-    hasGames = !!(d && d.games && Object.values(d.games).some(x => x && !x.sample));
     live = !!(cur && cur.share && !cur.sample);
   } catch (e) {}
-  if (!signedIn && !hasGames) return;
+  if (!signedIn) return;
   document.body.classList.add('scorer');
   const go = k => `?tracker&amp;open=${k}`;
-  $('#sync').innerHTML = signedIn ? `<a class="abtn syncbtn ok" href="${go('games')}" title="Your games are kept in your account"><i></i>Synced</a>`
-    : `<a class="abtn syncbtn" href="${go('games')}" title="Keep your games on every device"><i></i>Sign in to sync</a>`;
+  $('#sync').innerHTML = `<a class="abtn syncbtn ok" href="${go('games')}" title="Your games are kept in your account"><i></i>Synced</a>`;
   document.querySelector('.navtools .abtns').innerHTML = `<a class="abtn${live ? ' live' : ''}" href="${go('share')}">${live ? '<i></i>Live' : 'Share'}</a>`
     + `<a class="abtn" href="${go('games')}">Games</a><a class="abtn" href="${go('setup')}">Setup</a><a class="abtn" href="${go('export')}">Export</a>`;
 }
