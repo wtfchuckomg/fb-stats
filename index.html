@@ -88,7 +88,7 @@ a.abtn{display:inline-block;text-decoration:none}
 .navbar .abtn.live{box-shadow:inset 0 0 0 1.5px #FF4436}
 .navbar .livebadge{color:#FFFFFF;margin-right:8px}
 /* the scoreboard and BUCO Stats pages have no scorer's buttons */
-body.board .navtools{display:none}
+body.bpage .navtools{display:none}
 /* phones: the pages on one row, the buttons spread across the row below */
 @media (max-width:640px){
   .navlinks{flex-basis:100%;min-height:48px;gap:24px}
@@ -151,7 +151,7 @@ textarea.inp.bx-txt{min-height:220px;font:13px/1.45 ui-monospace,Menlo,Consolas,
 @media (max-width:640px){.sc-full{width:66px;padding:0 6px;font-size:11.5px}.sc-add{width:52px}}
 
 /* ---------- the full scoreboard page (?scores), like ESPN's ---------- */
-body.board .sample,body.board .scores,body.board .strip,body.board .gtabs,body.board main.gc,body.board .livebadge{display:none!important}
+body.bpage .sample,body.bpage .scores,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.bpage .livebadge{display:none!important}
 /* width:100% keeps the page to the screen; only the week tabs scroll sideways */
 .board{box-sizing:border-box;width:100%;max-width:1280px;margin:0 auto;padding:16px 16px 40px;display:flex;flex-direction:column;gap:14px}
 .bcard{box-sizing:border-box;min-width:0;max-width:100%;background:var(--card);border-radius:14px;box-shadow:0 1px 2px rgba(18,18,19,.06);padding:20px 26px}
@@ -3566,7 +3566,7 @@ function weekRange(k){
 }
 
 async function startScoreboard(){
-  ui.viewer = true; ui.board = true; document.body.classList.add('viewer', 'board');
+  ui.viewer = true; ui.board = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
   document.title = 'Scoreboard · Kansas Media Stats';
   const want = new URLSearchParams(location.search).get('scores') || '';
@@ -4136,7 +4136,7 @@ const C_VIEWS = ['passing', 'rushing', 'receiving', 'scoring', 'kicking', 'team'
 const county = {games:null, err:'', team:'all', season:new Date().getFullYear(), view:'passing', sort:{}};
 
 async function startCounty(){
-  ui.viewer = true; ui.county = true; document.body.classList.add('viewer', 'board');
+  ui.viewer = true; ui.county = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
   document.title = 'BUCO Stats · Kansas Media Stats';
   const want = new URLSearchParams(location.search).get('stats');
