@@ -1815,7 +1815,7 @@ const framed = (() => { try { return window.self !== window.top; } catch (e) { r
 const dlgHead = t => `<div class="dlg-hd"><h2>${t}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>`;
 function openDialog(kind){
   ui.dlg = kind; ui.confirm = null;
-  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : dlgSetup(kind === 'new');
+  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : dlgSetup(kind === 'new');
   if (!dlg().open) dlg().showModal();
 }
 function closeDialog(){ if (dlg().open) dlg().close(); ui.dlg = null; }
@@ -1830,11 +1830,11 @@ function dlgSetup(isNew){
   const ru = rulesOf(src);
   const rosterTxt = s => Object.entries(src.teams[s].roster || {}).sort((a, b) => a[0] - b[0]).map(([n, v]) => `${n} ${v}`).join('\n');
   const teamRow = (s, label) => `<div class="grp"><h3>${label}</h3><div class="teamset">
-      <div class="fld"><label class="eyebrow" for="s-${s}-name">School</label><input class="inp" id="s-${s}-name" value="${esc(src.teams[s].name)}" placeholder="${s === 'A' ? 'Visiting school' : 'Home school'}"></div>
+      <div class="fld"><label class="eyebrow" for="s-${s}-name">School</label><input class="inp" id="s-${s}-name" list="teamlib" autocomplete="off" value="${esc(src.teams[s].name)}" placeholder="${s === 'A' ? 'Visiting school' : 'Home school'}"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-abbr">Short</label><input class="inp" id="s-${s}-abbr" maxlength="5" value="${esc(src.teams[s].abbr)}" placeholder="${s === 'A' ? 'VIS' : 'HOME'}"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-color">Color</label><input type="color" id="s-${s}-color" value="${esc(src.teams[s].color)}"></div></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-roster">Roster, optional · one player per line, number then name</label>
-      <textarea class="inp" id="s-${s}-roster" rows="4" placeholder="7 Cole Brandt&#10;22 Mason Ortiz">${esc(rosterTxt(s))}</textarea></div></div>`;
+      <textarea class="inp" id="s-${s}-roster" rows="4" placeholder="7 Cole Brandt&#10;22 Mason Ortiz">${esc(rosterTxt(s))}</textarea><div class="hint" id="s-${s}-lib"></div></div></div>`;
   return `${dlgHead(isNew ? 'New game' : 'Game setup')}<div class="dlg-bd">${teamRow('A', 'Visitors')}${teamRow('H', 'Home')}
     <div class="grp"><h3>Rules</h3>
       <div class="fld"><span class="eyebrow">Game</span><div class="seg" id="s-men">${[[11, '11-man · 100 yards'], [8, '8-man · 80 yards']].map(([m, l]) => `<button type="button" data-men="${m}" aria-pressed="${ru.men === m}">${l}</button>`).join('')}</div></div>
@@ -1842,6 +1842,7 @@ function dlgSetup(isNew){
       <div class="fld"><span class="eyebrow">Opening kickoff by</span><div class="seg" id="s-kick">${['A', 'H'].map(s => `<button type="button" data-kick="${s}" aria-pressed="${src.set.firstKick === s}">${s === 'A' ? 'Visitors' : 'Home'}</button>`).join('')}</div></div>
       <div class="fld"><label class="eyebrow" for="s-qtr">Quarter, minutes</label><input class="inp" id="s-qtr" inputmode="numeric" value="${src.set.qtr}"></div></div>
       <p class="hint" id="s-rulehint">${ruleHint(ru.men)}</p></div></div>
+    <datalist id="teamlib">${savedTeams().map(t => `<option value="${esc(t.name)}"></option>`).join('')}</datalist>
     <div class="dlg-ft"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" data-save-setup="${isNew ? 1 : 0}">${isNew ? 'Start game' : 'Save'}</button></div>`;
 }
 function saveSetup(isNew){
@@ -1856,6 +1857,8 @@ function saveSetup(isNew){
   const menBtn = $('#s-men [aria-pressed="true"]'), men = menBtn ? +menBtn.dataset.men : 11;
   const set = {qtr:clamp(parseInt(v('s-qtr')) || 12, 1, 20), men, firstKick:kick ? kick.dataset.kick : 'H'};
   const teams = {A:team('A', 'Visitors'), H:team('H', 'Home')};
+  const keptA = rememberTeam(teams.A), keptH = rememberTeam(teams.H);
+  if (keptA || keptH) syncTeams();
   if (isNew){ g = {id:'g' + Date.now().toString(36), created:Date.now(), teams, set, plays:[], clk:{s:set.qtr * 60, run:false, at:0}}; resetUi(); }
   else { if (!g.plays.length && set.qtr !== g.set.qtr) g.clk = {s:set.qtr * 60, run:false, at:0}; Object.assign(g, {teams, set}); }
   save(); closeDialog(); refresh(); toast(isNew ? 'Game started' : 'Setup saved');
@@ -1867,7 +1870,7 @@ function dlgGames(){
     return `<div class="gitem"><div><b>${esc(x.teams.A.abbr)} ${r.st.score.A} at ${esc(x.teams.H.abbr)} ${r.st.score.H}</b>${x.id === g.id ? '<span class="cur-tag">Open</span>' : ''}${x.sample ? '<span class="cur-tag" style="color:var(--flag-ink)">Sample</span>' : ''}
       <div class="meta">${esc(x.teams.A.name)} at ${esc(x.teams.H.name)} · ${rulesOf(x).men === 8 ? '8-man · ' : ''}${new Date(x.created).toLocaleDateString()} · ${r.st.final ? 'Final' : perLabel(r.st.q)} · ${x.plays.length} plays</div></div>
       <div class="acts">${x.id !== g.id ? `<button class="btn small" data-open-game="${x.id}">Open</button>` : ''}<button class="btn small danger" data-del-game="${x.id}">${ui.confirm === 'g:' + x.id ? 'Tap again' : 'Delete'}</button></div></div>`; }).join('');
-  return `${dlgHead('Games')}<div class="dlg-bd">${syncBlock()}<div class="glist">${items}</div>
+  return `${dlgHead('Games')}<div class="dlg-bd">${syncBlock()}<div class="grp"><h3>Games</h3><div class="glist">${items}</div></div>${teamsBlock()}
     <p class="hint">Every game is saved in this browser${sync.user ? ' and to your Google account' : ''}. Export makes a backup you can keep anywhere.</p></div>
     <div class="dlg-ft"><button class="btn primary" data-open="new">New game</button></div>`;
 }
@@ -2531,6 +2534,7 @@ function listen(){
     snap.docChanges().forEach(ch => {
       if (ch.type === 'removed' || ch.doc.metadata.hasPendingWrites) return;
       const id = ch.doc.id, d = ch.doc.data(), local = db.games[id];
+      if (id === teamsDocId()) return mergeTeams(d.json);        // the saved-teams library, not a game
       const lu = local ? local.updated || 0 : -1, ru = d.updated || 0;
       if (ru > lu){
         if (d.deleted){ if (local){ delete db.games[id]; changed = true; if (g && g.id === id) current = 'gone'; } return; }
@@ -2544,6 +2548,7 @@ function listen(){
       // Games made on this device before signing in go up to the account.
       const remoteIds = new Set(snap.docs.map(x => x.id));
       Object.values(db.games).forEach(x => { if (!x.sample && !remoteIds.has(x.id)) syncPush(x, 0); });
+      if (!remoteIds.has(teamsDocId()) && savedTeams().length) syncTeams(0);
       // A device still showing the sample opens the latest real game instead.
       if (g && g.sample && newestGame()){ g = newestGame(); resetUi(); current = 'opened'; changed = true; }
     }
@@ -2686,6 +2691,125 @@ function syncBlock(){
     <p class="hint">${sync.err ? esc(sync.err) : 'Every change is saved here and to your account. Sign in on another device to pick up where you left off.'}</p></div>
     <button class="btn small" data-signout>Sign out</button></div>`;
 }
+/* ================================================================
+   Saved teams: each school's short name, color and roster, kept so a
+   new game fills itself in. Saved in this browser and, when signed in,
+   to the account as one private "teams-<uid>" document in the same
+   pressbox collection (so the existing Firestore rules already cover it).
+   ================================================================ */
+const teamKey = s => String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+const DEFAULT_TEAM_NAMES = ['', 'visitors', 'home'];
+const teamLib = () => db.teams || (db.teams = {});
+const savedTeams = () => Object.values(teamLib()).filter(t => !t.deleted && t.name).sort((a, b) => a.name.localeCompare(b.name));
+function findTeam(name){ const t = teamLib()[teamKey(name)]; return t && !t.deleted ? t : null; }
+const rosterToText = r => Object.entries(r || {}).sort((a, b) => a[0] - b[0]).map(([n, v]) => `${n} ${v}`).join('\n');
+function parseRosterText(txt){
+  const o = {};
+  String(txt || '').split('\n').forEach(l => { const m = l.match(/^\s*#?(\d{1,2})\s*[-–,.:)]?\s*(.+?)\s*$/); if (m) o[m[1]] = m[2]; });
+  return o;
+}
+// From a game's Setup. A newer save wins, and an empty roster never wipes out a saved one.
+function rememberTeam(t, when = Date.now()){
+  const k = teamKey(t.name); if (DEFAULT_TEAM_NAMES.includes(k)) return false;
+  const cur = teamLib()[k];
+  if (cur && (cur.updated || 0) > when) return false;
+  const keep = cur && !cur.deleted ? cur.roster : {};
+  teamLib()[k] = {name:t.name, abbr:t.abbr, color:t.color, roster:{...(Object.keys(t.roster || {}).length ? t.roster : keep)}, updated:when};
+  return true;
+}
+function forgetTeam(k){ teamLib()[k] = {deleted:true, name:'', updated:Date.now()}; }
+// First run: teams from games already set up go into the library (never over a deletion).
+function seedTeamLibrary(){
+  let added = false;
+  Object.values(db.games).forEach(x => {
+    if (x.sample) return;
+    ['A', 'H'].forEach(s => { if (!teamLib()[teamKey(x.teams[s].name)]) added = rememberTeam(x.teams[s], x.updated || x.created || 0) || added; });
+  });
+  if (added) persist();
+}
+
+/* ---------- sync: one document per account ---------- */
+const teamsDocId = () => 'teams-' + (sync.user ? sync.user.uid : '');
+let teamTimer = null;
+function syncTeams(delay = 700){
+  if (!sync.user || !sync.api) return;
+  clearTimeout(teamTimer);
+  teamTimer = setTimeout(() => {
+    const {fsM, fsdb} = sync.api;
+    fsM.setDoc(fsM.doc(fsdb, 'pressbox', teamsDocId()), {owner:sync.user.uid, updated:Date.now(), public:false, kind:'teams', json:JSON.stringify(teamLib())})
+      .catch(e => { sync.err = friendlySync(e); sync.state = 'error'; renderSync(); });
+  }, delay);
+}
+// Team by team, whichever copy was saved last wins.
+function mergeTeams(json){
+  let remote; try { remote = JSON.parse(json || '{}') || {}; } catch (e) { return; }
+  const lib = teamLib(); let changed = false, mineNewer = false;
+  for (const k of new Set([...Object.keys(lib), ...Object.keys(remote)])){
+    const a = lib[k], b = remote[k];
+    if (b && (!a || (b.updated || 0) > (a.updated || 0))){ lib[k] = b; changed = true; }
+    else if (a && (!b || (a.updated || 0) > (b.updated || 0))) mineNewer = true;
+  }
+  if (changed){ persist(); if (ui.dlg === 'games' && dlg().open) dlg().innerHTML = dlgGames(); }
+  if (mineNewer) syncTeams(0);
+}
+
+/* ---------- the Games screen's Saved teams section, and the team editor ---------- */
+function teamsBlock(){
+  const list = savedTeams();
+  return `<div class="grp"><h3>Saved teams</h3>
+    <p class="hint">A school's short name, color and roster are saved whenever you set up a game. Type a saved school's name in a new game and they fill in.</p>
+    ${list.length ? `<div class="glist">${list.map(t => { const k = teamKey(t.name);
+      return `<div class="gitem"><div><b>${esc(t.name)}</b><div class="meta">${esc(t.abbr || '')} · ${plural2(Object.keys(t.roster || {}).length, 'player')}</div></div>
+        <div class="acts"><button class="btn small" data-team-edit="${esc(k)}">Edit</button><button class="btn small danger" data-team-del="${esc(k)}">${ui.confirm === 't:' + k ? 'Tap again' : 'Delete'}</button></div></div>`; }).join('')}</div>`
+      : '<p class="hint">No saved teams yet.</p>'}
+    <div class="line"><button class="btn small" data-team-edit="">Add a team</button></div></div>`;
+}
+function dlgTeam(key){
+  const t = (key && findTeam(key)) || {name:'', abbr:'', color:'#1F4E9C', roster:{}};
+  return `${dlgHead(key ? 'Edit team' : 'Add a team')}<div class="dlg-bd"><div class="grp"><div class="teamset">
+      <div class="fld"><label class="eyebrow" for="t-name">School</label><input class="inp" id="t-name" value="${esc(t.name)}" placeholder="School name"></div>
+      <div class="fld"><label class="eyebrow" for="t-abbr">Short</label><input class="inp" id="t-abbr" maxlength="5" value="${esc(t.abbr || '')}"></div>
+      <div class="fld"><label class="eyebrow" for="t-color">Color</label><input type="color" id="t-color" value="${esc(t.color || '#1F4E9C')}"></div></div>
+    <div class="fld"><label class="eyebrow" for="t-roster">Roster · one player per line, number then name</label>
+      <textarea class="inp" id="t-roster" rows="10" placeholder="7 Cole Brandt&#10;22 Mason Ortiz">${esc(rosterToText(t.roster))}</textarea></div></div></div>
+    <div class="dlg-ft"><button type="button" class="btn" data-open="games">Back</button><button type="button" class="btn primary" data-team-save="${esc(key || '')}">Save team</button></div>`;
+}
+function saveTeamDialog(oldKey){
+  const name = $('#t-name').value.trim();
+  if (!name) return toast('Give the team a name');
+  const t = {name, abbr:($('#t-abbr').value.trim() || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(), color:$('#t-color').value, roster:parseRosterText($('#t-roster').value)};
+  if (oldKey && oldKey !== teamKey(name)) forgetTeam(oldKey);
+  teamLib()[teamKey(name)] = {...t, updated:Date.now()};   // an edit here replaces the saved roster outright
+  persist(); syncTeams(); openDialog('games'); toast('Team saved');
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('button'); if (!b || ui.viewer) return;
+  const d = b.dataset;
+  if ('teamEdit' in d){ ui.teamKey = d.teamEdit; return openDialog('team'); }
+  if (d.teamDel){
+    const k = d.teamDel;
+    if (ui.confirm !== 't:' + k){ ui.confirm = 't:' + k; dlg().innerHTML = dlgGames(); return; }
+    forgetTeam(k); ui.confirm = null; persist(); syncTeams(); dlg().innerHTML = dlgGames(); return toast('Team removed');
+  }
+  if ('teamSave' in d) return saveTeamDialog(d.teamSave);
+  if (d.useroster){
+    const s = d.useroster, t = findTeam($(`#s-${s}-name`).value);
+    if (t){ $(`#s-${s}-roster`).value = rosterToText(t.roster); $(`#s-${s}-lib`).textContent = 'Using the saved roster.'; }
+  }
+});
+// Typing a saved school's name in Setup fills its short name, color and (if the box is empty) roster.
+document.addEventListener('input', e => {
+  const el = e.target; if (!el.id || !/^s-[AH]-name$/.test(el.id)) return;
+  const s = el.id[2], t = findTeam(el.value), hint = $(`#s-${s}-lib`);
+  if (!t){ if (hint) hint.textContent = ''; return; }
+  $(`#s-${s}-abbr`).value = t.abbr || '';
+  $(`#s-${s}-color`).value = t.color || '#1F4E9C';
+  const box = $(`#s-${s}-roster`), n = Object.keys(t.roster || {}).length;
+  if (!n) hint.textContent = 'Filled from your saved teams.';
+  else if (!box.value.trim()){ box.value = rosterToText(t.roster); hint.textContent = `Filled from your saved teams: ${plural2(n, 'player')}.`; }
+  else hint.innerHTML = `Saved roster has ${plural2(n, 'player')}. <button type="button" class="linkbtn" data-useroster="${s}">Use it</button>`;
+});
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
@@ -2714,6 +2838,7 @@ if (LIVE_ID) startViewer(LIVE_ID);      // a shared link: watch that game, read-
 else {
   load();
   if (db.games.sample && db.games.sample.sample !== 2) db.games.sample = sampleGame();
+  seedTeamLibrary();
   g = db.games[db.cur] || Object.values(db.games)[0];
   if (!g) g = sampleGame();
   setCurrent();
