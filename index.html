@@ -3093,9 +3093,12 @@ function weekKey(t){ const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d.
 // Week 1's Tuesday: three days before the first Friday in September.
 function week1(y){ const d = new Date(y, 8, 1); d.setDate(1 + (12 - d.getDay()) % 7 - 3); return d; }
 const weekNum = k => { const d = fromYmd(k); return Math.round((d - week1(d.getFullYear())) / WEEK_MS) + 1; };
+// Nine regular-season weeks, then the four playoff rounds.
+const PLAYOFFS = ['Regionals', 'Sectionals', 'Sub-State', 'State Championship'];
 function weekLabel(k){
   const n = weekNum(k);
-  if (n >= 1 && n <= 16) return `Week ${n}`;
+  if (n >= 1 && n <= 9) return `Week ${n}`;
+  if (n >= 10 && n <= 13) return PLAYOFFS[n - 10];
   const f = fromYmd(k); f.setDate(f.getDate() + 3);   // that week's Friday
   return 'Week of ' + f.toLocaleDateString(undefined, {month:'short', day:'numeric'});
 }
@@ -3331,7 +3334,7 @@ setInterval(() => {
    scores on a phone. Everyone sees the same page: shared games only.
    ================================================================ */
 const BOARD = new URLSearchParams(location.search).has('scores');
-const SEASON_WEEKS = 13;   // eight regular-season weeks, then the playoffs through the state finals
+const SEASON_WEEKS = 13;   // nine regular-season weeks, then regionals, sectionals, sub-state and state
 const board = {err:'', seen:null};
 const seasonKeys = y => Array.from({length:SEASON_WEEKS}, (_, i) => weekKey(week1(y).getTime() + i * WEEK_MS + 3 * 864e5));
 // This week, kept inside the season: before Week 1 it opens Week 1, after the finals the last week.
@@ -3340,8 +3343,10 @@ function boardDefaultWeek(){
   return n < 1 ? keys[0] : n > SEASON_WEEKS ? keys[SEASON_WEEKS - 1] : now;
 }
 const monShort = d => d.toLocaleDateString('en-US', {month:'short'}).toUpperCase();
+// A week's game days, Thursday through Sunday (Week 1 of 2026 is Sept. 3–6). Games still count toward the
+// week from its Tuesday to the next Monday, so a make-up game early in the week stays with its Friday.
 function weekRange(k){
-  const a = fromYmd(k), b = fromYmd(k); b.setDate(b.getDate() + 6);
+  const a = fromYmd(k), b = fromYmd(k); a.setDate(a.getDate() + 2); b.setDate(b.getDate() + 5);
   return a.getMonth() === b.getMonth() ? `${monShort(a)} ${a.getDate()} - ${b.getDate()}` : `${monShort(a)} ${a.getDate()} - ${monShort(b)} ${b.getDate()}`;
 }
 
