@@ -4067,14 +4067,20 @@ function countyGames(){
 // No defense: tackles and sacks are never complete (box scores don't carry them), so they aren't totaled.
 const C_KEYS = ['pc', 'pa', 'py', 'ptd', 'pint', 'ru', 'ry', 'rtd', 're', 'rey', 'retd', 'fgm', 'fga', 'xpm', 'xpa'];
 function countyStats(games){
-  const teams = Object.fromEntries(COUNTY.map(c => [c, {name:c, gp:0, w:0, l:0, t:0, pf:0, pa:0, rushY:0, passY:0}]));
+  // Each team's own offense and, from the other side of the same games, what opponents did against it ('o' keys).
+  const blank = c => Object.assign({name:c, gp:0, w:0, l:0, t:0, pf:0, pa:0, qf:[0, 0, 0, 0, 0], qa:[0, 0, 0, 0, 0], ot:false},
+    zeros(T_KEYS), zeros(T_KEYS.map(k => 'o' + k)));
+  const teams = Object.fromEntries(COUNTY.map(c => [c, blank(c)]));
   const players = {};
   for (const x of games){
     const r = replay(x), st = r.st;
     ['A', 'H'].forEach(s => {
       const c = countyOf(x.teams[s].name); if (!c) return;
-      const o = other(s), T = teams[c], S = r.S.team[s];
-      T.gp++; T.pf += st.score[s]; T.pa += st.score[o]; T.rushY += S.rushY; T.passY += S.passY;
+      const o = other(s), T = teams[c], S = r.S.team[s], O = r.S.team[o];
+      T.gp++; T.pf += st.score[s]; T.pa += st.score[o];
+      T_KEYS.forEach(k => { T[k] += +S[k] || 0; T['o' + k] += +O[k] || 0; });
+      for (let i = 0; i < 5; i++){ T.qf[i] += +st.lines[s][i] || 0; T.qa[i] += +st.lines[o][i] || 0; }
+      if (st.q > 4 || st.lines[s][4] || st.lines[o][4]) T.ot = true;
       if (st.final) T[st.score[s] > st.score[o] ? 'w' : st.score[s] < st.score[o] ? 'l' : 't']++;
       Object.values(r.S.pl[s]).forEach(p => {
         if (p.n === 'team') return;
@@ -4102,14 +4108,41 @@ function countyStats(games){
 
 /* ---------- tables: [heading, shown value, sort value] per column ---------- */
 const avg1 = (a, b) => b ? (a / b).toFixed(1) : '—';
+// Team numbers every game has, pasted or statted. First downs, third downs, penalties and fumbles only come
+// from live-statted games, so like defense they'd always be incomplete, and aren't shown.
+const T_KEYS = ['rushN', 'rushY', 'passC', 'passA', 'passY', 'passTD', 'passInt'];
+const perG = (v, t) => t.gp ? v / t.gp : 0;
+const signed = v => `${v > 0 ? '+' : ''}${v.toFixed(1)}`;
 const T_COLS = [
   ['GP', t => t.gp, t => t.gp],
   ['W-L', t => t.gp ? `${t.w}-${t.l}${t.t ? `-${t.t}` : ''}` : '—', t => t.gp ? (t.w + t.t / 2) / t.gp + t.w / 1000 : -1],
   ['PF', t => t.pf, t => t.pf], ['PA', t => t.pa, t => t.pa],
-  ['Pts/G', t => avg1(t.pf, t.gp), t => t.gp ? t.pf / t.gp : -1],
-  ['Rush Yds', t => t.rushY, t => t.rushY], ['Pass Yds', t => t.passY, t => t.passY],
-  ['Total Yds', t => t.rushY + t.passY, t => t.rushY + t.passY],
-  ['Yds/G', t => avg1(t.rushY + t.passY, t.gp), t => t.gp ? (t.rushY + t.passY) / t.gp : -1]];
+  ['PF/G', t => avg1(t.pf, t.gp), t => perG(t.pf, t)], ['PA/G', t => avg1(t.pa, t.gp), t => perG(t.pa, t)],
+  ['Margin/G', t => t.gp ? signed((t.pf - t.pa) / t.gp) : '—', t => perG(t.pf - t.pa, t)]];
+// The same columns for a team's own offense (p '') and for what its opponents did against it (p 'o').
+function yardCols(p){
+  const k = (t, n) => t[p + n], ry = t => k(t, 'rushY'), py = t => k(t, 'passY'), plays = t => k(t, 'rushN') + k(t, 'passA');
+  return [
+    ['Rush', t => k(t, 'rushN'), t => k(t, 'rushN')],
+    ['Rush Yds', ry, ry],
+    ['Rush/G', t => avg1(ry(t), t.gp), t => perG(ry(t), t)],
+    ['Yds/Car', t => avg1(ry(t), k(t, 'rushN')), t => k(t, 'rushN') ? ry(t) / k(t, 'rushN') : 0],
+    ['C/Att', t => `${k(t, 'passC')}/${k(t, 'passA')}`, t => k(t, 'passC')],
+    ['Pass Yds', py, py],
+    ['Pass/G', t => avg1(py(t), t.gp), t => perG(py(t), t)],
+    ['Pass TD', t => k(t, 'passTD'), t => k(t, 'passTD')],
+    [p ? 'INT Made' : 'INT', t => k(t, 'passInt'), t => k(t, 'passInt')],
+    ['Total Yds', t => ry(t) + py(t), t => ry(t) + py(t)],
+    ['Yds/G', t => avg1(ry(t) + py(t), t.gp), t => perG(ry(t) + py(t), t)],
+    ['Yds/Play', t => avg1(ry(t) + py(t), plays(t)), t => plays(t) ? (ry(t) + py(t)) / plays(t) : 0]];
+}
+const O_COLS = yardCols(''), A_COLS = yardCols('o');
+// Points for and against each quarter ("21-7"), sorted by the margin; halves after, and OT once there's been one.
+function quarterCols(ot){
+  const q = (t, ...i) => [i.reduce((a, n) => a + t.qf[n], 0), i.reduce((a, n) => a + t.qa[n], 0)];
+  const col = (label, ...i) => [label, t => t.gp ? q(t, ...i).join('-') : '—', t => { const [f, a] = q(t, ...i); return f - a; }];
+  return [col('1st', 0), col('2nd', 1), col('3rd', 2), col('4th', 3), ...(ot ? [col('OT', 4)] : []), col('1st Half', 0, 1), col('2nd Half', 2, 3)];
+}
 const C_TABLES = [   // id, title, who's in it, default sort column, columns
   ['pass', 'Passing', p => p.pa > 0, 2, [['C/Att', p => `${p.pc}/${p.pa}`, p => p.pc], ['Pct', p => p.pa ? `${Math.round(p.pc / p.pa * 100)}%` : '—', p => p.pa ? p.pc / p.pa : 0],
     ['Yds', p => p.py, p => p.py], ['TD', p => p.ptd, p => p.ptd], ['Int', p => p.pint, p => p.pint], ['Yds/G', p => avg1(p.py, p.gp), p => p.py / p.gp]]],
@@ -4120,11 +4153,12 @@ const C_TABLES = [   // id, title, who's in it, default sort column, columns
   ['score', 'Scoring', p => p.pts > 0, 1, [['TD', p => p.tds, p => p.tds], ['Pts', p => p.pts, p => p.pts]]],
   ['kick', 'Kicking', p => p.fga > 0 || p.xpa > 0, 2, [['FG', p => `${p.fgm}/${p.fga}`, p => p.fgm], ['XP', p => `${p.xpm}/${p.xpa}`, p => p.xpm], ['Pts', p => p.fgm * 3 + p.xpm, p => p.fgm * 3 + p.xpm]]]];
 const cMark = name => markFor({name, abbr:shortName(name), color:'#4A4B4D'}, 22);
-function ctable(id, title, rows, cols, def, first, cell, hi){
-  const s = county.sort[id] || {i:def, desc:true}, v = cols[s.i][2];
-  const sorted = rows.slice().sort((a, b) => (s.desc ? v(b) - v(a) : v(a) - v(b)) || a.name.localeCompare(b.name));
-  // All county teams: each list's top 20. One team: everyone.
-  const shown = id === 'team' || county.team !== 'all' ? sorted : sorted.slice(0, 20);
+function ctable(id, title, rows, cols, def, first, cell, hi, asc){
+  const s = county.sort[id] || {i:def, desc:!asc}, v = cols[s.i][2];
+  // A team with no games yet always sorts to the bottom, whichever way the column runs.
+  const sorted = rows.slice().sort((a, b) => ((a.gp === 0) - (b.gp === 0)) || (s.desc ? v(b) - v(a) : v(a) - v(b)) || a.name.localeCompare(b.name));
+  // Team tables show every team; player lists show each list's top 20, or everyone on one team.
+  const shown = first === 'Team' || county.team !== 'all' ? sorted : sorted.slice(0, 20);
   return `<section class="bcard ccard"><div class="ccard-hd"><h2>${title}</h2>${shown.length < sorted.length ? `<span>Top ${shown.length} of ${sorted.length}</span>` : ''}</div>
     <div class="tbl-wrap"><table class="ctbl"><thead><tr><th class="cn">${first}</th>${cols.map((c, i) => `<th data-csort="${id}:${i}"${i === s.i ? ' class="on"' : ''}>${c[0]}${i === s.i ? (s.desc ? ' ▾' : ' ▴') : ''}</th>`).join('')}</tr></thead>
     <tbody>${shown.map(r => `<tr${hi && hi(r) ? ' class="hi"' : ''}><td class="cn"><div class="cn-in">${cell(r)}</div></td>${cols.map(c => `<td>${esc(String(c[1](r)))}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section>`;
@@ -4140,7 +4174,11 @@ function renderCounty(){
     const {teams, players} = countyStats(games), mine = county.team === 'all' ? players : players.filter(p => p.team === county.team);
     const pname = p => `${cMark(p.team)}<span class="c-pl"><b>${esc(p.name)}</b><small>${esc(p.team)}</small></span>`;
     const tables = C_TABLES.map(([id, title, keep, def, cols]) => { const rows = mine.filter(keep); return rows.length ? ctable(id, title, rows, cols, def, 'Player', pname) : ''; }).join('');
-    body = ctable('team', 'Team Totals', teams, T_COLS, 1, 'Team', t => `${cMark(t.name)}<b>${esc(t.name)}</b>`, t => t.name === county.team)
+    const tcell = t => `${cMark(t.name)}<b>${esc(t.name)}</b>`, thi = t => t.name === county.team, qcols = quarterCols(teams.some(t => t.ot));
+    body = ctable('team', 'Team Totals', teams, T_COLS, 1, 'Team', tcell, thi)
+      + ctable('off', 'Offense', teams, O_COLS, 10, 'Team', tcell, thi)
+      + ctable('allow', 'Allowed (what opponents did)', teams, A_COLS, 10, 'Team', tcell, thi, true)
+      + ctable('qtr', 'Scoring by Quarter (for-against)', teams, qcols, qcols.length - 2, 'Team', tcell, thi)
       + (tables || `<section class="bcard"><p class="bempty">No player stats yet${county.team === 'all' ? '' : ` for ${esc(county.team)}`}.</p></section>`);
   }
   box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>BUCO Stats</h1><a class="bhead-link" href="?scores">Scoreboard »</a></div>
