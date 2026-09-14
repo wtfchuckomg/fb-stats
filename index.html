@@ -1675,7 +1675,8 @@ function viewBox(){
 
 function viewPlayers(side = ui.side){
   const s = side, P = Object.values(R.S.pl[s]);
-  const who = p => `#${p.n}${rosterName(s, p.n) ? ' ' + esc(rosterName(s, p.n)) : ''}`;
+  // Players go by name; a number only stands in for someone not on the roster yet.
+  const who = p => rosterName(s, p.n) ? esc(rosterName(s, p.n)) : `#${p.n}`;
   const by = (f, k) => P.filter(f).sort((a, b) => b[k] - a[k]);
   const sect = (title, heads, rows) => rows.length ? `<div class="sect"><div class="sect-hd"><h3>${title}</h3></div><div class="tbl-wrap"><table>
     <thead><tr><th>Player</th>${heads.map(h => `<th>${h}</th>`).join('')}</tr></thead>
