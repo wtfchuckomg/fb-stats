@@ -5172,8 +5172,9 @@ function shownRecord(name){
       });
       ['rec', 'home', 'away'].forEach(kk => { if (P[kk]) out[kk] = fmtRec(P[kk]); });
     }
-  } else if (allGames.idx){
-    // No record set: tally every final on the site, overall and home or away.
+  } else if (allGames.idx && coveredSchool(name)){
+    // No record set: tally every final on the site, overall and home or away (only for a school whose whole
+    // schedule is here; anyone else has just their games against those schools).
     const T = {rec:[0, 0, 0], home:[0, 0, 0], away:[0, 0, 0]}; let n = 0;
     schoolRows(name).forEach(r => {
       const f = finalOf(r.x); if (!f.fin) return;
@@ -5227,16 +5228,16 @@ function renderTeamPage(){
 
 function teamsIndexHtml(){
   document.title = 'Teams · Kansas Media Stats';
-  const seen = new Map(), add = n => { const k = n && canonSchool(n); if (k && !seen.has(k)) seen.set(k, n); };
-  (allGames.list || []).forEach(x => { add(x.teams.A.name); add(x.teams.H.name); });
+  // The teams the county plays, each with its whole schedule on the site (their own opponents aren't listed: the site
+  // has only their games against these teams).
   const county = new Set(COUNTY.map(canonSchool));
-  const others = [...seen.entries()].filter(([k]) => !county.has(k)).map(([, n]) => n).sort((a, b) => a.localeCompare(b));
+  const others = Object.keys(SCHOOL_INFO).filter(n => !county.has(canonSchool(n))).sort((a, b) => a.localeCompare(b));
   const card = (n, size) => { const r = recParts(shownRecord(n));
     return `<a class="tp-card" href="?team=${encodeURIComponent(n)}">${markFor({name:n, abbr:shortName(n), color:'#4A4B4D'}, size)}<b>${esc(n)}</b>${r.length ? `<span>${esc(r[0])}</span>` : ''}</a>`; };
   return `<section class="bcard bhead"><div class="bhead-top"><h1>Teams</h1></div><p class="h-note" style="margin:0">Each team’s record, schedule and results.</p></section>
     <section class="bcard"><h2 class="tp-h">Butler County</h2><div class="tp-grid">${COUNTY.map(n => card(n, 56)).join('')}</div></section>
-    <section class="bcard"><h2 class="tp-h">Opponents</h2>${allGames.list ? `<div class="tp-grid small">${others.map(n => card(n, 28)).join('')}</div>`
-      : `<p class="bempty">${esc(allGames.err || 'Loading…')}</p>`}</section>`;
+    <section class="bcard"><h2 class="tp-h">Opponents</h2>${allGames.err ? `<p class="bempty">${esc(allGames.err)}</p>` : ''}
+      <div class="tp-grid small">${others.map(n => card(n, 28)).join('')}</div></section>`;
 }
 
 function teamPageHtml(nameIn){
@@ -5289,6 +5290,7 @@ function teamPageHtml(nameIn){
       ${inCounty ? `<div class="tp-links"><a class="h-btn" href="?stats&amp;team=${encodeURIComponent(name)}">Player stats</a><a class="h-btn" href="?stats=team&amp;team=${encodeURIComponent(name)}">Team stats</a></div>` : ''}
     </section>
     <section class="bcard"><h2 class="tp-h">Schedule &amp; Results</h2>
+      ${coveredSchool(name) ? '' : `<p class="h-note" style="margin:0 0 10px">Only ${esc(name)}’s games against Butler County schools and their opponents are on the site, so there’s no record here.</p>`}
       ${allGames.list ? (sched ? `<div class="tbl-x"><table class="tp-sched"><tbody>${sched}</tbody></table></div>` : `<p class="bempty">No games for ${esc(name)} on the site yet.</p>`)
         : `<p class="bempty">${esc(allGames.err || 'Loading…')}</p>`}
     </section>`;
@@ -5677,10 +5679,16 @@ const SCHOOL_INFO = {   // school: [class, league]
   'Winfield': ['4A', 'AVCTL-III'],
 };
 let schoolIdx = null;
+const schoolInfo = name => {
+  if (!schoolIdx) schoolIdx = new Map(Object.entries(SCHOOL_INFO).map(([n, v]) => [canonSchool(n), v]));
+  return name ? schoolIdx.get(canonSchool(name)) : null;
+};
+// The schools whose whole schedule is on the site: Butler County's and every team they play. Anyone else shows up
+// only in games against them, so their records would be wrong.
+const coveredSchool = name => !!schoolInfo(name);
 // "CLASS 4A | AVCTL-III", or "8-MAN DIVISION II | SOUTH CENTRAL BORDER LEAGUE"; empty for a school not listed.
 function schoolLine(name){
-  if (!schoolIdx) schoolIdx = new Map(Object.entries(SCHOOL_INFO).map(([n, v]) => [canonSchool(n), v]));
-  const v = name && schoolIdx.get(canonSchool(name)); if (!v) return '';
+  const v = schoolInfo(name); if (!v) return '';
   const cls = v[0].startsWith('8M-') ? `8-MAN DIVISION ${v[0].slice(3)}` : `CLASS ${v[0]}`;
   return v[1] ? `${cls} | ${v[1].toUpperCase()}` : cls;
 }
