@@ -701,7 +701,7 @@ body.viewer .pl:hover{background:none}
       <a class="navlink" data-nav="home" href="?home">Home</a>
       <button type="button" class="navlink navdrop" data-nav="buco" id="nav-buco" aria-haspopup="true" aria-expanded="false" aria-controls="nav-buco-menu">Butler County<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
       <a class="navlink" data-nav="state" href="?state">State Scoreboard</a>
-      <a class="navlink" data-nav="tracker" id="nav-tracker" href="./">Game Tracker</a>
+      <a class="navlink" data-nav="tracker" id="nav-tracker" href="?tracker">Game Tracker</a>
     </div>
     <div class="navmenu" id="nav-buco-menu" role="menu" aria-label="Butler County" hidden>
       <a role="menuitem" data-menu="scores" href="?scores">Scoreboard</a>
@@ -3632,8 +3632,8 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
 // last game kept on this device.
 (function markNav(){
   const q = new URLSearchParams(location.search);
-  const here = q.has('home') ? 'home' : q.has('scores') ? 'scores' : q.has('state') ? 'state' : q.has('stats') ? 'stats' : q.has('game') || q.has('live') ? '' : 'tracker';
-  const t = $('#nav-tracker'); if (t) t.href = location.pathname;
+  // The site's plain address is Home; the Game Tracker is ?tracker (or ?edit=<id>).
+  const here = q.has('tracker') || q.has('edit') ? 'tracker' : q.has('scores') ? 'scores' : q.has('state') ? 'state' : q.has('stats') ? 'stats' : q.has('game') || q.has('live') ? '' : 'home';
   // The Butler County scoreboard and stats pages are all under its menu.
   const top = here === 'scores' || here === 'stats' ? 'buco' : here;
   const a = top && document.querySelector(`.navlink[data-nav="${top}"]`);
@@ -3882,7 +3882,7 @@ function renderScoreboard(){
       ${day.games.map(boardGame).join('')}</section>`).join('');
   }
   const old = box.querySelector('.bweeks'), keep = old ? old.scrollLeft : 0;
-  const link = ui.state ? `<a class="bhead-link" href="?scores=${key}">BUCO Scoreboard »</a>` : '<a class="bhead-link" href="?stats">BUCO Stats »</a>';
+  const link = ui.state ? '' : '<a class="bhead-link" href="?stats">BUCO Stats »</a>';
   const adminNote = ui.admin ? '<p class="badmin">Signed in as the admin: Hide takes a game off both scoreboards, the scores strip and BUCO Stats for everyone.</p>' : '';
   box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>${ui.state ? 'State' : 'BUCO'} Scoreboard</h1>${link}</div>${adminNote}
     <div class="bweeks-wrap"><button type="button" class="bw-arrow" data-bscroll="-1" aria-label="Earlier weeks">${chev('M9 1L1 9l8 8')}</button>
@@ -4815,7 +4815,10 @@ const LOGO_MAP = {
    on a game, laid out like ESPN's front page: quick links on the left,
    the story in the middle, the latest finals on the right.
    ================================================================ */
-const HOME_PAGE = new URLSearchParams(location.search).has('home');
+// The front door: the site's plain address opens here. The Game Tracker has its own, ?tracker (and ?edit=<id>).
+const PAGE_Q = new URLSearchParams(location.search);
+const TRACKER_PAGE = PAGE_Q.has('tracker') || PAGE_Q.has('edit');
+const HOME_PAGE = PAGE_Q.has('home') || (!TRACKER_PAGE && !['scores', 'state', 'stats', 'game', 'live'].some(k => PAGE_Q.has(k)));
 const home = {games:null};
 
 async function startHome(){
@@ -4884,7 +4887,7 @@ const HOME_CODES = [
 
 function renderHome(){
   if (!ui.home) return;
-  const tracker = location.pathname;
+  const tracker = '?tracker';
   const icon = d => `<svg viewBox="0 0 20 20" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   const I = {board:'M3 4h14v12H3zM3 8h14M8 8v8', stats:'M4 16V9M10 16V4M16 16v-5', team:'M10 3l6 3v4c0 4-3 6-6 7-3-1-6-3-6-7V6z',
     state:'M3 6l5-2 4 2 5-2v10l-5 2-4-2-5 2zM8 4v10M12 6v10', track:'M3 10h3l2-5 4 10 2-5h3', ext:'M8 4H4v12h12v-4M11 3h6v6M17 3l-8 8',
@@ -4986,7 +4989,7 @@ else {
   // ?edit=<id>, from the Edit button on a game's own page: open that game here, then tidy the address.
   const EDIT_ID = new URLSearchParams(location.search).get('edit');
   g = (EDIT_ID && db.games[EDIT_ID]) || db.games[db.cur] || Object.values(db.games)[0];
-  if (EDIT_ID) history.replaceState(null, '', location.pathname);
+  if (EDIT_ID) history.replaceState(null, '', `${location.pathname}?tracker`);
   if (!g) g = sampleGame();
   setCurrent();
   refresh();
