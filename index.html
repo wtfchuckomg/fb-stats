@@ -3679,8 +3679,9 @@ function passOrder(v){
 function parseBox(txt){
   const out = {ok:false, error:'', names:[], lines:{A:[], H:[]}, total:{A:0, H:0}, scoring:[], pl:{A:{}, H:{}}, team:{A:{}, H:{}}, warn:[]};
   const rows = String(txt || '').replace(/\r/g, '').split('\n').map(l => l.replace(/[ \t]+/g, ' ').trim()).filter(Boolean);
-  // "RUSHING: Andover — …", "RUSHING – Winfield: …", "RUSHING—Winfield, …", "PASSING (cmp-att-yds-td-int): …"
-  const SEC = /^(RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|INTERCEPTIONS|TACKLES|DEFENSE|PUNTING|FUMBLES|SACKS)\b\s*(\([^)]*\))?\s*[:—–-]?\s*(.*)$/i;
+  // "RUSHING: Andover — …", "RUSHING – Winfield: …", "RUSHING—Winfield, …", "PASSING (cmp-att-yds-td-int): …",
+  // "Passing: (cmp-att-yds-td-int): Douglass – …"
+  const SEC = /^(RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|INTERCEPTIONS|TACKLES|DEFENSE|PUNTING|FUMBLES|SACKS)\b\s*[:—–-]?\s*(\([^)]*\))?\s*[:—–-]?\s*(.*)$/i;
   const QTR = /^(?:(first|second|third|fourth|1st|2nd|3rd|4th)\s+(?:quarter|qtr)|(ot|overtime))\b/i;
   const QN = {first:1, '1st':1, second:2, '2nd':2, third:3, '3rd':3, fourth:4, '4th':4};
   // Which team a label like "And", "Hutch" or "Andover" means.
@@ -3733,21 +3734,33 @@ function parseBox(txt){
     if (raw.includes(' ') || !opts || !Object.keys(opts).length) return raw;
     return Object.entries(opts).sort((a, b) => b[1] - a[1])[0][0];
   };
+  // A player by name. Full names stay apart ("Mason Rush", "Brody Rush"); a bare last name ("Vega") joins the one
+  // player with that last name; and a full name takes over a bare one met earlier.
   const player = (s, raw) => {
-    if (/^team$/i.test(raw.trim())) return out.pl[s].team || (out.pl[s].team = {});
-    const name = display(s, raw.trim()), k = lastName(name);
-    const hit = Object.keys(out.pl[s]).find(n => n !== 'team' && lastName(n) === k);
-    return out.pl[s][hit || name] || (out.pl[s][name] = {});
+    raw = raw.trim();
+    if (/^team$/i.test(raw)) return out.pl[s].team || (out.pl[s].team = {});
+    const name = display(s, raw), k = lastName(name), keys = Object.keys(out.pl[s]).filter(n => n !== 'team');
+    const exact = keys.find(n => n.toLowerCase() === name.toLowerCase()), same = keys.filter(n => lastName(n) === k);
+    if (exact) return out.pl[s][exact];
+    if (!name.includes(' ')) return same.length === 1 ? out.pl[s][same[0]] : (out.pl[s][name] = {});
+    const bare = same.find(n => !n.includes(' '));
+    if (bare){ out.pl[s][name] = out.pl[s][bare]; delete out.pl[s][bare]; return out.pl[s][name]; }
+    return (out.pl[s][name] = {});
+  };
+  // Kickers go by last name, sometimes with a stray word ("from Quinn Vega kick)"): the one player with that last name.
+  const kicker = (s, raw) => {
+    const k = lastName(raw), same = Object.keys(out.pl[s]).filter(n => n !== 'team' && lastName(n) === k);
+    return same.length === 1 ? out.pl[s][same[0]] : player(s, raw);
   };
   const add = (o, k, v) => { o[k] = (o[k] || 0) + v; };
-  // Numbers in "14-94", "2-(-33)" or "3--5".
-  const nums = s => [...s.replace(/(\d)\s*-\s*-(\d+)/g, '$1-(-$2)').matchAll(/\((-?\d+)\)|(\d+)/g)].map(m => +(m[1] ?? m[2]));
+  // Numbers in "14-94", "3--5", "2-(-33)" or "1-(4)"; a number in parentheses is a loss.
+  const nums = s => [...s.replace(/(\d)\s*-\s*-(\d+)/g, '$1-(-$2)').matchAll(/\((-?\d+)\)|(\d+)/g)].map(m => m[1] != null ? -Math.abs(+m[1]) : +m[2]);
   const tds = rest => { const m = rest.match(/(\d+)?\s*TDs?\b/i); return m ? +(m[1] || 1) : 0; };
   // A section's body, split at each team's name: "Andover — …. Hutchinson — …".
   const splitTeams = body => {
     // One-letter labels ("W", "C") mark scoring plays but are too short to split a stat line on.
     const alts = [...new Set([...out.names, ...out.scoring.map(e => e.label)])].filter(a => a && a.length > 1).sort((a, b) => b.length - a.length);
-    const re = new RegExp(`(?:^|[.;]\\s*)(${alts.map(escRe).join('|')})\\s*(?:[—–:,]|\\s-)\\s*`, 'gi'), hits = [...body.matchAll(re)];
+    const re = new RegExp(`(?:^|[.;:)]\\s*)(${alts.map(escRe).join('|')})\\s*(?:[—–:,]|\\s-)\\s*`, 'gi'), hits = [...body.matchAll(re)];
     return hits.map((h, i) => [sideOf(h[1]), body.slice(h.index + h[0].length, i + 1 < hits.length ? hits[i + 1].index : undefined)]).filter(x => x[0]);
   };
   for (const sc of sections){
@@ -3774,15 +3787,36 @@ function parseBox(txt){
       });
     }
   }
+  // Stat lines that don't mark touchdowns get them from the scoring summary, written either way round: "Bergeson 48 run",
+  // "Cosby 17 pass from Wilbur", "1 yd run Carter Green", "26 yd pass Kane Ast to Ryan Stiner". Whatever the stat lines
+  // do mark ("Quinn 14-92, TD", or a TD column in the passing line) is left as it is.
+  const YD = String.raw`\d+\s*(?:-?\s*(?:yd|yard)s?\.?)?`;
+  const RUN = [new RegExp(String.raw`^(.+?)\s+${YD}\s+run\b`, 'i'), new RegExp(String.raw`^${YD}\s+run\s+(?:by\s+)?(.+)$`, 'i')];
+  const PASS = [[new RegExp(String.raw`^(.+?)\s+${YD}\s+pass\s+from\s+(.+)$`, 'i'), 1, 2],        // receiver, passer
+                [new RegExp(String.raw`^${YD}\s+pass\s+(?:from\s+)?(.+?)\s+to\s+(.+)$`, 'i'), 2, 1]];  // passer, receiver
+  ['A', 'H'].forEach(s => {
+    const has = k => Object.values(out.pl[s]).some(p => p[k]), noR = !has('rtd'), noRe = !has('retd'), noP = !has('ptd');
+    out.scoring.filter(e => e.side === s && e.how === 'TD').map(e => e.desc.split('(')[0].trim()).forEach(d => {
+      const r = RUN.map(re => d.match(re)).find(Boolean);
+      if (r){ if (noR) add(player(s, r[1]), 'rtd', 1); return; }
+      for (const [re, ri, qi] of PASS){
+        const m = d.match(re);
+        if (m){ if (noRe) add(player(s, m[ri]), 'retd', 1); if (noP) add(player(s, m[qi]), 'ptd', 1); return; }
+      }
+    });
+  });
   // Kickers, from the scoring summary: "Vega 29 FG", "(Pete Vega kick)".
   out.scoring.forEach(e => {
     if (e.how === 'FG'){
+      // "Vega 29 FG" or "29 yd FG Vega"
       const m = e.desc.match(/^(.+?)\s+(\d+)\s*(?:-?\s*(?:yd|yard)s?\.?)?\s*(?:FG|field goal)/i);
-      if (m){ const p = player(e.side, m[1]); add(p, 'fga', 1); add(p, 'fgm', 1); p.fglg = Math.max(p.fglg || 0, +m[2]); }
+      const m2 = e.desc.match(/^(\d+)\s*(?:-?\s*(?:yd|yard)s?\.?)?\s*(?:FG|field goal)\s+(?:by\s+)?([A-Z][^(]*?)\s*(?:\(|$)/i);
+      const who = m && !/^\d+$/.test(m[1]) ? [m[1], m[2]] : m2 ? [m2[2], m2[1]] : null;
+      if (who){ const p = kicker(e.side, who[0]); add(p, 'fga', 1); add(p, 'fgm', 1); p.fglg = Math.max(p.fglg || 0, +who[1]); }
     }
     if (e.how === 'TD'){
       const i = e.desc.lastIndexOf('('), km = (i >= 0 ? e.desc.slice(i + 1) : e.desc).match(/([A-Z][\w'’.-]*(?: [A-Z][\w'’.-]*)?)\s+kick\b(.*)$/);
-      if (km){ const p = player(e.side, km[1]); add(p, 'xpa', 1); if (!/fail|no good|miss|block/i.test(km[2])) add(p, 'xpm', 1); }
+      if (km){ const p = kicker(e.side, km[1]); add(p, 'xpa', 1); if (!/fail|no good|miss|block/i.test(km[2])) add(p, 'xpm', 1); }
     }
   });
   ['A', 'H'].forEach(s => {
@@ -3826,9 +3860,23 @@ function swapBox(p){
   p.scoring.forEach(e => { e.side = e.side === 'A' ? 'H' : 'A'; });
 }
 
+// A saved box score is read again from its pasted text each time it's shown, so a fix to the reader reaches games
+// already saved, for everyone. The game's own team order wins over the paper's.
+const boxCache = new Map();
+function boxData(game){
+  const b = game.box, T = game.teams;
+  if (!b.src || !T) return b;
+  const key = `${T.A.name}|${T.H.name}|${b.src}`;
+  if (!boxCache.has(key)){
+    const p = parseBox(b.src);
+    if (p.ok && !sameSchool(p.names[0], T.A.name) && sameSchool(p.names[0], T.H.name) && sameSchool(p.names[1], T.A.name)) swapBox(p);
+    boxCache.set(key, p.ok ? {lines:p.lines, total:p.total, scoring:p.scoring, pl:p.pl, team:p.team} : b);
+  }
+  return boxCache.get(key);
+}
 // The replay's totals for a box-score game (called from replay).
 function boxInto(game, st, S, scoring){
-  const b = game.box;
+  const b = boxData(game);
   ['A', 'H'].forEach(s => {
     const q = b.lines[s] || [];
     st.lines[s] = [0, 1, 2, 3, 4].map(i => +q[i] || 0);
