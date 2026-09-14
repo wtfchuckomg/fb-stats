@@ -4820,16 +4820,20 @@ const HOME_PAGE = PAGE_Q.has('home') || (!TRACKER_PAGE && !['scores', 'state', '
 // On a scorer's device (signed in on the Game Tracker), the menu bar's scorer buttons show on every page too. Away
 // from the tracker they open it, with that window up: ?tracker&open=games, setup, export or share.
 function scorerBar(){
-  let on = false, live = false;
+  let signedIn = false, hasGames = false, live = false;
   try {
-    on = localStorage.getItem('pressbox.scorer') === '1';
+    // A scorer's device: signed in on the Game Tracker (it notes that at sign-in, and the admin's devices were noted
+    // before that), or with games of its own kept here, which a fan's never has.
+    signedIn = localStorage.getItem('pressbox.scorer') === '1' || localStorage.getItem('pressbox.admin') === '1';
     const d = JSON.parse(localStorage.getItem(STORE) || 'null'), cur = d && d.games && d.games[d.cur];
+    hasGames = !!(d && d.games && Object.values(d.games).some(x => x && !x.sample));
     live = !!(cur && cur.share && !cur.sample);
   } catch (e) {}
-  if (!on) return;
+  if (!signedIn && !hasGames) return;
   document.body.classList.add('scorer');
   const go = k => `?tracker&amp;open=${k}`;
-  $('#sync').innerHTML = `<a class="abtn syncbtn ok" href="${go('games')}" title="Your games are kept in your account"><i></i>Synced</a>`;
+  $('#sync').innerHTML = signedIn ? `<a class="abtn syncbtn ok" href="${go('games')}" title="Your games are kept in your account"><i></i>Synced</a>`
+    : `<a class="abtn syncbtn" href="${go('games')}" title="Keep your games on every device"><i></i>Sign in to sync</a>`;
   document.querySelector('.navtools .abtns').innerHTML = `<a class="abtn${live ? ' live' : ''}" href="${go('share')}">${live ? '<i></i>Live' : 'Share'}</a>`
     + `<a class="abtn" href="${go('games')}">Games</a><a class="abtn" href="${go('setup')}">Setup</a><a class="abtn" href="${go('export')}">Export</a>`;
 }
