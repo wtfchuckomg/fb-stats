@@ -111,6 +111,8 @@ div.sc-game:hover{background:none}
 .qs-pts .inp{text-align:center;font-size:26px}
 #qs-per button{flex:1 1 0;padding:10px 4px}
 .qs-stats{align-self:flex-start}
+.qs-top{align-self:flex-start;flex-wrap:wrap}
+.qs-or{margin:0 0 -6px}
 /* paste-a-box-score window */
 textarea.inp.bx-txt{min-height:220px;font:13px/1.45 ui-monospace,Menlo,Consolas,monospace}
 .bx-prev{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--surface)}
@@ -2177,7 +2179,8 @@ function dlgExport(){
     <div class="grp"><h3>Back up this game</h3><p class="hint">A backup restores the game on any device through Import below.</p>
       <div class="line">${framed ? '' : '<button class="btn small" data-download>Download backup</button>'}<button class="btn small" data-copy="x-json">Copy backup text</button></div>
       <textarea class="inp" id="x-json" rows="3" readonly hidden>${esc(JSON.stringify(g))}</textarea></div>
-    <div class="grp"><h3>Import a game</h3><textarea class="inp" id="x-imp" rows="3" placeholder="Paste backup text here"></textarea>
+    <div class="grp"><h3>Import a game</h3><p class="hint">A Press Box backup, or a newspaper box score (line score, scoring plays, then RUSHING, PASSING, RECEIVING).</p>
+      <textarea class="inp" id="x-imp" rows="3" placeholder="Paste a backup or a box score here"></textarea>
       <div class="line"><button class="btn small" data-import>Import pasted text</button><label class="btn small">Choose file<input type="file" id="x-file" accept=".json,application/json" hidden></label></div></div></div>`;
 }
 function copyFrom(id){
@@ -2193,7 +2196,11 @@ function download(){
   toast('Backup saved');
 }
 function importText(txt){
-  let x; try { x = JSON.parse(txt); } catch (e) { toast('That isn’t backup text — paste the whole thing'); return; }
+  let x; try { x = JSON.parse(txt); } catch (e) {
+    // Not a backup: a newspaper box score pasted here goes to the box-score window, ready to save.
+    if (parseBox(txt).ok){ ui.boxFrom = ui.boxGame = null; openDialog('box'); $('#bx-txt').value = txt; $('#bx-prev').innerHTML = boxPreview(parseBox(txt)); return; }
+    toast('That isn’t a backup or a box score. A box score needs its line score, like “Andover 7 7 8 10 — 32”.'); return;
+  }
   if (!x || !x.teams || !Array.isArray(x.plays)){ toast('That backup is missing its teams or plays'); return; }
   x.id = 'g' + Date.now().toString(36); x.clk = x.clk || {s:(x.set?.qtr || 12) * 60, run:false, at:0}; x.set = x.set || {qtr:12, ot:10, firstKick:'H'};
   g = x; resetUi(); save(); closeDialog(); refresh(); toast('Game imported');
@@ -3200,13 +3207,15 @@ function dlgScore(id){
   const note = sync.user ? 'Shows on everyone’s scoreboard as soon as you save.'
     : sync.state === 'unavailable' ? 'Saved on this device. From your own site, signed in, scores go on everyone’s scoreboard.'
     : `Saved on this device. Sign in to put it on everyone’s scoreboard.${sync.api ? ' <button type="button" class="linkbtn" data-signin>Sign in</button>' : ''}`;
+  // The bigger jobs first, where they're seen: a box score or keeping stats; then the plain score.
   return `${dlgHead(x ? 'Update score' : 'Add a score')}<div class="dlg-bd">
+    <div class="line qs-top">${x ? `<button type="button" class="btn small primary" data-qs-box="${esc(x.id)}">Paste box score</button><button type="button" class="btn small" data-qs-stats="${esc(x.id)}">Keep stats on this game</button>`
+      : '<button type="button" class="btn small primary" data-qs-box="">Paste a box score instead</button>'}</div>
+    <p class="hint qs-or">${x ? 'Or just update the score:' : 'Or just enter the score:'}</p>
     ${side('A', 'Visitors')}${side('H', 'Home')}
     <div class="fld"><span class="eyebrow">Status</span><div class="seg" id="qs-per">${QS_PER.map(([v, l]) => `<button type="button" data-qs-per="${v}" aria-pressed="${per === v}">${l}</button>`).join('')}</div></div>
     <div class="fld"${inQuarter(per) ? '' : ' hidden'}><label class="eyebrow" for="qs-clk">Time left, optional</label><input class="inp" id="qs-clk" inputmode="numeric" placeholder="4:12" value="${esc(x && x.clk || '')}"></div>
     <div class="fld"><label class="eyebrow" for="qs-date">Game date</label><input class="inp" type="date" id="qs-date" value="${date}"></div>
-    ${x ? `<div class="line qs-stats"><button type="button" class="btn small" data-qs-stats="${esc(x.id)}">Keep stats on this game</button>
-      <button type="button" class="btn small" data-qs-box="${esc(x.id)}">Paste box score</button></div>` : ''}
     <p class="hint">${note}</p>
     <datalist id="qslib">${names.map(n => `<option value="${esc(n)}"></option>`).join('')}</datalist></div>
     <div class="dlg-ft">${x ? `<button type="button" class="btn danger" data-qs-del="${esc(x.id)}" style="margin-right:auto">Delete</button>` : ''}
@@ -3782,6 +3791,15 @@ function parseBox(txt){
   out.ok = true;
   return out;
 }
+// The scoreboard entry a pasted box score belongs to when it wasn't opened from one: a scheduled game or quick
+// score between the same two schools, in the week of the game date (or the only such game there is).
+function boxMatch(p, date){
+  if (!p.ok) return null;
+  const same = x => x.teams && ((sameSchool(p.names[0], x.teams.A.name) && sameSchool(p.names[1], x.teams.H.name))
+    || (sameSchool(p.names[0], x.teams.H.name) && sameSchool(p.names[1], x.teams.A.name)));
+  const all = Object.values(qsLib()).filter(x => !x.deleted && same(x)), wk = /^\d{4}-\d\d-\d\d$/.test(date || '') ? weekKey(fromYmd(date).getTime()) : null;
+  return all.find(x => gameWeek(x) === wk) || (all.length === 1 ? all[0] : null);
+}
 function swapBox(p){
   const sw = o => { const a = o.A; o.A = o.H; o.H = a; };
   [p.lines, p.total, p.pl, p.team].forEach(sw); p.names.reverse();
@@ -3810,13 +3828,16 @@ function boxPreview(p){
   if (!p.names.length) return '<p class="hint" style="margin:0">Paste the box score above. It needs at least the line score: each team, its quarter scores and the total.</p>';
   if (!p.ok) return `<p class="hint bx-warn" style="margin:0">${esc(p.error)}</p>`;
   const players = ['A', 'H'].reduce((a, s) => a + Object.keys(p.pl[s]).filter(k => k !== 'team').length, 0);
+  // Pasted from anywhere but a card: say which scoreboard game it goes with.
+  const m = ui.boxGame || ui.boxFrom ? null : boxMatch(p, ($('#bx-date') || {}).value);
+  const goes = ui.boxGame || ui.boxFrom ? '' : `<div class="muted">${m ? `Replaces ${esc(m.teams.A.name)} at ${esc(m.teams.H.name)} on the scoreboard, ${esc(weekLabel(gameWeek(m)))}.` : 'Goes on the scoreboard as a new game.'}</div>`;
   return `<div class="bx-sum"><b>${esc(p.names[0])} ${p.total.A}, ${esc(p.names[1])} ${p.total.H}</b> · Final
-      <div class="muted">${p.scoring.length} scoring plays · ${players} players with stats</div></div>
+      <div class="muted">${p.scoring.length} scoring plays · ${players} players with stats</div>${goes}</div>
     ${p.warn.map(w => `<p class="hint bx-warn">${esc(w)}</p>`).join('')}`;
 }
 function dlgBox(){
   const old = ui.boxGame && db.games[ui.boxGame], from = !old && ui.boxFrom ? qsLib()[ui.boxFrom] : null, who = old || from;
-  const src = old && old.box ? old.box.src || '' : '', date = who ? ymd(gameDay(who)) : ymd(new Date());
+  const src = old && old.box ? old.box.src || '' : '', date = who ? ymd(gameDay(who)) : scoreDefaultDate();
   return `${dlgHead(old ? 'Edit box score' : 'Paste a box score')}<div class="dlg-bd">
     ${who && who.teams ? `<p class="hint" style="margin:0"><b>${esc(who.teams.A.name)} at ${esc(who.teams.H.name)}</b>${from ? ' · from the scoreboard' : ''}</p>` : ''}
     <div class="fld"><label class="eyebrow" for="bx-txt">Box score · line score, scoring plays, then RUSHING, PASSING, RECEIVING</label>
@@ -3828,7 +3849,9 @@ function dlgBox(){
 function saveBox(){
   const txt = $('#bx-txt').value, p = parseBox(txt);
   if (!p.ok) return toast(p.error || 'Couldn’t read that box score');
-  const old = ui.boxGame && db.games[ui.boxGame], from = !old && ui.boxFrom ? qsLib()[ui.boxFrom] : null, base = (old || from || {}).teams;
+  const old = ui.boxGame && db.games[ui.boxGame], dv = $('#bx-date').value;
+  // Opened from a card, that card; otherwise the scheduled game or quick score it matches, if there is one.
+  const from = old ? null : ui.boxFrom ? qsLib()[ui.boxFrom] : boxMatch(p, dv), base = (old || from || {}).teams;
   // The scoreboard's (or the game's) school names when the pasted ones are the same schools, either way round.
   let names = {A:p.names[0], H:p.names[1]};
   if (base){
@@ -3842,15 +3865,18 @@ function saveBox(){
     return {name:names[s], mascot:t.mascot || was.mascot || '', abbr:t.abbr || was.abbr || shortName(names[s]), color:t.color || was.color || '#4A4B4D',
       roster:(old && old.teams[s].roster) || t.roster || {}};
   };
-  const dv = $('#bx-date').value, date = /^\d{4}-\d\d-\d\d$/.test(dv) ? dv : ymd(new Date());
+  // A match found on its own keeps that game's date.
+  const date = !old && !ui.boxFrom && from && from.date ? from.date : /^\d{4}-\d\d-\d\d$/.test(dv) ? dv : ymd(new Date());
   const box = {lines:p.lines, total:p.total, scoring:p.scoring.map(({side, how, pts, desc, q}) => ({side, how, pts, desc, q})), pl:p.pl, team:p.team, src:txt};
   // A new one goes on everyone's scoreboard, where its Box Score opens.
   const x = old || {id:'g' + Date.now().toString(36), created:Date.now(), set:{qtr:12, men:11, firstKick:'H'}, plays:[], clk:{s:0, run:false, at:0}, share:true};
   Object.assign(x, {teams:{A:team('A'), H:team('H')}, date, box, updated:Date.now()});
   db.games[x.id] = x; persist(); syncPush(x, 0);
   closeDialog();
+  // Show the week it went into, in case that isn't the week on screen.
+  const wk = gameWeek(x); if (wk !== shownWeek()) ui.week = wk;
   if (g && g.id === x.id) refresh(); else renderScores();
-  toast(`Box score saved: ${x.teams.A.abbr} ${p.total.A}, ${x.teams.H.abbr} ${p.total.H}`);
+  toast(`Box score saved to ${weekLabel(wk)}: ${x.teams.A.abbr} ${p.total.A}, ${x.teams.H.abbr} ${p.total.H}`);
 }
 // On the scorer's page a box-score game has nothing to record; it can be edited.
 function boxPad(){
@@ -3862,12 +3888,12 @@ function boxPad(){
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('button'); if (!b || ui.viewer) return;
   const d = b.dataset;
-  if (d.qsBox){ ui.boxFrom = d.qsBox; ui.boxGame = null; return openDialog('box'); }
+  if ('qsBox' in d){ ui.boxFrom = d.qsBox || null; ui.boxGame = null; return openDialog('box'); }
   if ('boxNew' in d){ ui.boxFrom = ui.boxGame = null; return openDialog('box'); }
   if ('boxEdit' in d){ ui.boxGame = g.id; ui.boxFrom = null; return openDialog('box'); }
   if ('boxSave' in d) return saveBox();
 });
-document.addEventListener('input', e => { if (e.target.id === 'bx-txt') $('#bx-prev').innerHTML = boxPreview(parseBox(e.target.value)); });
+document.addEventListener('input', e => { if (e.target.id === 'bx-txt' || e.target.id === 'bx-date') $('#bx-prev').innerHTML = boxPreview(parseBox($('#bx-txt').value)); });
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
