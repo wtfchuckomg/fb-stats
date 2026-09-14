@@ -295,6 +295,29 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
   .h-codes td:first-child{width:52%}
 }
 
+/* ---------- Game Tracker start screen: no game under way, so the game pieces give way to it ---------- */
+body.starting .strip,body.starting .gtabs,body.starting main.gc,body.starting .sample{display:none!important}
+body.starting #sharebtn,body.starting .navtools [data-open="setup"],body.starting .navtools [data-open="export"]{display:none}
+.start{box-sizing:border-box;max-width:1280px;margin:0 auto;padding:16px 16px 40px;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
+.s-main{display:flex;flex-direction:column;gap:16px;min-width:0}
+.s-side{min-width:0}
+.s-hero h1{margin:9px 0 8px;font:800 30px/1.15 var(--sans);letter-spacing:-.01em;color:var(--ink-2)}
+.s-hero p{margin:0 0 18px;font:400 16px/1.5 var(--sans);color:var(--muted)}
+button.h-btn{cursor:pointer}
+.s-list{list-style:none;margin:2px 0 0;padding:0}
+.s-list li{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px dotted var(--line)}
+.s-list li:first-child{border-top:0}
+.s-teams{flex:1;min-width:0}
+.s-teams b{display:flex;align-items:center;flex-wrap:wrap;gap:6px 7px;font:600 15.5px/1.3 var(--sans);color:var(--ink-2)}
+.s-teams b em{font-style:normal;font-weight:400;color:var(--muted)}
+.s-t{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.s-teams>span{display:block;margin-top:3px;font:400 13px/1.3 var(--sans);color:var(--muted)}
+.s-tag{border-radius:4px;padding:3px 6px;background:#E8F0FD;font:700 10.5px/1 var(--sans);font-style:normal;letter-spacing:.05em;text-transform:uppercase;color:var(--blue)}
+.s-go{flex:none;border:1px solid var(--blue);border-radius:20px;padding:9px 14px;background:var(--card);font:600 13.5px/1 var(--sans);color:var(--blue);cursor:pointer}
+.s-go.primary{background:var(--blue);color:#FFFFFF}
+@media (max-width:900px){.start{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){.start{padding:10px 10px 30px;gap:10px}.s-hero h1{font-size:25px}}
+
 /* the admin's Hide and Show, and a hidden game as the admin sees it: faded and marked Hidden */
 .badmin{margin:0 0 12px;font:500 13.5px/1.4 var(--sans);color:var(--muted)}
 .bhide{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:22px;padding:8px 14px;font:600 13px/1 var(--sans);cursor:pointer}
@@ -737,6 +760,7 @@ body.viewer .pl:hover{background:none}
   <div class="gc-view" id="view"></div>
   <aside class="gc-rail" id="rail" aria-label="Game leaders and team stats"></aside>
 </main>
+<main class="start" id="start" hidden></main>
 <main class="board" id="board" hidden></main>
 <dialog id="dlg"></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -2421,14 +2445,17 @@ function persist(){ try { localStorage.setItem(STORE, JSON.stringify(db)); } cat
 function save(){ if (!g) return; g.updated = Date.now(); db.games[g.id] = g; db.cur = g.id; persist(); syncPush(g); }
 // Opening a game isn't an edit, so it mustn't look newer than another device's copy.
 function setCurrent(){ if (!g) return; db.games[g.id] = g; db.cur = g.id; persist(); }
-function resetUi(){ Object.assign(ui, {type:null, draft:null, editing:null, ctx:null, open:null, confirm:null, ask:null, qtext:'', qedit:false}); }
+function resetUi(){ Object.assign(ui, {type:null, draft:null, editing:null, ctx:null, open:null, confirm:null, ask:null, qtext:'', qedit:false, start:false}); }
 function refresh(){
   R = replay(g);
+  // The game just went final (its last play, or End game): on to the start screen for the next one.
+  if (!ui.viewer && R.st.final && ui.seen && ui.seen.id === g.id && !ui.seen.final) ui.start = true;
+  ui.seen = {id:g.id, final:!!R.st.final};
   ui.ctx = ui.editing != null ? Object.assign(replay(g, ui.editing), {}) : R;
   $('#sample').hidden = !g.sample || !!ui.viewer;
   const sb = $('#sharebtn');
   if (sb){ sb.classList.toggle('live', !!g.share); sb.innerHTML = g.share ? '<i></i>Live' : 'Share'; }
-  renderBoard(); renderPad(); renderView(); renderRail(); renderLive(); renderScores(); loadLogos();
+  renderBoard(); renderPad(); renderView(); renderRail(); renderLive(); renderScores(); loadLogos(); renderStart();
 }
 let toastT;
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 1700); }
@@ -2539,7 +2566,7 @@ document.addEventListener('click', e => {
     const id = d.delGame;
     if (ui.confirm !== 'g:' + id){ ui.confirm = 'g:' + id; dlg().innerHTML = dlgGames(); return; }
     delete db.games[id]; ui.confirm = null; syncDelete(id);
-    if (id === g.id){ g = Object.values(db.games)[0] || sampleGame(); resetUi(); }
+    if (id === g.id){ g = Object.values(db.games)[0] || sampleGame(); resetUi(); ui.start = idleGame(g); }
     setCurrent(); refresh(); dlg().innerHTML = dlgGames(); return toast('Game deleted');
   }
   if (d.copy) return copyFrom(d.copy);
@@ -3082,15 +3109,15 @@ function listen(){
       Object.values(qsLib()).forEach(x => { if (!remoteIds.has(x.id)) pushScore(x); });
       if (!remoteIds.has(teamsDocId()) && savedTeams().length) syncTeams(0);
       // A device still showing the sample opens the latest real game instead.
-      if (g && g.sample && newestGame()){ g = newestGame(); resetUi(); current = 'opened'; changed = true; }
+      if (g && g.sample && newestGame()){ g = newestGame(); resetUi(); ui.start = idleGame(g); current = 'opened'; changed = true; }
     }
     if (current === 'updated') g = db.games[g.id];
-    if (current === 'gone'){ g = newestGame() || sampleGame(); resetUi(); }
+    if (current === 'gone'){ g = newestGame() || sampleGame(); resetUi(); ui.start = idleGame(g); }
     if (changed){ db.games[g.id] = g; db.cur = g.id; persist(); }
     if (current){
       if (ui.editing != null && ui.editing >= g.plays.length) resetUi();
       refresh();
-      toast(current === 'opened' ? 'Opened your latest game' : current === 'gone' ? 'That game was deleted on another device' : 'Updated from another device');
+      toast(current === 'opened' ? (ui.start ? 'Your games are synced' : 'Opened your latest game') : current === 'gone' ? 'That game was deleted on another device' : 'Updated from another device');
     }
     if (ui.dlg === 'games') dlg().innerHTML = dlgGames();
     if (!sync.pending && !Object.keys(sync.timers).length && !sync.err) sync.state = 'on';
@@ -4930,6 +4957,71 @@ function renderHome(){
     </aside>
   </div>`;
 }
+
+/* ================================================================
+   Game Tracker start screen. When no game is under way (the last one
+   just went final, or there's only the sample or a pasted box score),
+   the tracker opens here instead of on the old game: start a new one,
+   pick one off the schedule, or reopen a recent game to fix a play.
+   ================================================================ */
+// A game that isn't under way: the sample, a pasted box score, or one that's over.
+const idleGame = x => !x || !!x.sample || !!x.box || replay(x).st.final;
+
+// This week's games still to come that nobody is keeping stats on yet; next week's once this week's are played.
+function startSchedule(){
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const pick = k => weekGames(k).filter(x => x.kind === 'score' && x.per !== 'final' && gameDay(x) >= today);
+  const wk = weekKey(Date.now()), next = weekKey(fromYmd(wk).getTime() + WEEK_MS + 3 * 864e5);
+  const now = pick(wk);
+  return now.length ? {k:wk, list:now} : {k:next, list:pick(next)};
+}
+
+function renderStart(){
+  const on = !!ui.start && !ui.viewer;
+  document.body.classList.toggle('starting', on);
+  const box = $('#start'); if (!box) return;
+  box.hidden = !on;
+  if (!on) return;
+  const sched = startSchedule();
+  // Each school's logo stays with its name, so a long name wraps between the teams, not away from its logo.
+  const matchup = T => `<span class="s-t">${markFor(T.A, 24)}${esc(T.A.name)}</span><em>at</em><span class="s-t">${markFor(T.H, 24)}${esc(T.H.name)}</span>`;
+  const schedRows = sched.list.map(x => {
+    const m = summary(x), when = `${dayShort(gameDay(x))}${x.time ? ' · ' + x.time : ''}`;
+    return `<li><div class="s-teams"><b>${matchup(x.teams)}</b><span>${esc(when)}${m.pre ? '' : ' · ' + esc(m.status)}</span></div>
+      <button type="button" class="s-go primary" data-qs-stats="${esc(x.id)}">Keep stats</button></li>`;
+  }).join('');
+  const mine = Object.values(db.games).filter(x => !x.sample).sort((a, b) => (b.updated || 0) - (a.updated || 0)).slice(0, 6);
+  const mineRows = mine.map(x => {
+    const st = replay(x).st, T = x.teams;
+    const status = x.box ? 'Box score' : st.final ? (st.q > 4 ? 'Final/OT' : 'Final') : x.plays.length ? `In progress · ${perLabel(st.q)}` : 'Not started';
+    const line = x.plays.length || x.box ? `${T.A.name} ${st.score.A}, ${T.H.name} ${st.score.H}` : `${T.A.name} at ${T.H.name}`;
+    const date = gameDay(x).toLocaleDateString('en-US', {month:'short', day:'numeric'});
+    return `<li><div class="s-teams"><b><span>${esc(line)}</span>${x.id === g.id ? '<i class="s-tag">Last game</i>' : ''}</b><span>${esc(date)} · ${esc(status)}</span></div>
+      <button type="button" class="s-go" data-start-open="${esc(x.id)}">Open</button></li>`;
+  }).join('');
+  box.innerHTML = `<div class="s-main">
+      <section class="hcard s-hero"><span class="h-eyebrow">Game Tracker</span>
+        <h1>Start a new game</h1>
+        <p>Set one up from scratch, pick a game off the schedule below, or enter one that’s already been played.</p>
+        <div class="h-btns"><button type="button" class="h-btn primary" data-open="new">New game</button>
+          <button type="button" class="h-btn" data-box-new>Paste a box score</button>
+          <button type="button" class="h-btn" data-qs-new>Add a score</button></div>
+      </section>
+      <section class="hcard"><h2 class="h-rail">On the schedule · ${esc(weekLabel(sched.k))}</h2>
+        ${schedRows ? `<ul class="s-list">${schedRows}</ul>` : `<p class="h-note">Nothing left on the schedule for ${esc(weekLabel(sched.k))}. Start a new game, or add one with <b>Add a score</b>.</p>`}
+      </section>
+    </div>
+    <aside class="s-side"><section class="hcard"><h2 class="h-rail">Your games</h2>
+      ${mineRows ? `<ul class="s-list">${mineRows}</ul><p class="h-note">Open a game to look it over or fix a play. Every game is under <b>Games</b> too.</p>` : '<p class="h-note">Games you track show up here.</p>'}
+    </section></aside>`;
+}
+
+// Open one of your games from the start screen.
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-start-open]'); if (!b) return;
+  const x = db.games[b.dataset.startOpen]; if (!x) return;
+  g = x; resetUi(); setCurrent(); refresh(); scrollTo(0, 0);
+});
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
@@ -4968,6 +5060,8 @@ else {
   g = (EDIT_ID && db.games[EDIT_ID]) || db.games[db.cur] || Object.values(db.games)[0];
   if (EDIT_ID) history.replaceState(null, '', `${location.pathname}?tracker`);
   if (!g) g = sampleGame();
+  // No game under way (the last one is over, or there's only the sample or a box score): the start screen.
+  ui.start = !EDIT_ID && idleGame(g);
   setCurrent();
   refresh();
   // ?tracker&open=games (or setup, export, share): from the scorer's buttons on the other pages.
