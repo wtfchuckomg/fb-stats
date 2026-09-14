@@ -74,6 +74,10 @@ button{cursor:pointer}
 
 /* ---------- the week's scoreboard, like ESPN's scores strip ---------- */
 .scores{background:var(--card);border-bottom:1px solid var(--line)}
+/* the BUCO Stats link, in its own slim row right above the strip */
+.sc-top{max-width:1280px;margin:0 auto;padding:8px 16px;border-bottom:1px solid var(--line)}
+.sc-buco{font:700 13px/1 var(--sans);text-transform:uppercase;letter-spacing:.04em;color:var(--blue);text-decoration:none}
+.sc-buco:hover{text-decoration:underline}
 .scores-in{max-width:1280px;margin:0 auto;display:flex}
 .sc-wk{flex:none;display:flex;align-items:center;padding:10px 14px 10px 16px;border-right:1px solid var(--line)}
 .sc-wk select{-webkit-appearance:none;appearance:none;border:1px solid var(--line);border-radius:20px;cursor:pointer;
@@ -3367,7 +3371,7 @@ function renderScores(){
   box.hidden = !any;
   if (!any) return;
   const old = box.querySelector('.sc-list'), keep = old ? old.scrollLeft : 0;
-  box.innerHTML = `<div class="scores-in">
+  box.innerHTML = `<div class="sc-top"><a class="sc-buco" href="?stats">BUCO Stats »</a></div><div class="scores-in">
     <div class="sc-wk"><select id="scweek" aria-label="Week">${weekOptions(key).map(k => `<option value="${k}"${k === key ? ' selected' : ''}>${esc(weekLabel(k))}</option>`).join('')}</select></div>
     <div class="sc-wrap"><div class="sc-list">${games.length ? games.map(scoreCard).join('') : `<div class="sc-empty">No games for ${esc(weekLabel(key))} yet.</div>`}</div>
       <button type="button" class="sc-arrow l" data-scroll="-1" aria-label="Earlier games" hidden>${chev('M9 1L1 9l8 8')}</button>
@@ -3540,7 +3544,7 @@ function renderScoreboard(){
       ${day.games.map(boardGame).join('')}</section>`).join('');
   }
   const old = box.querySelector('.bweeks'), keep = old ? old.scrollLeft : 0;
-  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>Scoreboard</h1><a class="bhead-link" href="?stats">County stats »</a></div>
+  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>Scoreboard</h1><a class="bhead-link" href="?stats">BUCO Stats »</a></div>
     <div class="bweeks-wrap"><button type="button" class="bw-arrow" data-bscroll="-1" aria-label="Earlier weeks">${chev('M9 1L1 9l8 8')}</button>
       <div class="bweeks">${tabs}</div>
       <button type="button" class="bw-arrow" data-bscroll="1" aria-label="Later weeks">${chev('M1 1l8 8-8 8')}</button></div></section>${body}`;
@@ -4010,7 +4014,7 @@ const county = {games:null, err:'', team:'all', sort:{}};
 async function startCounty(){
   ui.viewer = true; ui.county = true; document.body.classList.add('viewer', 'board');
   $('#board').hidden = false; $('#gtitle').textContent = '';
-  document.title = 'County Stats · Kansas Media Stats';
+  document.title = 'BUCO Stats · Kansas Media Stats';
   loadLogos(); renderCounty();
   try {
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
@@ -4117,7 +4121,7 @@ function renderCounty(){
     body = ctable('team', 'Team Totals', teams, T_COLS, 1, 'Team', t => `${cMark(t.name)}<b>${esc(t.name)}</b>`, t => t.name === county.team)
       + (tables || `<section class="bcard"><p class="bempty">No player stats yet${county.team === 'all' ? '' : ` for ${esc(county.team)}`}.</p></section>`);
   }
-  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>County Stats</h1><a class="bhead-link" href="?scores">Scoreboard »</a></div>
+  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>BUCO Stats</h1><a class="bhead-link" href="?scores">Scoreboard »</a></div>
     <p class="c-sub">Butler County · ${new Date().getFullYear()} season${county.games ? ` · ${games.length} game${games.length === 1 ? '' : 's'} statted` : ''}. Totals and records come from games statted live or entered from a box score.</p>
     <select class="c-team" id="cteam" aria-label="Team">${opts}</select></section>${body}`;
 }
