@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kansas Media Football Rankings — Helmets</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<link rel="apple-touch-icon" href="favicon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Kansas Media Football Rankings — Helmets" />
+<meta property="og:description" content="Every Kansas high school football team's helmet, logo, mascot, and coach, by classification." />
+<meta property="og:image" content="https://kansasmediarankings.com/og-image.png" />
+<meta property="og:url" content="https://kansasmediarankings.com/helmets" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Kansas Media Football Rankings — Helmets" />
+<meta name="twitter:description" content="Every Kansas high school football team's helmet, logo, mascot, and coach, by classification." />
+<meta name="twitter:image" content="https://kansasmediarankings.com/og-image.png" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600&display=swap');
+
+  html, body { margin: 0; padding: 0; background: #F0F0F0; }
+
+  :root {
+    --bg: #F0F0F0;
+    --panel: #FFFFFF;
+    --panel-2: #F5F5F5;
+    --line: #DADADA;
+    --chalk: #1A1A1A;
+    --chalk-dim: #6B6B6B;
+    --gold: #D6001C;
+    --gold-dim: #A3001A;
+  }
+
+  .ksfp-topbar { background: #000000; }
+  .ksfp-topbar-inner {
+    position: relative;
+    max-width: 1100px; margin: 0 auto; padding: 0 20px; min-height: 54px;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 24px;
+  }
+  .ksfp-sitenav { display: flex; gap: 24px; }
+  .ksfp-sitenav a { font-family: 'Anton', sans-serif; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; text-decoration: none; padding: 17px 0; color: #b8b8b8; border-bottom: 3px solid transparent; }
+  .ksfp-sitenav a.active { color: #ffffff; border-bottom: 3px solid var(--gold); }
+  .ksfp-sitenav a:not(.active):hover { color: #ffffff; }
+
+  .ksfp-masthead { background: #ffffff; border-bottom: 1px solid #DADADA; }
+  .ksfp-masthead-inner { max-width: 1100px; margin: 0 auto; padding: 14px 20px; }
+  .ksfp-masthead-header-img { height: 48px; width: auto; display: block; }
+
+  .ksfp-classnav { background: #000000; position: sticky; top: 0; z-index: 50; }
+  .ksfp-classnav-inner { max-width: 1100px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 12px; }
+  .ksfp-classnav label { font-family: 'Anton', sans-serif; font-size: 12.5px; letter-spacing: 0.4px; text-transform: uppercase; color: #b8b8b8; }
+  .ksfp-classnav select {
+    font-family: 'Anton', sans-serif; font-size: 14px; letter-spacing: 0.4px; text-transform: uppercase;
+    background: #1a1a1a; color: #ffffff; border: 1px solid #444; border-radius: 4px; padding: 8px 12px;
+  }
+
+  .helm-wrap { max-width: 1100px; margin: 0 auto; padding: 30px 20px 60px; font-family: 'Work Sans', sans-serif; color: var(--chalk); }
+  .helm-intro { text-align: center; color: var(--chalk-dim); font-size: 14px; margin-bottom: 30px; }
+  .helm-section-title {
+    font-family: 'Anton', sans-serif; font-size: 26px; letter-spacing: 0.5px; text-transform: uppercase;
+    border-bottom: 3px solid var(--gold); padding-bottom: 8px; margin: 46px 0 18px;
+  }
+  .helm-section-title:first-of-type { margin-top: 0; }
+
+  .helm-card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 20px; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+  }
+  .helm-card-info { flex: 1; min-width: 200px; }
+  .helm-name { font-family: 'Anton', sans-serif; font-size: 26px; letter-spacing: 0.3px; color: var(--gold-dim); line-height: 1.15; }
+  .helm-coach { font-size: 13.5px; color: var(--chalk); margin-top: 8px; }
+  .helm-renders { display: flex; gap: 14px; align-items: center; }
+  .helm-render { height: 260px; width: auto; object-fit: contain; }
+  .helm-render[hidden] { display: none; }
+  .helm-empty { font-size: 12.5px; color: var(--chalk-dim); font-style: italic; }
+</style>
+</head>
+<body>
+
+<nav class="ksfp-topbar">
+  <div class="ksfp-topbar-inner">
+    <div class="ksfp-sitenav">
+      <a href="index.html">Media Rankings</a>
+      <a href="https://picks.kansasmediarankings.com">Pick 'Em</a>
+      <a href="helmets.html" class="active">Helmets</a>
+      <a href="https://stats.kansasmediarankings.com">Stats</a>
+    </div>
+  </div>
+</nav>
+
+<div class="ksfp-masthead">
+  <div class="ksfp-masthead-inner">
+    <img src="header.png" alt="Kansas Media Football Rankings" class="ksfp-masthead-header-img" />
+  </div>
+</div>
+
+<nav class="ksfp-classnav">
+  <div class="ksfp-classnav-inner">
+    <label for="helm-class-select">Classification</label>
+    <select id="helm-class-select"></select>
+  </div>
+</nav>
+
+<div class="helm-wrap">
+  <p class="helm-intro">You may use these images as you need as long as they're for a personal project and you're not trying to sell for your own profit. If your school's logo/helmet/are old/wrong/etc, please contact me at cchaney@cherryroad.com</p>
+  <div id="helm-content"></div>
+</div>
+
+<script>
+(function() {
+  const CLASSES = {
+    "6A": ["Wichita East","Derby","Wichita Southeast","Garden City","Wichita North","Dodge City","Manhattan","KC Wyandotte","Olathe Northwest","Washburn Rural","Olathe North","Wichita South","Wichita Heights","Olathe South","Gardner-Edgerton","Junction City","Shawnee Mission East","Olathe East","Campus","Topeka High","BV Northwest","BV West","Shawnee Mission Northwest","Lawrence Free State","Lawrence","Shawnee Mission South","Shawnee Mission West","Olathe West","Maize","Wichita Northwest","Shawnee Mission North","Mill Valley"],
+    "5A": ["Blue Valley","Liberal","Blue Valley North","Wichita West","KC Washington","JC Harmon","Bishop Carroll","Leavenworth","Hutchinson","Emporia","Topeka West","Blue Valley Southwest","Spring Hill","Seaman","Maize South","KC Turner","Hays","Shawnee Heights","Valley Center","Salina South","St. James Academy","KC Piper","Andover","De Soto","Salina Central","Pittsburg","Goddard","Eisenhower","Newton","Kapaun Mt. Carmel","Basehor-Linwood","Andover Central"],
+    "4A": ["Arkansas City","Lansing","KC Sumner Academy","Great Bend","Highland Park","St. Thomas Aquinas","KC Schlagle","Bonner Springs","Bishop Miege","Ottawa","Buhler","McPherson","Circle","Paola","Tonganoxie","Winfield","Eudora","Louisburg","Mulvane","Independence","Fort Scott","Augusta","Field Kindley","Rose Hill","Chanute","Wamego","El Dorado","Abilene","Wellington","Labette County","Rock Creek","Ulysses"],
+    "3A": ["Baldwin","Andale","Parsons","Atchison","Concordia","Clearwater","Chapman","Hayden","Perry-Lecompton/Bishop Seabury","Pratt","Clay Center","Santa Fe Trail","Hugoton","Hesston","Holton","Frontenac","Iola","Girard","Scott City","Osawatomie","Colby","Jefferson West","Anderson County","KC Bishop Ward","Columbus","Holcomb","Nemaha Central","Prairie View","Goodland","Wichita Collegiate","Hoisington","Burlington","Hiawatha","Larned","Wichita Trinity Academy","Smoky Valley","Wellsville","Lyons","Nickerson","Cheney"],
+    "2A": ["Marysville","Baxter Springs","Halstead","Council Grove","Neodesha","Beloit","Haven","Silver Lake","Riley County","Royal Valley","Caney Valley","Galena","Sabetha","Southeast of Saline","Maranatha Academy","Russell","Chaparral","Cherryvale","Minneapolis","Fredonia","Ellsworth","Kingman","Osage City","Riverside","Riverton","Lakin","Pleasant Ridge","Norton","Garden Plain","West Franklin","Central Heights","Phillipsburg","Southwestern Heights","Cimarron","Oskaloosa","Douglass","Marion","Horton","Jayhawk Linn","Humboldt"],
+    "1A": ["Hillsboro","Remington","Sterling","Medicine Lodge","Syracuse","St. Marys","Atchison County","Plainville/Natoma","Northeast-Arma","Bluestem","Rossville","Thomas More Prep-Marian","Eureka","Sedgwick","Belle Plaine","Moundridge","McLouth","Maur Hill-Mount Academy","Ellinwood","Mission Valley","Jackson Heights","Jefferson County North","Conway Springs","St. Mary's Colgan","Republic County","Doniphan West","Smith Center","Hutch Trinity","Inman","Uniontown","Sacred Heart","Valley Falls","Wabaunsee","Valley Heights","Centralia","Olpe","Onaga"],
+    "8-Man I": ["Oswego","Oakley","Southeast Cherokee","Herington","Lyndon","Ell-Saline","South Sumner County","Cair Paravel","West Elk/Elk Valley","Bennington","Chase County","Solomon","Elkhart/Rolla","WaKeeney-Trego","Washington County","Stanton County","Yates Center","Cedar Vale/Dexter","Udall","South Central","Oxford","Hoxie","Erie","Sublette","Canton-Galva","Clifton-Clyde","Rawlins County","Spearville","Wichita County","Central Plains","Northern Heights","Hill City","Central Burden","Lincoln","Kiowa County","Oberlin-Decatur","South Gray","Rock Hills","Pleasanton","St. John-Hudson"],
+    "8-Man II": ["Goessel","Little River","Sedan","Sylvan-Lucas Unified","Flinthills","La Crosse","Pretty Prairie","Kinsley","St. Francis","Meade","Ellis","Quinter","Norwich","Attica/Argonia","Rural Vista","Lakeside Downs","Pratt Skyline","Madison/Hamilton","Greeley County","Troy","Frankfort","Macksville","Osborne","St. John's/Tipton Catholic","Wichita Independent","Stockton","Burlingame","BV Randolph","Hodgeman County","Marmaton Valley","Fairfield","Hutch Central Christian","Lebo","Ness City","Colony Crest","Cunningham","Stafford","Minneola","Victoria","St. Paul","Wakefield","Linn","Pike Valley","Hanover","Hartford","Dighton","Waverly","Thunder Ridge","Wallace County","Axtell"],
+    "6-Man": ["Ingalls","South Barber","Deerfield","Golden Plains","Peabody-Burns","Satanta","Ashland","Centre","Wheatland-Grinnell","Tescott","Pawnee Heights","Bucklin","Altoona-Midway","Elyria Christian","Cheylin","Moscow","Southern Coffey County","Western Plains","Marais des Cygnes Valley","Northern Valley","Chase","Logan","Chetopa","Palco","Otis-Bison","Weskan","Brewster","Winona-Triplains"]
+  };
+  const CLASS_ORDER = ["6A","5A","4A","3A","2A","1A","8-Man I","8-Man II","6-Man"];
+
+  // Fill these in as you get them — keyed by the exact school name from
+  // CLASSES above. Any field left out (or the whole school left out
+  // entirely) just doesn't render; nothing else on the page depends on it.
+  const TEAM_INFO = {
+    "Blue Valley": { mascot: "Tigers", coach: "Allen Terrell" }
+  };
+
+  function nameVariants(name) {
+    const clean = name.replace(/'/g, "");
+    const dashLower = clean.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    const spaced = clean.replace(/[^A-Za-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+    const lowerSpaced = spaced.toLowerCase();
+    return Array.from(new Set([clean, dashLower, spaced, lowerSpaced]));
+  }
+  const IMG_EXTENSIONS = ["png", "jpg", "jpeg", "svg"];
+
+  // Builds an <img> that tries every reasonable filename spelling (and,
+  // for helmet renders, an optional suffix like " Left") before quietly
+  // hiding itself if nothing matches — same forgiving approach as the
+  // logos on the main site.
+  function imgWithFallback(folder, name, suffix, cssClass) {
+    const base = suffix ? name + " " + suffix : name;
+    const candidates = [];
+    nameVariants(base).forEach(v => IMG_EXTENSIONS.forEach(ext => candidates.push(folder + "/" + v + "." + ext)));
+    const first = candidates.shift();
+    return '<img src="' + first.replace(/"/g,'&quot;') + '" alt="" class="' + cssClass + '" loading="lazy" '
+      + 'data-fallbacks="' + candidates.join("|").replace(/"/g,'&quot;') + '" '
+      + 'onerror="var fb=(this.dataset.fallbacks||\'\').split(\'|\').filter(Boolean); if(fb.length){this.dataset.fallbacks=fb.slice(1).join(\'|\'); this.src=fb[0];} else {this.hidden=true;}">';
+  }
+
+  function schoolCardHtml(school) {
+    const info = TEAM_INFO[school] || {};
+    const title = info.mascot ? school + " " + info.mascot : school;
+    const coachLine = info.coach ? '<div class="helm-coach">Current head coach: ' + info.coach + '</div>' : "";
+    return '<div class="helm-card">'
+      + '<div class="helm-card-info">'
+        + '<div class="helm-name">' + title + '</div>'
+        + coachLine
+      + '</div>'
+      + '<div class="helm-renders">'
+        + imgWithFallback("helmet logos", school, "", "helm-render")
+      + '</div>'
+    + '</div>';
+  }
+
+  const selectEl = document.getElementById("helm-class-select");
+  const contentEl = document.getElementById("helm-content");
+
+  selectEl.innerHTML = CLASS_ORDER.map(cls =>
+    '<option value="' + cls + '">Class ' + cls + '</option>'
+  ).join("");
+
+  // Renders only the picked classification's cards — the other 8 classes'
+  // logos and helmet renders never load at all until you pick them,
+  // instead of all 331 schools' images loading on page open.
+  function renderClass(cls) {
+    const schools = CLASSES[cls].slice().sort((a, b) => a.localeCompare(b));
+    contentEl.innerHTML = '<h2 class="helm-section-title">Class ' + cls + '</h2>'
+      + schools.map(schoolCardHtml).join("");
+  }
+
+  selectEl.addEventListener("change", () => renderClass(selectEl.value));
+  renderClass(selectEl.value);
+})();
+</script>
+</body>
+</html>
