@@ -318,6 +318,45 @@ button.h-btn{cursor:pointer}
 @media (max-width:900px){.start{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:640px){.start{padding:10px 10px 30px;gap:10px}.s-hero h1{font-size:25px}}
 
+/* ---------- Teams (?teams) and each team's page (?team=<name>) ---------- */
+.tlink{color:inherit;text-decoration:none}
+.tlink:hover{text-decoration:underline}
+.tp-head{display:flex;flex-wrap:wrap;align-items:center;gap:18px 28px}
+.tp-id{display:flex;align-items:center;gap:16px;margin-right:auto;min-width:0}
+.tp-id h1{margin:0;font:800 32px/1.1 var(--sans);letter-spacing:-.01em;color:var(--ink-2)}
+.tp-id p{margin:5px 0 0;font:400 15px/1.3 var(--sans);color:var(--muted)}
+.tp-recs{display:flex;gap:26px}
+.tp-rec{text-align:center}
+.tp-rec b{display:block;font:800 26px/1.1 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.tp-rec span{font:600 11.5px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tp-form{flex-basis:100%;border-top:1px solid var(--line-2);padding-top:14px}
+.tp-acts{display:flex;gap:10px;margin:12px 0 4px}
+.tp-links{flex-basis:100%;display:flex;flex-wrap:wrap;gap:10px}
+.tp-h{margin:0 0 12px;font:700 19px/1.2 var(--sans);color:var(--ink-2)}
+.tbl-x{overflow-x:auto}
+.tp-sched{width:100%;border-collapse:collapse}
+.tp-sched td{padding:12px 10px;border-top:1px solid var(--line-2);font:400 15px/1.3 var(--sans);color:var(--ink-2);vertical-align:middle}
+.tp-sched tr:first-child td{border-top:0}
+.tp-sched .wk{color:var(--muted);font-size:13.5px;white-space:nowrap}
+.tp-sched .opp em{font-style:normal;color:var(--muted);margin-right:8px}
+.tp-sched .opp a{display:inline-flex;align-items:center;gap:8px;font-weight:500;color:var(--ink-2);text-decoration:none}
+.tp-sched .opp a:hover{text-decoration:underline}
+.tp-sched .res{white-space:nowrap;font-variant-numeric:tabular-nums}
+.tp-sched .res b.w{color:#1E8E3E}
+.tp-sched .res b.l{color:var(--red)}
+.tp-sched .res .live{font-weight:700;color:var(--red)}
+.tp-sched .lnk{text-align:right}
+.tp-go{font-weight:600;color:var(--blue);text-decoration:none;white-space:nowrap}
+.tp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.tp-card{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px;border:1px solid var(--line-2);border-radius:10px;color:var(--ink-2);text-align:center;text-decoration:none}
+.tp-card:hover{border-color:var(--blue)}
+.tp-card b{font:600 15px/1.2 var(--sans)}
+.tp-card span{font:400 13px/1.2 var(--sans);color:var(--muted)}
+.tp-grid.small{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 12px}
+.tp-grid.small .tp-card{flex-direction:row;justify-content:flex-start;padding:9px 6px;border:0;text-align:left}
+.tp-grid.small .tp-card:hover b{text-decoration:underline}
+@media (max-width:640px){.tp-id h1{font-size:25px}.tp-recs{gap:18px}.tp-sched td{padding:10px 6px;font-size:14px}.tp-sched .wk{display:none}}
+
 /* the admin's Hide and Show, and a hidden game as the admin sees it: faded and marked Hidden */
 .badmin{margin:0 0 12px;font:500 13.5px/1.4 var(--sans);color:var(--muted)}
 .bhide{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:22px;padding:8px 14px;font:600 13px/1 var(--sans);cursor:pointer}
@@ -728,6 +767,7 @@ body.viewer .pl:hover{background:none}
       <a role="menuitem" data-menu="scores" href="?scores">Scoreboard</a>
       <a role="menuitem" data-menu="stats" href="?stats">Player Stats</a>
       <a role="menuitem" data-menu="team" href="?stats=team">Team Stats</a>
+      <a role="menuitem" data-menu="teams" href="?teams">Teams</a>
     </div>
     <div class="navtools">
       <div class="livebadge" id="livebadge" hidden></div>
@@ -1363,7 +1403,7 @@ function renderBoard(){
     const has = !st.final && st.poss === s && st.phase !== 'kick';
     return `<div class="st-side ${s === 'H' ? 'home' : 'away'}${won && won !== s ? ' lose' : ''}" style="--tc:${esc(T[s].color)}">
       <div class="st-logo">${teamMark(s, 64)}</div>
-      <div class="st-id"><div class="st-name">${esc(fullName(T[s]))}</div><div class="st-rec">${esc(recordText(T[s], s) || (s === 'A' ? 'Away' : 'Home'))}</div></div>
+      <div class="st-id"><div class="st-name">${esc(fullName(T[s]))}</div><div class="st-rec">${esc(recordText(T[s], s, !st.final) || (s === 'A' ? 'Away' : 'Home'))}</div></div>
       <div class="st-scorebox"><div class="st-score"><span>${st.score[s]}</span>${has ? '<span class="st-poss" title="Has the ball"></span>' : ''}${won === s ? '<i class="st-win" title="Won"></i>' : ''}</div>
         ${st.final ? '' : `<div class="st-tos" title="${st.to[s]} timeout${st.to[s] === 1 ? '' : 's'} left">${dots(s)}</div>`}</div></div>`;
   };
@@ -3089,7 +3129,7 @@ function listen(){
       if (ch.type === 'removed' || ch.doc.metadata.hasPendingWrites) return;
       const id = ch.doc.id, d = ch.doc.data(), local = db.games[id];
       if (id === teamsDocId()) return mergeTeams(d.json);        // the saved-teams library, not a game
-      if (id === HIDE_DOC) return;                                // the admin's hidden-games list, not a game
+      if (id === HIDE_DOC || id === RECS_DOC) return;             // the admin's hidden-games list and team records, not games
       if (d.kind === 'score') return mergeScore(id, d);           // a quick score, not a game
       const lu = local ? local.updated || 0 : -1, ru = d.updated || 0;
       if (ru > lu){
@@ -3515,7 +3555,7 @@ function deleteScore(id){
 
 /* ---------- shared games for the week, live from Firestore ---------- */
 const scores = {api:null, key:null, unsub:null, docs:{}, seen:null};
-function scoresReady(api){ scores.api = api; scores.key = null; watchHidden(api); renderScores(); }
+function scoresReady(api){ scores.api = api; scores.key = null; watchHidden(api); watchTeamRecs(api); renderScores(); }
 
 /* ---------- games the admin has hidden from the scoreboards ---------- */
 // One shared list, in a document only the admin's account can change (the rules let only a document's owner write
@@ -3599,9 +3639,12 @@ function weekOptions(cur){
 
 /* ---------- team records, typed in by the scorer ---------- */
 // ESPN style, "1-2, 0-1 Away": the season record, then the road or home record. Empty until one is entered.
-function recordText(t, s){
-  const where = s === 'A' ? 'Away' : 'Home', ha = t && t.hrec ? `${t.hrec} ${where}` : '';
-  return t && (t.rec || ha) ? [t.rec, ha].filter(Boolean).join(', ') : '';
+// A game still to come (current) with no record typed in shows the team's record from its team page.
+function recordText(t, s, current){
+  let rec = t && t.rec, hrec = t && t.hrec;
+  if (current && t && !rec && !hrec){ const r = teamRecord(t.name); if (r){ rec = r.rec || ''; hrec = (s === 'A' ? r.away : r.home) || ''; } }
+  const where = s === 'A' ? 'Away' : 'Home', ha = hrec ? `${hrec} ${where}` : '';
+  return rec || ha ? [rec, ha].filter(Boolean).join(', ') : '';
 }
 // The two record boxes for a team, in Setup (pre "s") or a quick score (pre "qs").
 function recFields(pre, s, t){
@@ -3658,9 +3701,9 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
 (function markNav(){
   const q = new URLSearchParams(location.search);
   // The site's plain address is Home; the Game Tracker is ?tracker (or ?edit=<id>).
-  const here = q.has('tracker') || q.has('edit') ? 'tracker' : q.has('scores') ? 'scores' : q.has('state') ? 'state' : q.has('stats') ? 'stats' : q.has('game') || q.has('live') ? '' : 'home';
-  // The Butler County scoreboard and stats pages are all under its menu.
-  const top = here === 'scores' || here === 'stats' ? 'buco' : here;
+  const here = q.has('tracker') || q.has('edit') ? 'tracker' : q.has('scores') ? 'scores' : q.has('state') ? 'state' : q.has('stats') ? 'stats' : q.has('team') || q.has('teams') ? 'teams' : q.has('game') || q.has('live') ? '' : 'home';
+  // The Butler County scoreboard, stats and team pages are all under its menu.
+  const top = here === 'scores' || here === 'stats' || here === 'teams' ? 'buco' : here;
   const a = top && document.querySelector(`.navlink[data-nav="${top}"]`);
   if (a){
     a.classList.add('on'); if (a.tagName === 'A') a.setAttribute('aria-current', 'page');
@@ -3678,7 +3721,7 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
   const open = () => {
     clearTimeout(t);
     if (!menu.hidden) return;
-    const cur = ui.board && !ui.state ? 'scores' : ui.county ? (county.view === 'team' ? 'team' : 'stats') : '';
+    const cur = ui.teamPage ? 'teams' : ui.board && !ui.state ? 'scores' : ui.county ? (county.view === 'team' ? 'team' : 'stats') : '';
     menu.querySelectorAll('[data-menu]').forEach(x => x.classList.toggle('on', x.dataset.menu === cur));
     menu.hidden = false; btn.setAttribute('aria-expanded', 'true');
     // Under the name and on screen, with the notch pointing up at the name.
@@ -3863,9 +3906,9 @@ function boardGame(x){
   const team = s => {
     const cls = m.fin && lead ? (lead === s ? ' won' : ' lose') : '';
     // The record as entered, ESPN style "(1-2, 0-1 Away)"; until then the mascot and Away or Home.
-    const rec = recordText(T[s], s), sub = rec ? `(${rec})` : [T[s].mascot, s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
+    const rec = recordText(T[s], s, !m.fin), sub = rec ? `(${rec})` : [T[s].mascot, s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
     return `<div class="bt${cls}"><div class="bt-team">${markFor(T[s], 36)}<div class="bt-id">
-        <div class="bt-name"><span>${esc(T[s].name)}</span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub${rec ? ' rec' : ''}">${esc(sub)}</div></div></div>
+        <div class="bt-name"><span><a class="tlink" href="?team=${encodeURIComponent(T[s].name)}">${esc(T[s].name)}</a></span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub${rec ? ' rec' : ''}">${esc(sub)}</div></div></div>
       <div class="bt-q">${cells(i => i < played ? m.lines[s][i] : '')}</div><div class="bt-t">${m.pre ? '' : m.score[s]}</div><i class="sc-win"></i></div>`;
   };
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
@@ -4405,6 +4448,9 @@ async function startCounty(){
   document.title = 'BUCO Stats · Kansas Media Stats';
   const want = new URLSearchParams(location.search).get('stats');
   if (C_VIEWS.includes(want)) county.view = want;
+  // &team=<school>, from a team's page: that team's stats.
+  const pickTeam = new URLSearchParams(location.search).get('team');
+  if (COUNTY.includes(pickTeam)) county.team = pickTeam;
   loadLogos(); renderCounty();
   try {
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
@@ -4842,7 +4888,7 @@ const LOGO_MAP = {
 // The front door: the site's plain address opens here. The Game Tracker has its own, ?tracker (and ?edit=<id>).
 const PAGE_Q = new URLSearchParams(location.search);
 const TRACKER_PAGE = PAGE_Q.has('tracker') || PAGE_Q.has('edit');
-const HOME_PAGE = PAGE_Q.has('home') || (!TRACKER_PAGE && !['scores', 'state', 'stats', 'game', 'live'].some(k => PAGE_Q.has(k)));
+const HOME_PAGE = PAGE_Q.has('home') || (!TRACKER_PAGE && !['scores', 'state', 'stats', 'game', 'live', 'team', 'teams'].some(k => PAGE_Q.has(k)));
 
 // On a scorer's device (signed in on the Game Tracker), the menu bar's scorer buttons show on every page too. Away
 // from the tracker they open it, with that window up: ?tracker&open=games, setup, export or share.
@@ -5022,6 +5068,169 @@ document.addEventListener('click', e => {
   const x = db.games[b.dataset.startOpen]; if (!x) return;
   g = x; resetUi(); setCurrent(); refresh(); scrollTo(0, 0);
 });
+
+/* ================================================================
+   Teams: an index of every school (?teams) and a page for each one
+   (?team=<name>) with its record, schedule and results. The admin
+   keeps each team's record here, once, and the scoreboards show it on
+   the team's games still to come.
+   ================================================================ */
+const TEAM_PAGE = (PAGE_Q.has('team') || PAGE_Q.has('teams')) && !PAGE_Q.has('stats');
+const tpage = {games:null, err:'', edit:false, draft:null, sug:null, name:''};
+
+/* ---------- team records, kept by the admin ---------- */
+// One shared list, like the hidden games: only the admin's account can change it, and anyone can read it.
+const RECS_DOC = 'team-records';
+const teamRecs = {map:{}, api:null, unsub:null};
+const teamRecord = name => name ? teamRecs.map[canonSchool(name)] || null : null;
+function watchTeamRecs(api){
+  teamRecs.api = api;
+  if (teamRecs.unsub) return;
+  const {fsM, fsdb} = api;
+  // Until the first record is saved there is no list, and reading it is refused: then there are no records.
+  teamRecs.unsub = fsM.onSnapshot(fsM.doc(fsdb, 'pressbox', RECS_DOC), snap => {
+    const d = snap.exists() ? snap.data() : null;
+    let map = {}; if (d && d.owner === ADMIN_UID && !d.deleted){ try { map = JSON.parse(d.json).teams || {}; } catch (e) {} }
+    teamRecs.map = map; recordsChanged();
+  }, () => { teamRecs.unsub = null; });
+}
+function recordsChanged(){ renderScores(); renderScoreboard(); renderTeamPage(); if (g && R && !ui.board) renderBoard(); }
+async function saveTeamRecord(name, rec){
+  if (!ui.admin || !teamRecs.api) return toast('Sign in on the Game Tracker to edit records');
+  const map = Object.assign({}, teamRecs.map), k = canonSchool(name);
+  if (rec.rec || rec.home || rec.away) map[k] = Object.assign({name}, rec, {updated:Date.now()}); else delete map[k];
+  teamRecs.map = map; recordsChanged();
+  const {fsM, fsdb} = teamRecs.api;
+  try {
+    await fsM.setDoc(fsM.doc(fsdb, 'pressbox', RECS_DOC), {owner:ADMIN_UID, updated:Date.now(), public:true, kind:'records',
+      title:'Team records', json:JSON.stringify({teams:map})});
+    toast('Record saved');
+    if (!teamRecs.unsub) watchTeamRecs(teamRecs.api);   // the first save makes the list: follow it from now on
+  } catch (e) { toast('Couldn’t save that. Sign in on the Game Tracker, then try again.'); }
+}
+const recParts = r => r ? [r.rec, r.home && `${r.home} Home`, r.away && `${r.away} Away`].filter(Boolean) : [];
+
+/* ---------- the pages ---------- */
+async function startTeamPage(){
+  ui.viewer = true; ui.teamPage = true; document.body.classList.add('viewer', 'bpage');
+  $('#board').hidden = false;
+  renderTeamPage();
+  // The admin's own devices sign in here too, for Edit record.
+  let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
+  try {
+    const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
+    const [appM, fsM, authM] = await Promise.all(['app', 'firestore', ...(admin ? ['auth'] : [])].map(m => import(base + m + '.js')));
+    const app = appM.initializeApp(firebaseConfig);
+    if (authM) authM.onAuthStateChanged(authM.getAuth(app), u => { ui.admin = !!u && u.uid === ADMIN_UID; renderTeamPage(); });
+    const fsdb = fsM.getFirestore(app);
+    scoresReady({fsM, fsdb});   // the week's scores strip, and the records
+    // Every shared game and schedule entry, for the schools and their schedules.
+    fsM.onSnapshot(fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true)), snap => {
+      const out = [];
+      snap.forEach(d => {
+        const v = d.data(); if (v.deleted || !v.json) return;
+        try { const x = JSON.parse(v.json); if (x.teams && x.teams.A && x.teams.H) out.push(Object.assign(x, {id:d.id})); } catch (e) {}
+      });
+      tpage.games = out; renderTeamPage();
+    }, () => { tpage.err = 'Can’t load the games right now. Reload to try again.'; renderTeamPage(); });
+  } catch (e) { tpage.err = 'Can’t reach the games. Check your connection and reload.'; renderTeamPage(); }
+}
+
+function renderTeamPage(){
+  if (!ui.teamPage) return;
+  const name = PAGE_Q.get('team');
+  $('#board').innerHTML = name ? teamPageHtml(name) : teamsIndexHtml();
+}
+
+// A team's games, one per week and opponent: the one with stats if there is one, else the newest copy.
+function teamSchedule(name){
+  const k = canonSchool(name), rows = {};
+  (tpage.games || []).forEach(x => {
+    if (isHidden(x)) return;
+    const side = canonSchool(x.teams.A.name) === k ? 'A' : canonSchool(x.teams.H.name) === k ? 'H' : null;
+    if (!side) return;
+    const opp = side === 'A' ? 'H' : 'A', wk = gameWeek(x), key = wk + '|' + canonSchool(x.teams[opp].name);
+    const stats = x.kind !== 'score' && ((x.plays && x.plays.length) || !!x.box), was = rows[key];
+    if (!was || (stats && !was.stats) || (stats === was.stats && (x.updated || 0) > (was.x.updated || 0))) rows[key] = {x, side, opp, wk, stats};
+  });
+  return Object.values(rows).sort((a, b) => gameDay(a.x) - gameDay(b.x));
+}
+
+function teamsIndexHtml(){
+  document.title = 'Teams · Kansas Media Stats';
+  const seen = new Map(), add = n => { const k = n && canonSchool(n); if (k && !seen.has(k)) seen.set(k, n); };
+  (tpage.games || []).forEach(x => { add(x.teams.A.name); add(x.teams.H.name); });
+  const county = new Set(COUNTY.map(canonSchool));
+  const others = [...seen.entries()].filter(([k]) => !county.has(k)).map(([, n]) => n).sort((a, b) => a.localeCompare(b));
+  const card = (n, size) => { const r = recParts(teamRecord(n));
+    return `<a class="tp-card" href="?team=${encodeURIComponent(n)}">${markFor({name:n, abbr:shortName(n), color:'#4A4B4D'}, size)}<b>${esc(n)}</b>${r.length ? `<span>${esc(r[0])}</span>` : ''}</a>`; };
+  return `<section class="bcard bhead"><div class="bhead-top"><h1>Teams</h1></div><p class="h-note" style="margin:0">Each team’s record, schedule and results.</p></section>
+    <section class="bcard"><h2 class="tp-h">Butler County</h2><div class="tp-grid">${COUNTY.map(n => card(n, 56)).join('')}</div></section>
+    <section class="bcard"><h2 class="tp-h">Opponents</h2>${tpage.games ? `<div class="tp-grid small">${others.map(n => card(n, 28)).join('')}</div>`
+      : `<p class="bempty">${esc(tpage.err || 'Loading…')}</p>`}</section>`;
+}
+
+function teamPageHtml(nameIn){
+  const k = canonSchool(nameIn), rows = teamSchedule(nameIn), any = rows[0], tm = any ? any.x.teams[any.side] : null;
+  const name = COUNTY.find(n => canonSchool(n) === k) || (tm && tm.name) || nameIn;
+  tpage.name = name; document.title = `${name} · Kansas Media Stats`;
+  const mascot = rows.map(r => r.x.teams[r.side].mascot).find(Boolean) || '';
+  const inCounty = COUNTY.some(n => canonSchool(n) === k), r = teamRecord(name);
+  const mark = {name, abbr:(tm && tm.abbr) || shortName(name), color:(tm && tm.color) || '#4A4B4D'};
+  // The record from the finals on the site, offered when entering one (it misses any game that isn't on the site).
+  const c = {w:0, l:0, t:0, hw:0, hl:0, aw:0, al:0};
+  rows.forEach(({x, side, opp}) => {
+    const m = summary(x); if (!m.fin) return;
+    const a = m.score[side], b = m.score[opp], res = a > b ? 'w' : a < b ? 'l' : 't';
+    c[res]++; if (res !== 't') c[(side === 'H' ? 'h' : 'a') + res]++;
+  });
+  const f = (w, l, t) => `${w}-${l}${t ? '-' + t : ''}`;
+  tpage.sug = {rec:f(c.w, c.l, c.t), home:f(c.hw, c.hl), away:f(c.aw, c.al)};
+  const val = kk => esc(tpage.draft && kk in tpage.draft ? tpage.draft[kk] : (r && r[kk]) || '');
+  const recBox = (kk, label) => `<div class="tp-rec"><b>${esc((r && r[kk]) || '–')}</b><span>${label}</span></div>`;
+  const form = ui.admin && tpage.edit ? `<div class="tp-form">
+      <div class="row">${[['rec', 'Overall', '3-1'], ['home', 'Home', '2-0'], ['away', 'Away', '1-1']].map(([kk, l, ph]) =>
+        `<div class="fld"><label class="eyebrow" for="tp-${kk}">${l}</label><input class="inp" id="tp-${kk}" maxlength="9" autocomplete="off" value="${val(kk)}" placeholder="${ph}"></div>`).join('')}</div>
+      <p class="h-note">From the finals on the site: <b>${esc(tpage.sug.rec)}</b> (${esc(tpage.sug.home)} home, ${esc(tpage.sug.away)} away). <button type="button" class="linkbtn" data-tp-use>Use these</button></p>
+      <div class="tp-acts"><button type="button" class="btn primary" data-tp-save>Save record</button><button type="button" class="btn" data-tp-cancel>Cancel</button></div>
+      <p class="h-note">It shows on the scoreboards on ${esc(name)}’s games still to come. A record typed into one game wins for that game.</p></div>` : '';
+  const sched = rows.map(({x, side, opp, wk, stats}) => {
+    const m = summary(x), o = x.teams[opp], a = m.score[side], b = m.score[opp];
+    const res = m.fin ? `<b class="${a > b ? 'w' : a < b ? 'l' : ''}">${a > b ? 'W' : a < b ? 'L' : 'T'}</b> ${a}-${b}${m.q > 4 ? ' (OT)' : ''}`
+      : m.live ? `<span class="live">${esc(m.status)}</span> ${a}-${b}` : esc(dayShort(gameDay(x)));
+    const go = stats ? `<a class="tp-go" href="?game=${encodeURIComponent(x.id)}${x.box ? '&amp;tab=box' : ''}">${x.box ? 'Box Score' : 'Gamecast'}</a>` : '';
+    return `<tr><td class="wk">${esc(weekLabel(wk))}</td><td class="opp"><em>${side === 'A' ? 'at' : 'vs'}</em><a href="?team=${encodeURIComponent(o.name)}">${markFor(o, 24)}${esc(o.name)}</a></td>
+      <td class="res">${res}</td><td class="lnk">${go}</td></tr>`;
+  }).join('');
+  return `<section class="bcard tp-head">
+      <div class="tp-id">${markFor(mark, 72)}<div><h1>${esc(name)}</h1><p>${esc([mascot, inCounty ? 'Butler County' : ''].filter(Boolean).join(' · ') || 'Kansas high school football')}</p></div></div>
+      <div class="tp-recs">${recBox('rec', 'Overall')}${recBox('home', 'Home')}${recBox('away', 'Away')}</div>
+      ${ui.admin && !tpage.edit ? '<button type="button" class="bhide" data-tp-edit>Edit record</button>' : ''}
+      ${form}
+      ${inCounty ? `<div class="tp-links"><a class="h-btn" href="?stats&amp;team=${encodeURIComponent(name)}">Player stats</a><a class="h-btn" href="?stats=team&amp;team=${encodeURIComponent(name)}">Team stats</a></div>` : ''}
+    </section>
+    <section class="bcard"><h2 class="tp-h">Schedule &amp; Results</h2>
+      ${tpage.games ? (sched ? `<div class="tbl-x"><table class="tp-sched"><tbody>${sched}</tbody></table></div>` : `<p class="bempty">No games for ${esc(name)} on the site yet.</p>`)
+        : `<p class="bempty">${esc(tpage.err || 'Loading…')}</p>`}
+    </section>`;
+}
+
+document.addEventListener('click', e => {
+  if (!ui.teamPage || !e.target.closest) return;
+  const t = e.target;
+  if (t.closest('[data-tp-edit]')){ tpage.edit = true; tpage.draft = null; return renderTeamPage(); }
+  if (t.closest('[data-tp-cancel]')){ tpage.edit = false; tpage.draft = null; return renderTeamPage(); }
+  if (t.closest('[data-tp-use]')){ tpage.draft = Object.assign({}, tpage.sug); ['rec', 'home', 'away'].forEach(k => { $('#tp-' + k).value = tpage.sug[k]; }); return; }
+  if (t.closest('[data-tp-save]')){
+    const v = k => $('#tp-' + k).value.trim().slice(0, 9), rec = {rec:v('rec'), home:v('home'), away:v('away')};
+    tpage.edit = false; tpage.draft = null; return saveTeamRecord(tpage.name, rec);
+  }
+});
+// What's typed survives a redraw while the record is being edited.
+document.addEventListener('input', e => {
+  const id = e.target.id || '';
+  if (ui.teamPage && /^tp-(rec|home|away)$/.test(id)){ tpage.draft = tpage.draft || {}; tpage.draft[id.slice(3)] = e.target.value; }
+});
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
@@ -5049,6 +5258,7 @@ function sampleGame(){
 if (HOME_PAGE) startHome();             // ?home: the front page, read-only
 else if (BOARD) startScoreboard();      // ?scores: the week's scoreboard, read-only
 else if (COUNTY_PAGE) startCounty();    // ?stats: the county's season stats, read-only
+else if (TEAM_PAGE) startTeamPage();    // ?teams, ?team=<name>: the schools, and each one's record and schedule
 else if (LIVE_ID) startViewer(LIVE_ID); // a shared link: watch that game, read-only
 else {
   load();
