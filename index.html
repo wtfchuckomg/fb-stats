@@ -81,6 +81,16 @@ a.abtn{display:inline-block;text-decoration:none}
 .navlink{display:flex;align-items:center;padding-top:3px;border-bottom:3px solid transparent;font:700 16px/1 var(--sans);color:#FFFFFF;text-decoration:none;white-space:nowrap}
 .navlink:hover{border-bottom-color:rgba(255,255,255,.45)}
 .navlink.on{border-bottom-color:var(--red)}
+/* the Butler County menu: a white panel dropping from the bar, notched under the name, like ESPN's league menus */
+.navbar{position:relative;z-index:40}
+.navdrop{background:none;border-top:0;border-left:0;border-right:0;padding-left:0;padding-right:0;gap:7px;cursor:pointer}
+.navdrop svg{width:10px;height:6px;transition:transform .15s}
+.navdrop[aria-expanded="true"] svg{transform:rotate(180deg)}
+.navmenu{position:absolute;top:100%;z-index:50;min-width:240px;padding:8px 0;background:#FFFFFF;border-radius:0 0 6px 6px;box-shadow:0 10px 28px rgba(0,0,0,.25)}
+.navmenu::before{content:"";position:absolute;top:-8px;left:var(--notch,40px);border:8px solid transparent;border-top:0;border-bottom-color:#FFFFFF}
+.navmenu a{display:block;padding:14px 28px;font:400 17px/1.2 var(--sans);color:var(--muted);text-decoration:none;white-space:nowrap}
+.navmenu a:hover{background:#F1F2F3;color:var(--ink-2)}
+.navmenu a.on{color:var(--ink-2);font-weight:600}
 .navtools{display:flex;align-items:center;gap:4px}
 .navbar .abtns,.navbar .vbtns{gap:4px}
 .navbar .abtn{background:none;border:0;border-radius:6px;color:#FFFFFF;padding:9px 11px;font:600 14.5px/1 var(--sans);white-space:nowrap}
@@ -91,8 +101,9 @@ a.abtn{display:inline-block;text-decoration:none}
 body.bpage .navtools{display:none}
 /* phones: the pages on one row, the buttons spread across the row below */
 @media (max-width:640px){
-  .navlinks{flex-basis:100%;min-height:48px;gap:24px}
-  .navlink{font-size:15px}
+  .navbar-in{padding:0 12px}
+  .navlinks{flex-basis:100%;min-height:48px;gap:14px}
+  .navlink{font-size:13.5px}
   .navtools{flex-basis:100%;flex-wrap:wrap;justify-content:space-between;padding:4px 0 6px;border-top:1px solid rgba(255,255,255,.14)}
   .navtools .abtns,.navtools .vbtns{display:contents}
   .navbar .abtn{padding:9px 8px;font-size:14px}
@@ -219,6 +230,12 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .bday{margin:0;padding-bottom:16px;border-bottom:1px dotted var(--line);font:600 21px/1.2 var(--sans);color:var(--ink-2)}
 .bgame{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) 190px;gap:0 22px;padding:18px 0;border-bottom:1px dotted var(--line)}
 .bgame:last-child{border-bottom:0;padding-bottom:2px}
+/* the admin's Hide and Show, and a hidden game as the admin sees it: faded and marked Hidden */
+.badmin{margin:0 0 12px;font:500 13.5px/1.4 var(--sans);color:var(--muted)}
+.bhide{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:22px;padding:8px 14px;font:600 13px/1 var(--sans);cursor:pointer}
+.bhide:hover{color:var(--red);border-color:var(--red)}
+.bgame.bhid .b-main,.bgame.bhid .b-lead{opacity:.4}
+.b-hidtag{font:700 11.5px/1 var(--sans);text-transform:uppercase;letter-spacing:.05em;color:var(--red)}
 .b-main{min-width:0}
 .b-hd,.bt{display:grid;grid-template-columns:minmax(0,1fr) auto 54px 12px;align-items:center;column-gap:10px}
 .b-st,.b-st2{font:700 14px/1 var(--sans);text-transform:uppercase;color:var(--ink-2);white-space:nowrap}
@@ -612,9 +629,14 @@ body.viewer .pl:hover{background:none}
 <nav class="navbar" aria-label="Kansas Media Stats pages">
   <div class="navbar-in">
     <div class="navlinks">
-      <a class="navlink" data-nav="stats" href="?stats">BUCO Stats</a>
-      <a class="navlink" data-nav="scores" href="?scores">Scoreboard</a>
+      <button type="button" class="navlink navdrop" data-nav="buco" id="nav-buco" aria-haspopup="true" aria-expanded="false" aria-controls="nav-buco-menu">Butler County<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+      <a class="navlink" data-nav="state" href="?state">State Scoreboard</a>
       <a class="navlink" data-nav="tracker" id="nav-tracker" href="./">Game Tracker</a>
+    </div>
+    <div class="navmenu" id="nav-buco-menu" role="menu" aria-label="Butler County" hidden>
+      <a role="menuitem" data-menu="scores" href="?scores">Scoreboard</a>
+      <a role="menuitem" data-menu="stats" href="?stats">Player Stats</a>
+      <a role="menuitem" data-menu="team" href="?stats=team">Team Stats</a>
     </div>
     <div class="navtools">
       <div class="livebadge" id="livebadge" hidden></div>
@@ -2950,6 +2972,9 @@ async function startSync(){
   authM.onAuthStateChanged(auth, user => {
     if (sync.unsub){ sync.unsub(); sync.unsub = null; }
     sync.user = user; sync.first = true; sync.err = '';
+    // The admin's devices remember it, so the scoreboard pages there sign in too and show Hide.
+    ui.admin = !!user && user.uid === ADMIN_UID;
+    try { localStorage.setItem('pressbox.admin', ui.admin ? '1' : ''); } catch (e) {}
     sync.state = user ? 'saving' : 'signed-out';
     if (user) listen();
     renderSync();
@@ -2969,6 +2994,7 @@ function listen(){
       if (ch.type === 'removed' || ch.doc.metadata.hasPendingWrites) return;
       const id = ch.doc.id, d = ch.doc.data(), local = db.games[id];
       if (id === teamsDocId()) return mergeTeams(d.json);        // the saved-teams library, not a game
+      if (id === HIDE_DOC) return;                                // the admin's hidden-games list, not a game
       if (d.kind === 'score') return mergeScore(id, d);           // a quick score, not a game
       const lu = local ? local.updated || 0 : -1, ru = d.updated || 0;
       if (ru > lu){
@@ -3394,7 +3420,41 @@ function deleteScore(id){
 
 /* ---------- shared games for the week, live from Firestore ---------- */
 const scores = {api:null, key:null, unsub:null, docs:{}, seen:null};
-function scoresReady(api){ scores.api = api; scores.key = null; renderScores(); }
+function scoresReady(api){ scores.api = api; scores.key = null; watchHidden(api); renderScores(); }
+
+/* ---------- games the admin has hidden from the scoreboards ---------- */
+// One shared list, in a document only the admin's account can change (the rules let only a document's owner write
+// it) and anyone can read, since it's public. Hidden games are left off both scoreboards, the strip and BUCO Stats;
+// the admin still sees them on the scoreboards, faded, with Show to bring one back.
+const ADMIN_UID = '2lbD7tPuufPdkBPtxbgSYnZwizp2';
+const HIDE_DOC = 'hidden-games';
+const hideList = {ids:new Set(), api:null, unsub:null};
+const isHidden = x => !!x && hideList.ids.has(x.id);
+function watchHidden(api){
+  hideList.api = api;
+  if (hideList.unsub) return;
+  const {fsM, fsdb} = api;
+  // Until the admin first hides something there is no list, and reading it is refused: then nothing is hidden.
+  hideList.unsub = fsM.onSnapshot(fsM.doc(fsdb, 'pressbox', HIDE_DOC), snap => {
+    const d = snap.exists() ? snap.data() : null;
+    let ids = []; if (d && d.owner === ADMIN_UID && !d.deleted){ try { ids = JSON.parse(d.json).ids || []; } catch (e) {} }
+    hideList.ids = new Set(ids); hiddenChanged();
+  }, () => { hideList.unsub = null; });
+}
+function hiddenChanged(){ renderScores(); renderScoreboard(); if (ui.county) renderCounty(); }
+async function toggleHide(id){
+  if (!ui.admin || !hideList.api) return;
+  const ids = new Set(hideList.ids), hide = !ids.has(id);
+  if (hide) ids.add(id); else ids.delete(id);
+  hideList.ids = ids; hiddenChanged();
+  const {fsM, fsdb} = hideList.api;
+  try {
+    await fsM.setDoc(fsM.doc(fsdb, 'pressbox', HIDE_DOC), {owner:ADMIN_UID, updated:Date.now(), public:true, kind:'hidden',
+      title:'Hidden from the scoreboards', json:JSON.stringify({ids:[...ids]})});
+    toast(hide ? 'Hidden from the scoreboards' : 'Back on the scoreboards');
+    if (!hideList.unsub) watchHidden(hideList.api);   // the first save makes the list: follow it from now on
+  } catch (e) { toast('Couldn’t save that. Sign in on the Game Tracker, then try again.'); }
+}
 function watchWeek(key){
   if (!scores.api || scores.key === key) return;
   if (scores.unsub) scores.unsub();
@@ -3415,7 +3475,8 @@ function shownWeek(){
   return weekKey(Date.now());
 }
 // Shared copies first; this device's own copy wins, since it's the working copy.
-function weekGames(key){
+// The admin's hidden games are left out, unless asked for (the admin's own view of a scoreboard).
+function weekGames(key, withHidden){
   const out = {};
   Object.entries(scores.docs).forEach(([id, x]) => { if (x && x.teams) out[id] = Object.assign(x, {id}); });
   if (!ui.viewer){
@@ -3425,8 +3486,9 @@ function weekGames(key){
   if (g && !g.sample && gameWeek(g) === key) out[g.id] = g;
   // A game someone is keeping stats on takes the place of its schedule entry or quick score.
   const pair = x => [x.teams.A.name, x.teams.H.name].map(canonSchool).sort().join('|');
-  const statted = new Set(Object.values(out).filter(x => x.kind !== 'score').map(pair));
-  Object.values(out).forEach(x => { if (x.kind === 'score' && statted.has(pair(x))) delete out[x.id]; });
+  // (A hidden game doesn't take its schedule entry's place.)
+  const statted = new Set(Object.values(out).filter(x => x.kind !== 'score' && !isHidden(x)).map(pair));
+  Object.values(out).forEach(x => { if ((x.kind === 'score' && statted.has(pair(x))) || (!withHidden && isHidden(x))) delete out[x.id]; });
   return Object.values(out).sort((a, b) => gameDay(a) - gameDay(b) || (a.created || 0) - (b.created || 0));
 }
 // Every week of this season, plus any week this device has a game or score in.
@@ -3500,10 +3562,42 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
 // last game kept on this device.
 (function markNav(){
   const q = new URLSearchParams(location.search);
-  const here = q.has('scores') ? 'scores' : q.has('stats') ? 'stats' : q.has('game') || q.has('live') ? '' : 'tracker';
+  const here = q.has('scores') ? 'scores' : q.has('state') ? 'state' : q.has('stats') ? 'stats' : q.has('game') || q.has('live') ? '' : 'tracker';
   const t = $('#nav-tracker'); if (t) t.href = location.pathname;
-  const a = here && document.querySelector(`.navlink[data-nav="${here}"]`);
-  if (a){ a.classList.add('on'); a.setAttribute('aria-current', 'page'); }
+  // The Butler County scoreboard and stats pages are all under its menu.
+  const top = here === 'scores' || here === 'stats' ? 'buco' : here;
+  const a = top && document.querySelector(`.navlink[data-nav="${top}"]`);
+  if (a){
+    a.classList.add('on'); if (a.tagName === 'A') a.setAttribute('aria-current', 'page');
+    // On a phone the links scroll sideways: bring this page's link into view.
+    const nl = a.parentElement; nl.scrollLeft += a.getBoundingClientRect().left - nl.getBoundingClientRect().left - (nl.clientWidth - a.offsetWidth) / 2;
+  }
+})();
+// The Butler County menu: opens on hover with a mouse, on a tap on a phone, and marks the page you're on.
+(function navMenu(){
+  const btn = $('#nav-buco'), menu = $('#nav-buco-menu'), bar = document.querySelector('.navbar');
+  if (!btn || !menu || !bar) return;
+  const hover = matchMedia('(hover: hover)').matches;
+  let t = 0;
+  const close = () => { clearTimeout(t); menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
+  const open = () => {
+    clearTimeout(t);
+    if (!menu.hidden) return;
+    const cur = ui.board && !ui.state ? 'scores' : ui.county ? (county.view === 'team' ? 'team' : 'stats') : '';
+    menu.querySelectorAll('[data-menu]').forEach(x => x.classList.toggle('on', x.dataset.menu === cur));
+    menu.hidden = false; btn.setAttribute('aria-expanded', 'true');
+    // Under the name and on screen, with the notch pointing up at the name.
+    const b = btn.getBoundingClientRect(), r = bar.getBoundingClientRect();
+    const left = Math.max(8, Math.min(b.left - r.left, r.width - menu.offsetWidth - 8));
+    menu.style.left = `${left}px`;
+    menu.style.setProperty('--notch', `${b.left - r.left + b.width / 2 - left - 8}px`);
+  };
+  btn.addEventListener('click', e => { e.stopPropagation(); if (hover || menu.hidden) open(); else close(); });
+  if (hover) [btn, menu].forEach(el => { el.addEventListener('mouseenter', open); el.addEventListener('mouseleave', () => { clearTimeout(t); t = setTimeout(close, 200); }); });
+  document.addEventListener('click', e => { if (!menu.hidden && !menu.contains(e.target)) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  btn.parentElement.addEventListener('scroll', close, {passive:true});
+  addEventListener('resize', close);
 })();
 
 function renderScores(){
@@ -3578,7 +3672,7 @@ document.addEventListener('change', e => {
   if (e.target.id !== 'scweek') return;
   ui.week = e.target.value; renderScores();
   // On the scoreboard page the page below follows the strip to that week.
-  if (ui.board){ history.replaceState(null, '', `?scores=${ui.week}`); renderScoreboard(); }
+  if (ui.board){ history.replaceState(null, '', `?${boardParam()}=${ui.week}`); renderScoreboard(); }
 });
 // Tapping a score clears it for the new one, with the old one showing faintly; leave it blank to keep it.
 // (Selecting the text instead is unreliable on phones, where lifting the finger drops the selection.)
@@ -3596,8 +3690,13 @@ setInterval(() => {
    quick score for a week, grouped by day, the way ESPN's scoreboard
    lays it out — line scores and stat leaders on a computer, just the
    scores on a phone. Everyone sees the same page: shared games only.
+   That is the BUCO Scoreboard; ?state (or ?state=<week>) is the State
+   Scoreboard, only the games someone kept stats on, from anywhere.
    ================================================================ */
-const BOARD = new URLSearchParams(location.search).has('scores');
+const STATE_BOARD = new URLSearchParams(location.search).has('state');
+const BOARD = new URLSearchParams(location.search).has('scores') || STATE_BOARD;
+const boardParam = () => ui.state ? 'state' : 'scores';
+const fullyTracked = x => x.kind !== 'score' && ((x.plays && x.plays.length) || !!x.box);
 const SEASON_WEEKS = 13;   // nine regular-season weeks, then regionals, sectionals, sub-state and state
 const board = {err:'', seen:null};
 const seasonKeys = y => Array.from({length:SEASON_WEEKS}, (_, i) => weekKey(week1(y).getTime() + i * WEEK_MS + 3 * 864e5));
@@ -3615,16 +3714,20 @@ function weekRange(k){
 }
 
 async function startScoreboard(){
-  ui.viewer = true; ui.board = true; document.body.classList.add('viewer', 'bpage');
+  ui.viewer = true; ui.board = true; ui.state = STATE_BOARD; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
-  document.title = 'Scoreboard · Kansas Media Stats';
-  const want = new URLSearchParams(location.search).get('scores') || '';
+  document.title = `${ui.state ? 'State' : 'BUCO'} Scoreboard · Kansas Media Stats`;
+  const want = new URLSearchParams(location.search).get(boardParam()) || '';
   ui.week = /^\d{4}-\d\d-\d\d$/.test(want) ? weekKey(fromYmd(want).getTime()) : boardDefaultWeek();
   loadLogos(); renderScoreboard();
+  // The admin's own devices (the Game Tracker marks them at sign-in) sign in here too, for the Hide buttons.
+  let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
   try {
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
-    const [appM, fsM] = await Promise.all([import(base + 'app.js'), import(base + 'firestore.js')]);
-    scoresReady({fsM, fsdb:fsM.getFirestore(appM.initializeApp(firebaseConfig))});
+    const [appM, fsM, authM] = await Promise.all(['app', 'firestore', ...(admin ? ['auth'] : [])].map(m => import(base + m + '.js')));
+    const app = appM.initializeApp(firebaseConfig);
+    if (authM) authM.onAuthStateChanged(authM.getAuth(app), u => { ui.admin = !!u && u.uid === ADMIN_UID; renderScoreboard(); });
+    scoresReady({fsM, fsdb:fsM.getFirestore(app)});
   } catch (e) { board.err = 'Can’t reach the scores. Check your connection and reload.'; renderScoreboard(); }
 }
 
@@ -3664,11 +3767,14 @@ function boardGame(x){
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
   // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
   const acts = m.quick || (!x.plays.length && !x.box) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a>`;
-  return `<article class="bgame${m.live ? ' live' : ''}">
+  // The admin can hide any game from the scoreboards, or bring a hidden one back.
+  const off = ui.admin && isHidden(x);
+  const hide = ui.admin ? `${off ? '<span class="b-hidtag">Hidden</span>' : ''}<button type="button" class="bhide" data-hide="${esc(x.id)}">${off ? 'Show' : 'Hide'}</button>` : '';
+  return `<article class="bgame${m.live ? ' live' : ''}${off ? ' bhid' : ''}">
     <div class="b-main"><div class="b-hd"><span class="b-st">${status}</span><div class="bt-q b-qh">${cells(i => i < 4 ? i + 1 : 'OT')}</div><span class="b-th">T</span><i></i></div>
       ${team('A')}${team('H')}</div>
     <div class="b-lead">${m.S ? boardLeaders(x, m.S) : ''}</div>
-    <div class="b-acts"><span class="b-st2">${status}</span>${acts}</div></article>`;
+    <div class="b-acts"><span class="b-st2">${status}</span>${acts}${hide}</div></article>`;
 }
 
 /* ---------- the page ---------- */
@@ -3680,11 +3786,12 @@ function renderScoreboard(){
   if (!keys.includes(key)){ keys.push(key); keys.sort(); }
   const tabs = keys.map(k => `<button type="button" class="bw${k === key ? ' on' : ''}" data-bweek="${k}"${k === key ? ' aria-current="true"' : ''}>
     <b>${esc(weekLabel(k).toUpperCase())}</b><span>${weekRange(k)}</span></button>`).join('');
-  const games = weekGames(key), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
+  // The State Scoreboard: only games with stats kept on them. The admin also sees hidden games, faded.
+  const games = weekGames(key, ui.admin).filter(x => !ui.state || fullyTracked(x)), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (board.err) body = note(board.err);
   else if (scores.ready !== key) body = note('Loading scores…');
-  else if (!games.length) body = note(`No games for ${weekLabel(key)} yet.`);
+  else if (!games.length) body = note(`No ${ui.state ? 'statted games' : 'games'} for ${weekLabel(key)} yet.`);
   else {
     const days = [];
     games.forEach(x => {
@@ -3696,7 +3803,9 @@ function renderScoreboard(){
       ${day.games.map(boardGame).join('')}</section>`).join('');
   }
   const old = box.querySelector('.bweeks'), keep = old ? old.scrollLeft : 0;
-  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>Scoreboard</h1><a class="bhead-link" href="?stats">BUCO Stats »</a></div>
+  const link = ui.state ? `<a class="bhead-link" href="?scores=${key}">BUCO Scoreboard »</a>` : '<a class="bhead-link" href="?stats">BUCO Stats »</a>';
+  const adminNote = ui.admin ? '<p class="badmin">Signed in as the admin: Hide takes a game off both scoreboards, the scores strip and BUCO Stats for everyone.</p>' : '';
+  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>${ui.state ? 'State' : 'BUCO'} Scoreboard</h1>${link}</div>${adminNote}
     <div class="bweeks-wrap"><button type="button" class="bw-arrow" data-bscroll="-1" aria-label="Earlier weeks">${chev('M9 1L1 9l8 8')}</button>
       <div class="bweeks">${tabs}</div>
       <button type="button" class="bw-arrow" data-bscroll="1" aria-label="Later weeks">${chev('M1 1l8 8-8 8')}</button></div></section>${body}`;
@@ -3709,7 +3818,9 @@ function renderScoreboard(){
 document.addEventListener('click', e => {
   if (!ui.board || !e.target.closest) return;
   const w = e.target.closest('[data-bweek]');
-  if (w){ ui.week = w.dataset.bweek; history.replaceState(null, '', `?scores=${ui.week}`); renderScores(); return renderScoreboard(); }
+  if (w){ ui.week = w.dataset.bweek; history.replaceState(null, '', `?${boardParam()}=${ui.week}`); renderScores(); return renderScoreboard(); }
+  const h = e.target.closest('[data-hide]');
+  if (h) return toggleHide(h.dataset.hide);
   const a = e.target.closest('[data-bscroll]');
   if (a){ const wk = $('#board .bweeks'); wk.scrollBy({left:+a.dataset.bscroll * wk.clientWidth * .7, behavior:'smooth'}); }
 });
@@ -4219,7 +4330,7 @@ function countySeasons(){
 function countyGames(){
   const season = new Set(seasonKeys(county.season)), pick = {};
   (county.games || []).forEach(x => {
-    if (!season.has(gameWeek(x))) return;
+    if (!season.has(gameWeek(x)) || isHidden(x)) return;   // nor any the admin has hidden
     const k = gameWeek(x) + '|' + [x.teams.A.name, x.teams.H.name].map(canonSchool).sort().join('|');
     if (!pick[k] || (x.updated || 0) > (pick[k].updated || 0)) pick[k] = x;
   });
