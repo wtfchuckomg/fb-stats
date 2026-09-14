@@ -3880,9 +3880,8 @@ function renderScoreboard(){
       ${day.games.map(boardGame).join('')}</section>`).join('');
   }
   const old = box.querySelector('.bweeks'), keep = old ? old.scrollLeft : 0;
-  const link = ui.state ? '' : '<a class="bhead-link" href="?stats">BUCO Stats »</a>';
   const adminNote = ui.admin ? '<p class="badmin">Signed in as the admin: Hide takes a game off both scoreboards, the scores strip and BUCO Stats for everyone.</p>' : '';
-  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>${ui.state ? 'State' : 'BUCO'} Scoreboard</h1>${link}</div>${adminNote}
+  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>${ui.state ? 'State' : 'BUCO'} Scoreboard</h1></div>${adminNote}
     <div class="bweeks-wrap"><button type="button" class="bw-arrow" data-bscroll="-1" aria-label="Earlier weeks">${chev('M9 1L1 9l8 8')}</button>
       <div class="bweeks">${tabs}</div>
       <button type="button" class="bw-arrow" data-bscroll="1" aria-label="Later weeks">${chev('M1 1l8 8-8 8')}</button></div></section>${body}`;
@@ -4540,7 +4539,7 @@ function renderCounty(){
   const who = county.team === 'all' ? 'All County Teams' : county.team;
   const title = v === 'team' ? `${who} Team Stats ${county.season}` : `${who} Player ${P_VIEWS[v].label} Stats ${county.season}`;
   document.title = `${title} · BUCO Stats`;
-  const head = `<section class="bcard bhead"><div class="bhead-top"><h1 class="c-title">${esc(title)}</h1><a class="bhead-link" href="?scores">Scoreboard »</a></div>
+  const head = `<section class="bcard bhead"><div class="bhead-top"><h1 class="c-title">${esc(title)}</h1></div>
     <nav class="c-tabs">${C_TABS.map(([k, label, first]) => `<button type="button"${k === tab ? ' class="on"' : ''} data-cview="${first}">${label}</button>`).join('')}</nav>
     ${tab === 'offense' ? `<div class="c-pills">${['passing', 'rushing', 'receiving'].map(k => `<button type="button"${k === v ? ' class="on"' : ''} data-cview="${k}">${P_VIEWS[k].label}</button>`).join('')}</div>` : ''}
     <div class="c-filters"><select class="c-sel" id="cseason" aria-label="Season">${countySeasons().map(y => `<option value="${y}"${y === county.season ? ' selected' : ''}>${y}</option>`).join('')}</select>
