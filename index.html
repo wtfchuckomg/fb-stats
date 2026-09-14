@@ -24,28 +24,7 @@
   --sans:-apple-system,system-ui,Roboto,Arial,"Helvetica Neue",Helvetica,sans-serif;
   color-scheme:light;
 }
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --page:#151617; --card:#232425; --ground:#232425; --surface:#2B2C2D; --surface-2:#353638;
-    --ink:#E7E8E9; --ink-2:#FFFFFF; --muted:#A5A6A7; --line:#3B3C3E; --line-2:#303133;
-    --pill:#3B3C3E; --seg:#3B3C3E; --blue:#5B8EF0; --accent:#5B8EF0; --red:#F04A3A;
-    --top:#0E0F10; --top-2:#26272A; --to-off:#48494B;
-    --fld-a:#2E2F31; --fld-b:#363739; --fld-line:#4A4B4E; --fld-num:#A5A6A7; --ltg:#E6C832; --drive:#F1F2F3;
-    --good:#4CC37A; --good-wash:#12301D; --bad:#FF6B61; --bad-wash:#3A1916; --flag-wash:#372E0E; --flag-ink:#F2D36B;
-    --shadow:0 2px 8px rgba(0,0,0,.55); --shadow-sm:0 1px 4px rgba(0,0,0,.55);
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --page:#151617; --card:#232425; --ground:#232425; --surface:#2B2C2D; --surface-2:#353638;
-  --ink:#E7E8E9; --ink-2:#FFFFFF; --muted:#A5A6A7; --line:#3B3C3E; --line-2:#303133;
-  --pill:#3B3C3E; --seg:#3B3C3E; --blue:#5B8EF0; --accent:#5B8EF0; --red:#F04A3A;
-  --top:#0E0F10; --top-2:#26272A; --to-off:#48494B;
-  --fld-a:#2E2F31; --fld-b:#363739; --fld-line:#4A4B4E; --fld-num:#A5A6A7; --ltg:#E6C832; --drive:#F1F2F3;
-  --good:#4CC37A; --good-wash:#12301D; --bad:#FF6B61; --bad-wash:#3A1916; --flag-wash:#372E0E; --flag-ink:#F2D36B;
-  --shadow:0 2px 8px rgba(0,0,0,.55); --shadow-sm:0 1px 4px rgba(0,0,0,.55);
-  color-scheme:dark;
-}
+/* Always the light gamecast look, like ESPN, whatever the device is set to. */
 *{box-sizing:border-box}
 /* Classes like .sample set display, which would otherwise override the hidden attribute. */
 [hidden]{display:none!important}
