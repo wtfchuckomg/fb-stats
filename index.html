@@ -142,6 +142,29 @@ body.board .sample,body.board .scores,body.board .strip,body.board .gtabs,body.b
 .bw:hover{color:var(--ink-2)}
 .bw-arrow{flex:none;width:30px;height:44px;border:0;padding:0;background:none;color:var(--blue);display:grid;place-items:center;cursor:pointer}
 .bempty{margin:0;color:var(--muted);font:500 15px/1.4 var(--sans)}
+.bhead-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.bhead-top h1{margin:0 0 14px;font:800 36px/1.1 var(--sans);letter-spacing:-.015em;color:var(--ink-2)}
+.bhead-link{color:var(--blue);font:600 14px/1 var(--sans);text-decoration:none;white-space:nowrap}
+/* ---------- county stats page (?stats) ---------- */
+.c-sub{margin:-4px 0 14px;color:var(--muted);font:400 14px/1.45 var(--sans)}
+.c-team{-webkit-appearance:none;appearance:none;border:1px solid var(--line);border-radius:20px;cursor:pointer;padding:9px 34px 9px 14px;font:600 14px/1 var(--sans);color:var(--ink-2);
+  background:#FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%233772DF' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 13px center}
+.ccard{padding:16px 0 6px}
+.ccard-hd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 20px 10px}
+.ccard-hd h2{margin:0;font:700 19px/1.2 var(--sans);color:var(--ink-2)}
+.ccard-hd span{color:var(--muted);font:500 13px/1 var(--sans)}
+.ctbl{width:100%;border-collapse:collapse;font:400 14px/1.3 var(--sans);font-variant-numeric:tabular-nums}
+.ctbl th{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;font:600 12px/1 var(--sans);text-transform:uppercase;letter-spacing:.03em;color:var(--muted);cursor:pointer;white-space:nowrap;user-select:none}
+.ctbl th.on{color:var(--ink-2)}
+.ctbl td{padding:8px 10px;border-bottom:1px solid #EEEFF0;text-align:right;color:var(--ink-2);white-space:nowrap}
+.ctbl tr:last-child td{border-bottom:0}
+.ctbl .cn{text-align:left;padding-left:20px;cursor:default}
+.ctbl th:last-child,.ctbl td:last-child{padding-right:20px}
+.cn-in{display:flex;align-items:center;gap:10px}
+.c-pl{display:flex;flex-direction:column;line-height:1.2}
+.c-pl small{color:var(--muted);font-size:12px}
+.ctbl tr.hi td{background:#F1F5FD}
+@media (max-width:640px){.bhead-top h1{font-size:28px;margin-bottom:10px}.ccard-hd{padding:0 14px 8px}.ctbl .cn{padding-left:14px}.ctbl th:last-child,.ctbl td:last-child{padding-right:14px}}
 .bday{margin:0;padding-bottom:16px;border-bottom:1px dotted var(--line);font:600 21px/1.2 var(--sans);color:var(--ink-2)}
 .bgame{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) 190px;gap:0 22px;padding:18px 0;border-bottom:1px dotted var(--line)}
 .bgame:last-child{border-bottom:0;padding-bottom:2px}
@@ -2388,7 +2411,7 @@ function loadLogos(){
   logoLib.busy = true;
   Promise.all(LOGO_SRC.map(src => fetch(src.base + 'teams.json').then(r => r.ok ? r.json() : []).catch(() => [])
     .then(list => { src.list = Array.isArray(list) ? list : []; })))
-    .then(() => { logoLib.list = LOGO_SRC.flatMap(src => src.list); if (g && R) refresh(); else renderScoreboard(); });
+    .then(() => { logoLib.list = LOGO_SRC.flatMap(src => src.list); if (g && R) refresh(); else { renderScoreboard(); renderCounty(); } });
 }
 // Match on the school name (or short name) against each library's names and aliases: every match, nearest library first.
 function logoUrls(team){
@@ -3517,7 +3540,7 @@ function renderScoreboard(){
       ${day.games.map(boardGame).join('')}</section>`).join('');
   }
   const old = box.querySelector('.bweeks'), keep = old ? old.scrollLeft : 0;
-  box.innerHTML = `<section class="bcard bhead"><h1>Scoreboard</h1>
+  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>Scoreboard</h1><a class="bhead-link" href="?stats">County stats »</a></div>
     <div class="bweeks-wrap"><button type="button" class="bw-arrow" data-bscroll="-1" aria-label="Earlier weeks">${chev('M9 1L1 9l8 8')}</button>
       <div class="bweeks">${tabs}</div>
       <button type="button" class="bw-arrow" data-bscroll="1" aria-label="Later weeks">${chev('M1 1l8 8-8 8')}</button></div></section>${body}`;
@@ -3972,6 +3995,140 @@ document.addEventListener('click', e => {
   if ('boxSave' in d) return saveBox();
 });
 document.addEventListener('input', e => { if (e.target.id === 'bx-txt' || e.target.id === 'bx-date') $('#bx-prev').innerHTML = boxPreview(parseBox($('#bx-txt').value)); });
+/* ================================================================
+   County stats (?stats): season totals for the Butler County schools,
+   from every game that's been statted, live or entered from a box
+   score. Quick scores have no stats, so they aren't counted. Built from
+   the shared games, like the scoreboard, so everyone sees the same page.
+   ================================================================ */
+const COUNTY_PAGE = new URLSearchParams(location.search).has('stats');
+const COUNTY = ['Andover', 'Andover Central', 'Augusta', 'Bluestem', 'Circle', 'Douglass', 'El Dorado', 'Flinthills', 'Remington', 'Rose Hill'];
+const COUNTY_ALIASES = {Bluestem:['Leon-Bluestem'], Circle:['Towanda-Circle'], Remington:['Whitewater-Remington']};
+const countyOf = name => COUNTY.find(c => [c, ...(COUNTY_ALIASES[c] || [])].some(a => logoSlug(a) === logoSlug(name))) || null;
+const county = {games:null, err:'', team:'all', sort:{}};
+
+async function startCounty(){
+  ui.viewer = true; ui.county = true; document.body.classList.add('viewer', 'board');
+  $('#board').hidden = false; $('#gtitle').textContent = '';
+  document.title = 'County Stats · Kansas Media Stats';
+  loadLogos(); renderCounty();
+  try {
+    const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
+    const [appM, fsM] = await Promise.all([import(base + 'app.js'), import(base + 'firestore.js')]);
+    const fsdb = fsM.getFirestore(appM.initializeApp(firebaseConfig));
+    fsM.onSnapshot(fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true)), snap => {
+      const games = [];
+      snap.forEach(d => {
+        const v = d.data(); if (v.deleted || v.kind === 'score' || !v.json) return;
+        try { const x = JSON.parse(v.json); if (x.teams && ((x.plays && x.plays.length) || x.box)) games.push(Object.assign(x, {id:d.id})); } catch (e) {}
+      });
+      county.games = games; county.err = ''; renderCounty();
+    }, () => { county.err = 'Can’t load the stats right now. Reload to try again.'; renderCounty(); });
+  } catch (e) { county.err = 'Can’t reach the stats. Check your connection and reload.'; renderCounty(); }
+}
+
+// This season's statted games, one per matchup a week: a game entered twice counts once, the newest copy.
+function countyGames(){
+  const season = new Set(seasonKeys(new Date().getFullYear())), pick = {};
+  (county.games || []).forEach(x => {
+    if (!season.has(gameWeek(x))) return;
+    const k = gameWeek(x) + '|' + [x.teams.A.name, x.teams.H.name].map(teamKey).sort().join('|');
+    if (!pick[k] || (x.updated || 0) > (pick[k].updated || 0)) pick[k] = x;
+  });
+  return Object.values(pick);
+}
+const C_KEYS = ['pc', 'pa', 'py', 'ptd', 'pint', 'ru', 'ry', 'rtd', 're', 'rey', 'retd', 'tk', 'ast', 'sk', 'dint', 'fgm', 'fga', 'xpm', 'xpa'];
+function countyStats(games){
+  const teams = Object.fromEntries(COUNTY.map(c => [c, {name:c, gp:0, w:0, l:0, t:0, pf:0, pa:0, rushY:0, passY:0}]));
+  const players = {};
+  for (const x of games){
+    const r = replay(x), st = r.st;
+    ['A', 'H'].forEach(s => {
+      const c = countyOf(x.teams[s].name); if (!c) return;
+      const o = other(s), T = teams[c], S = r.S.team[s];
+      T.gp++; T.pf += st.score[s]; T.pa += st.score[o]; T.rushY += S.rushY; T.passY += S.passY;
+      if (st.final) T[st.score[s] > st.score[o] ? 'w' : st.score[s] < st.score[o] ? 'l' : 't']++;
+      Object.values(r.S.pl[s]).forEach(p => {
+        if (p.n === 'team') return;
+        // A statted game keys players by number (named from its roster); a box score keys them by name.
+        const name = /^\d+$/.test(p.n) ? (x.teams[s].roster || {})[p.n] || `#${p.n}` : p.n;
+        const tds = Math.max(+p.tds || 0, (+p.rtd || 0) + (+p.retd || 0) + (+p.krtd || 0) + (+p.prtd || 0));
+        const pts = +p.pts || tds * 6 + (+p.xpm || 0) + 3 * (+p.fgm || 0);
+        if (!C_KEYS.some(k => +p[k]) && !tds) return;
+        const key = `${c}|${name.toLowerCase()}`;
+        const P = players[key] || (players[key] = Object.assign({name, team:c, gp:0, tds:0, pts:0}, zeros(C_KEYS)));
+        P.gp++; P.tds += tds; P.pts += pts; C_KEYS.forEach(k => { P[k] += +p[k] || 0; });
+      });
+    });
+  }
+  // A bare last name from one box score ("Vega") joins the one full name on that team with it ("Pete Vega").
+  Object.values(players).forEach(P => {
+    if (P.name.includes(' ') || P.name.startsWith('#')) return;
+    const k = P.name.toLowerCase(), full = Object.values(players).filter(Q => Q !== P && Q.team === P.team && Q.name.includes(' ') && lastName(Q.name) === k);
+    if (full.length !== 1) return;
+    const Q = full[0]; Q.gp += P.gp; Q.tds += P.tds; Q.pts += P.pts; C_KEYS.forEach(n => { Q[n] += P[n]; });
+    delete players[`${P.team}|${k}`];
+  });
+  return {teams:Object.values(teams), players:Object.values(players)};
+}
+
+/* ---------- tables: [heading, shown value, sort value] per column ---------- */
+const avg1 = (a, b) => b ? (a / b).toFixed(1) : '—';
+const T_COLS = [
+  ['GP', t => t.gp, t => t.gp],
+  ['W-L', t => t.gp ? `${t.w}-${t.l}${t.t ? `-${t.t}` : ''}` : '—', t => t.gp ? (t.w + t.t / 2) / t.gp + t.w / 1000 : -1],
+  ['PF', t => t.pf, t => t.pf], ['PA', t => t.pa, t => t.pa],
+  ['Pts/G', t => avg1(t.pf, t.gp), t => t.gp ? t.pf / t.gp : -1],
+  ['Rush Yds', t => t.rushY, t => t.rushY], ['Pass Yds', t => t.passY, t => t.passY],
+  ['Total Yds', t => t.rushY + t.passY, t => t.rushY + t.passY],
+  ['Yds/G', t => avg1(t.rushY + t.passY, t.gp), t => t.gp ? (t.rushY + t.passY) / t.gp : -1]];
+const C_TABLES = [   // id, title, who's in it, default sort column, columns
+  ['pass', 'Passing', p => p.pa > 0, 2, [['C/Att', p => `${p.pc}/${p.pa}`, p => p.pc], ['Pct', p => p.pa ? `${Math.round(p.pc / p.pa * 100)}%` : '—', p => p.pa ? p.pc / p.pa : 0],
+    ['Yds', p => p.py, p => p.py], ['TD', p => p.ptd, p => p.ptd], ['Int', p => p.pint, p => p.pint], ['Yds/G', p => avg1(p.py, p.gp), p => p.py / p.gp]]],
+  ['rush', 'Rushing', p => p.ru > 0, 1, [['Car', p => p.ru, p => p.ru], ['Yds', p => p.ry, p => p.ry], ['Avg', p => avg1(p.ry, p.ru), p => p.ru ? p.ry / p.ru : 0],
+    ['TD', p => p.rtd, p => p.rtd], ['Yds/G', p => avg1(p.ry, p.gp), p => p.ry / p.gp]]],
+  ['rec', 'Receiving', p => p.re > 0 || p.rey > 0, 1, [['Rec', p => p.re, p => p.re], ['Yds', p => p.rey, p => p.rey], ['Avg', p => avg1(p.rey, p.re), p => p.re ? p.rey / p.re : 0],
+    ['TD', p => p.retd, p => p.retd], ['Yds/G', p => avg1(p.rey, p.gp), p => p.rey / p.gp]]],
+  ['score', 'Scoring', p => p.pts > 0, 1, [['TD', p => p.tds, p => p.tds], ['Pts', p => p.pts, p => p.pts]]],
+  ['kick', 'Kicking', p => p.fga > 0 || p.xpa > 0, 2, [['FG', p => `${p.fgm}/${p.fga}`, p => p.fgm], ['XP', p => `${p.xpm}/${p.xpa}`, p => p.xpm], ['Pts', p => p.fgm * 3 + p.xpm, p => p.fgm * 3 + p.xpm]]],
+  ['def', 'Defense', p => p.tk + p.ast + p.sk + p.dint > 0, 0, [['Tot', p => p.tk + p.ast, p => p.tk + p.ast], ['Solo', p => p.tk, p => p.tk], ['Ast', p => p.ast, p => p.ast],
+    ['Sack', p => fy(p.sk), p => p.sk], ['Int', p => p.dint, p => p.dint]]]];
+const cMark = name => markFor({name, abbr:shortName(name), color:'#4A4B4D'}, 22);
+function ctable(id, title, rows, cols, def, first, cell, hi){
+  const s = county.sort[id] || {i:def, desc:true}, v = cols[s.i][2];
+  const sorted = rows.slice().sort((a, b) => (s.desc ? v(b) - v(a) : v(a) - v(b)) || a.name.localeCompare(b.name));
+  // All county teams: each list's top 20. One team: everyone.
+  const shown = id === 'team' || county.team !== 'all' ? sorted : sorted.slice(0, 20);
+  return `<section class="bcard ccard"><div class="ccard-hd"><h2>${title}</h2>${shown.length < sorted.length ? `<span>Top ${shown.length} of ${sorted.length}</span>` : ''}</div>
+    <div class="tbl-wrap"><table class="ctbl"><thead><tr><th class="cn">${first}</th>${cols.map((c, i) => `<th data-csort="${id}:${i}"${i === s.i ? ' class="on"' : ''}>${c[0]}${i === s.i ? (s.desc ? ' ▾' : ' ▴') : ''}</th>`).join('')}</tr></thead>
+    <tbody>${shown.map(r => `<tr${hi && hi(r) ? ' class="hi"' : ''}><td class="cn"><div class="cn-in">${cell(r)}</div></td>${cols.map(c => `<td>${esc(String(c[1](r)))}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section>`;
+}
+function renderCounty(){
+  if (!ui.county) return;
+  const box = $('#board'), games = countyGames();
+  const opts = ['all', ...COUNTY].map(c => `<option value="${esc(c)}"${county.team === c ? ' selected' : ''}>${c === 'all' ? 'All county teams' : esc(c)}</option>`).join('');
+  let body;
+  if (county.err) body = `<section class="bcard"><p class="bempty">${esc(county.err)}</p></section>`;
+  else if (!county.games) body = '<section class="bcard"><p class="bempty">Loading stats…</p></section>';
+  else {
+    const {teams, players} = countyStats(games), mine = county.team === 'all' ? players : players.filter(p => p.team === county.team);
+    const pname = p => `${cMark(p.team)}<span class="c-pl"><b>${esc(p.name)}</b><small>${esc(p.team)}</small></span>`;
+    const tables = C_TABLES.map(([id, title, keep, def, cols]) => { const rows = mine.filter(keep); return rows.length ? ctable(id, title, rows, cols, def, 'Player', pname) : ''; }).join('');
+    body = ctable('team', 'Team Totals', teams, T_COLS, 1, 'Team', t => `${cMark(t.name)}<b>${esc(t.name)}</b>`, t => t.name === county.team)
+      + (tables || `<section class="bcard"><p class="bempty">No player stats yet${county.team === 'all' ? '' : ` for ${esc(county.team)}`}.</p></section>`);
+  }
+  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>County Stats</h1><a class="bhead-link" href="?scores">Scoreboard »</a></div>
+    <p class="c-sub">Butler County · ${new Date().getFullYear()} season${county.games ? ` · ${games.length} game${games.length === 1 ? '' : 's'} statted` : ''}. Totals and records come from games statted live or entered from a box score.</p>
+    <select class="c-team" id="cteam" aria-label="Team">${opts}</select></section>${body}`;
+}
+document.addEventListener('click', e => {
+  if (!ui.county || !e.target.closest) return;
+  const th = e.target.closest('[data-csort]'); if (!th) return;
+  const [id, i] = th.dataset.csort.split(':'), cur = county.sort[id];
+  county.sort[id] = {i:+i, desc:cur && cur.i === +i ? !cur.desc : true};
+  renderCounty();
+});
+document.addEventListener('change', e => { if (ui.county && e.target.id === 'cteam'){ county.team = e.target.value; renderCounty(); } });
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
@@ -3997,6 +4154,7 @@ function sampleGame(){
 
 /* ---------- boot ---------- */
 if (BOARD) startScoreboard();           // ?scores: the week's scoreboard, read-only
+else if (COUNTY_PAGE) startCounty();    // ?stats: the county's season stats, read-only
 else if (LIVE_ID) startViewer(LIVE_ID); // a shared link: watch that game, read-only
 else {
   load();
