@@ -1,0 +1,47 @@
+rules_version = '2';
+
+// Kansas Media Stats — Firestore rules for the stats Firebase project
+// (fb-stats-dc058), covering BOTH trackers. Paste the whole file into
+// Firebase console → Firestore Database → Rules, then Publish.
+//
+//   pressbox  = the football Press Box (fb stats/index.html)
+//   hoops     = the basketball tracker (bball stats/index.html)
+//
+// Each tracker keeps every game as one document holding the whole game
+// as text. Anyone signed in with Google can keep games, and only the
+// owner can change their own. A game the owner has shared (public == true)
+// can be read by anyone with its link — the live look-in — but never changed.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ownGame() {
+      return signedIn()
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.json is string
+        && request.resource.data.json.size() < 900000;
+    }
+
+    match /pressbox/{gameId} {
+      allow read: if (signedIn() && resource.data.owner == request.auth.uid)
+                  || resource.data.public == true;
+      allow create: if ownGame();
+      allow update: if ownGame() && resource.data.owner == request.auth.uid;
+      allow delete: if signedIn() && resource.data.owner == request.auth.uid;
+    }
+
+    match /hoops/{gameId} {
+      allow read: if (signedIn() && resource.data.owner == request.auth.uid)
+                  || resource.data.public == true;
+      allow create: if ownGame();
+      allow update: if ownGame() && resource.data.owner == request.auth.uid;
+      allow delete: if signedIn() && resource.data.owner == request.auth.uid;
+    }
+
+    // Anything not matched above is denied by default.
+  }
+}
