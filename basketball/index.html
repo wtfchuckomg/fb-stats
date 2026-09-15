@@ -1805,7 +1805,7 @@ function renderView(){
   if (!g || !R) return;
   const pbpCard = () => `<section class="card"><div class="card-hd"><h2 class="card-title">Play-by-Play</h2></div>${ui.printing ? '' : filterPills()}${playsList()}</section>`;
   const V = ui.printing ? () => cardLinescore() + viewBoxTab() + cardCmp(true) + pbpCard()
-    : ({gamecast:() => cardSituation() + cardLinescore() + cardFlow() + cardPbp(), box:viewBoxTab, pbp:pbpCard, team:() => cardLinescore() + cardFlow() + cardCmp(true)})[ui.tab] || (() => '');
+    : ({gamecast:() => cardSituation() + cardLinescore() + cardFlow() + cardPbp(), box:viewBoxTab, pbp:pbpCard, team:() => cardCmp(true) + cardLinescore() + cardFlow()})[ui.tab] || (() => '');
   $('#view').innerHTML = V();
   drawFlow();
 }
