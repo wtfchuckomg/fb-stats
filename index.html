@@ -3172,7 +3172,8 @@ function driveChart(){
     if (t1 != null && t0 != null && d.endQ === d.q && t1 > t0) t1 = null;
     endAt = t1 != null ? {q:d.endQ, t:t1} : null;
     const top = t0 != null && t1 != null ? Math.max(0, (d.endQ - d.q) * qSec + t0 - t1) : null;
-    const res = d.open ? 'In progress' : d.res, b = badge(res), ot = d.q > 4;
+    // A drive left open in a game that's already over says nothing: a dash, not "In progress".
+    const res = d.open ? (R.st.final ? '—' : 'In progress') : d.res, b = badge(res), ot = d.q > 4;
     rows += `<tr><td><span class="dc-tm">${teamMark(d.team, 22)}${esc(ab(d.team))}</span></td>
       <td class="sep">${esc(R.yl(d.team, d.start))}</td><td>${perShort(d.q)}</td><td>${ot ? '' : tm(t0)}</td><td>${esc(how(d, prev))}</td>
       <td class="sep">${esc(R.yl(d.team, d.last))}</td><td>${d.open ? '' : perShort(d.endQ)}</td><td>${d.open || ot ? '' : tm(t1)}</td>
