@@ -7,7 +7,8 @@ rules_version = '2';
 //
 // index.html keeps each game as one document holding the whole game as
 // text. Anyone signed in with Google can keep games, and only the owner
-// can read or change their own.
+// can change their own. A game the owner has shared (public == true) can be
+// read by anyone with its link — that is the live look-in — but never changed.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -16,8 +17,16 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // The site's admin (added 2026-09-15) can read every game, shared or not, for the admin-only
+    // All Games list. Reading only: the admin still can't change or delete anyone else's game.
+    function isAdmin() {
+      return signedIn() && request.auth.uid == '2lbD7tPuufPdkBPtxbgSYnZwizp2';
+    }
+
     match /pressbox/{gameId} {
-      allow read: if signedIn() && resource.data.owner == request.auth.uid;
+      allow read: if (signedIn() && resource.data.owner == request.auth.uid)
+                  || resource.data.public == true
+                  || isAdmin();
 
       allow create: if signedIn()
                     && request.resource.data.owner == request.auth.uid
