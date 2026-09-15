@@ -205,6 +205,22 @@ body.starting #sharebtn,body.starting .navtools [data-open="setup"],body.startin
 .gf-score{text-align:right;white-space:nowrap}
 .gf-desc{margin-top:10px;font-size:15px;color:var(--muted)}
 
+/* Offense boxes and Current Trends, in the style of StatBroadcast's */
+.ob2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:640px){.ob2{grid-template-columns:1fr}}
+.ob{padding:0;overflow:hidden;border-top:6px solid var(--tc)}
+.ob-hd{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.ob-hd h2{margin:0;font:800 19px/1.1 var(--cond);text-transform:uppercase;letter-spacing:.01em;color:var(--ink-2)}
+.ob-rows{display:flex;flex-direction:column}
+.ob-row{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line-2);font-size:15px}
+.ob-row:last-child{border-bottom:0}
+.ob-row span{color:var(--muted);font-size:13.5px}
+.ob-row b{font:500 15px/1.35 var(--sans);color:var(--ink-2);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.tr-rows{display:flex;flex-direction:column;gap:6px}
+.tr-row{display:flex;align-items:center;gap:14px;padding:10px 12px;border-radius:8px;background:var(--ink-2);color:#FFFFFF;font:700 17px/1.2 var(--cond);text-transform:uppercase;letter-spacing:.02em}
+.tr-row.hot{background:var(--tc)}
+.tr-row .tlogo{background:#FFFFFF;border-radius:6px;padding:3px;box-sizing:content-box}
+.tr-row .tmono{box-shadow:0 0 0 2px #FFFFFF}
 /* line score */
 .tbl-wrap{overflow-x:auto}
 .ls{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
@@ -1522,6 +1538,54 @@ function cardSituation(){
       <div class="lp-sit">${esc(whenTxt(lp.per, lp.clk))} · ${esc(ab('A'))} ${lp.A}, ${esc(ab('H'))} ${lp.H}</div></div>` : '<div class="empty">No plays yet. Type the first one above.</div>'}
   </section>`;
 }
+/* ---------- Offense boxes and Current Trends, in the style of StatBroadcast's ---------- */
+const atTxt = (per, clk) => `${perShort(per, R.ru)}-${clk != null ? mmss(clk).padStart(5, '0') : '--:--'}`;
+function offenseFacts(){
+  const F = {A:{}, H:{}}, sc = R.scoring;
+  let big = {A:0, H:0};
+  for (const e of sc){
+    const p = g.plays[e.i];
+    if (p.t === 'shot') F[e.s].lastFG = e;
+    const lead = e.A > e.H ? 'A' : e.H > e.A ? 'H' : null;
+    if (lead){ F[lead].lastLead = e; const m = Math.abs(e.A - e.H); if (m > big[lead]){ big[lead] = m; F[lead].bigLead = {m, e}; } }
+  }
+  return F;
+}
+function cardOffense(){
+  const T = g.teams, F = offenseFacts();
+  const own = (s, e) => s === 'A' ? `${e.A}-${e.H}` : `${e.H}-${e.A}`;
+  const box = s => {
+    const f = F[s], fg = f.lastFG, p = fg && g.plays[fg.i];
+    const rows = [
+      ['Last FG', fg ? `${fg.clk != null ? mmss(fg.clk).padStart(5, '0') : ''} ${(p.how || `${p.v}-pt shot`).toUpperCase()} #${p.n} ${rosterName(s, p.n).toUpperCase()} (${own(s, fg)})` : '-'],
+      ['Last Lead', f.lastLead ? `${own(s, f.lastLead)} @ ${atTxt(f.lastLead.per, f.lastLead.clk)}` : '- @ -'],
+      ['Largest Lead', f.bigLead ? `${f.bigLead.m} @ ${atTxt(f.bigLead.e.per, f.bigLead.e.clk)} (${own(s, f.bigLead.e)})` : '0 @ - (-)'],
+      ['Largest Run', `${R.X.bigRun[s]}-0`]];
+    return `<section class="card ob" style="--tc:${esc(T[s].color)}"><div class="ob-hd">${teamMark(s, 34)}<h2>${esc(ab(s))} Offense</h2></div>
+      <div class="ob-rows">${rows.map(([k, v]) => `<div class="ob-row"><span>${k}</span><b>${esc(v)}</b></div>`).join('')}</div></section>`;
+  };
+  return `<div class="ob2">${box('A')}${box('H')}</div>`;
+}
+// Shooting streaks and droughts: "FGs: 0 of last 5", "No FGs last 3:25".
+function cardTrends(){
+  const T = g.teams, D = flowData(), rows = [];
+  const now = R.st.final ? D.total : (D.pts.length ? D.pts[D.pts.length - 1].x : 0);
+  for (const s of ['A', 'H']){
+    const fgs = R.log.filter(e => e.s === s && g.plays[e.i].t === 'shot').map(e => ({made:!!g.plays[e.i].made, x:D.pts[e.i].x}));
+    if (!fgs.length) continue;
+    // a streak: misses or makes in a row at the end, three or more; otherwise the last seven
+    let k = fgs.length - 1, run = 1; while (k > 0 && fgs[k - 1].made === fgs[k].made){ run++; k--; }
+    const lastMade = fgs[fgs.length - 1].made;
+    if (run >= 3) rows.push([s, lastMade ? `FGs: ${run} of last ${run}` : `FGs: 0 of last ${run}`, lastMade]);
+    else { const w = fgs.slice(-7); rows.push([s, `FGs: ${w.filter(f => f.made).length} of last ${w.length}`, w.filter(f => f.made).length / w.length >= .5]); }
+    const lastFG = [...fgs].reverse().find(f => f.made);
+    const gap = now - (lastFG ? lastFG.x : 0);
+    if (gap >= 120) rows.push([s, `No FGs last ${mmss(gap)}`, false]);
+  }
+  if (!rows.length) return '';
+  return `<section class="card tr"><div class="card-hd"><h2 class="card-title">Current Trends</h2></div>
+    <div class="tr-rows">${rows.map(([s, txt, hot]) => `<div class="tr-row ${hot ? 'hot' : ''}" style="--tc:${esc(T[s].color)}">${teamMark(s, 30)}<span>${esc(txt)}</span></div>`).join('')}</div></section>`;
+}
 function cardLinescore(){
   const st = R.st, T = g.teams, ru = R.ru;
   const cols = Array.from({length:ru.n + (st.per > ru.n ? 1 : 0)}, (_, i) => i);
@@ -1805,7 +1869,7 @@ function renderView(){
   if (!g || !R) return;
   const pbpCard = () => `<section class="card"><div class="card-hd"><h2 class="card-title">Play-by-Play</h2></div>${ui.printing ? '' : filterPills()}${playsList()}</section>`;
   const V = ui.printing ? () => cardLinescore() + viewBoxTab() + cardCmp(true) + pbpCard()
-    : ({gamecast:() => cardSituation() + cardLinescore() + cardFlow() + cardPbp(), box:viewBoxTab, pbp:pbpCard, team:() => cardCmp(true) + cardLinescore() + cardFlow()})[ui.tab] || (() => '');
+    : ({gamecast:() => cardOffense() + cardTrends() + cardLinescore() + cardFlow() + cardPbp(), box:viewBoxTab, pbp:pbpCard, team:() => cardCmp(true) + cardLinescore() + cardFlow()})[ui.tab] || (() => '');
   $('#view').innerHTML = V();
   drawFlow();
 }
