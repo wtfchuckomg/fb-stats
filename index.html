@@ -454,7 +454,7 @@ button.h-btn{cursor:pointer}
   .bhide{padding:8px 14px;font-size:13px}
 }
 /* phones: the week picker only as wide as "Week 2" (a select is otherwise as wide as its longest week, "State Championship") */
-@media (max-width:640px){.sc-wk{padding:8px 8px 8px 10px}.sc-wk select{width:100px;padding:8px 24px 8px 10px;background-position:right 8px center;
+@media (max-width:640px){.sc-wk{padding:8px 8px 8px 10px}.sc-wk select{max-width:120px;padding:8px 24px 8px 10px;background-position:right 8px center;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .sc-game{width:148px;padding:7px 10px 8px}.sc-row{font-size:13px;gap:6px}}
 
@@ -3802,12 +3802,23 @@ function renderScores(){
       <button type="button" class="sc-arrow r" data-scroll="1" aria-label="More games" hidden>${chev('M1 1l8 8-8 8')}</button></div>
     <a class="sc-full" href="?scores=${key}">Full Scoreboard »</a>
     ${ui.viewer ? '' : `<button type="button" class="sc-add" data-qs-new aria-label="Add a score from another game"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 2v14M2 9h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>Score</span></button>`}</div>`;
+  const sel = box.querySelector('#scweek');
+  fitSelect(sel); sel.addEventListener('change', () => fitSelect(sel));
   const list = box.querySelector('.sc-list');
   // A redraw keeps the strip where it was; a new week brings the open game into view.
   if (scores.seen === key) list.scrollLeft = keep;
   else { scores.seen = key; const c = list.querySelector('.sc-game.cur'); if (c) list.scrollLeft = Math.max(0, c.offsetLeft - (list.clientWidth - c.offsetWidth) / 2); }
   list.addEventListener('scroll', scoreArrows, {passive:true});
   scoreArrows();
+}
+// The week picker only as wide as the week showing ("Week 2"), not its longest choice ("State Championship").
+function fitSelect(sel){
+  if (!sel || !sel.options.length) return;
+  const c = getComputedStyle(sel), cv = fitSelect.cv || (fitSelect.cv = document.createElement('canvas')), ctx = cv.getContext('2d');
+  ctx.font = `${c.fontWeight} ${c.fontSize} ${c.fontFamily}`;
+  const px = k => parseFloat(c[k]) || 0;
+  sel.style.width = Math.ceil(ctx.measureText(sel.options[sel.selectedIndex].text).width
+    + px('paddingLeft') + px('paddingRight') + px('borderLeftWidth') + px('borderRightWidth') + 2) + 'px';
 }
 function scoreArrows(){
   const box = $('#scores'), list = box && box.querySelector('.sc-list'); if (!list) return;
