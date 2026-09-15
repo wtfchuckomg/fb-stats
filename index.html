@@ -215,7 +215,7 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .ctbl th{padding:10px 12px;border-bottom:1px solid var(--line);text-align:right;font:600 13px/1 var(--sans);text-transform:uppercase;letter-spacing:.03em;color:var(--ink-2);cursor:pointer;white-space:nowrap;user-select:none;background:var(--card)}
 .ctbl th.num span{text-decoration:underline;text-underline-offset:3px}
 .ctbl th i{font-style:normal;margin-left:4px;font-size:11px}
-.ctbl td{padding:10px 12px;border-bottom:1px solid #EEEFF0;text-align:right;color:var(--ink-2);white-space:nowrap;background:var(--card)}
+.ctbl td{padding:8px 12px;border-bottom:1px solid #EEEFF0;text-align:right;color:var(--ink-2);white-space:nowrap;background:var(--card)}
 .ctbl tbody tr:nth-child(even) td{background:#FAFAFB}
 .ctbl th.on,.ctbl td.on,.ctbl tbody tr:nth-child(even) td.on{background:#E8F0FB}
 .ctbl tr.hi td,.ctbl tr.hi td.on{background:#F1F5FD}
@@ -238,12 +238,16 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 @media (max-width:640px){.bhead-top h1.c-title{font-size:20px;margin-bottom:10px}.ccard-hd{padding:0 14px 8px}
   .c-tabs button{padding:12px 12px;font-size:14px}.c-pills button{padding:10px 14px;font-size:14px}
   .ctbl{font-size:13px}.ctbl th{font-size:12px}.ctbl th,.ctbl td{padding:7px 8px}
-  .ctbl .rk{padding-left:12px;width:36px;min-width:36px;max-width:36px}.ctbl .nm{left:36px}
-  .ctbl .nm + .num{padding-left:14px}
+  .ctbl .rk{padding-left:10px;width:32px;min-width:32px;max-width:32px}.ctbl .nm{left:32px}
+  .ctbl .nm + .num{padding-left:10px}
   .ctbl th:last-child,.ctbl td:last-child{padding-right:14px}
   .ctbl tr.cgrp th{font-size:12px;padding:9px}
   .ctbl .tlogo,.ctbl .tmono{width:22px!important;height:22px!important;font-size:8px!important}
-  .c-pl{gap:5px}.c-pl small{font-size:11.5px}
+  /* the name column held to about 40% of the screen, like ESPN's, so more stats show: no class year, and a long
+     name ends in "…" */
+  .cn-in{gap:6px;max-width:140px}
+  .c-pl{gap:5px;min-width:0;overflow:hidden}.c-pl b{min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .c-pl small{font-size:11.5px;flex:none}.pl-yr{display:none}
   .pl-full{display:none}.pl-short{display:inline}}
 .bday{margin:0;padding-bottom:16px;border-bottom:1px dotted var(--line);font:600 16.8px/1.2 var(--sans);color:var(--ink-2)}
 .bgame{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) 190px;gap:0 22px;padding:18px 0;border-bottom:1px dotted var(--line)}
@@ -4668,7 +4672,7 @@ function statTable(id, rows, cols, def, o){
     <tbody>${sorted.map((r, j) => `<tr${o.hi && o.hi(r) ? ' class="hi"' : ''}><td class="rk">${rk[j]}</td><td class="nm"><div class="cn-in">${o.name(r)}</div></td>
       ${cols.map((c, i) => `<td class="num${i === s.i ? ' on' : ''}">${esc(String(cell(c, r)))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
-const cMark = name => markFor({name, abbr:shortName(name), color:'#4A4B4D'}, 33);
+const cMark = name => markFor({name, abbr:shortName(name), color:'#4A4B4D'}, 26);   // phones: 22 (1-head.html)
 // "Will Quinn" -> "W. Quinn"; one-word names and numbers ("#12") stay as they are.
 const plShort = n => { const p = String(n).trim().split(/\s+/); return p.length < 2 || p[0].startsWith('#') ? n : `${p[0][0]}. ${p.slice(1).join(' ')}`; };
 function renderCounty(){
@@ -4705,7 +4709,7 @@ function renderCounty(){
     else {
       const V = y25 && v === 'scoring' ? SCORING_25 : P_VIEWS[v], rows = players.filter(p => V.keep(p) && (county.team === 'all' || p.team === county.team));
       // Phones show the short form, like ESPN's ("W. Quinn").
-      const name = p => `${cMark(p.team)}<span class="c-pl"><b><span class="pl-full">${esc(p.name)}</span><span class="pl-short">${esc(plShort(p.name))}</span></b><small>${esc(shortName(p.team))}${p.yr ? ` · ${esc(p.yr)}` : ''}</small></span>`;
+      const name = p => `${cMark(p.team)}<span class="c-pl"><b><span class="pl-full">${esc(p.name)}</span><span class="pl-short">${esc(plShort(p.name))}</span></b><small>${esc(shortName(p.team))}${p.yr ? `<span class="pl-yr"> · ${esc(p.yr)}</span>` : ''}</small></span>`;
       // 2025's tables keep their own sort (its Scoring has fewer columns than this season's).
       body = `<section class="bcard ccard">${rows.length ? statTable(y25 ? v + '25' : v, rows, V.cols, V.def, {name, groups:V.groups})
         : `<p class="bempty" style="padding:4px 20px 10px">No ${V.label.toLowerCase()} stats yet${county.team === 'all' ? '' : ` for ${esc(county.team)}`}.</p>`}</section>`;
