@@ -2595,7 +2595,8 @@ function dlgSetup(isNew){
       <div class="fld"><span class="eyebrow">Opening kickoff by</span><div class="seg" id="s-kick">${['A', 'H'].map(s => `<button type="button" data-kick="${s}" aria-pressed="${src.set.firstKick === s}">${s === 'A' ? 'Visitors' : 'Home'}</button>`).join('')}</div></div>
       <div class="fld"><label class="eyebrow" for="s-qtr">Quarter, minutes</label><input class="inp" id="s-qtr" inputmode="numeric" value="${src.set.qtr}"></div></div>
       <div class="fld"><label class="eyebrow" for="s-date">Game date · sets its week on the scoreboard</label><input class="inp" type="date" id="s-date" value="${from && from.date ? from.date : isNew ? ymd(new Date()) : ymd(gameDay(g))}"></div>
-      <p class="hint" id="s-rulehint">${ruleHint(ru.men)}</p></div></div>
+      <p class="hint" id="s-rulehint">${ruleHint(ru.men)}</p>
+      ${isNew ? `<label style="display:flex;align-items:center;gap:8px;margin-top:10px;font:500 14px/1.3 var(--sans)"><input type="checkbox" id="s-private"> Keep this game private: off the scoreboard, with no live link</label>` : ''}</div></div>
     <datalist id="teamlib">${savedTeams().map(t => `<option value="${esc(t.name)}"></option>`).join('')}</datalist>
     <div class="dlg-ft"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" data-save-setup="${isNew ? 1 : 0}">${isNew ? 'Start game' : 'Save'}</button></div>`;
 }
@@ -2616,8 +2617,10 @@ function saveSetup(isNew){
   shareRoster(teams.A); shareRoster(teams.H);   // up for everyone to use, when signed in
   if (keptA || keptH) syncTeams();
   const date = /^\d{4}-\d\d-\d\d$/.test(v('s-date')) ? v('s-date') : ymd(new Date());
-  // A game started from the scoreboard goes live for fans right away (its card there opens once plays come in).
-  if (isNew){ g = {id:'g' + Date.now().toString(36), created:Date.now(), date, teams, set, plays:[], clk:{s:set.qtr * 60, run:false, at:0}, share:!!ui.fromSched}; resetUi(); }
+  // New games go live by default: on the scoreboard, with a link fans can follow (its card opens once plays come in).
+  // The scorer keeps one to themselves with "Keep this game private", or Live → Make private later.
+  const keepPrivate = !!($('#s-private') && $('#s-private').checked);
+  if (isNew){ g = {id:'g' + Date.now().toString(36), created:Date.now(), date, teams, set, plays:[], clk:{s:set.qtr * 60, run:false, at:0}, share:!keepPrivate}; resetUi(); }
   else { if (!g.plays.length && set.qtr !== g.set.qtr) g.clk = {s:set.qtr * 60, run:false, at:0}; Object.assign(g, {teams, set, date}); }
   save(); closeDialog(); refresh(); toast(isNew ? 'Game started' : 'Setup saved');
 }
@@ -2636,18 +2639,18 @@ function dlgGames(){
 function dlgShare(){
   const link = `${location.origin}${location.pathname}?game=${encodeURIComponent(g.id)}`;
   let body;
-  if (g.sample) body = '<p class="hint">The sample game can’t be shared. Start a real game and share that.</p>';
-  else if (sync.state === 'unavailable') body = '<p class="hint">Live links work from your own site (stats.kansasmediarankings.com), where games sync to your Google account.</p>';
-  else if (!sync.user) body = `<div class="acct"><div><b>Sign in to share</b><p class="hint">The live link reads the game from your account, so sign in with Google first.</p></div>
+  if (g.sample) body = '<p class="hint">The sample game can’t go live. Start a real game and it goes live on its own.</p>';
+  else if (sync.state === 'unavailable') body = '<p class="hint">Live games work from your own site (stats.kansasmediarankings.com), where games sync to your Google account.</p>';
+  else if (!sync.user) body = `<div class="acct"><div><b>Sign in to go live</b><p class="hint">A live game is read from your account, so sign in with Google first. Until then it stays on this device.</p></div>
     <button class="btn small primary" data-signin>Sign in with Google</button></div>`;
-  else body = `<div class="acct"><div><b>Live link is ${g.share ? 'on' : 'off'}</b>
-      <p class="hint">${g.share ? 'Anyone with the link can watch the score, play-by-play and stats update as you enter plays. They can’t change anything.'
-        : 'Turn it on to get a link people can watch this game from. They can’t change anything.'}</p></div>
-      <button class="btn small ${g.share ? '' : 'primary'}" data-share="${g.share ? 'off' : 'on'}">${g.share ? 'Turn off' : 'Turn on'}</button></div>
+  else body = `<div class="acct"><div><b>${g.share ? 'Live on the scoreboard' : 'Private'}</b>
+      <p class="hint">${g.share ? 'Fans can watch the score, play-by-play and stats update as you enter plays, from the scoreboard or this link. They can’t change anything.'
+        : 'Only you can see this game. Go live to put it on the scoreboard, with a link fans can follow.'}</p></div>
+      <button class="btn small ${g.share ? '' : 'primary'}" data-share="${g.share ? 'off' : 'on'}">${g.share ? 'Make private' : 'Go live'}</button></div>
     ${g.share ? `<div class="fld"><label class="eyebrow" for="x-link">Link to share</label><input class="inp" id="x-link" readonly value="${esc(link)}" style="font:500 15px/1.2 Barlow,sans-serif"></div>
       <div class="line"><button class="btn small" data-copy="x-link">Copy link</button><a class="btn small" href="${esc(link)}" target="_blank" rel="noopener">Open the viewer</a></div>
-      <p class="hint">Viewers see any roster names you’ve entered. Turning the link off stops it working right away.</p>` : ''}`;
-  return `${dlgHead('Share live')}<div class="dlg-bd">${body}</div>`;
+      <p class="hint">Viewers see any roster names you’ve entered. Making it private takes it off the scoreboard and stops the link right away.</p>` : ''}`;
+  return `${dlgHead('Live or private')}<div class="dlg-bd">${body}</div>`;
 }
 function dlgExport(){
   return `${dlgHead('Export')}<div class="dlg-bd">
@@ -2705,7 +2708,7 @@ function refresh(){
   ui.ctx = ui.editing != null ? Object.assign(replay(g, ui.editing), {}) : R;
   $('#sample').hidden = !g.sample || !!ui.viewer;
   const sb = $('#sharebtn');
-  if (sb){ sb.classList.toggle('live', !!g.share); sb.innerHTML = g.share ? '<i></i>Live' : 'Share'; }
+  if (sb){ sb.classList.toggle('live', !!g.share); sb.innerHTML = g.share ? '<i></i>Live' : 'Private'; }
   renderBoard(); renderPad(); renderView(); renderRail(); renderLive(); renderScores(); loadLogos(); renderStart();
 }
 let toastT;
@@ -2757,7 +2760,7 @@ document.addEventListener('click', e => {
   if (ui.viewer && !d.tab && !d.pbp) return;     // viewers can switch tabs and nothing else
   if ('xlsx' in d) return downloadXlsx();
   if (d.share){
-    g.share = d.share === 'on'; save(); refresh();
+    g.share = d.share === 'on'; save(); refresh(); toast(g.share ? 'Live on the scoreboard' : 'Private: off the scoreboard');
     dlg().innerHTML = dlgShare();
     return toast(g.share ? 'Live link on' : 'Live link off');
   }
@@ -5222,7 +5225,7 @@ function scorerBar(){
   }
   document.body.classList.add('scorer');
   $('#sync').innerHTML = `<a class="abtn syncbtn ok" href="${go('games')}" title="Your games are kept in your account"><i></i>Synced</a>`;
-  document.querySelector('.navtools .abtns').innerHTML = `<a class="abtn${live ? ' live' : ''}" href="${go('share')}">${live ? '<i></i>Live' : 'Share'}</a>`
+  document.querySelector('.navtools .abtns').innerHTML = `<a class="abtn${live ? ' live' : ''}" href="${go('share')}">${live ? '<i></i>Live' : 'Private'}</a>`
     + `<a class="abtn" href="${go('games')}">Games</a>`
     + (localStorage.getItem('pressbox.admin') === '1' ? `<a class="abtn" href="${go('others')}">Others</a>` : '')   // the admin's devices only
     + `<a class="abtn" href="${go('setup')}">Setup</a><a class="abtn" href="${go('export')}">Export</a>`;
@@ -5287,7 +5290,7 @@ function renderHome(){
         <ol class="h-steps">
           <li><b>Sign in.</b> Open the <a href="${esc(tracker)}">Game Tracker</a> and tap <b>Sign in to sync</b>, so your games follow you to every device and can go live.</li>
           <li><b>Start the game.</b> Open <b>Games</b> and choose <b>New game</b>, or tap a scheduled game in the scores strip and choose <b>Keep stats on this game</b>. Enter both schools, 11-man or 8-man, and the rosters if you have them (a number and a name on each line).</li>
-          <li><b>Go live.</b> Tap <b>Share</b> so fans can follow along; the button changes to <b>Live</b>. A game started from the schedule goes live on its own.</li>
+          <li><b>It goes live on its own.</b> Once you're signed in, a new game is on the scoreboard, with a link fans can follow. To keep one to yourself, check <b>Keep this game private</b> when you set it up, or tap <b>Live</b> → <b>Make private</b> later.</li>
           <li><b>Log every play</b>, typing shorthand or tapping buttons. The Gamecast, box score, drives and stats build themselves as you go.</li>
           <li><b>Finish.</b> End each quarter as it happens (<code>eoq</code> in shorthand, or the button under the play). When the fourth quarter ends, the game goes Final on every scoreboard.</li>
         </ol>
