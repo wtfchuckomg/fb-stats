@@ -3983,6 +3983,43 @@ function renderScores(){
   else { scores.seen = key; const c = list.querySelector('.sc-game.cur'); if (c) list.scrollLeft = Math.max(0, c.offsetLeft - (list.clientWidth - c.offsetWidth) / 2); }
   list.addEventListener('scroll', scoreArrows, {passive:true});
   scoreArrows();
+  tickerSetup(list);
+}
+
+/* ---------- the scores strip scrolls itself like a ticker, and stops while someone's over it ---------- */
+const TICK_PX = 28;                                    // pixels a second: about one game every 6-7 seconds
+const ticker = {raf:0, last:0, pos:0, until:0};
+function tickerSetup(list){
+  if (!list || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (list.scrollWidth <= list.clientWidth + 24) return;          // everything fits: nothing to scroll
+  // A second copy of the cards right after the first, so it loops without jumping back. Screen readers and
+  // the Tab key skip the copies.
+  [...list.children].forEach(c => {
+    const d = c.cloneNode(true);
+    d.classList.add('sc-dup'); d.setAttribute('aria-hidden', 'true'); d.setAttribute('tabindex', '-1');
+    list.appendChild(d);
+  });
+  ticker.pos = list.scrollLeft;
+  // A swipe or a wheel nudge takes over for a few seconds.
+  const pause = () => { ticker.until = Date.now() + 4000; };
+  list.addEventListener('touchstart', pause, {passive:true});
+  list.addEventListener('wheel', pause, {passive:true});
+  if (!ticker.raf) ticker.raf = requestAnimationFrame(tickerStep);
+}
+function tickerStep(t){
+  ticker.raf = requestAnimationFrame(tickerStep);
+  const dt = ticker.last ? Math.min(100, t - ticker.last) : 0; ticker.last = t;
+  const list = $('#scores .sc-list'), dup = list && list.querySelector('.sc-dup');
+  if (!dup) return;
+  const wrap = list.parentElement, sel = $('#scweek');
+  // Held: the mouse is over it, something in it has focus, the week picker is open, the tab is hidden, or a swipe just happened.
+  if (wrap.matches(':hover') || wrap.contains(document.activeElement) || document.activeElement === sel || document.hidden || Date.now() < ticker.until){
+    ticker.pos = list.scrollLeft; return;
+  }
+  const loop = dup.offsetLeft - list.firstElementChild.offsetLeft;   // one full set of games
+  ticker.pos += TICK_PX * dt / 1000;
+  if (ticker.pos >= loop) ticker.pos -= loop;
+  list.scrollLeft = ticker.pos;                                       // kept as a fraction in pos, so slow speeds still move
 }
 // The week picker only as wide as the week showing ("Week 2"), not its longest choice ("State Championship").
 function fitSelect(sel){
