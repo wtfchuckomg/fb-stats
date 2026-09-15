@@ -234,11 +234,18 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .c-pl{display:flex;align-items:baseline;gap:6px}
 .c-pl b{font-weight:500}
 .c-pl small{color:var(--muted);font-size:13px}
-@media (max-width:640px){.bhead-top h1.c-title{font-size:24px;margin-bottom:10px}.ccard-hd{padding:0 14px 8px}
-  .c-tabs button{padding:12px 12px;font-size:15px}.c-pills button{padding:10px 14px;font-size:14px}
-  .ctbl{font-size:14px}.ctbl th,.ctbl td{padding:9px 9px}.ctbl .rk{padding-left:12px;width:40px;min-width:40px;max-width:40px}.ctbl .nm{left:40px}
-  .ctbl .nm + .num{padding-left:18px}
-  .ctbl th:last-child,.ctbl td:last-child{padding-right:14px}}
+.pl-short{display:none}
+/* phones: sized like ESPN's stats pages (13px table, tight rows, small logos) with short names ("W. Quinn") */
+@media (max-width:640px){.bhead-top h1.c-title{font-size:20px;margin-bottom:10px}.ccard-hd{padding:0 14px 8px}
+  .c-tabs button{padding:12px 12px;font-size:14px}.c-pills button{padding:10px 14px;font-size:14px}
+  .ctbl{font-size:13px}.ctbl th{font-size:12px}.ctbl th,.ctbl td{padding:7px 8px}
+  .ctbl .rk{padding-left:12px;width:36px;min-width:36px;max-width:36px}.ctbl .nm{left:36px}
+  .ctbl .nm + .num{padding-left:14px}
+  .ctbl th:last-child,.ctbl td:last-child{padding-right:14px}
+  .ctbl tr.cgrp th{font-size:12px;padding:9px}
+  .ctbl .tlogo,.ctbl .tmono{width:22px!important;height:22px!important;font-size:8px!important}
+  .c-pl{gap:5px}.c-pl small{font-size:11.5px}
+  .pl-full{display:none}.pl-short{display:inline}}
 .bday{margin:0;padding-bottom:16px;border-bottom:1px dotted var(--line);font:600 16.8px/1.2 var(--sans);color:var(--ink-2)}
 .bgame{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) 190px;gap:0 22px;padding:18px 0;border-bottom:1px dotted var(--line)}
 .bgame:last-child{border-bottom:0;padding-bottom:2px}
@@ -415,26 +422,27 @@ button.h-btn{cursor:pointer}
 @media (max-width:640px){
   .board{padding:10px 10px 30px;gap:10px}
   .bcard{padding:14px 14px;border-radius:12px}
-  .bhead h1{font-size:28px;margin-bottom:10px}
+  /* sized like ESPN's phone scoreboard */
+  .bhead h1{font-size:22px;margin-bottom:10px}
   .bw{min-width:104px;padding:6px 6px}
-  .bw b{font-size:15px}
+  .bw b{font-size:14px}
   .bw span{font-size:12px}
-  .bday{font-size:17px;padding-bottom:12px}
+  .bday{font-size:15px;padding-bottom:10px}
   .bgame{grid-template-columns:minmax(0,1fr) auto;gap:0 12px;padding:12px 0}
   .b-hd,.bt-q,.bt-sub:not(.rec){display:none}
-  .bt-sub.rec{font-size:12.5px}
+  .bt-sub.rec{font-size:12px}
   .bt{grid-template-columns:minmax(0,1fr) auto 12px;padding:3px 0}
   .bt-team{gap:10px}
-  .bt-team .tlogo,.bt-team .tmono{width:26px!important;height:26px!important;font-size:9px!important}
-  .bt-name{font-size:16.5px}
+  .bt-team .tlogo,.bt-team .tmono{width:22px!important;height:22px!important;font-size:8px!important}
+  .bt-name{font-size:16px}
   /* long Kansas school names wrap to a second line rather than getting cut off */
   .bt-name span{white-space:normal;overflow:visible;line-height:1.15}
-  .bt-t{font-size:24px}
+  .bt-t{font-size:20px}
   /* a fixed right column, so every game's divider lines up, with room left for the names */
   .bgame{grid-template-columns:minmax(0,1fr) 106px}
   .b-acts{border-left:1px solid var(--line);padding-left:12px;gap:8px;min-width:0;justify-content:center}
-  .b-st2{display:block;font-size:13px;text-transform:none}
-  .bbtn{padding:9px 8px;font-size:14px}
+  .b-st2{display:block;font-size:12px;text-transform:none}
+  .bbtn{padding:8px 8px;font-size:13px}
   .bbtn.box{display:none}
   /* the desktop card is 20% smaller; phones keep these at their old sizes */
   .bl-k{font-size:14px}
@@ -4662,6 +4670,8 @@ function statTable(id, rows, cols, def, o){
       ${cols.map((c, i) => `<td class="num${i === s.i ? ' on' : ''}">${esc(String(cell(c, r)))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
 const cMark = name => markFor({name, abbr:shortName(name), color:'#4A4B4D'}, 33);
+// "Will Quinn" -> "W. Quinn"; one-word names and numbers ("#12") stay as they are.
+const plShort = n => { const p = String(n).trim().split(/\s+/); return p.length < 2 || p[0].startsWith('#') ? n : `${p[0][0]}. ${p.slice(1).join(' ')}`; };
 function renderCounty(){
   if (!ui.county) return;
   const box = $('#board'), v = county.view, tab = tabOf(v), games = countyGames();
@@ -4695,7 +4705,8 @@ function renderCounty(){
     } else if (y25 && v === 'kicking') body = note('The 2025 leaderboard has no kicking stats.');
     else {
       const V = y25 && v === 'scoring' ? SCORING_25 : P_VIEWS[v], rows = players.filter(p => V.keep(p) && (county.team === 'all' || p.team === county.team));
-      const name = p => `${cMark(p.team)}<span class="c-pl"><b>${esc(p.name)}</b><small>${esc(shortName(p.team))}${p.yr ? ` · ${esc(p.yr)}` : ''}</small></span>`;
+      // Phones show the short form, like ESPN's ("W. Quinn").
+      const name = p => `${cMark(p.team)}<span class="c-pl"><b><span class="pl-full">${esc(p.name)}</span><span class="pl-short">${esc(plShort(p.name))}</span></b><small>${esc(shortName(p.team))}${p.yr ? ` · ${esc(p.yr)}` : ''}</small></span>`;
       // 2025's tables keep their own sort (its Scoring has fewer columns than this season's).
       body = `<section class="bcard ccard">${rows.length ? statTable(y25 ? v + '25' : v, rows, V.cols, V.def, {name, groups:V.groups})
         : `<p class="bempty" style="padding:4px 20px 10px">No ${V.label.toLowerCase()} stats yet${county.team === 'all' ? '' : ` for ${esc(county.team)}`}.</p>`}</section>`;
