@@ -222,7 +222,10 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .ctbl tr:last-child td{border-bottom:0}
 /* the name column sticks exactly at the rank column's edge, so nothing shows between them while scrolling */
 .ctbl .rk{position:sticky;left:0;z-index:1;width:48px;min-width:48px;max-width:48px;text-align:left;padding-left:16px;padding-right:4px;color:var(--muted);cursor:default}
-.ctbl .nm{position:sticky;left:48px;z-index:1;text-align:left;border-right:1px solid var(--line);cursor:default}
+/* the name column only as wide as its longest name (width:1% shrinks it; names don't wrap), so a table with few
+   columns spreads its numbers out instead of leaving a gap after the names */
+.ctbl .nm{position:sticky;left:48px;z-index:1;text-align:left;border-right:1px solid var(--line);cursor:default;width:1%}
+@media (min-width:641px){.ctbl .nm{padding-right:40px}}
 /* room between the name column's divider and the first number */
 .ctbl .nm + .num{padding-left:24px}
 .ctbl th.rk,.ctbl th.nm{color:var(--ink-2)}
