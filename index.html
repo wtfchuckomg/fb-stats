@@ -3404,7 +3404,10 @@ function shareCard(game){
   const A = game.teams.A.name, H = game.teams.H.name;
   try {
     const m = summary(game), day = gameDay(game).toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
-    return m.pre ? {t:`${A} at ${H}`, s:day} : {t:`${A} ${m.score.A}, ${H} ${m.score.H}`, s:`${m.status} · ${day}`};
+    if (m.pre) return {t:`${A} at ${H}`, s:day};
+    // The higher score first ("Augusta 28, Independence 14"); a tie keeps visitors first.
+    const [hi, lo] = m.score.H > m.score.A ? [[H, m.score.H], [A, m.score.A]] : [[A, m.score.A], [H, m.score.H]];
+    return {t:`${hi[0]} ${hi[1]}, ${lo[0]} ${lo[1]}`, s:`${m.status} · ${day}`};
   } catch (e) { return {t:`${A} at ${H}`, s:''}; }
 }
 // A game's link to share. On the site itself it's the preview page (/g/<id>/), which shows the game on social media
@@ -3534,7 +3537,8 @@ async function startViewer(id){
     let game; try { game = JSON.parse(d.json); } catch (e) { return; }
     g = game; $('#tabs').hidden = false;
     refresh(); viewerTools(id);
-    document.title = `${g.teams.A.name} ${R.st.score.A}, ${g.teams.H.name} ${R.st.score.H} · Kansas Media Stats`;
+    const [hi, lo] = R.st.score.H > R.st.score.A ? ['H', 'A'] : ['A', 'H'];   // the higher score first, like the link's preview
+    document.title = `${g.teams[hi].name} ${R.st.score[hi]}, ${g.teams[lo].name} ${R.st.score[lo]} · Kansas Media Stats`;
   }, gone);
   setInterval(renderLive, 5000);
 }
