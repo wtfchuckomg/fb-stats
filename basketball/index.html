@@ -214,6 +214,20 @@ body.starting #sharebtn,body.starting .navtools [data-open="setup"],body.startin
 .ls td.tot{font-weight:700;color:var(--ink-2)}
 .ls .tm{display:flex;align-items:center;gap:8px;color:var(--ink-2);font-weight:500}
 
+/* play-by-play filters: three pills, each opening a checklist sheet */
+.fpills{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+.fpill{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:980px;padding:11px 16px;background:var(--surface-2);font:600 14px/1 var(--sans);color:var(--ink-2)}
+.fpill svg{width:11px;height:7px}
+.fpill.on{background:var(--ink-2);color:var(--card)}
+.flt-hd{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.flt-hd h2{margin:0;font:600 17px/1.2 var(--sans);color:var(--ink-2);text-align:center}
+.flt-hd .linkbtn2{padding:6px 0;font-size:15px;justify-self:start}
+.flt-hd .linkbtn2[data-close]{justify-self:end}
+.flt-hd button:first-child{color:var(--ink)}
+.flt-list{max-height:min(70vh,640px);overflow-y:auto;background:var(--surface)}
+.flt-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 16px;font:600 16px/1.2 var(--sans);color:var(--ink-2);cursor:pointer}
+.flt-row input{width:22px;height:22px;margin:0;accent-color:var(--blue);cursor:pointer}
+.flt-grp{padding:14px 16px 4px;font:700 12px/1 var(--sans);text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
 /* play-by-play */
 .segctl{display:flex;background:var(--seg);border-radius:100px;padding:2px;margin:0 0 6px}
 .segctl button{flex:1;border:0;background:none;border-radius:100px;padding:10px 8px;font:500 14px/1 var(--sans);color:var(--ink-2)}
@@ -1220,7 +1234,7 @@ const framed = (() => { try { return window.self !== window.top; } catch (e) { r
 const dlgHead = t => `<div class="dlg-hd"><h2>${t}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>`;
 function openDialog(kind){
   ui.dlg = kind; ui.confirm = null;
-  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : dlgSetup(kind === 'new');
+  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'filter' ? dlgFilter(ui.filterKind) : dlgSetup(kind === 'new');
   if (!dlg().hasAttribute('open')) showDialog();
 }
 function showDialog(){
@@ -1417,6 +1431,7 @@ document.addEventListener('click', e => {
   if (d.tab){ ui.tab = d.tab; renderView(); if (b.classList.contains('linkbtn2')) window.scrollTo({top:0, behavior:'smooth'}); return; }
   if (d.pbp){ ui.pbp = d.pbp; renderView(); return; }
   if ('close' in d) return closeDialog();
+  if (d.filter || d.freset) return;   // the play-by-play filters, handled with the views
   if (ui.viewer) return;
   if (d.open){ if (d.open === 'new' && g.sample && !ui.start){ /* fine */ } return openDialog(d.open); }
   if (d.qkey) return insertKey(d.qkey);
@@ -1613,14 +1628,92 @@ function scoringList(){
   }
   return h;
 }
+/* ---------- play-by-play filters: quarters, play types and players, like ESPN's ---------- */
+const PLAY_TYPES = [['2m', '2PT FG Made'], ['2x', '2PT FG Missed'], ['3m', '3PT Made'], ['3x', '3PT Missed'], ['ftm', 'FT Made'], ['ftx', 'FT Missed'],
+  ['reb', 'Rebounds'], ['ast', 'Assists'], ['stl', 'Steals'], ['blk', 'Blocks'], ['to', 'Turnovers'], ['foul', 'Fouls'], ['tmo', 'Timeouts']];
+const pbf = () => ui.pbf || (ui.pbf = {per:new Set(), type:new Set(), pl:new Set()});
+// What a logged play counts as, and who was in it (team:number), for the filters.
+function playFacets(e){
+  const p = g.plays[e.i] || {}, types = new Set(), who = new Set();
+  const add = x => { if (x && x.n != null && x.n !== 'team') who.add(`${x.s}:${x.n}`); };
+  add(p);
+  switch (p.t){
+    case 'shot': types.add(p.made ? (p.v === 3 ? '3m' : '2m') : (p.v === 3 ? '3x' : '2x')); if (p.reb) types.add('reb'); if (p.blk) types.add('blk'); if (p.ast) types.add('ast'); if (p.foul) types.add('foul');
+      add(p.reb); add(p.blk); add(p.ast); add(p.foul); break;
+    case 'ft': if (p.seq.some(m => m)) types.add('ftm'); if (p.seq.some(m => !m)) types.add('ftx'); if (p.reb){ types.add('reb'); add(p.reb); } break;
+    case 'reb': types.add('reb'); break;
+    case 'ast': types.add('ast'); break;
+    case 'stl': types.add('stl'); types.add('to'); add(p.to); break;
+    case 'blk': types.add('blk'); break;
+    case 'to': types.add('to'); if (p.stl){ types.add('stl'); add(p.stl); } break;
+    case 'foul': types.add('foul'); if (p.kind === 'o') types.add('to'); add(p.on); break;
+    case 'tmo': types.add('tmo'); break;
+  }
+  return {types, who};
+}
+function filteredLog(){
+  const f = pbf(), any = f.per.size || f.type.size || f.pl.size;
+  if (!any) return R.log;
+  return R.log.filter(e => {
+    if (f.per.size && !f.per.has(e.per)) return false;
+    const {types, who} = playFacets(e);
+    if (f.type.size && ![...f.type].some(t => types.has(t))) return false;
+    if (f.pl.size && ![...f.pl].some(k => who.has(k))) return false;
+    return true;
+  });
+}
+function filterPills(){
+  const f = pbf(), ru = R.ru;
+  const lbl = (set, all, one, word) => set.size === 0 ? all : set.size === 1 ? one([...set][0]) : `${set.size} ${word}`;
+  const plName = k => { const [s, n] = k.split(':'); return PT(s, n); };
+  const pill = (kind, text, on) => `<button type="button" class="fpill ${on ? 'on' : ''}" data-filter="${kind}">${esc(text)}<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>`;
+  return `<div class="fpills">${pill('per', lbl(f.per, ru.n === 2 ? 'All Halves' : 'All Quarters', q => perName(q, ru), ru.n === 2 ? 'Halves' : 'Quarters'), f.per.size)}
+    ${pill('type', lbl(f.type, 'All Play Types', t => (PLAY_TYPES.find(x => x[0] === t) || [])[1] || t, 'Play Types'), f.type.size)}
+    ${pill('pl', lbl(f.pl, 'All Players', plName, 'Players'), f.pl.size)}</div>`;
+}
+function dlgFilter(kind){
+  const f = pbf(), ru = R.ru, st = R.st;
+  let title, rows;
+  if (kind === 'per'){
+    title = ru.n === 2 ? 'Halves' : 'Quarters';
+    rows = Array.from({length:Math.max(st.per, ru.n)}, (_, i) => [i + 1, perName(i + 1, ru) + (i + 1 > ru.n ? '' : ru.n === 2 ? '' : '')]).map(([v, l]) => [v, l.replace(' Qtr', ' Quarter')]);
+  } else if (kind === 'type'){ title = 'Play Types'; rows = PLAY_TYPES; }
+  else {
+    title = 'Players';
+    // every player who has shown up in the log, grouped by team
+    const seen = {A:new Set(), H:new Set()};
+    R.log.forEach(e => playFacets(e).who.forEach(k => { const [s, n] = k.split(':'); seen[s].add(n); }));
+    rows = [];
+    ['A', 'H'].forEach(s => { const list = [...seen[s]].sort((a, b) => a - b); if (list.length) rows.push(['__hd', g.teams[s].name]); list.forEach(n => rows.push([`${s}:${n}`, `${rosterName(s, n) ? rosterName(s, n) + ' ' : ''}#${n}`])); });
+  }
+  const set = f[kind];
+  return `<div class="flt-hd"><button type="button" class="linkbtn2" data-freset="${kind}">Reset</button><h2>${esc(title)}</h2><button type="button" class="linkbtn2" data-close>Done</button></div>
+    <div class="flt-list">${rows.map(([v, l]) => v === '__hd' ? `<div class="flt-grp">${esc(l)}</div>`
+      : `<label class="flt-row"><span>${esc(l)}</span><input type="checkbox" data-fchk="${kind}" value="${esc(v)}" ${set.has(kind === 'per' ? +v : v) ? 'checked' : ''}></label>`).join('')}</div>`;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.filter){ ui.filterKind = b.dataset.filter; return openDialog('filter'); }
+  if (b.dataset.freset){ pbf()[b.dataset.freset].clear(); dlg().innerHTML = dlgFilter(b.dataset.freset); renderView(); }
+});
+document.addEventListener('change', e => {
+  const c = e.target; if (!c.dataset || !c.dataset.fchk) return;
+  const kind = c.dataset.fchk, v = kind === 'per' ? +c.value : c.value, set = pbf()[kind];
+  if (c.checked) set.add(v); else set.delete(v);
+  renderView();
+});
+
 // Every play, newest first, by period, with the score after each.
-function playsList(){
+function playsList(limit){
   if (!R.log.length) return '<div class="empty">No plays yet.</div>';
+  let list = filteredLog();
+  if (!list.length) return '<div class="empty">No plays match those filters.</div>';
+  if (limit) list = list.slice(-limit);
   let h = '', lastPer = null;
-  for (let k = R.log.length - 1; k >= 0; k--){
-    const e = R.log[k], open = ui.open === e.i;
+  for (let k = list.length - 1; k >= 0; k--){
+    const e = list[k], open = ui.open === e.i, prev = e.i > 0 ? R.log[e.i - 1] : null;
     if (e.per !== lastPer){ h += `<div class="qhd">${perName(e.per, R.ru)}</div>`; lastPer = e.per; }
-    const changed = k > 0 ? (R.log[k - 1].A !== e.A || R.log[k - 1].H !== e.H) : !!(e.A || e.H);
+    const changed = prev ? (prev.A !== e.A || prev.H !== e.H) : !!(e.A || e.H);
     h += `<button type="button" class="pl ${open ? 'open' : ''} ${changed ? 'score' : ''}" data-row="${e.i}">
       <div><div class="pl-clk">${e.clk != null ? mmss(e.clk) : '—'}</div><span class="pl-no">Play ${e.i + 1}</span></div>
       <div>${e.s ? teamMark(e.s, 26) : ''}</div>
@@ -1635,10 +1728,8 @@ function playsList(){
   return `<div class="plays">${h}</div>`;
 }
 function cardPbp(){
-  const mode = ui.pbp || (ui.viewer ? 'scoring' : 'all');
   return `<section class="card"><div class="card-hd"><h2 class="card-title">Play-by-Play</h2></div>
-    <div class="segctl" role="group" aria-label="Which plays"><button type="button" data-pbp="scoring" aria-pressed="${mode === 'scoring'}">Scoring Plays</button><button type="button" data-pbp="all" aria-pressed="${mode === 'all'}">All Plays</button></div>
-    ${mode === 'scoring' ? scoringList() : playsList()}
+    ${filterPills()}${playsList(12)}
     <div class="card-ft"><button class="linkbtn2" data-tab="pbp">Full Play-by-Play</button></div></section>`;
 }
 
@@ -1712,7 +1803,7 @@ function renderRail(){
 function renderView(){
   document.querySelectorAll('#tabs .gtab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
   if (!g || !R) return;
-  const pbpCard = () => `<section class="card"><div class="card-hd"><h2 class="card-title">Play-by-Play</h2></div>${playsList()}</section>`;
+  const pbpCard = () => `<section class="card"><div class="card-hd"><h2 class="card-title">Play-by-Play</h2></div>${ui.printing ? '' : filterPills()}${playsList()}</section>`;
   const V = ui.printing ? () => cardLinescore() + viewBoxTab() + cardCmp(true) + pbpCard()
     : ({gamecast:() => cardSituation() + cardLinescore() + cardFlow() + cardPbp(), box:viewBoxTab, pbp:pbpCard, team:() => cardLinescore() + cardFlow() + cardCmp(true)})[ui.tab] || (() => '');
   $('#view').innerHTML = V();
