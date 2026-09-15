@@ -2653,6 +2653,8 @@ function dlgGames(){
 }
 // The live look-in: a link anyone can open to watch this game, read-only.
 function dlgShare(){
+  // The game's own link. (Its preview page, gameLink(), only exists once the preview job has made it; the game page
+  // switches its address to that when it does.)
   const link = `${location.origin}${location.pathname}?game=${encodeURIComponent(g.id)}`;
   let body;
   if (g.sample) body = '<p class="hint">The sample game can’t go live. Start a real game and it goes live on its own.</p>';
@@ -3396,6 +3398,20 @@ function listen(){
   }, err => { sync.state = 'error'; sync.err = friendlySync(err); renderSync(); });
 }
 
+// The one-line score a shared link shows on social media ("Independence 14, Augusta 28" · "Final · Fri, Sep 11").
+// The preview-page job in the site's repo (.github/previews.py) reads it from each shared game.
+function shareCard(game){
+  const A = game.teams.A.name, H = game.teams.H.name;
+  try {
+    const m = summary(game), day = gameDay(game).toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+    return m.pre ? {t:`${A} at ${H}`, s:day} : {t:`${A} ${m.score.A}, ${H} ${m.score.H}`, s:`${m.status} · ${day}`};
+  } catch (e) { return {t:`${A} at ${H}`, s:''}; }
+}
+// A game's link to share. On the site itself it's the preview page (/g/<id>/), which shows the game on social media
+// and sends people straight to it.
+const gameLink = id => location.hostname === 'stats.kansasmediarankings.com'
+  ? `https://stats.kansasmediarankings.com/g/${encodeURIComponent(id)}/` : `${location.origin}${location.pathname}?game=${encodeURIComponent(id)}`;
+
 function syncPush(game, delay = 700){
   if (!sync.user || !game || game.sample) return;
   clearTimeout(sync.timers[game.id]);
@@ -3410,7 +3426,7 @@ async function pushNow(id){
   sync.pending++;
   try {
     await fsM.setDoc(fsM.doc(fsdb, 'pressbox', id), {owner:sync.user.uid, updated:game.updated || Date.now(), public:!!game.share, week:gameWeek(game),
-      title:`${game.teams.A.abbr} at ${game.teams.H.abbr}`, json:JSON.stringify(game)});
+      title:`${game.teams.A.abbr} at ${game.teams.H.abbr}`, card:shareCard(game), json:JSON.stringify(game)});
     sync.err = '';
   } catch (e) { sync.err = friendlySync(e); }
   sync.pending--;
@@ -3503,6 +3519,18 @@ async function startViewer(id){
     const d = snap.exists() ? snap.data() : null;
     if (!d || d.deleted || (!d.public && !asAdmin)) return gone();
     if (!d.public && !noted){ noted = true; toast('Private game: only you, as the admin, can see it'); }
+    // On the site itself the address becomes the game's preview link (/g/<id>/), so copying it and posting it shows
+    // this game on social media. Only once that page exists: a brand-new game's link stays ?game=, which previews
+    // as the site. The base keeps the page's own links pointing at the site.
+    if (d.public && location.hostname === 'stats.kansasmediarankings.com' && !location.pathname.startsWith('/g/') && !startViewer.checked){
+      startViewer.checked = true;
+      fetch(`/g/${encodeURIComponent(id)}/`, {method:'HEAD'}).then(r => {
+        if (!r.ok || location.pathname.startsWith('/g/')) return;
+        if (!document.querySelector('base')){ const b = document.createElement('base'); b.href = '/'; document.head.prepend(b); }
+        const tab = new URLSearchParams(location.search).get('tab');
+        history.replaceState(null, '', `/g/${encodeURIComponent(id)}/${tab ? `?tab=${encodeURIComponent(tab)}` : ''}`);
+      }).catch(() => {});
+    }
     let game; try { game = JSON.parse(d.json); } catch (e) { return; }
     g = game; $('#tabs').hidden = false;
     refresh(); viewerTools(id);

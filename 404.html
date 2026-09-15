@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kansas Media Stats</title>
+<script>
+  // A game link opened before its preview page exists (/g/<game id>/) goes straight to the game; anything else, home.
+  var m = location.pathname.match(/^\/g\/([A-Za-z0-9_-]+)\/?$/);
+  location.replace(m ? '/?game=' + m[1] + (location.search ? '&' + location.search.slice(1) : '') : '/');
+</script>
+</head><body><p><a href="/">Kansas Media Stats</a></p></body></html>
