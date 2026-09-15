@@ -1905,12 +1905,67 @@ function tokenize(s){
   flush(); return out;
 }
 
+/* ---------- plain English: "aug 15 runs for 15 yards tackled by indy 54 3:54" ----------
+   A typed-out sentence is rewritten into the shorthand's own words before it's read, so either works,
+   and both end up in the same parser. */
+const PEN_PHRASES = [[/\bfalse start\b/g, 'fs'], [/\bpass interference\b/g, 'pi'], [/\bpersonal foul\b/g, 'pf'], [/\bdelay of game\b/g, 'dog'],
+  [/\bface ?mask\b/g, 'fm'], [/\broughing the passer\b/g, 'rtp'], [/\broughing the kicker\b/g, 'rtk'], [/\bunsportsmanlike(?: conduct)?\b/g, 'uc'],
+  [/\boffsides?\b/g, 'off'], [/\bhorse ?collar\b/g, 'hc'], [/\b(?:illegal )?block in the back\b/g, 'ibb'], [/\billegal motion\b/g, 'motion'],
+  [/\billegal formation\b/g, 'form'], [/\bintentional grounding\b/g, 'ig'], [/\bunnecessary roughness\b/g, 'ur']];
+function plainWords(line){
+  const {map} = quickTeams(), team = w => !!w && !!map[w];
+  let s = ' ' + String(line).toLowerCase().replace(/#/g, '') + ' ';
+  // School names, longest first, become their short names: "andover central" → "ac".
+  [g.teams.A, g.teams.H].map(t => [String(t.name || '').toLowerCase().trim(), String(t.abbr || '').toLowerCase()])
+    .sort((x, y) => y[0].length - x[0].length)
+    .forEach(([name, ab]) => { if (name && ab && name !== ab) s = s.replace(new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g'), ` ${ab} `); });
+  PEN_PHRASES.forEach(([re, code]) => { s = s.replace(re, ` ${code} `); });
+  const who = '(?:([a-z]+)\\s+)?', num = '(\\d+)';                // an optional team word, then a player number
+  const keep = w => w && !team(w) ? w + ' ' : '';                  // a word that wasn't a team stays
+  const two = (w1, n1, w2, n2) => `${keep(w1)}@${n1}${n2 ? ` ${keep(w2)}@${n2}` : ''}`;
+  s = s
+    .replace(/\b(?:for )?(?:a )?first down\b/g, ' ')
+    // tacklers (always the defense): "tackled by indy 54 and 20" → @54 @20
+    .replace(new RegExp(`\\b(?:tackled|tackle|stopped|brought down|dropped|wrapped up|hit)\\s+by\\s+(?:the\\s+)?${who}${num}(?:\\s*(?:and|&|,|with)\\s*${who}${num})?`, 'g'),
+      (m, w1, n1, w2, n2) => ` ${two(w1, n1, w2, n2)} `)
+    .replace(new RegExp(`\\bsacked\\s+by\\s+${who}${num}(?:\\s*(?:and|&|,)\\s*${who}${num})?`, 'g'), (m, w1, n1, w2, n2) => ` sack ${two(w1, n1, w2, n2)} `)
+    .replace(new RegExp(`\\b(?:intercepted|picked off|picked)\\s+by\\s+${who}${num}`, 'g'), (m, w, n) => ` ${keep(w)}int ${n} `)
+    // "recovered by indy 31" → rec indy31 (a team-lettered number is the recoverer)
+    .replace(new RegExp(`\\b(?:recovered|recovers|recovery)\\s+by\\s+${who}${num}`, 'g'), (m, w, n) => team(w) ? ` rec ${w}${n} ` : ` rec ${keep(w)}${n} `)
+    .replace(new RegExp(`\\breturned\\s+by\\s+${who}${num}`, 'g'), (m, w, n) => team(w) ? ` ${w}${n} return ` : ` ${keep(w)}${n} return `)
+    // passes: "passes to 88", "throws a pass to aug 88", "complete to 88" → 88
+    .replace(new RegExp(`\\b(?:complete[sd]?|throws?|threw|pass(?:es|ed)?|hits|finds|found|connects with)(?:\\s+(?:a|the))?(?:\\s+pass)?\\s+(?:to\\s+)?${who}${num}`, 'g'),
+      (m, w, n) => ` ${keep(w)}${n} `)
+    // yards: "for a loss of 3", "loses 3", "no gain", "a gain of 6"
+    .replace(/\b(?:for\s+)?(?:a\s+)?loss\s+of\s+(\d+)/g, ' -$1 ')
+    .replace(/\bloses\s+(\d+)/g, ' -$1 ')
+    .replace(/\bno\s+gain\b/g, ' 0 ')
+    .replace(/\b(?:for\s+)?(?:a\s+)?gain\s+of\s+(\d+)/g, ' $1 ')
+    // a runner's verb, so "runs 12 yards for a touchdown" is never read as a pass
+    .replace(/\b(?:runs?|ran|rushe[sd]|rush|carrie[sd]|carry|keeps|kept|scrambles|scrambled)\b/g, ' rn ')
+    .replace(/\bpunt(?:s|ed)\b/g, ' punt ')
+    .replace(/\bfield goal\b/g, ' fg ')
+    .replace(/\b(?:extra point|pat)\b/g, ' xp ')
+    .replace(/\bfair catch\b/g, ' fc ')
+    .replace(/\btouchback\b/g, ' tb ')
+    .replace(/\bout of bounds\b/g, ' oob ')
+    .replace(/\b(?:kicks off|kicked off|kick off|kickoff)\b/g, ' ko ')
+    .replace(/\btime ?out\b/g, ' timeout ')
+    .replace(/\b(?:scores|scored|for a score)\b/g, ' td ')
+    // a yard line said out loud: "at the indy 30" → indy30
+    .replace(/\b(at|on|to|from|inside|past|near)\s+(?:the\s+)?([a-z]+)\s+(\d{1,2})\b(?!:)/g, (m, p, w, n) => team(w) ? ` ${p} ${w}${n} ` : m);
+  return s.replace(/\s+/g, ' ').trim();
+}
+
 function parseQuick(raw, st){
   const line = String(raw || '').trim(); if (!line) return null;
   // "team" (or "tm") stands in for a player number: kneel-downs, snaps over the punter's head.
-  let toks = tokenize(line).map(t => TD_WORDS.includes(t) ? 'td' : t === 'tm' ? 'team' : t);
+  let toks = tokenize(plainWords(line)).map(t => TD_WORDS.includes(t) ? 'td' : t === 'tm' ? 'team' : t);
   const {map, key} = quickTeams();
   const T = t => map[t], L = s => key[s].toUpperCase();
+  // "N8 runs for 9", "aug8-9": a line that starts with a team stuck to a number is that team's player, not a yard line.
+  const lead = (toks[0] || '').match(/^([a-z]+)(\d+)$/);
+  if (lead && T(lead[1])) toks.splice(0, 1, lead[1], lead[2]);
   const FL = rulesOf(g).len, HALF = FL / 2;
   // "N5", "sou35": a yard line named by team.
   const spotOf = t => { const m = String(t).match(/^([a-z]+)(\d+(?:\.5)?)$/); return m && T(m[1]) ? {side:T(m[1]), n:+m[2]} : null; };
@@ -2161,6 +2216,13 @@ function parseQuick(raw, st){
     p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ry};
     return p;
   };
+  // "aug 15 …": the runner or passer named with his team, which has to be the team with the ball.
+  if (toks.length > 1 && T(toks[0]) && isNum(toks[1])){
+    const s = T(toks[0]);
+    if (s !== O) return bad(`The log has ${g.teams[O].abbr || L(O)} with the ball. If ${g.teams[s].abbr || L(s)} has it, set that first: ${L(s)} ball at ${L(s)}__.`);
+    toks = toks.slice(1);
+  }
+  const runV = toks.includes('rn'); toks = toks.filter(t => t !== 'rn');   // said "runs", so it's a run
   const nums = toks.filter(t => isNum(t) || t === 'team'), td = has('td'), toGoal = FL - st.spot;
   // A kneel-down is TEAM's, never the quarterback's: "kneel" loses 1 unless told otherwise.
   if (has('kneel', 'kneels', 'kneeled', 'kn', 'victory')){
@@ -2188,7 +2250,7 @@ function parseQuick(raw, st){
   if (nums.length === 2){
     const [a, b] = nums;
     // "15-0-td": a TD whose second number isn't the distance to the goal is a pass to that player.
-    if (td && Math.abs(+b - toGoal) > 1) return flag({t:'pass', qb:a, res:'c', to:b, y:toGoal});
+    if (td && !runV && Math.abs(+b - toGoal) > 1) return flag({t:'pass', qb:a, res:'c', to:b, y:toGoal});
     return flag(withFum({t:'run', r:a, y:td ? toGoal : +b}));
   }
   if (nums.length === 3){ const [a, b, c] = nums; return flag(withFum({t:'pass', qb:a, res:'c', to:b, y:td ? toGoal : +c})); }
@@ -2198,7 +2260,13 @@ function parseQuick(raw, st){
 
 /* ---------- quick-entry pad ---------- */
 function cheatHtml(a, h){
+  const sa = String(g.teams.A.abbr || a).toLowerCase(), sh = String(g.teams.H.abbr || h).toLowerCase();
   const rows = [
+    [`${sa} 15 runs for 15 yards tackled by ${sh} 54 3:54`, `Or just type what happened. The preview shows how it read the line before you record it.`],
+    [`${sa} 7 passes to 88 for 12 yards tackled by ${sh} 20`, '#7 completes to #88 for 12, tackled by #20. Also: incomplete, sacked by … for a loss of 6, intercepted by …'],
+    [`${sa} 5 runs for 3 fumbles recovered by ${sh} 31`, `Fumble, ${sh.toUpperCase()}'s #31 recovers. Also: punts 40 yards returned by ${sh} 2 for 10, field goal, extra point, fair catch, touchback.`],
+    [`penalty on ${sa} false start`, 'Penalties by name: holding, false start, pass interference, personal foul, face mask, delay of game and more.'],
+    [`${a}8 runs for 9 yards &nbsp;·&nbsp; ${a}8-9`, `Mix them: the team letter stuck to the number is ${g.teams.A.name}'s #8.`],
     [`${a} ball at ${a}35 1-10`, `${g.teams.A.name} ball, 1st & 10 at its own 35. Down and distance are optional (1st & 10 if left off; use 1-g for goal to go).`],
     ['3-10', '#3 runs for 10'],
     ['3--1 &nbsp;or&nbsp; 3-(-1)', '#3 runs for a loss of 1'],
@@ -2235,7 +2303,7 @@ function quickHtml(){
   const keys = [a, h, 'ball at', '-', 'inc', 'td', 'punt', 'fg', 'xp', 'int', 'sack', 'fum', 'pen', 'to'];
   return `<div class="quick">
     <input id="qk" class="qk" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done"
-      aria-label="Type the play" placeholder="3-10 · 7-88-5 · ${a} punt" value="${esc(ui.qtext || '')}">
+      aria-label="Type the play" placeholder="3-10 · 7-88-5 · ${esc(String(g.teams.A.abbr || a).toLowerCase())} 15 runs for 15" value="${esc(ui.qtext || '')}">
     <div class="qkeys">${keys.map(k => `<button type="button" class="qkey" data-qkey="${esc(k)}">${esc(k)}</button>`).join('')}</div>
     <div class="qprev" id="qprev" aria-live="polite"></div>
     <div class="actions"><button class="btn primary" id="qrec">${editing ? 'Save changes' : 'Record'}</button>
