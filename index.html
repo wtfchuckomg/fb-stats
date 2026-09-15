@@ -916,6 +916,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
       <div class="abtns">
         <button class="abtn" data-open="share" id="sharebtn">Share</button>
         <button class="abtn" data-open="games">Games</button>
+        <button class="abtn" data-open="others" id="othersbtn" hidden>Others</button>
         <button class="abtn" data-open="setup">Setup</button>
         <button class="abtn" data-open="export">Export</button>
       </div>
@@ -2549,7 +2550,7 @@ const framed = (() => { try { return window.self !== window.top; } catch (e) { r
 const dlgHead = t => `<div class="dlg-hd"><h2>${t}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>`;
 function openDialog(kind){
   ui.dlg = kind; ui.confirm = null;
-  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : dlgSetup(kind === 'new');
+  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : kind === 'others' ? dlgOthers() : dlgSetup(kind === 'new');
   if (!dlg().hasAttribute('open')) showDialog();
 }
 // Phones without the pop-up window feature (iPhones before iOS 15.4, among others) get the same box, opened plainly.
@@ -3450,6 +3451,9 @@ function renderSync(){
   const cls = {on:'ok', saving:'busy', offline:'busy', error:'bad'}[s] || '';
   const tip = sync.err || (sync.user ? `Signed in as ${sync.user.email || ''}` : s === 'unavailable' ? 'Syncing works on your own site' : 'Keep your games on every device');
   el.innerHTML = `<button class="abtn syncbtn ${cls}" data-sync title="${esc(tip)}"><i></i>${label}</button>`;
+  // All Games (every other scorer's games) is the admin's alone.
+  const ob = $('#othersbtn'); if (ob) ob.hidden = !(sync.user && sync.user.uid === ADMIN_UID);
+  if (ui.dlg === 'others' && dlg().open) dlg().innerHTML = dlgOthers();
   if (ui.dlg === 'games' && dlg().open){ const a = $('#acct'); if (a) a.outerHTML = syncBlock(); }
   if (ui.dlg === 'share' && dlg().open) dlg().innerHTML = dlgShare();
 }
@@ -3464,17 +3468,22 @@ async function startViewer(id){
   if (['gamecast', 'box', 'pbp', 'team'].includes(tab0)) ui.tab = tab0;
   $('#sample').hidden = true;
   $('#view').innerHTML = '<div class="panel"><div class="empty">Loading the live game…</div></div>';
-  let fsM, fsdb;
+  let fsM, fsdb, asAdmin = false, noted = false;
   try {
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
-    const [appM, fs] = await Promise.all([import(base + 'app.js'), import(base + 'firestore.js')]);
-    fsM = fs; fsdb = fs.getFirestore(appM.initializeApp(firebaseConfig));
+    // The admin's devices sign in here too, so an unshared game opened from All Games can be read.
+    let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
+    const [appM, fs, authM] = await Promise.all(['app', 'firestore', ...(admin ? ['auth'] : [])].map(m => import(base + m + '.js')));
+    const app = appM.initializeApp(firebaseConfig);
+    fsM = fs; fsdb = fs.getFirestore(app);
+    if (authM) asAdmin = await new Promise(res => { const off = authM.onAuthStateChanged(authM.getAuth(app), u => { off(); res(!!u && u.uid === ADMIN_UID); }); });
   } catch (e) { return viewerMessage('Can’t reach the live game. Check your connection and reload.'); }
   const gone = () => viewerMessage('This game isn’t being shared right now.');
   scoresReady({fsM, fsdb});
   fsM.onSnapshot(fsM.doc(fsdb, 'pressbox', id), snap => {
     const d = snap.exists() ? snap.data() : null;
-    if (!d || d.deleted || !d.public) return gone();
+    if (!d || d.deleted || (!d.public && !asAdmin)) return gone();
+    if (!d.public && !noted){ noted = true; toast('Private game: only you, as the admin, can see it'); }
     let game; try { game = JSON.parse(d.json); } catch (e) { return; }
     g = game; $('#tabs').hidden = false;
     refresh(); viewerTools(id);
@@ -5212,7 +5221,9 @@ function scorerBar(){
   document.body.classList.add('scorer');
   $('#sync').innerHTML = `<a class="abtn syncbtn ok" href="${go('games')}" title="Your games are kept in your account"><i></i>Synced</a>`;
   document.querySelector('.navtools .abtns').innerHTML = `<a class="abtn${live ? ' live' : ''}" href="${go('share')}">${live ? '<i></i>Live' : 'Share'}</a>`
-    + `<a class="abtn" href="${go('games')}">Games</a><a class="abtn" href="${go('setup')}">Setup</a><a class="abtn" href="${go('export')}">Export</a>`;
+    + `<a class="abtn" href="${go('games')}">Games</a>`
+    + (localStorage.getItem('pressbox.admin') === '1' ? `<a class="abtn" href="${go('others')}">Others</a>` : '')   // the admin's devices only
+    + `<a class="abtn" href="${go('setup')}">Setup</a><a class="abtn" href="${go('export')}">Export</a>`;
 }
 if (!TRACKER_PAGE) scorerBar();
 
@@ -6172,6 +6183,72 @@ const STATS_2025 = [
   {"name":"Zander Ford","team":"Rose Hill","yr":"JR","pc":30,"pa":75,"py":531,"ptd":6,"pint":4,"ru":34,"ry":113,"rtd":2,"re":0,"rey":0,"retd":0},
   {"name":"Elias Hernandez","team":"Rose Hill","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":12,"ry":34,"rtd":0,"re":0,"rey":0,"retd":0}
 ];
+/* ================================================================
+   Others (admin only): every other scorer's games, shared or not, in
+   their own window beside Games. Read-only: open one to watch it.
+   The database lets only the admin's account read the unshared ones
+   (fb stats/firestore.rules, isAdmin).
+   ================================================================ */
+const others = {list:null, err:'', unsub:null, show:'all'};
+const agoText = ms => {
+  const m = Math.max(0, Math.round((Date.now() - ms) / 60000));
+  return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} hr ago` : `${Math.round(m / 1440)} days ago`;
+};
+// Every game another scorer keeps: tracked games, box scores and quick scores (not their saved rosters or team
+// lists). Live, so a game in progress updates while the window is open.
+function watchOthers(){
+  if (others.unsub || !sync.api || !sync.user || sync.user.uid !== ADMIN_UID) return;
+  const {fsM, fsdb} = sync.api;
+  const redraw = () => { if (ui.dlg === 'others' && dlg().open) dlg().innerHTML = dlgOthers(); };
+  others.unsub = fsM.onSnapshot(fsM.collection(fsdb, 'pressbox'), snap => {
+    const list = [];
+    snap.forEach(d => {
+      const v = d.data();
+      if (v.deleted || !v.json || v.owner === ADMIN_UID || ['roster', 'teams', 'hidden', 'records'].includes(v.kind)) return;
+      try {
+        const x = Object.assign(JSON.parse(v.json), {id:d.id});
+        if (x.teams && x.teams.A && x.teams.H) list.push({x, owner:v.owner || '', shared:!!v.public, updated:v.updated || x.updated || 0});
+      } catch (e) {}
+    });
+    others.list = list.sort((a, b) => b.updated - a.updated); others.err = ''; redraw();
+  }, e => {
+    others.unsub = null;   // opening the window again tries again
+    others.err = String((e && e.code) || '').includes('permission')
+      ? 'The database isn’t letting your account read other scorers’ unshared games yet. Paste the updated rules (fb stats/firestore.rules) into the Firebase console and Publish, then open this again.'
+      : 'Can’t load other scorers’ games right now. Check your connection and try again.';
+    redraw();
+  });
+}
+function othersRow(o){
+  const {x} = o, A = x.teams.A, H = x.teams.H;
+  let m; try { m = summary(Object.assign({plays:[]}, x)); } catch (e) { m = {score:{A:0, H:0}, status:'—', pre:true}; }
+  const how = x.kind === 'score' ? 'quick score' : x.box ? 'box score' : `${(x.plays || []).length} plays`;
+  // A quick score is just a score: there's no game behind it to watch.
+  const watch = x.kind === 'score' ? '' : `<a class="btn small" href="?game=${encodeURIComponent(x.id)}" target="_blank" rel="noopener">Watch</a>`;
+  return `<div class="gitem"><div><b>${esc(A.abbr || A.name)} ${m.pre ? '' : m.score.A} at ${esc(H.abbr || H.name)} ${m.pre ? '' : m.score.H}</b>`
+    + `<span class="cur-tag"${o.shared ? '' : ' style="color:var(--flag-ink)"'}>${o.shared ? 'Shared' : 'Not shared'}</span>
+    <div class="meta">${esc(A.name)} at ${esc(H.name)} · ${gameDay(x).toLocaleDateString()} · ${esc(m.status)} · ${how} · scorer ${esc(o.owner.slice(0, 6))} · updated ${agoText(o.updated)}</div></div>
+    <div class="acts">${watch}</div></div>`;
+}
+function dlgOthers(){
+  let body;
+  if (!sync.user || sync.user.uid !== ADMIN_UID) body = '<p class="hint">Only the admin account can see other scorers’ games. Sign in with it under Games.</p>';
+  else if (others.err) body = `<p class="hint">${esc(others.err)}</p>`;
+  else if (!others.list){ watchOthers(); body = '<p class="hint">Loading every scorer’s games…</p>'; }
+  else {
+    const L = others.list, notShared = L.filter(o => !o.shared).length, scorers = new Set(L.map(o => o.owner)).size;
+    const rows = L.filter(o => others.show === 'all' || (others.show === 'private' ? !o.shared : o.shared));
+    const pick = (k, label) => `<button type="button" class="btn small${others.show === k ? ' primary' : ''}" data-others-show="${k}">${label}</button>`;
+    body = `<p class="hint">${L.length} game${L.length === 1 ? '' : 's'} from ${scorers} other scorer${scorers === 1 ? '' : 's'}${notShared ? ` · ${notShared} not shared` : ''}. Only you can see this list.</p>
+      <div class="line">${pick('all', 'All')}${pick('private', 'Not shared')}${pick('shared', 'Shared')}</div>
+      <div class="glist">${rows.map(othersRow).join('') || '<p class="hint">None here.</p>'}</div>`;
+  }
+  return `${dlgHead('Others')}<div class="dlg-bd">${body}</div>`;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-others-show]'); if (!b) return;
+  others.show = b.dataset.othersShow; dlg().innerHTML = dlgOthers();
+});
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
@@ -6218,7 +6295,7 @@ else {
   refresh();
   // ?tracker&open=games (or setup, export, share): from the scorer's buttons on the other pages.
   const OPEN = new URLSearchParams(location.search).get('open');
-  if (['games', 'setup', 'export', 'share'].includes(OPEN)){ history.replaceState(null, '', `${location.pathname}?tracker`); openDialog(OPEN); }
+  if (['games', 'setup', 'export', 'share', 'others'].includes(OPEN)){ history.replaceState(null, '', `${location.pathname}?tracker`); openDialog(OPEN); }
   startSync();
 }
 </script>
