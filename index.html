@@ -665,6 +665,17 @@ table.st td{padding:8px 7px;text-align:right;border-bottom:1px solid var(--line-
 table.st th:first-child,table.st td:first-child{text-align:left;padding-left:0}
 table.st td:first-child{color:var(--ink-2);font-weight:500}
 table.st tr:last-child td{border-bottom:0}
+/* Drive chart: two header rows and a band between halves; on phones it scrolls sideways with the team column held */
+table.dc th,table.dc td{text-align:left}
+table.dc th.num,table.dc td.num{text-align:right}
+table.dc th.grp{text-align:center;font:700 12px/1 var(--cond);letter-spacing:.05em;color:var(--ink-2);border-bottom:0;padding:4px 7px 2px}
+table.dc .sep{border-left:1px solid var(--line-2);padding-left:10px}
+table.dc th:first-child,table.dc td:first-child{padding-right:10px}
+@media (max-width:800px){table.dc th:first-child,table.dc td:first-child{position:sticky;left:0;z-index:1;background:var(--card)}}
+.dc-tm{display:inline-flex;align-items:center;gap:6px;font:700 13.5px/1 var(--cond);text-transform:uppercase}
+table.dc tr.dc-half td{position:static;background:var(--surface);color:var(--muted);font:700 12px/1 var(--cond);text-transform:uppercase;letter-spacing:.05em;padding:7px 8px}
+table.dc td.dc-res{text-transform:uppercase;font:600 12px/1 var(--sans);letter-spacing:.03em;color:var(--ink-2)}
+.dc-note{margin:10px 0 0;font-size:12.5px}
 
 /* ---------- entry pad ---------- */
 .pad{display:flex;flex-direction:column;gap:14px}
@@ -3049,8 +3060,8 @@ function playsList(){
 function cardPbp(){
   const mode = ui.pbp || (ui.viewer ? 'scoring' : 'all');
   return `<section class="card"><div class="card-hd"><h2 class="card-title">Play-by-Play</h2></div>
-    <div class="segctl" role="group" aria-label="Which plays"><button type="button" data-pbp="scoring" aria-pressed="${mode === 'scoring'}">Scoring Plays</button><button type="button" data-pbp="all" aria-pressed="${mode === 'all'}">All Plays</button></div>
-    ${mode === 'scoring' ? scoringList() : playsList()}
+    <div class="segctl" role="group" aria-label="Which plays"><button type="button" data-pbp="scoring" aria-pressed="${mode === 'scoring'}">Scoring Plays</button><button type="button" data-pbp="all" aria-pressed="${mode === 'all'}">All Plays</button><button type="button" data-pbp="drives" aria-pressed="${mode === 'drives'}">Drives</button></div>
+    ${mode === 'scoring' ? scoringList() : mode === 'drives' ? driveChart() : playsList()}
     <div class="card-ft"><button class="linkbtn2" data-tab="pbp">Full Play-by-Play</button></div></section>`;
 }
 
@@ -3123,6 +3134,59 @@ function cardDrives(){
       <td>${d.plays}</td><td>${Math.round(d.last - d.start)}</td><td>${esc(d.res)}</td></tr>`).join('')}</tbody></table></div></section>`;
 }
 
+/* ---------- Drive chart (Play-by-Play): every drive in order, how it began and ended, and what it used ---------- */
+// The clock a scorer types sticks until it's changed, so a time counts only on the play where it was set.
+// A drive's start is the last clock set from the previous drive's last play through this drive's first;
+// its end is the first clock set from its last play through the next drive's first. Otherwise, a dash.
+function driveChart(){
+  const D = R.drives, L = R.log, P = g.plays, qSec = (g.set.qtr || 12) * 60;
+  if (!D.length) return '<div class="empty">No drives yet.</div>';
+  const set = i => typeof P[i].clk === 'number' && (!i || L[i - 1].q !== L[i].q || P[i].clk !== P[i - 1].clk);
+  const clockIn = (a, b, q, last) => {
+    let hit = null;
+    for (let i = Math.max(0, a); i <= Math.min(b, L.length - 1); i++) if (L[i].q === q && set(i)){ hit = P[i].clk; if (!last) break; }
+    return hit;
+  };
+  // How the ball was obtained: a kickoff between the two drives, or how the other team's drive ended.
+  const how = (d, prev) => {
+    if (d.q > 4) return 'OT';
+    if (!prev) return 'Kickoff';
+    for (let i = prev.i1 + 1; i < d.i0; i++) if (P[i] && P[i].t === 'ko') return P[i].res === 'onside' ? 'Onside' : 'Kickoff';
+    // After a score or the half the ball comes by a kick, even when the scorer only typed where the drive began.
+    if (['TD', 'FG', 'Half'].includes(prev.res)) return 'Kickoff';
+    if (prev.res === 'Safety') return 'Free kick';
+    return ['Punt', 'Downs', 'INT', 'Fumble', 'Missed FG', 'Blocked FG'].includes(prev.res) ? prev.res : '—';
+  };
+  const badge = r => ['TD', 'FG'].includes(r) ? 'score' : ['INT', 'Fumble', 'Downs', 'Safety'].includes(r) ? 'to' : '';
+  let rows = '', dash = false, endAt = null;
+  const tm = v => { if (v == null){ dash = true; return '—'; } return mmss(v); };
+  D.forEach((d, k) => {
+    const prev = D[k - 1], next = D[k + 1];
+    if (prev && d.q > 2 && d.q <= 4 && prev.q <= 2) rows += '<tr class="dc-half"><td colspan="12">2nd Half</td></tr>';
+    if (d.q > 4 && (!prev || prev.q <= 4)) rows += '<tr class="dc-half"><td colspan="12">Overtime</td></tr>';
+    // The clock can't run back up within a quarter, so a start later than the last drive's end takes that end,
+    // and an end later than its own start is a mistyped clock, left out.
+    let t0 = d.q <= 4 ? clockIn(prev ? prev.i1 : 0, d.i0, d.q, true) : null;
+    if (t0 != null && endAt && endAt.q === d.q && t0 > endAt.t) t0 = endAt.t;
+    let t1 = d.open || d.endQ > 4 ? null : clockIn(d.i1, next ? next.i0 : L.length - 1, d.endQ, false);
+    if (t1 != null && t0 != null && d.endQ === d.q && t1 > t0) t1 = null;
+    endAt = t1 != null ? {q:d.endQ, t:t1} : null;
+    const top = t0 != null && t1 != null ? Math.max(0, (d.endQ - d.q) * qSec + t0 - t1) : null;
+    const res = d.open ? 'In progress' : d.res, b = badge(res), ot = d.q > 4;
+    rows += `<tr><td><span class="dc-tm">${teamMark(d.team, 22)}${esc(ab(d.team))}</span></td>
+      <td class="sep">${esc(R.yl(d.team, d.start))}</td><td>${perShort(d.q)}</td><td>${ot ? '' : tm(t0)}</td><td>${esc(how(d, prev))}</td>
+      <td class="sep">${esc(R.yl(d.team, d.last))}</td><td>${d.open ? '' : perShort(d.endQ)}</td><td>${d.open || ot ? '' : tm(t1)}</td>
+      <td class="sep dc-res">${b ? `<span class="tag ${b}">${esc(res)}</span>` : esc(res)}</td><td class="num">${d.plays}</td><td class="num">${Math.round(d.last - d.start)}</td>
+      <td class="num">${d.open || ot ? '' : top != null ? mmss(top) : '—'}</td></tr>`;
+  });
+  return `<div class="tbl-wrap"><table class="st dc">
+    <thead><tr><th></th><th class="grp sep" colspan="4">Drive Started</th><th class="grp sep" colspan="3">Drive Ended</th><th class="grp sep" colspan="4">Consumed</th></tr>
+      <tr><th>Team</th><th class="sep">Spot</th><th>Qtr</th><th>Time</th><th>Obtained</th><th class="sep">Spot</th><th>Qtr</th><th>Time</th>
+      <th class="sep">Result</th><th class="num">Plays</th><th class="num">Yds</th><th class="num">TOP</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>${dash ? '<p class="hint dc-note">A dash means the clock wasn’t entered at that point in the game.</p>' : ''}`;
+}
+const cardDriveChart = () => R.drives.length ? `<section class="card"><div class="card-hd"><h2 class="card-title">Drive Chart</h2></div>${driveChart()}</section>` : '';
+
 /* ---------- side rail ---------- */
 function cardLeaders(){
   const cats = [
@@ -3156,7 +3220,7 @@ function renderView(){
     ? (ui.printing ? () => cardLinescore() + scoringCard() + viewBoxTab() + cardCmp(true)
       : ({gamecast:() => cardLinescore() + scoringCard() + viewBoxTab(), box:viewBoxTab, pbp:scoringCard, team:() => cardLinescore() + cardCmp(true)})[ui.tab] || (() => ''))
     : ui.printing ? () => cardLinescore() + viewBoxTab() + cardCmp(true) + cardTeamTable() + pbpCard()
-    : ({gamecast:() => cardDrive() + cardLinescore() + cardPbp(), box:viewBoxTab, pbp:pbpCard,
+    : ({gamecast:() => cardDrive() + cardLinescore() + cardPbp(), box:viewBoxTab, pbp:() => cardDriveChart() + pbpCard(),
         team:() => cardLinescore() + cardCmp(true) + cardTeamTable() + cardDrives()})[ui.tab] || (() => '');
   $('#view').innerHTML = V();
   renderField();
