@@ -47,7 +47,7 @@ async function startSync(){
   addEventListener('offline', renderSync);
 }
 
-const newestGame = () => Object.values(db.games).filter(x => !x.sample).sort((a, b) => (b.updated || 0) - (a.updated || 0))[0];
+const newestGame = () => Object.values(db.games).filter(x => !x.sample && !x.foreign).sort((a, b) => (b.updated || 0) - (a.updated || 0))[0];
 
 function listen(){
   const {fsM, fsdb} = sync.api;
@@ -75,7 +75,7 @@ function listen(){
       sync.first = false;
       // Games made on this device before signing in go up to the account.
       const remoteIds = new Set(snap.docs.map(x => x.id));
-      Object.values(db.games).forEach(x => { if (!x.sample && !remoteIds.has(x.id)) syncPush(x, 0); });
+      Object.values(db.games).forEach(x => { if (!x.sample && !x.foreign && !remoteIds.has(x.id)) syncPush(x, 0); });
       Object.values(qsLib()).forEach(x => { if (!remoteIds.has(x.id)) pushScore(x); });
       if (!remoteIds.has(teamsDocId()) && savedTeams().length) syncTeams(0);
       // A device still showing the sample opens the latest real game instead.
@@ -113,7 +113,8 @@ const gameLink = id => location.hostname === 'stats.kansasmediarankings.com'
   ? `https://stats.kansasmediarankings.com/g/${encodeURIComponent(id)}/` : `${location.origin}${location.pathname}?game=${encodeURIComponent(id)}`;
 
 function syncPush(game, delay = 700){
-  if (!sync.user || !game || game.sample) return;
+  // Another scorer's game (the admin editing it) is saved back to them by hand, in saveForeign.
+  if (!sync.user || !game || game.sample || game.foreign) return;
   clearTimeout(sync.timers[game.id]);
   sync.timers[game.id] = setTimeout(() => pushNow(game.id), delay);
   sync.state = 'saving'; renderSync();

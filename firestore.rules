@@ -18,7 +18,8 @@ service cloud.firestore {
     }
 
     // The site's admin (added 2026-09-15) can read every game, shared or not, for the admin-only
-    // All Games list. Reading only: the admin still can't change or delete anyone else's game.
+    // All Games list, and since 2026-09-16 can also correct one: update it in place, leaving the
+    // owner as it was. Creating and deleting another scorer's game stays with that scorer.
     function isAdmin() {
       return signedIn() && request.auth.uid == '2lbD7tPuufPdkBPtxbgSYnZwizp2';
     }
@@ -33,11 +34,15 @@ service cloud.firestore {
                     && request.resource.data.json is string
                     && request.resource.data.json.size() < 900000;
 
-      allow update: if signedIn()
-                    && resource.data.owner == request.auth.uid
-                    && request.resource.data.owner == request.auth.uid
-                    && request.resource.data.json is string
-                    && request.resource.data.json.size() < 900000;
+      allow update: if (signedIn()
+                     && resource.data.owner == request.auth.uid
+                     && request.resource.data.owner == request.auth.uid
+                     && request.resource.data.json is string
+                     && request.resource.data.json.size() < 900000)
+                    || (isAdmin()
+                     && request.resource.data.owner == resource.data.owner
+                     && request.resource.data.json is string
+                     && request.resource.data.json.size() < 900000);
 
       allow delete: if signedIn() && resource.data.owner == request.auth.uid;
     }

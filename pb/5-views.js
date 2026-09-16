@@ -168,7 +168,7 @@ function dlgGames(){
   // A record without teams (half-written, or part-way in from another device) is skipped rather than shown.
   const list = Object.values(db.games).filter(x => x && x.teams && x.teams.A && x.teams.H).sort((a, b) => (b.updated || 0) - (a.updated || 0));
   const items = list.map(x => { const r = replay(x);
-    return `<div class="gitem"><div><b>${esc(x.teams.A.abbr)} ${r.st.score.A} at ${esc(x.teams.H.abbr)} ${r.st.score.H}</b>${x.id === g.id ? '<span class="cur-tag">Open</span>' : ''}${x.sample ? '<span class="cur-tag" style="color:var(--flag-ink)">Sample</span>' : ''}
+    return `<div class="gitem"><div><b>${esc(x.teams.A.abbr)} ${r.st.score.A} at ${esc(x.teams.H.abbr)} ${r.st.score.H}</b>${x.id === g.id ? '<span class="cur-tag">Open</span>' : ''}${x.sample ? '<span class="cur-tag" style="color:var(--flag-ink)">Sample</span>' : ''}${x.foreign ? '<span class="cur-tag" style="color:var(--flag-ink)">Someone else’s</span>' : ''}
       <div class="meta">${esc(x.teams.A.name)} at ${esc(x.teams.H.name)} · ${rulesOf(x).men === 8 ? '8-man · ' : ''}${gameDay(x).toLocaleDateString()} · ${r.st.final ? 'Final' : perLabel(r.st.q)} · ${x.box ? 'box score' : `${x.plays.length} plays`}</div></div>
       <div class="acts">${x.id !== g.id ? `<button class="btn small" data-open-game="${x.id}">Open</button>` : ''}<button class="btn small danger" data-del-game="${x.id}">${ui.confirm === 'g:' + x.id ? 'Tap again' : 'Delete'}</button></div></div>`; }).join('');
   return `${dlgHead('Games')}<div class="dlg-bd">${syncBlock()}<div class="grp"><h3>Games</h3><div class="glist">${items}</div></div>
@@ -270,7 +270,7 @@ function refresh(){
   $('#sample').hidden = !g.sample || !!ui.viewer;
   const sb = $('#sharebtn');
   if (sb){ sb.classList.toggle('live', !!g.share); sb.innerHTML = g.share ? '<i></i>Live' : 'Private'; }
-  renderBoard(); renderPad(); renderView(); renderRail(); renderLive(); renderScores(); loadLogos(); renderStart();
+  renderBoard(); renderPad(); renderView(); renderRail(); renderLive(); renderScores(); loadLogos(); renderStart(); renderForeign();
 }
 let toastT;
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 1700); }
@@ -382,7 +382,9 @@ document.addEventListener('click', e => {
   if (d.delGame){
     const id = d.delGame;
     if (ui.confirm !== 'g:' + id){ ui.confirm = 'g:' + id; dlg().innerHTML = dlgGames(); return; }
-    delete db.games[id]; ui.confirm = null; syncDelete(id);
+    // Their game is only a copy here: closing it leaves their own record alone.
+    const theirs = !!(db.games[id] && db.games[id].foreign);
+    delete db.games[id]; ui.confirm = null; if (!theirs) syncDelete(id);
     if (id === g.id){ g = Object.values(db.games)[0] || sampleGame(); resetUi(); ui.start = idleGame(g); }
     setCurrent(); refresh(); dlg().innerHTML = dlgGames(); return toast('Game deleted');
   }

@@ -481,6 +481,10 @@ button.h-btn{cursor:pointer}
 
 .sample{background:var(--flag-wash);color:var(--flag-ink);padding:8px 16px;font-size:13.5px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
 .sample button{background:var(--ink-2);color:var(--card);border:0;border-radius:14px;padding:6px 12px;font:600 12.5px/1 var(--sans)}
+/* Editing another scorer's game: said plainly, above everything, the whole time. */
+.foreign{background:#FFF4E5;color:#8A5300;padding:8px 16px;font-size:13.5px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;border-bottom:1px solid #F0DCC0}
+.foreign button{background:#8A5300;color:#FFFFFF;border:0;border-radius:14px;padding:6px 12px;font:600 12.5px/1 var(--sans)}
+.foreign button.done{background:transparent;color:#8A5300;box-shadow:inset 0 0 0 1px #D8B98A}
 
 /* ---------- game strip ---------- */
 .strip{position:sticky;top:0;z-index:30;background:var(--card);box-shadow:0 1px 0 var(--line),0 2px 6px rgba(18,18,19,.08);overflow:hidden}
@@ -1019,6 +1023,7 @@ try { if (new URLSearchParams(location.search).has('embed')) document.documentEl
   <span>This is a sample game with made-up teams and plays, so you can see how it works.</span>
   <button type="button" data-open="new">Start a real game</button>
 </div>
+<div class="foreign" id="foreign" hidden></div>
 <header class="strip" id="sb"></header>
 <nav class="gtabs" id="tabs" aria-label="Game sections">
   <div class="gtabs-in" role="tablist">
@@ -2786,7 +2791,7 @@ function dlgGames(){
   // A record without teams (half-written, or part-way in from another device) is skipped rather than shown.
   const list = Object.values(db.games).filter(x => x && x.teams && x.teams.A && x.teams.H).sort((a, b) => (b.updated || 0) - (a.updated || 0));
   const items = list.map(x => { const r = replay(x);
-    return `<div class="gitem"><div><b>${esc(x.teams.A.abbr)} ${r.st.score.A} at ${esc(x.teams.H.abbr)} ${r.st.score.H}</b>${x.id === g.id ? '<span class="cur-tag">Open</span>' : ''}${x.sample ? '<span class="cur-tag" style="color:var(--flag-ink)">Sample</span>' : ''}
+    return `<div class="gitem"><div><b>${esc(x.teams.A.abbr)} ${r.st.score.A} at ${esc(x.teams.H.abbr)} ${r.st.score.H}</b>${x.id === g.id ? '<span class="cur-tag">Open</span>' : ''}${x.sample ? '<span class="cur-tag" style="color:var(--flag-ink)">Sample</span>' : ''}${x.foreign ? '<span class="cur-tag" style="color:var(--flag-ink)">Someone else’s</span>' : ''}
       <div class="meta">${esc(x.teams.A.name)} at ${esc(x.teams.H.name)} · ${rulesOf(x).men === 8 ? '8-man · ' : ''}${gameDay(x).toLocaleDateString()} · ${r.st.final ? 'Final' : perLabel(r.st.q)} · ${x.box ? 'box score' : `${x.plays.length} plays`}</div></div>
       <div class="acts">${x.id !== g.id ? `<button class="btn small" data-open-game="${x.id}">Open</button>` : ''}<button class="btn small danger" data-del-game="${x.id}">${ui.confirm === 'g:' + x.id ? 'Tap again' : 'Delete'}</button></div></div>`; }).join('');
   return `${dlgHead('Games')}<div class="dlg-bd">${syncBlock()}<div class="grp"><h3>Games</h3><div class="glist">${items}</div></div>
@@ -2888,7 +2893,7 @@ function refresh(){
   $('#sample').hidden = !g.sample || !!ui.viewer;
   const sb = $('#sharebtn');
   if (sb){ sb.classList.toggle('live', !!g.share); sb.innerHTML = g.share ? '<i></i>Live' : 'Private'; }
-  renderBoard(); renderPad(); renderView(); renderRail(); renderLive(); renderScores(); loadLogos(); renderStart();
+  renderBoard(); renderPad(); renderView(); renderRail(); renderLive(); renderScores(); loadLogos(); renderStart(); renderForeign();
 }
 let toastT;
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 1700); }
@@ -3000,7 +3005,9 @@ document.addEventListener('click', e => {
   if (d.delGame){
     const id = d.delGame;
     if (ui.confirm !== 'g:' + id){ ui.confirm = 'g:' + id; dlg().innerHTML = dlgGames(); return; }
-    delete db.games[id]; ui.confirm = null; syncDelete(id);
+    // Their game is only a copy here: closing it leaves their own record alone.
+    const theirs = !!(db.games[id] && db.games[id].foreign);
+    delete db.games[id]; ui.confirm = null; if (!theirs) syncDelete(id);
     if (id === g.id){ g = Object.values(db.games)[0] || sampleGame(); resetUi(); ui.start = idleGame(g); }
     setCurrent(); refresh(); dlg().innerHTML = dlgGames(); return toast('Game deleted');
   }
@@ -3618,7 +3625,7 @@ async function startSync(){
   addEventListener('offline', renderSync);
 }
 
-const newestGame = () => Object.values(db.games).filter(x => !x.sample).sort((a, b) => (b.updated || 0) - (a.updated || 0))[0];
+const newestGame = () => Object.values(db.games).filter(x => !x.sample && !x.foreign).sort((a, b) => (b.updated || 0) - (a.updated || 0))[0];
 
 function listen(){
   const {fsM, fsdb} = sync.api;
@@ -3646,7 +3653,7 @@ function listen(){
       sync.first = false;
       // Games made on this device before signing in go up to the account.
       const remoteIds = new Set(snap.docs.map(x => x.id));
-      Object.values(db.games).forEach(x => { if (!x.sample && !remoteIds.has(x.id)) syncPush(x, 0); });
+      Object.values(db.games).forEach(x => { if (!x.sample && !x.foreign && !remoteIds.has(x.id)) syncPush(x, 0); });
       Object.values(qsLib()).forEach(x => { if (!remoteIds.has(x.id)) pushScore(x); });
       if (!remoteIds.has(teamsDocId()) && savedTeams().length) syncTeams(0);
       // A device still showing the sample opens the latest real game instead.
@@ -3684,7 +3691,8 @@ const gameLink = id => location.hostname === 'stats.kansasmediarankings.com'
   ? `https://stats.kansasmediarankings.com/g/${encodeURIComponent(id)}/` : `${location.origin}${location.pathname}?game=${encodeURIComponent(id)}`;
 
 function syncPush(game, delay = 700){
-  if (!sync.user || !game || game.sample) return;
+  // Another scorer's game (the admin editing it) is saved back to them by hand, in saveForeign.
+  if (!sync.user || !game || game.sample || game.foreign) return;
   clearTimeout(sync.timers[game.id]);
   sync.timers[game.id] = setTimeout(() => pushNow(game.id), delay);
   sync.state = 'saving'; renderSync();
@@ -6789,10 +6797,13 @@ function othersRow(o){
   const how = x.kind === 'score' ? 'quick score' : x.box ? 'box score' : `${(x.plays || []).length} plays`;
   // A quick score is just a score: there's no game behind it to watch.
   const watch = x.kind === 'score' ? '' : `<a class="btn small" href="?game=${encodeURIComponent(x.id)}" target="_blank" rel="noopener">Watch</a>`;
+  // A quick score is a score and nothing else; there are no plays to fix.
+  const mine = db.games[x.id] && db.games[x.id].foreign;
+  const edit = x.kind === 'score' ? '' : `<button class="btn small${mine ? ' primary' : ''}" data-adopt="${esc(x.id)}">${mine ? 'Back to editing' : 'Edit'}</button>`;
   return `<div class="gitem"><div><b>${esc(A.abbr || A.name)} ${m.pre ? '' : m.score.A} at ${esc(H.abbr || H.name)} ${m.pre ? '' : m.score.H}</b>`
     + `<span class="cur-tag"${o.shared ? '' : ' style="color:var(--flag-ink)"'}>${o.shared ? 'Shared' : 'Not shared'}</span>
     <div class="meta">${esc(A.name)} at ${esc(H.name)} · ${gameDay(x).toLocaleDateString()} · ${esc(m.status)} · ${how} · scorer ${esc(o.owner.slice(0, 6))} · updated ${agoText(o.updated)}</div></div>
-    <div class="acts">${watch}</div></div>`;
+    <div class="acts">${watch}${edit}</div></div>`;
 }
 function dlgOthers(){
   let body;
@@ -6812,6 +6823,84 @@ function dlgOthers(){
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-others-show]'); if (!b) return;
   others.show = b.dataset.othersShow; dlg().innerHTML = dlgOthers();
+});
+
+/* ---------- editing someone else's game ----------
+   A game opened from this window is a copy on this device, marked with whose
+   it is. It syncs nowhere on its own: the admin saves it back to the scorer's
+   own record on purpose, and only after the database agrees that the scorer
+   hasn't changed it in the meantime. */
+function adoptGame(id){
+  // Already editing it: go back to that copy rather than throwing away the work in it.
+  if (db.games[id] && db.games[id].foreign){
+    g = db.games[id]; resetUi(); setCurrent(); closeDialog(); refresh();
+    return toast('Back to your copy of their game');
+  }
+  const o = (others.list || []).find(v => v.x.id === id);
+  if (!o) return toast('That game isn’t loaded any more');
+  let copy; try { copy = soundGame(JSON.parse(JSON.stringify(o.x))); } catch (e) { copy = null; }
+  if (!copy) return toast('That game can’t be opened');
+  copy.foreign = {uid:o.owner, base:o.updated || copy.updated || 0};
+  db.games[id] = copy; g = copy; resetUi(); setCurrent(); closeDialog(); refresh();
+  toast(`Editing ${scorerName(o.owner)}’s game`);
+}
+const scorerName = uid => `scorer ${String(uid || '').slice(0, 6)}`;
+
+// Said plainly, above the game, the whole time it is open.
+function renderForeign(){
+  const el = $('#foreign'); if (!el) return;
+  const f = !ui.viewer && g && g.foreign;
+  el.hidden = !f;
+  if (!f) return;
+  const saved = (g.updated || 0) <= f.base;
+  el.innerHTML = `<span>Editing <b>${esc(scorerName(f.uid))}</b>’s game. Changes stay on this device until you save them back.</span>`
+    + `<button type="button" class="${saved ? 'done' : ''}" data-foreign="save">${ui.confirm === 'foreign' ? 'Save anyway' : saved ? 'Saved' : 'Save to their game'}</button>`
+    + `<button type="button" class="done" data-foreign="drop">${ui.confirm === 'drop' ? 'Tap again to close' : 'Close their game'}</button>`;
+}
+
+async function saveForeign(force){
+  const f = g && g.foreign; if (!f) return;
+  if (!sync.api || !sync.user || sync.user.uid !== ADMIN_UID) return toast('Sign in with the admin account first');
+  const {fsM, fsdb} = sync.api, game = g, ref = fsM.doc(fsdb, 'pressbox', game.id);
+  try {
+    const snap = await fsM.getDoc(ref);
+    if (!snap.exists()) return toast('That game is no longer in the database');
+    const d = snap.data();
+    // The scorer has been at it since this copy was taken: say so rather than wiping their work.
+    if (!force && (d.updated || 0) > f.base){
+      ui.confirm = 'foreign'; renderForeign();
+      return toast('They’ve changed this game since you opened it — Save anyway to replace theirs');
+    }
+    const now = Date.now();
+    const out = Object.assign({}, game, {updated:now}); delete out.foreign;
+    await fsM.setDoc(ref, {owner:d.owner, updated:now, public:!!d.public, week:gameWeek(out),
+      title:`${out.teams.A.abbr} at ${out.teams.H.abbr}`, card:shareCard(out), json:JSON.stringify(out)});
+    game.updated = now; f.base = now; ui.confirm = null;
+    setCurrent(); renderForeign();
+    toast('Saved to their game');
+  } catch (e) {
+    const code = String((e && e.code) || '');
+    toast(code.includes('permission')
+      ? 'The database won’t let you change another scorer’s game yet. Publish the updated rules (firestore.rules) in the Firebase console.'
+      : friendlySync(e) || 'Couldn’t save to their game');
+  }
+}
+
+function dropForeign(){
+  if (!g || !g.foreign) return;
+  const unsaved = (g.updated || 0) > g.foreign.base;
+  if (unsaved && ui.confirm !== 'drop'){ ui.confirm = 'drop'; renderForeign(); return toast('Close without saving? Tap Close again'); }
+  delete db.games[g.id]; ui.confirm = null;
+  g = newestGame() || sampleGame(); resetUi(); ui.start = idleGame(g); setCurrent(); refresh();
+  toast('Closed their game');
+}
+
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('[data-adopt]');
+  if (a) return adoptGame(a.dataset.adopt);
+  const b = e.target.closest && e.target.closest('[data-foreign]'); if (!b) return;
+  if (b.dataset.foreign === 'save') return saveForeign(ui.confirm === 'foreign');
+  if (b.dataset.foreign === 'drop') return dropForeign();
 });
 /* ================================================================
    Win Probability: after every play, an estimate of how often a team
