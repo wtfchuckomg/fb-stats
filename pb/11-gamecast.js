@@ -148,13 +148,15 @@ const BOX_CATS = [
   ['Rushing', ['Car', 'Yds', 'Avg', 'TD', 'Lng'], p => p.ru, p => [p.ru, p.ry, avg(p.ry, p.ru), p.rtd, p.rlg], 'ry'],
   ['Receiving', ['Rec', 'Yds', 'Avg', 'TD', 'Lng'], p => p.re, p => [p.re, p.rey, avg(p.rey, p.re), p.retd, p.relg], 'rey'],
   ['Defense', ['Tot', 'Solo', 'Ast', 'TFL', 'Sack', 'Int', 'PBU', 'FF', 'FR'], p => p.tk || p.ast || p.sk || p.dint || p.pbu || p.ff || p.fr || p.bk,
-    p => [p.tk + p.ast, p.tk, p.ast, fy(p.tfl), fy(p.sk), p.dint, p.pbu, p.ff, p.fr], 'tk'],
+    p => [p.tk + p.ast, p.tk, p.ast, fy(p.tfl), fy(p.sk), p.dint, p.pbu, p.ff, p.fr], p => p.tk + p.ast],
   ['Kicking', ['FG', 'Lng', 'XP', 'KO', 'TB', 'Pts'], p => p.fga || p.xpa || p.ko, p => [`${p.fgm}/${p.fga}`, p.fglg || '—', `${p.xpm}/${p.xpa}`, p.ko, p.ktb, p.fgm * 3 + p.xpm], 'fga'],
   ['Punting', ['No', 'Yds', 'Avg', 'Lng', 'In 20', 'TB'], p => p.pu, p => [p.pu, p.puy, avg(p.puy, p.pu), p.pulg, p.pi20, p.ptb], 'pu'],
   ['Returns', ['KR', 'Yds', 'Lng', 'PR', 'Yds', 'Lng', 'TD'], p => p.kr || p.pr, p => [p.kr, p.kry, p.krlg, p.pr, p.pry, p.prlg, p.krtd + p.prtd], 'kry']];
 function viewBoxTab(){
   const T = g.teams;
-  const pick = (s, keep, key) => Object.values(R.S.pl[s]).filter(keep).sort((a, b) => (a.n === 'team') - (b.n === 'team') || (b[key] || 0) - (a[key] || 0));
+  // The sort column is a key, or a sum of them — the defense goes in order of total tackles.
+  const val = (p, key) => typeof key === 'function' ? key(p) || 0 : p[key] || 0;
+  const pick = (s, keep, key) => Object.values(R.S.pl[s]).filter(keep).sort((a, b) => (a.n === 'team') - (b.n === 'team') || val(b, key) - val(a, key));
   let h = '';
   for (const [title, heads, keep, row, key] of BOX_CATS){
     const lists = {A:pick('A', keep, key), H:pick('H', keep, key)};

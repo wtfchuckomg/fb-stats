@@ -3446,13 +3446,15 @@ const BOX_CATS = [
   ['Rushing', ['Car', 'Yds', 'Avg', 'TD', 'Lng'], p => p.ru, p => [p.ru, p.ry, avg(p.ry, p.ru), p.rtd, p.rlg], 'ry'],
   ['Receiving', ['Rec', 'Yds', 'Avg', 'TD', 'Lng'], p => p.re, p => [p.re, p.rey, avg(p.rey, p.re), p.retd, p.relg], 'rey'],
   ['Defense', ['Tot', 'Solo', 'Ast', 'TFL', 'Sack', 'Int', 'PBU', 'FF', 'FR'], p => p.tk || p.ast || p.sk || p.dint || p.pbu || p.ff || p.fr || p.bk,
-    p => [p.tk + p.ast, p.tk, p.ast, fy(p.tfl), fy(p.sk), p.dint, p.pbu, p.ff, p.fr], 'tk'],
+    p => [p.tk + p.ast, p.tk, p.ast, fy(p.tfl), fy(p.sk), p.dint, p.pbu, p.ff, p.fr], p => p.tk + p.ast],
   ['Kicking', ['FG', 'Lng', 'XP', 'KO', 'TB', 'Pts'], p => p.fga || p.xpa || p.ko, p => [`${p.fgm}/${p.fga}`, p.fglg || '—', `${p.xpm}/${p.xpa}`, p.ko, p.ktb, p.fgm * 3 + p.xpm], 'fga'],
   ['Punting', ['No', 'Yds', 'Avg', 'Lng', 'In 20', 'TB'], p => p.pu, p => [p.pu, p.puy, avg(p.puy, p.pu), p.pulg, p.pi20, p.ptb], 'pu'],
   ['Returns', ['KR', 'Yds', 'Lng', 'PR', 'Yds', 'Lng', 'TD'], p => p.kr || p.pr, p => [p.kr, p.kry, p.krlg, p.pr, p.pry, p.prlg, p.krtd + p.prtd], 'kry']];
 function viewBoxTab(){
   const T = g.teams;
-  const pick = (s, keep, key) => Object.values(R.S.pl[s]).filter(keep).sort((a, b) => (a.n === 'team') - (b.n === 'team') || (b[key] || 0) - (a[key] || 0));
+  // The sort column is a key, or a sum of them — the defense goes in order of total tackles.
+  const val = (p, key) => typeof key === 'function' ? key(p) || 0 : p[key] || 0;
+  const pick = (s, keep, key) => Object.values(R.S.pl[s]).filter(keep).sort((a, b) => (a.n === 'team') - (b.n === 'team') || val(b, key) - val(a, key));
   let h = '';
   for (const [title, heads, keep, row, key] of BOX_CATS){
     const lists = {A:pick('A', keep, key), H:pick('H', keep, key)};
@@ -5049,6 +5051,28 @@ function pullTime(d){
   return {desc:s, time:null};
 }
 
+// What a paper calls each column — "(tackles-solo-assists-sacks-TFL-INT)", "(punts-yards-average-I20)".
+const COL_WORDS = {
+  tackles:'tot', tackle:'tot', tkl:'tot', tot:'tot', total:'tot', totals:'tot',
+  solo:'tk', unassisted:'tk', ua:'tk', assists:'ast', assisted:'ast', assist:'ast', ast:'ast', asst:'ast',
+  sacks:'sk', sack:'sk', sk:'sk', tfl:'tfl', tfls:'tfl', 'tackles for loss':'tfl',
+  int:'int', ints:'int', interception:'int', interceptions:'int', picks:'int', pick:'int',
+  pbu:'pbu', pd:'pbu', bu:'pbu', ff:'ff', forced:'ff', fr:'fr', recovered:'fr', recoveries:'fr', blk:'blk', blocked:'blk',
+  fg:'fg', fgm:'fg', fgs:'fg', fga:'fga', xp:'xp', xpm:'xp', pat:'xp', pats:'xp', xpa:'xpa', points:'pts', pts:'pts',
+  punts:'no', punt:'no', no:'no', number:'no', num:'no', returns:'no', ret:'no', rets:'no', att:'no',
+  yards:'yds', yds:'yds', yard:'yds', yd:'yds', average:'avg', avg:'avg', ave:'avg',
+  long:'lng', lng:'lng', lg:'lng', i20:'i20', in20:'i20', 'inside 20':'i20', tb:'tb', touchbacks:'tb', td:'td', tds:'td'
+};
+// The same column name means a different stat in each section, and this is the order when a heading doesn't say.
+const KIND_COLS = {
+  def:  {order:['tot', 'tk', 'ast', 'sk', 'tfl', 'int'], keys:{tk:'tk', ast:'ast', sk:'sk', tfl:'tfl', int:'dint', pbu:'pbu', ff:'ff', fr:'fr', blk:'bk'}},
+  kick: {order:['fg', 'fga', 'xp', 'pts'], keys:{fg:'fgm', fga:'fga', xp:'xpm', xpa:'xpa', lng:'fglg'}},
+  punt: {order:['no', 'yds', 'avg', 'i20'], keys:{no:'pu', yds:'puy', lng:'pulg', i20:'pi20', tb:'ptb'}},
+  pret: {order:['no', 'yds', 'td'], keys:{no:'pr', yds:'pry', lng:'prlg', td:'prtd'}},
+  kret: {order:['no', 'yds', 'td'], keys:{no:'kr', yds:'kry', lng:'krlg', td:'krtd'}},
+  int:  {order:['no', 'yds', 'td'], keys:{no:'dint', yds:'dintY'}}
+};
+
 // Points and kind for one scoring-summary line, e.g. "Will Quinn 79 run (Pete Vega kick)".
 function scoreLine(d){
   const main = d.split('(')[0];
@@ -5073,7 +5097,7 @@ function parseBox(txt){
   const rows = String(txt || '').replace(/\r/g, '').split('\n').map(l => l.replace(/[ \t]+/g, ' ').trim()).filter(Boolean);
   // "RUSHING: Andover — …", "RUSHING – Winfield: …", "RUSHING—Winfield, …", "PASSING (cmp-att-yds-td-int): …",
   // "Passing: (cmp-att-yds-td-int): Douglass – …"
-  const SEC = /^(RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|INTERCEPTIONS|TACKLES|DEFENSE|PUNTING|FUMBLES|SACKS)\b\s*[:—–-]?\s*(\([^)]*\))?\s*[:—–-]?\s*(.*)$/i;
+  const SEC = /^(RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|INTERCEPTIONS|TACKLES|DEFENSE|DEFENSIVE|PUNTING|PUNT RETURNS|KICKOFF RETURNS|KICK RETURNS|FUMBLES|SACKS|TEAM STATS)\b\s*[:—–-]?\s*(\([^)]*\))?\s*[:—–-]?\s*(.*)$/i;
   const QTR = /^(?:(first|second|third|fourth|1st|2nd|3rd|4th)\s+(?:quarter|qtr)|(ot|overtime))\b/i;
   const QN = {first:1, '1st':1, second:2, '2nd':2, third:3, '3rd':3, fourth:4, '4th':4};
   // Which team a label like "And", "Hutch" or "Andover" means.
@@ -5165,10 +5189,31 @@ function parseBox(txt){
     return hits.map((h, i) => [sideOf(h[1]), body.slice(h.index + h[0].length, i + 1 < hits.length ? hits[i + 1].index : undefined)]).filter(x => x[0]);
   };
   for (const sc of sections){
-    const kind = /^RUSH/.test(sc.kind) ? 'rush' : /^PASS/.test(sc.kind) ? 'pass' : /^REC/.test(sc.kind) ? 'rec' : '';
+    const K = sc.kind.toUpperCase();
+    const kind = /^RUSH/.test(K) ? 'rush' : /^PASS/.test(K) ? 'pass' : /^REC/.test(K) ? 'rec'
+      : /^PUNT RET/.test(K) ? 'pret' : /^KICK(OFF)? RET/.test(K) ? 'kret'
+      : /^DEF|^TACKL|^SACK|^FUMBLE/.test(K) ? 'def' : /^KICKING|^FIELD GOAL/.test(K) ? 'kick'
+      : /^PUNTING/.test(K) ? 'punt' : /^INTERCEPT/.test(K) ? 'int' : /^TEAM/.test(K) ? 'team' : '';
     if (!kind){ out.warn.push(`${sc.kind[0]}${sc.kind.slice(1).toLowerCase()} lines aren’t read yet, so they’re left out.`); continue; }
-    // Passing columns follow the heading's "(cmp-att-yds-td-int)" when it has one; otherwise see passOrder.
-    const order = kind === 'pass' ? ((sc.head.match(/\(([a-z-]+)\)/i) || [])[1] || '').toLowerCase().split('-').filter(Boolean) : null;
+    // "Mulvane — 333 total yards, 62 plays, 243 rushing, 90 passing, 17 first downs, 2-10 penalties"
+    if (kind === 'team'){
+      for (const [s, part] of splitTeams(sc.body)){
+        const one = re => { const m = part.match(re); return m ? +m[1] : null; };
+        const set = (k, v) => { if (v != null) out.team[s][k] = v; };
+        set('plays', one(/(\d+)\s*(?:total\s*)?plays\b/i));
+        set('rushY', one(/(\d+)\s*(?:yards\s*)?rushing\b/i) ?? one(/rushing[^\d]{0,12}(\d+)/i));
+        set('passY', one(/(\d+)\s*(?:yards\s*)?passing\b/i) ?? one(/passing[^\d]{0,12}(\d+)/i));
+        set('fd', one(/(\d+)\s*first downs\b/i));
+        const pen = part.match(/(\d+)\s*-\s*(\d+)\s*penalt/i);
+        if (pen){ out.team[s].pen = +pen[1]; out.team[s].penY = +pen[2]; }
+      }
+      continue;
+    }
+    // Columns follow the heading when it names them — "(cmp-att-yds-td-int)", "(punts-yards-average-I20)".
+    const named = ((sc.head.match(/\(([^)]*)\)/) || [])[1] || '').toLowerCase().split(/[-–,]/).map(x => x.trim()).filter(Boolean);
+    const order = kind === 'pass' ? named
+      : KIND_COLS[kind] ? (named.map(w => COL_WORDS[w] || w).filter(w => w) .length ? named.map(w => COL_WORDS[w] || w) : KIND_COLS[kind].order)
+      : null;
     for (const [s, part] of splitTeams(sc.body)){
       // Players are split by semicolons, or by commas when the next thing is another player ("Chattam 16-133, Bergeson
       // 10-124"); a comma before "TD" or "3 TD" stays with its player.
@@ -5184,6 +5229,18 @@ function parseBox(txt){
         if (kind === 'pass'){
           const f = {}; (order.length ? order : passOrder(v)).forEach((k, i) => { f[k] = v[i] || 0; });
           add(p, 'pc', f.cmp || f.c || 0); add(p, 'pa', f.att || f.a || 0); add(p, 'py', f.yds || f.y || 0); add(p, 'ptd', f.td || 0); add(p, 'pint', f.int || f.i || 0);
+        }
+        if (KIND_COLS[kind]){
+          const {keys} = KIND_COLS[kind], f = {};
+          order.forEach((c, i) => { if (c && v[i] != null) f[c] = v[i]; });
+          // Tackles are printed as total-solo-assists; the book keeps solo and assists and adds them back up.
+          if (kind === 'def'){
+            if (f.tk == null && f.tot != null) f.tk = f.ast != null ? Math.max(0, f.tot - f.ast) : f.tot;
+            if (f.ast == null && f.tot != null && f.tk != null && f.tot > f.tk) f.ast = f.tot - f.tk;
+          }
+          Object.entries(f).forEach(([c, n]) => { const k = keys[c]; if (k && n) add(p, k, n); });
+          // An extra point made is an extra point tried, unless the paper counted the tries itself.
+          if (kind === 'kick' && f.xp && f.xpa == null) add(p, 'xpa', f.xp);
         }
       });
     }
@@ -5211,18 +5268,21 @@ function parseBox(txt){
       if (t) add(player(s, t[1]), 'rettd', 1);
     });
   });
-  // Kickers, from the scoring summary: "Vega 29 FG", "(Pete Vega kick)".
+  // Kickers, from the scoring summary: "Vega 29 FG", "(Pete Vega kick)". A kicking section already counted
+  // them for whoever appears in it, so those men are left alone rather than counted twice.
+  const kicked = new Set(['A', 'H'].flatMap(s => Object.entries(out.pl[s]).filter(([, p]) => p.xpm || p.xpa || p.fgm || p.fga).map(([n]) => s + '|' + lastName(n))));
+  const counted = (s, raw) => kicked.has(s + '|' + lastName(raw));
   out.scoring.forEach(e => {
     if (e.how === 'FG'){
       // "Vega 29 FG" or "29 yd FG Vega"
       const m = e.desc.match(/^(.+?)\s+(\d+)\s*(?:-?\s*(?:yd|yard)s?\.?)?\s*(?:FG|field goal)/i);
       const m2 = e.desc.match(/^(\d+)\s*(?:-?\s*(?:yd|yard)s?\.?)?\s*(?:FG|field goal)\s+(?:by\s+)?([A-Z][^(]*?)\s*(?:\(|$)/i);
       const who = m && !/^\d+$/.test(m[1]) ? [m[1], m[2]] : m2 ? [m2[2], m2[1]] : null;
-      if (who){ const p = kicker(e.side, who[0]); add(p, 'fga', 1); add(p, 'fgm', 1); p.fglg = Math.max(p.fglg || 0, +who[1]); }
+      if (who && !counted(e.side, who[0])){ const p = kicker(e.side, who[0]); add(p, 'fga', 1); add(p, 'fgm', 1); p.fglg = Math.max(p.fglg || 0, +who[1]); }
     }
     if (e.how === 'TD'){
       const i = e.desc.lastIndexOf('('), km = (i >= 0 ? e.desc.slice(i + 1) : e.desc).match(/([A-Z][\w'’.-]*(?: [A-Z][\w'’.-]*)?)\s+kick\b(.*)$/);
-      if (km){ const p = kicker(e.side, km[1]); add(p, 'xpa', 1); if (!/fail|no good|miss|block/i.test(km[2])) add(p, 'xpm', 1); }
+      if (km && !counted(e.side, km[1])){ const p = kicker(e.side, km[1]); add(p, 'xpa', 1); if (!/fail|no good|miss|block/i.test(km[2])) add(p, 'xpm', 1); }
       // A good two-point try goes to whoever scored it: "(Ecot pass from Meeker)", "(Ast pass to Green)", "(Carter Green run)".
       if (e.pts === 8){
         const j = e.desc.lastIndexOf('('), t = j >= 0 ? e.desc.slice(j + 1).replace(/\)\s*$/, '').trim() : '';
