@@ -305,7 +305,7 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .h-steps li::before{content:counter(s);position:absolute;left:0;top:-2px;width:28px;height:28px;border-radius:50%;background:var(--ink-2);color:#FFFFFF;display:grid;place-items:center;font:700 13px/1 var(--sans)}
 .h-steps b,.h-mode b{color:var(--ink-2)}
 .h-modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:16px}
-.h-mode{border:1px solid var(--line-2);border-radius:10px;padding:18px}
+.h-mode{border:1px solid var(--line-2);border-radius:10px;padding:18px;min-width:0}
 .h-tag{display:inline-block;border-radius:4px;padding:5px 8px;background:#FDECEA;font:700 11px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--red)}
 .h-tag.blue{background:#E8F0FD;color:var(--blue)}
 .h-tag.gray{background:var(--surface-2);color:var(--muted)}
@@ -317,6 +317,9 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .h-codes td{padding:8px 0;border-top:1px solid var(--line-2);vertical-align:top}
 .h-codes td:first-child{width:48%;padding-right:10px}
 .h-codes code,.h-mode code{font:600 13px/1.3 ui-monospace,"SF Mono",Menlo,Consolas,monospace;background:var(--surface-2);padding:2px 6px;border-radius:4px;color:var(--ink-2);white-space:nowrap}
+/* a sentence example is far longer than a shorthand code: let it wrap inside its cell instead of pushing the table past the card */
+.h-say{table-layout:fixed}
+.h-say code{white-space:normal;overflow-wrap:anywhere}
 .h-note{margin:10px 0 0;font:400 13.5px/1.5 var(--sans);color:var(--muted)}
 .h-gets{list-style:none;margin:0;padding:0}
 .h-gets li{padding:11px 0;border-bottom:1px dotted var(--line)}
@@ -5833,7 +5836,7 @@ function renderHome(){
             <p class="h-note">In the tracker, <b>Use the full form instead</b> switches to buttons and <b>Back to quick entry</b> switches back. It remembers your choice, and you can switch in the middle of a drive.</p></div>
           <div class="h-mode"><span class="h-tag">Type it how you'd say it</span><h3>Plain English</h3>
             <p>The same box takes a sentence. Write the play the way you’d say it out loud and the tracker works it out — numbers for the players, words for the rest. It’s longer than shorthand but nothing to memorize, and you can mix the two on one line.</p>
-            <table class="h-codes"><tbody>${[
+            <table class="h-codes h-say"><tbody>${[
               ['3 runs for 9 yards tackled by 55', '#3 rush for 9 yards (#55)'],
               ['3 sacked for 10 yards by 54 3:55', '#3 sacked by #54 for a loss of 10, at 3:55'],
               ['7 pass complete to 88 for 15 yards', 'Completion to #88, first down if it gets there'],
