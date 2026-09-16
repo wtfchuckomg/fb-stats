@@ -950,6 +950,26 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .ctbl th.on,.ctbl td.on,.ctbl tbody tr:nth-child(even) td.on{background:#EEF5FD}
 .ctbl tr.hi td,.ctbl tr.hi td.on{background:#F2F7FE}
 </style>
+<script>
+/* ?embed=1: the page is running inside someone else's page (the Times-Gazette
+   runs it in an iframe). Flag it here, in the head, so the site's own chrome
+   never paints before it is taken off. */
+try { if (new URLSearchParams(location.search).has('embed')) document.documentElement.className += ' is-embed'; } catch (e) {}
+</script>
+<style>
+/* Embed: no site bar, no page nav, no ticker — the host page has its own
+   header, and its article furnishes the background. */
+.is-embed .sitebar,.is-embed .navbar,.is-embed #scores,.is-embed .sample{display:none!important}
+.is-embed body{background:#FFFFFF}
+.is-embed body::before{display:none}
+.is-embed .board,.is-embed .gc{padding-top:14px;padding-bottom:10px}
+.is-embed .gc{padding-bottom:10px}
+/* The frame is sized to its content, so nothing inside it scrolls on its own. */
+.is-embed .strip{position:static}
+.emb-foot{margin:0;padding:6px 16px 16px;text-align:center;font:500 13px/1.3 var(--sans);color:var(--muted)}
+.emb-foot a{color:var(--blue);text-decoration:none}
+.emb-foot a:hover{text-decoration:underline}
+</style>
 
 <div class="sitebar">
   <div class="sitebar-in">
@@ -7029,6 +7049,70 @@ document.addEventListener('input', e => {
   if (e.target && e.target.id === 'sch-q'){ ui.schoolQ = e.target.value; const l = dlg().querySelector('.sch-list');
     if (l) l.outerHTML = dlgSchools().match(/<div class="sch-list">[\s\S]*?<\/div>\s*<div class="grp">/)[0].replace(/\s*<div class="grp">$/, ''); }
 });
+/* ================================================================
+   Embed (?embed=1): the scoreboard, the stats pages or one game's
+   gamecast running inside another site's page. The chrome comes off
+   in CSS (1c-embed.html); here the frame is kept the height of the
+   page so nothing scrolls inside a box, links stay in the frame
+   instead of dropping the host's page into it, and the bottom is
+   signed with a way back to the full site.
+   ================================================================ */
+const EMBEDDED = document.documentElement.classList.contains('is-embed');
+
+// The host page listens for this and sets the iframe's height, so the embed
+// grows with the week's games instead of scrolling inside a fixed box.
+function embedSize(){
+  const h = Math.ceil(document.documentElement.getBoundingClientRect().height);
+  if (!h || h === embedSize.last) return;
+  embedSize.last = h;
+  try { parent.postMessage({kms:'height', height:h}, '*'); } catch (e) {}
+}
+
+// A link inside the embed keeps the reader inside the embed: same page, still
+// embedded. Anything off this site opens in a new tab, so the host never
+// finds another site loaded inside its article.
+function embedLinks(){
+  document.addEventListener('click', e => {
+    if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+    const a = e.target.closest && e.target.closest('a[href]');
+    if (!a) return;
+    let url;
+    try { url = new URL(a.getAttribute('href'), location.href); } catch (err) { return; }
+    if (url.origin !== location.origin){ a.target = '_blank'; a.rel = 'noopener'; return; }
+    if (a.hasAttribute('download') || a.target === '_blank') return;
+    if (url.pathname === location.pathname && url.search === location.search && url.hash) return;  // same page
+    if (url.searchParams.has('embed')) return;
+    url.searchParams.set('embed', '1');
+    a.href = url.toString();   // not preventDefault: the click follows the new address
+  });
+}
+
+// Whatever is being shown, full size, in a new tab.
+function embedFoot(){
+  // Drop embed from the address without rewriting the rest of it: ?state stays
+  // ?state, not ?state=.
+  const url = new URL(location.href);
+  url.search = url.search.replace(/([?&])embed(=[^&]*)?(?=&|$)/, '$1').replace(/[?&]$/, '');
+  const what = BOARD ? 'scoreboard' : COUNTY_PAGE ? 'stats page' : TEAM_PAGE ? 'page' : 'game';
+  const el = document.createElement('div');
+  el.className = 'emb-foot';
+  el.innerHTML = `<a href="${esc(url.toString())}" target="_blank" rel="noopener">`
+    + `Open this ${what} at Kansas Media Stats &#8599;</a>`;
+  document.body.appendChild(el);
+}
+
+function startEmbed(){
+  if (!EMBEDDED) return;
+  embedLinks();
+  embedFoot();
+  embedSize();
+  addEventListener('load', embedSize);
+  addEventListener('resize', embedSize);
+  if (window.ResizeObserver) new ResizeObserver(embedSize).observe(document.body);
+  // Scores arrive after the first paint, and a render can change the height
+  // without resizing the body, so check on a slow beat as well.
+  setInterval(embedSize, 1000);
+}
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
@@ -7079,4 +7163,6 @@ else {
   if (['games', 'setup', 'export', 'share', 'others'].includes(OPEN)){ history.replaceState(null, '', `${location.pathname}?tracker`); openDialog(OPEN); }
   startSync();
 }
+
+startEmbed();   // ?embed=1: whatever page this is, it is inside someone else's
 </script>

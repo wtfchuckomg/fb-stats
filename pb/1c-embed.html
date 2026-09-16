@@ -1,0 +1,20 @@
+<script>
+/* ?embed=1: the page is running inside someone else's page (the Times-Gazette
+   runs it in an iframe). Flag it here, in the head, so the site's own chrome
+   never paints before it is taken off. */
+try { if (new URLSearchParams(location.search).has('embed')) document.documentElement.className += ' is-embed'; } catch (e) {}
+</script>
+<style>
+/* Embed: no site bar, no page nav, no ticker — the host page has its own
+   header, and its article furnishes the background. */
+.is-embed .sitebar,.is-embed .navbar,.is-embed #scores,.is-embed .sample{display:none!important}
+.is-embed body{background:#FFFFFF}
+.is-embed body::before{display:none}
+.is-embed .board,.is-embed .gc{padding-top:14px;padding-bottom:10px}
+.is-embed .gc{padding-bottom:10px}
+/* The frame is sized to its content, so nothing inside it scrolls on its own. */
+.is-embed .strip{position:static}
+.emb-foot{margin:0;padding:6px 16px 16px;text-align:center;font:500 13px/1.3 var(--sans);color:var(--muted)}
+.emb-foot a{color:var(--blue);text-decoration:none}
+.emb-foot a:hover{text-decoration:underline}
+</style>

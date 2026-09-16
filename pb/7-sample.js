@@ -48,3 +48,5 @@ else {
   if (['games', 'setup', 'export', 'share', 'others'].includes(OPEN)){ history.replaceState(null, '', `${location.pathname}?tracker`); openDialog(OPEN); }
   startSync();
 }
+
+startEmbed();   // ?embed=1: whatever page this is, it is inside someone else's

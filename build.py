@@ -33,7 +33,7 @@ PB = HERE / 'pb'
 
 # The page shell: head and styles, the glass layer, the body markup (which ends
 # with the opening <script> tag).
-PARTS_HTML = ['1-head.html', '1b-glass.html', '2-body.html']
+PARTS_HTML = ['1-head.html', '1b-glass.html', '1c-embed.html', '2-body.html']
 
 # The script, in the order it has to run.
 PARTS_JS = [
@@ -60,6 +60,7 @@ PARTS_JS = [
     '26-others.js',      # admin: everyone else's games
     '27-winprob.js',     # win probability chart
     '28-schools.js',     # admin: the school list, short names, removals
+    '29-embed.js',       # ?embed=1: running inside another site's page
     '7-sample.js',       # the sample game, then boot. Always last.
 ]
 
