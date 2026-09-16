@@ -83,7 +83,7 @@ function parseBox(txt){
   const rows = String(txt || '').replace(/\r/g, '').split('\n').map(l => l.replace(/[ \t]+/g, ' ').trim()).filter(Boolean);
   // "RUSHING: Andover — …", "RUSHING – Winfield: …", "RUSHING—Winfield, …", "PASSING (cmp-att-yds-td-int): …",
   // "Passing: (cmp-att-yds-td-int): Douglass – …"
-  const SEC = /^(RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|INTERCEPTIONS|TACKLES|DEFENSE|DEFENSIVE|PUNTING|PUNT RETURNS|KICKOFF RETURNS|KICK RETURNS|FUMBLES|SACKS|TEAM STATS)\b\s*[:—–-]?\s*(\([^)]*\))?\s*[:—–-]?\s*(.*)$/i;
+  const SEC = /^(RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|MISSED FIELD GOALS|MISSED FGS?|FIELD GOAL ATTEMPTS|BLOCKED KICKS|INTERCEPTIONS|TACKLES|DEFENSE|DEFENSIVE|PUNTING|PUNT RETURNS|KICKOFF RETURNS|KICK RETURNS|FUMBLES|SACKS|TEAM STATS)\b\s*[:—–-]?\s*(\([^)]*\))?\s*[:—–-]?\s*(.*)$/i;
   const QTR = /^(?:(first|second|third|fourth|1st|2nd|3rd|4th)\s+(?:quarter|qtr)|(ot|overtime))\b/i;
   const QN = {first:1, '1st':1, second:2, '2nd':2, third:3, '3rd':3, fourth:4, '4th':4};
   // Which team a label like "And", "Hutch" or "Andover" means.
@@ -174,10 +174,12 @@ function parseBox(txt){
     const re = new RegExp(`(?:^|[.;:)]\\s*)(${alts.map(escRe).join('|')})\\s*(?:[—–:,]|\\s-)\\s*`, 'gi'), hits = [...body.matchAll(re)];
     return hits.map((h, i) => [sideOf(h[1]), body.slice(h.index + h[0].length, i + 1 < hits.length ? hits[i + 1].index : undefined)]).filter(x => x[0]);
   };
+  const kicked = new Set(), missed = new Set();   // kickers a section has already counted
   for (const sc of sections){
     const K = sc.kind.toUpperCase();
     const kind = /^RUSH/.test(K) ? 'rush' : /^PASS/.test(K) ? 'pass' : /^REC/.test(K) ? 'rec'
       : /^PUNT RET/.test(K) ? 'pret' : /^KICK(OFF)? RET/.test(K) ? 'kret'
+      : /^MISSED|^BLOCKED KICKS|^FIELD GOAL ATTEMPTS/.test(K) ? 'miss'
       : /^DEF|^TACKL|^SACK|^FUMBLE/.test(K) ? 'def' : /^KICKING|^FIELD GOAL/.test(K) ? 'kick'
       : /^PUNTING/.test(K) ? 'punt' : /^INTERCEPT/.test(K) ? 'int' : /^TEAM/.test(K) ? 'team' : '';
     if (!kind){ out.warn.push(`${sc.kind[0]}${sc.kind.slice(1).toLowerCase()} lines aren’t read yet, so they’re left out.`); continue; }
@@ -192,6 +194,22 @@ function parseBox(txt){
         set('fd', one(/(\d+)\s*first downs\b/i));
         const pen = part.match(/(\d+)\s*-\s*(\d+)\s*penalt/i);
         if (pen){ out.team[s].pen = +pen[1]; out.team[s].penY = +pen[2]; }
+      }
+      continue;
+    }
+    // "MISSED FIELD GOALS: Newton — Oswald 39 (blocked), 45." Each distance is an attempt and no make;
+    // a blocker who is named gets the block.
+    if (kind === 'miss'){
+      for (const [s, part] of splitTeams(sc.body)){
+        part.split(/;\s*|\.\s+/).map(x => x.trim().replace(/\.$/, '')).filter(Boolean).forEach(item => {
+          const m = item.match(/^([A-Za-z][A-Za-z.'’ -]*?)\s+(\d[\s\S]*)$/);
+          if (!m) return;
+          const p = kicker(s, m[1]), dist = (m[2].match(/\d+/g) || []).map(Number);
+          missed.add(s + '|' + lastName(m[1]));
+          (dist.length ? dist : [0]).forEach(() => add(p, 'fga', 1));
+          const by = item.match(/blocked\s+by\s+([A-Za-z][A-Za-z.'’ -]*)/i);
+          if (by) add(player(s === 'A' ? 'H' : 'A', by[1]), 'bk', 1);
+        });
       }
       continue;
     }
@@ -225,6 +243,7 @@ function parseBox(txt){
             if (f.ast == null && f.tot != null && f.tk != null && f.tot > f.tk) f.ast = f.tot - f.tk;
           }
           Object.entries(f).forEach(([c, n]) => { const k = keys[c]; if (k && n) add(p, k, n); });
+          if (kind === 'kick') kicked.add(s + '|' + lastName(m[1]));
           // An extra point made is an extra point tried, unless the paper counted the tries itself.
           if (kind === 'kick' && f.xp && f.xpa == null) add(p, 'xpa', f.xp);
         }
@@ -254,9 +273,8 @@ function parseBox(txt){
       if (t) add(player(s, t[1]), 'rettd', 1);
     });
   });
-  // Kickers, from the scoring summary: "Vega 29 FG", "(Pete Vega kick)". A kicking section already counted
-  // them for whoever appears in it, so those men are left alone rather than counted twice.
-  const kicked = new Set(['A', 'H'].flatMap(s => Object.entries(out.pl[s]).filter(([, p]) => p.xpm || p.xpa || p.fgm || p.fga).map(([n]) => s + '|' + lastName(n))));
+  // Kickers, from the scoring summary: "Vega 29 FG", "(Pete Vega kick)". A kicking section counted those men
+  // already, so they are left alone; a missed-kicks section only counted what didn't go through.
   const counted = (s, raw) => kicked.has(s + '|' + lastName(raw));
   out.scoring.forEach(e => {
     if (e.how === 'FG'){
