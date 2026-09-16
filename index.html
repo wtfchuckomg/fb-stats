@@ -1633,7 +1633,9 @@ function parseClock(v){
   const d = v.replace(/\D/g, ''); if (!d) return null;
   return d.length <= 2 ? +d * 60 : +d.slice(0, -2) * 60 + +d.slice(-2);
 }
-function clockNow(){ const c = g.clk; return c.run ? Math.max(0, c.s - (Date.now() - c.at) / 1000) : c.s; }
+// A game that arrived without a clock (an older copy, or one part-way in from another device) reads as stopped
+// at the start of a quarter rather than throwing on every tick.
+function clockNow(){ const c = (g && g.clk) || {s:((g && g.set && g.set.qtr) || 12) * 60, run:false, at:0}; return c.run ? Math.max(0, c.s - (Date.now() - c.at) / 1000) : c.s; }
 function setClock(s, run){ g.clk = {s:Math.max(0, s), run:!!run && s > 0, at:Date.now()}; save(); }
 
 /* ---------- game strip (scoreboard) ---------- */
@@ -2759,7 +2761,8 @@ function saveLines(){
 function clearLines(){ delete g.lines; save(); closeDialog(); refresh(); toast('Back to the play-by-play'); }
 
 function dlgGames(){
-  const list = Object.values(db.games).sort((a, b) => (b.updated || 0) - (a.updated || 0));
+  // A record without teams (half-written, or part-way in from another device) is skipped rather than shown.
+  const list = Object.values(db.games).filter(x => x && x.teams && x.teams.A && x.teams.H).sort((a, b) => (b.updated || 0) - (a.updated || 0));
   const items = list.map(x => { const r = replay(x);
     return `<div class="gitem"><div><b>${esc(x.teams.A.abbr)} ${r.st.score.A} at ${esc(x.teams.H.abbr)} ${r.st.score.H}</b>${x.id === g.id ? '<span class="cur-tag">Open</span>' : ''}${x.sample ? '<span class="cur-tag" style="color:var(--flag-ink)">Sample</span>' : ''}
       <div class="meta">${esc(x.teams.A.name)} at ${esc(x.teams.H.name)} · ${rulesOf(x).men === 8 ? '8-man · ' : ''}${gameDay(x).toLocaleDateString()} · ${r.st.final ? 'Final' : perLabel(r.st.q)} · ${x.box ? 'box score' : `${x.plays.length} plays`}</div></div>
@@ -2828,7 +2831,26 @@ function printAll(){
 }
 
 /* ---------- storage ---------- */
-function load(){ try { const d = JSON.parse(localStorage.getItem(STORE) || 'null'); if (d && d.games) db = d; } catch (e) {} }
+// Everything downstream assumes a game has two teams, a list of plays and a clock. One record saved half-written —
+// or arrived part-way from another device — used to take the whole page down on the way in, so they're dropped or
+// patched up here, where games enter memory, instead of guarding every place that reads one.
+function soundGame(x){
+  if (!x || typeof x !== 'object' || !x.teams || !x.teams.A || !x.teams.H) return null;
+  if (!Array.isArray(x.plays)) x.plays = [];
+  if (!x.set || typeof x.set !== 'object') x.set = {qtr:12, men:11, firstKick:'H'};
+  if (!x.clk || typeof x.clk !== 'object') x.clk = {s:(x.set.qtr || 12) * 60, run:false, at:0};
+  return x;
+}
+function load(){
+  try {
+    const d = JSON.parse(localStorage.getItem(STORE) || 'null');
+    if (!d || !d.games) return;
+    const games = {}, dropped = [];
+    Object.entries(d.games).forEach(([id, x]) => { const ok = soundGame(x); if (ok) games[id] = ok; else dropped.push(id); });
+    d.games = games; db = d;
+    if (dropped.length) persist();   // don't let a bad record come back on the next load
+  } catch (e) {}
+}
 function persist(){ try { localStorage.setItem(STORE, JSON.stringify(db)); } catch (e) {} }
 // An edit: stamp the game, keep it here, and send it to the account when signed in.
 function save(){ if (!g) return; g.updated = Date.now(); db.games[g.id] = g; db.cur = g.id; persist(); syncPush(g); }
@@ -2989,7 +3011,7 @@ document.addEventListener('toggle', e => { if (e.target.classList && e.target.cl
 document.addEventListener('change', e => { if (e.target.id === 'x-file' && e.target.files[0]) e.target.files[0].text().then(importText); });
 dlg().addEventListener('close', () => { ui.dlg = null; });
 setInterval(() => {
-  if (!g || !g.clk.run) return;
+  if (!g || !g.clk || !g.clk.run) return;
   const s = clockNow(), el = $('#clk');
   if (s <= 0 && !ui.viewer){ setClock(0, false); return renderBoard(); }
   if (el && el.tagName === 'BUTTON') el.textContent = mmss(s);
@@ -3579,7 +3601,8 @@ function listen(){
       if (ru > lu){
         if (d.deleted){ if (local){ delete db.games[id]; changed = true; if (g && g.id === id) current = 'gone'; } return; }
         let remote; try { remote = JSON.parse(d.json); } catch (e) { return; }
-        db.games[id] = remote; changed = true;
+        const sound = soundGame(remote); if (!sound) return;   // a half-written record from another device
+        db.games[id] = sound; changed = true;
         if (g && g.id === id) current = 'updated';
       } else if (local && lu > ru) syncPush(local, 0);
       // A game saved before the scoreboard existed gets its week, so fans' scoreboards can find it.
@@ -3747,7 +3770,8 @@ async function startViewer(id){
         history.replaceState(null, '', `/g/${encodeURIComponent(id)}/${tab ? `?tab=${encodeURIComponent(tab)}` : ''}`);
       }).catch(() => {});
     }
-    let game; try { game = JSON.parse(d.json); } catch (e) { return; }
+    let game; try { game = soundGame(JSON.parse(d.json)); } catch (e) { return; }
+    if (!game) return gone();   // a half-written copy: nothing to show, and it must not break the page
     g = game; $('#tabs').hidden = false;
     refresh(); viewerTools(id);
     const [hi, lo] = R.st.score.H > R.st.score.A ? ['H', 'A'] : ['A', 'H'];   // the higher score first, like the link's preview
@@ -3828,7 +3852,9 @@ function forgetTeam(k){ teamLib()[k] = {deleted:true, name:'', updated:Date.now(
 function seedTeamLibrary(){
   let added = false;
   Object.values(db.games).forEach(x => {
-    if (x.sample) return;
+    // A record saved without teams (a half-finished game, or one that arrived from another device mid-write) must
+    // not take the whole page down on the way in.
+    if (!x || x.sample || !x.teams || !x.teams.A || !x.teams.H) return;
     ['A', 'H'].forEach(s => { if (!teamLib()[teamKey(x.teams[s].name)]) added = rememberTeam(x.teams[s], x.updated || x.created || 0) || added; });
   });
   if (added) persist();
@@ -4120,7 +4146,7 @@ function weekGames(key, withHidden, withOpp){
   const out = {};
   Object.entries(scores.docs).forEach(([id, x]) => { if (x && x.teams) out[id] = Object.assign(x, {id}); });
   if (!ui.viewer){
-    Object.values(db.games).forEach(x => { if (!x.sample && gameWeek(x) === key) out[x.id] = x; });
+    Object.values(db.games).forEach(x => { if (x && x.teams && x.teams.A && x.teams.H && !x.sample && gameWeek(x) === key) out[x.id] = x; });
     Object.values(qsLib()).forEach(x => { if (x.deleted) delete out[x.id]; else if (x.teams && gameWeek(x) === key) out[x.id] = x; });
   }
   if (g && !g.sample && gameWeek(g) === key) out[g.id] = g;
