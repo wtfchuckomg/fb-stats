@@ -6,7 +6,8 @@
   "city": "",
   "w": 230,
   "h": 217,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Abilene"
  },
  {
   "name": "Altoona-Midway",
@@ -15,7 +16,8 @@
   "city": "",
   "w": 400,
   "h": 324,
-  "aliases": []
+  "aliases": [],
+  "abbr": "AM"
  },
  {
   "name": "Andale",
@@ -24,7 +26,8 @@
   "city": "",
   "w": 400,
   "h": 347,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Andale"
  },
  {
   "name": "Anderson County",
@@ -33,7 +36,8 @@
   "city": "",
   "w": 400,
   "h": 246,
-  "aliases": []
+  "aliases": [],
+  "abbr": "AC"
  },
  {
   "name": "Andover Central",
@@ -42,7 +46,8 @@
   "city": "",
   "w": 400,
   "h": 150,
-  "aliases": []
+  "aliases": [],
+  "abbr": "AC"
  },
  {
   "name": "Andover",
@@ -51,7 +56,8 @@
   "city": "",
   "w": 400,
   "h": 266,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Andover"
  },
  {
   "name": "Argonia",
@@ -60,7 +66,8 @@
   "city": "",
   "w": 400,
   "h": 383,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Argonia"
  },
  {
   "name": "Arkansas City",
@@ -69,7 +76,8 @@
   "city": "",
   "w": 375,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "ArkC"
  },
  {
   "name": "Ashland",
@@ -78,7 +86,8 @@
   "city": "",
   "w": 400,
   "h": 250,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Ashland"
  },
  {
   "name": "Atchison County",
@@ -87,7 +96,8 @@
   "city": "",
   "w": 400,
   "h": 199,
-  "aliases": []
+  "aliases": [],
+  "abbr": "AtCo"
  },
  {
   "name": "Atchison",
@@ -96,7 +106,8 @@
   "city": "",
   "w": 400,
   "h": 320,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Atchison"
  },
  {
   "name": "Attica-Argonia",
@@ -105,7 +116,8 @@
   "city": "",
   "w": 400,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "AA"
  },
  {
   "name": "Attica",
@@ -114,7 +126,8 @@
   "city": "",
   "w": 400,
   "h": 350,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Attica"
  },
  {
   "name": "Augusta",
@@ -123,7 +136,8 @@
   "city": "",
   "w": 400,
   "h": 270,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Augusta"
  },
  {
   "name": "Axtell",
@@ -132,7 +146,8 @@
   "city": "",
   "w": 400,
   "h": 165,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Axtell"
  },
  {
   "name": "BV Randolph",
@@ -141,7 +156,8 @@
   "city": "",
   "w": 387,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "BR"
  },
  {
   "name": "Baldwin",
@@ -150,7 +166,8 @@
   "city": "",
   "w": 400,
   "h": 330,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Baldwin"
  },
  {
   "name": "Basehor-Linwood",
@@ -159,7 +176,8 @@
   "city": "",
   "w": 400,
   "h": 287,
-  "aliases": []
+  "aliases": [],
+  "abbr": "BL"
  },
  {
   "name": "Baxter Springs",
@@ -168,7 +186,8 @@
   "city": "",
   "w": 300,
   "h": 230,
-  "aliases": []
+  "aliases": [],
+  "abbr": "BS"
  },
  {
   "name": "Belle Plaine",
@@ -177,7 +196,8 @@
   "city": "",
   "w": 400,
   "h": 243,
-  "aliases": []
+  "aliases": [],
+  "abbr": "BP"
  },
  {
   "name": "Beloit",
@@ -186,7 +206,8 @@
   "city": "",
   "w": 380,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Beloit"
  },
  {
   "name": "Bennington",
@@ -195,7 +216,8 @@
   "city": "",
   "w": 400,
   "h": 240,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Bennington"
  },
  {
   "name": "Berean",
@@ -204,7 +226,8 @@
   "city": "",
   "w": 400,
   "h": 278,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Berean"
  },
  {
   "name": "Bishop Carroll",
@@ -213,7 +236,8 @@
   "city": "",
   "w": 373,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "BC"
  },
  {
   "name": "Bishop Miege",
@@ -222,7 +246,8 @@
   "city": "",
   "w": 207,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "BM"
  },
  {
   "name": "Bishop Seabury",
@@ -231,7 +256,8 @@
   "city": "",
   "w": 400,
   "h": 257,
-  "aliases": []
+  "aliases": [],
+  "abbr": "BS"
  },
  {
   "name": "Bishop Ward",
@@ -240,7 +266,8 @@
   "city": "",
   "w": 400,
   "h": 288,
-  "aliases": []
+  "aliases": [],
+  "abbr": "BW"
  },
  {
   "name": "Blue Valley North",
@@ -249,7 +276,8 @@
   "city": "",
   "w": 400,
   "h": 336,
-  "aliases": []
+  "aliases": [],
+  "abbr": "BVN"
  },
  {
   "name": "Blue Valley Northwest",
@@ -261,7 +289,8 @@
   "aliases": [
    "BV Northwest",
    "BVNW"
-  ]
+  ],
+  "abbr": "BVNW"
  },
  {
   "name": "Blue Valley Southwest",
@@ -273,7 +302,8 @@
   "aliases": [
    "BV Southwest",
    "BVSW"
-  ]
+  ],
+  "abbr": "BVSW"
  },
  {
   "name": "Blue Valley West",
@@ -285,7 +315,8 @@
   "aliases": [
    "BV West",
    "BVW"
-  ]
+  ],
+  "abbr": "BVW"
  },
  {
   "name": "Blue Valley",
@@ -296,7 +327,8 @@
   "h": 241,
   "aliases": [
    "BV"
-  ]
+  ],
+  "abbr": "BV"
  },
  {
   "name": "Bluestem",
@@ -307,7 +339,8 @@
   "h": 245,
   "aliases": [
    "Leon-Bluestem"
-  ]
+  ],
+  "abbr": "Bluestem"
  },
  {
   "name": "Bonner Springs",
@@ -316,7 +349,8 @@
   "city": "",
   "w": 400,
   "h": 384,
-  "aliases": []
+  "aliases": [],
+  "abbr": "BS"
  },
  {
   "name": "Bucklin",
@@ -325,7 +359,8 @@
   "city": "",
   "w": 400,
   "h": 254,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Bucklin"
  },
  {
   "name": "Buhler",
@@ -334,7 +369,8 @@
   "city": "",
   "w": 396,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Buhler"
  },
  {
   "name": "Burlingame",
@@ -343,7 +379,8 @@
   "city": "",
   "w": 250,
   "h": 214,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Burlingame"
  },
  {
   "name": "Burlington",
@@ -352,7 +389,8 @@
   "city": "",
   "w": 400,
   "h": 310,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Burlington"
  },
  {
   "name": "Burrton",
@@ -361,7 +399,8 @@
   "city": "",
   "w": 400,
   "h": 320,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Burrton"
  },
  {
   "name": "Cair Paravel",
@@ -370,7 +409,8 @@
   "city": "",
   "w": 375,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Cair"
  },
  {
   "name": "Caldwell",
@@ -379,7 +419,8 @@
   "city": "",
   "w": 400,
   "h": 298,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Caldwell"
  },
  {
   "name": "Campus",
@@ -390,7 +431,8 @@
   "h": 195,
   "aliases": [
    "Haysville Campus"
-  ]
+  ],
+  "abbr": "Campus"
  },
  {
   "name": "Caney Valley",
@@ -399,7 +441,8 @@
   "city": "",
   "w": 379,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "CV"
  },
  {
   "name": "Canton-Galva",
@@ -408,7 +451,8 @@
   "city": "",
   "w": 400,
   "h": 174,
-  "aliases": []
+  "aliases": [],
+  "abbr": "CG"
  },
  {
   "name": "Cedar Vale-Dexter",
@@ -417,7 +461,8 @@
   "city": "",
   "w": 361,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "CVD"
  },
  {
   "name": "Central Christian",
@@ -429,7 +474,8 @@
   "aliases": [
    "Hutch Central Christian",
    "Hutchinson Central Christian"
-  ]
+  ],
+  "abbr": "HCC"
  },
  {
   "name": "Central Heights",
@@ -438,7 +484,8 @@
   "city": "",
   "w": 400,
   "h": 362,
-  "aliases": []
+  "aliases": [],
+  "abbr": "CH"
  },
  {
   "name": "Central Plains",
@@ -447,7 +494,8 @@
   "city": "",
   "w": 216,
   "h": 250,
-  "aliases": []
+  "aliases": [],
+  "abbr": "CP"
  },
  {
   "name": "Central",
@@ -458,7 +506,8 @@
   "h": 400,
   "aliases": [
    "Central Burden"
-  ]
+  ],
+  "abbr": "Central"
  },
  {
   "name": "Centralia",
@@ -467,7 +516,8 @@
   "city": "",
   "w": 400,
   "h": 303,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Centralia"
  },
  {
   "name": "Centre",
@@ -476,7 +526,8 @@
   "city": "",
   "w": 400,
   "h": 206,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Centre"
  },
  {
   "name": "Chanute",
@@ -485,7 +536,8 @@
   "city": "",
   "w": 400,
   "h": 225,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Chanute"
  },
  {
   "name": "Chaparral",
@@ -494,7 +546,8 @@
   "city": "",
   "w": 391,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Chaparral"
  },
  {
   "name": "Chapman",
@@ -503,7 +556,8 @@
   "city": "",
   "w": 353,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Chapman"
  },
  {
   "name": "Chase County",
@@ -512,7 +566,8 @@
   "city": "",
   "w": 400,
   "h": 368,
-  "aliases": []
+  "aliases": [],
+  "abbr": "CCHS"
  },
  {
   "name": "Chase",
@@ -521,7 +576,8 @@
   "city": "",
   "w": 380,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Chase"
  },
  {
   "name": "Cheney",
@@ -530,7 +586,8 @@
   "city": "",
   "w": 261,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Cheney"
  },
  {
   "name": "Cherryvale",
@@ -539,7 +596,8 @@
   "city": "",
   "w": 209,
   "h": 250,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Cherryvale"
  },
  {
   "name": "Chetopa",
@@ -548,7 +606,8 @@
   "city": "",
   "w": 332,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Chetopa"
  },
  {
   "name": "Cheylin",
@@ -557,7 +616,8 @@
   "city": "",
   "w": 267,
   "h": 202,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Cheylin"
  },
  {
   "name": "Cimarron",
@@ -566,7 +626,8 @@
   "city": "",
   "w": 400,
   "h": 292,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Cimarron"
  },
  {
   "name": "Circle",
@@ -577,7 +638,8 @@
   "h": 400,
   "aliases": [
    "Towanda-Circle"
-  ]
+  ],
+  "abbr": "Circle"
  },
  {
   "name": "Clay Center",
@@ -586,7 +648,8 @@
   "city": "",
   "w": 400,
   "h": 335,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Clay"
  },
  {
   "name": "Clearwater",
@@ -595,7 +658,8 @@
   "city": "",
   "w": 345,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Clearwater"
  },
  {
   "name": "Clifton-Clyde",
@@ -604,7 +668,8 @@
   "city": "",
   "w": 400,
   "h": 172,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Clyd"
  },
  {
   "name": "Coffeyville",
@@ -615,7 +680,8 @@
   "h": 350,
   "aliases": [
    "Field Kindley"
-  ]
+  ],
+  "abbr": "Coffeyville"
  },
  {
   "name": "Colby",
@@ -624,7 +690,8 @@
   "city": "",
   "w": 400,
   "h": 335,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Colby"
  },
  {
   "name": "Colony-Crest",
@@ -633,7 +700,8 @@
   "city": "",
   "w": 400,
   "h": 380,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Cres"
  },
  {
   "name": "Columbus",
@@ -642,7 +710,8 @@
   "city": "",
   "w": 250,
   "h": 232,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Columbus"
  },
  {
   "name": "Concordia",
@@ -651,7 +720,8 @@
   "city": "",
   "w": 400,
   "h": 366,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Concordia"
  },
  {
   "name": "Conway Springs",
@@ -660,7 +730,8 @@
   "city": "",
   "w": 400,
   "h": 230,
-  "aliases": []
+  "aliases": [],
+  "abbr": "CS"
  },
  {
   "name": "Council Grove",
@@ -669,7 +740,8 @@
   "city": "",
   "w": 283,
   "h": 351,
-  "aliases": []
+  "aliases": [],
+  "abbr": "CG"
  },
  {
   "name": "Cunningham",
@@ -678,7 +750,8 @@
   "city": "",
   "w": 400,
   "h": 273,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Cunningham"
  },
  {
   "name": "De Soto",
@@ -687,7 +760,8 @@
   "city": "",
   "w": 400,
   "h": 390,
-  "aliases": []
+  "aliases": [],
+  "abbr": "DS"
  },
  {
   "name": "Decatur",
@@ -699,7 +773,8 @@
   "aliases": [
    "Decatur Community",
    "Oberlin-Decatur"
-  ]
+  ],
+  "abbr": "Decatur"
  },
  {
   "name": "Deerfield",
@@ -708,7 +783,8 @@
   "city": "",
   "w": 382,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Deerfield"
  },
  {
   "name": "Derby",
@@ -717,7 +793,8 @@
   "city": "",
   "w": 400,
   "h": 386,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Derby"
  },
  {
   "name": "Dighton",
@@ -726,7 +803,8 @@
   "city": "",
   "w": 333,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Dighton"
  },
  {
   "name": "Dodge City",
@@ -735,7 +813,8 @@
   "city": "",
   "w": 301,
   "h": 336,
-  "aliases": []
+  "aliases": [],
+  "abbr": "DC"
  },
  {
   "name": "Doniphan West",
@@ -744,7 +823,8 @@
   "city": "",
   "w": 400,
   "h": 228,
-  "aliases": []
+  "aliases": [],
+  "abbr": "DW"
  },
  {
   "name": "Douglass",
@@ -753,7 +833,8 @@
   "city": "",
   "w": 400,
   "h": 306,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Douglass"
  },
  {
   "name": "Eisenhower",
@@ -764,7 +845,8 @@
   "h": 296,
   "aliases": [
    "Goddard-Eisenhower"
-  ]
+  ],
+  "abbr": "Eisenhower"
  },
  {
   "name": "El Dorado",
@@ -773,7 +855,8 @@
   "city": "",
   "w": 400,
   "h": 308,
-  "aliases": []
+  "aliases": [],
+  "abbr": "ED"
  },
  {
   "name": "Elk Valley",
@@ -782,7 +865,8 @@
   "city": "",
   "w": 400,
   "h": 240,
-  "aliases": []
+  "aliases": [],
+  "abbr": "EV"
  },
  {
   "name": "Elkhart",
@@ -791,7 +875,8 @@
   "city": "",
   "w": 400,
   "h": 311,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Elkhart"
  },
  {
   "name": "Ell-Saline",
@@ -800,7 +885,8 @@
   "city": "",
   "w": 400,
   "h": 283,
-  "aliases": []
+  "aliases": [],
+  "abbr": "ES"
  },
  {
   "name": "Ellinwood",
@@ -809,7 +895,8 @@
   "city": "",
   "w": 400,
   "h": 240,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Ellinwood"
  },
  {
   "name": "Ellis",
@@ -818,7 +905,8 @@
   "city": "",
   "w": 355,
   "h": 256,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Ellis"
  },
  {
   "name": "Ellsworth",
@@ -827,7 +915,8 @@
   "city": "",
   "w": 400,
   "h": 355,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Ellsworth"
  },
  {
   "name": "Elyria Christian",
@@ -836,7 +925,8 @@
   "city": "",
   "w": 400,
   "h": 238,
-  "aliases": []
+  "aliases": [],
+  "abbr": "EC"
  },
  {
   "name": "Emporia",
@@ -845,7 +935,8 @@
   "city": "",
   "w": 380,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Emporia"
  },
  {
   "name": "Erie",
@@ -854,7 +945,8 @@
   "city": "",
   "w": 300,
   "h": 250,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Erie"
  },
  {
   "name": "Eudora",
@@ -863,7 +955,8 @@
   "city": "",
   "w": 400,
   "h": 271,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Eudora"
  },
  {
   "name": "Eureka",
@@ -872,7 +965,8 @@
   "city": "",
   "w": 400,
   "h": 394,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Eureka"
  },
  {
   "name": "Fairfield",
@@ -881,7 +975,8 @@
   "city": "",
   "w": 400,
   "h": 261,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Fairfield"
  },
  {
   "name": "Flinthills",
@@ -890,7 +985,8 @@
   "city": "",
   "w": 293,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Flinthills"
  },
  {
   "name": "Fort Scott",
@@ -899,7 +995,8 @@
   "city": "",
   "w": 250,
   "h": 233,
-  "aliases": []
+  "aliases": [],
+  "abbr": "FS"
  },
  {
   "name": "Frankfort",
@@ -908,7 +1005,8 @@
   "city": "",
   "w": 400,
   "h": 369,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Frankfort"
  },
  {
   "name": "Fredonia",
@@ -917,7 +1015,8 @@
   "city": "",
   "w": 287,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Fredonia"
  },
  {
   "name": "Frontenac",
@@ -926,7 +1025,8 @@
   "city": "",
   "w": 323,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Frontenac"
  },
  {
   "name": "Galena",
@@ -935,7 +1035,8 @@
   "city": "",
   "w": 384,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Galena"
  },
  {
   "name": "Garden City",
@@ -944,7 +1045,8 @@
   "city": "",
   "w": 400,
   "h": 222,
-  "aliases": []
+  "aliases": [],
+  "abbr": "GC"
  },
  {
   "name": "Garden Plain",
@@ -953,7 +1055,8 @@
   "city": "",
   "w": 400,
   "h": 313,
-  "aliases": []
+  "aliases": [],
+  "abbr": "GP"
  },
  {
   "name": "Gardner-Edgerton",
@@ -962,7 +1065,8 @@
   "city": "",
   "w": 281,
   "h": 188,
-  "aliases": []
+  "aliases": [],
+  "abbr": "GE"
  },
  {
   "name": "Girard",
@@ -971,7 +1075,8 @@
   "city": "",
   "w": 355,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Girard"
  },
  {
   "name": "Goddard",
@@ -980,7 +1085,8 @@
   "city": "",
   "w": 400,
   "h": 328,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Goddard"
  },
  {
   "name": "Goessel",
@@ -989,7 +1095,8 @@
   "city": "",
   "w": 400,
   "h": 138,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Goessel"
  },
  {
   "name": "Golden Plains",
@@ -998,7 +1105,8 @@
   "city": "",
   "w": 400,
   "h": 266,
-  "aliases": []
+  "aliases": [],
+  "abbr": "GP"
  },
  {
   "name": "Goodland",
@@ -1007,7 +1115,8 @@
   "city": "",
   "w": 250,
   "h": 242,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Goodland"
  },
  {
   "name": "Great Bend",
@@ -1016,7 +1125,8 @@
   "city": "",
   "w": 250,
   "h": 188,
-  "aliases": []
+  "aliases": [],
+  "abbr": "GB"
  },
  {
   "name": "Greeley County",
@@ -1025,7 +1135,8 @@
   "city": "",
   "w": 343,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "GC"
  },
  {
   "name": "Halstead",
@@ -1034,7 +1145,8 @@
   "city": "",
   "w": 400,
   "h": 248,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Halstead"
  },
  {
   "name": "Hanover",
@@ -1043,7 +1155,8 @@
   "city": "",
   "w": 400,
   "h": 316,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Hanover"
  },
  {
   "name": "Harmon",
@@ -1054,7 +1167,8 @@
   "h": 237,
   "aliases": [
    "JC Harmon"
-  ]
+  ],
+  "abbr": "Harmon"
  },
  {
   "name": "Hartford",
@@ -1063,7 +1177,8 @@
   "city": "",
   "w": 400,
   "h": 338,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Hartford"
  },
  {
   "name": "Haven",
@@ -1072,7 +1187,8 @@
   "city": "",
   "w": 400,
   "h": 216,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Haven"
  },
  {
   "name": "Hayden",
@@ -1083,7 +1199,8 @@
   "h": 358,
   "aliases": [
    "Topeka Hayden"
-  ]
+  ],
+  "abbr": "Hayden"
  },
  {
   "name": "Hays",
@@ -1092,7 +1209,8 @@
   "city": "",
   "w": 400,
   "h": 264,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Hays"
  },
  {
   "name": "Heights",
@@ -1103,7 +1221,8 @@
   "h": 380,
   "aliases": [
    "Wichita Heights"
-  ]
+  ],
+  "abbr": "Heights"
  },
  {
   "name": "Herington",
@@ -1112,7 +1231,8 @@
   "city": "",
   "w": 400,
   "h": 276,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Herington"
  },
  {
   "name": "Hesston",
@@ -1121,7 +1241,8 @@
   "city": "",
   "w": 400,
   "h": 260,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Hesston"
  },
  {
   "name": "Hiawatha",
@@ -1130,7 +1251,8 @@
   "city": "",
   "w": 400,
   "h": 332,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Hiawatha"
  },
  {
   "name": "Highland Park",
@@ -1139,7 +1261,8 @@
   "city": "",
   "w": 400,
   "h": 196,
-  "aliases": []
+  "aliases": [],
+  "abbr": "HP"
  },
  {
   "name": "Hill City",
@@ -1148,7 +1271,8 @@
   "city": "",
   "w": 400,
   "h": 288,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Hill"
  },
  {
   "name": "Hillsboro",
@@ -1157,7 +1281,8 @@
   "city": "",
   "w": 386,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Hillsboro"
  },
  {
   "name": "Hodgeman County",
@@ -1166,7 +1291,8 @@
   "city": "",
   "w": 400,
   "h": 204,
-  "aliases": []
+  "aliases": [],
+  "abbr": "HODG"
  },
  {
   "name": "Hoisington",
@@ -1175,7 +1301,8 @@
   "city": "",
   "w": 340,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Hoisington"
  },
  {
   "name": "Holcomb",
@@ -1184,7 +1311,8 @@
   "city": "",
   "w": 300,
   "h": 168,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Holcomb"
  },
  {
   "name": "Holton",
@@ -1193,7 +1321,8 @@
   "city": "",
   "w": 400,
   "h": 366,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Holton"
  },
  {
   "name": "Horton",
@@ -1202,7 +1331,8 @@
   "city": "",
   "w": 400,
   "h": 195,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Horton"
  },
  {
   "name": "Hoxie",
@@ -1211,7 +1341,8 @@
   "city": "",
   "w": 389,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Hoxie"
  },
  {
   "name": "Hugoton",
@@ -1220,7 +1351,8 @@
   "city": "",
   "w": 400,
   "h": 230,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Hugoton"
  },
  {
   "name": "Humboldt",
@@ -1229,7 +1361,8 @@
   "city": "",
   "w": 400,
   "h": 383,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Humboldt"
  },
  {
   "name": "Hutch Trinity",
@@ -1240,7 +1373,8 @@
   "h": 400,
   "aliases": [
    "Hutchinson Trinity"
-  ]
+  ],
+  "abbr": "HT"
  },
  {
   "name": "Hutchinson",
@@ -1249,7 +1383,8 @@
   "city": "",
   "w": 400,
   "h": 236,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Hutchinson"
  },
  {
   "name": "Independence",
@@ -1258,7 +1393,8 @@
   "city": "",
   "w": 400,
   "h": 329,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Independence"
  },
  {
   "name": "Ingalls",
@@ -1267,7 +1403,8 @@
   "city": "",
   "w": 400,
   "h": 310,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Ingalls"
  },
  {
   "name": "Inman",
@@ -1276,7 +1413,8 @@
   "city": "",
   "w": 344,
   "h": 362,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Inman"
  },
  {
   "name": "Iola",
@@ -1285,7 +1423,8 @@
   "city": "",
   "w": 250,
   "h": 123,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Iola"
  },
  {
   "name": "Jackson Heights",
@@ -1294,7 +1433,8 @@
   "city": "",
   "w": 400,
   "h": 309,
-  "aliases": []
+  "aliases": [],
+  "abbr": "JH"
  },
  {
   "name": "Jayhawk-Linn",
@@ -1303,7 +1443,8 @@
   "city": "",
   "w": 359,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "JL"
  },
  {
   "name": "Jefferson County North",
@@ -1312,7 +1453,8 @@
   "city": "",
   "w": 283,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "JCN"
  },
  {
   "name": "Jefferson West",
@@ -1321,7 +1463,8 @@
   "city": "",
   "w": 400,
   "h": 387,
-  "aliases": []
+  "aliases": [],
+  "abbr": "JW"
  },
  {
   "name": "Jennings",
@@ -1330,7 +1473,8 @@
   "city": "",
   "w": 130,
   "h": 137,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Jennings"
  },
  {
   "name": "Junction City",
@@ -1339,7 +1483,8 @@
   "city": "",
   "w": 312,
   "h": 322,
-  "aliases": []
+  "aliases": [],
+  "abbr": "JC"
  },
  {
   "name": "KC Sumner",
@@ -1348,7 +1493,8 @@
   "city": "",
   "w": 400,
   "h": 304,
-  "aliases": []
+  "aliases": [],
+  "abbr": "KS"
  },
  {
   "name": "Kansas City Christian",
@@ -1357,7 +1503,8 @@
   "city": "",
   "w": 400,
   "h": 249,
-  "aliases": []
+  "aliases": [],
+  "abbr": "KCC"
  },
  {
   "name": "Kansas School for the Deaf",
@@ -1366,7 +1513,8 @@
   "city": "",
   "w": 400,
   "h": 336,
-  "aliases": []
+  "aliases": [],
+  "abbr": "KSFTD"
  },
  {
   "name": "Kapaun Mt Carmel",
@@ -1375,7 +1523,8 @@
   "city": "",
   "w": 205,
   "h": 280,
-  "aliases": []
+  "aliases": [],
+  "abbr": "KMC"
  },
  {
   "name": "Kingman",
@@ -1384,7 +1533,8 @@
   "city": "",
   "w": 400,
   "h": 220,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Kingman"
  },
  {
   "name": "Kinsley",
@@ -1393,7 +1543,8 @@
   "city": "",
   "w": 400,
   "h": 365,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Kinsley"
  },
  {
   "name": "Kiowa County",
@@ -1402,7 +1553,8 @@
   "city": "",
   "w": 400,
   "h": 200,
-  "aliases": []
+  "aliases": [],
+  "abbr": "KC"
  },
  {
   "name": "La Crosse",
@@ -1411,7 +1563,8 @@
   "city": "",
   "w": 400,
   "h": 320,
-  "aliases": []
+  "aliases": [],
+  "abbr": "LC"
  },
  {
   "name": "Labette County",
@@ -1420,7 +1573,8 @@
   "city": "",
   "w": 250,
   "h": 234,
-  "aliases": []
+  "aliases": [],
+  "abbr": "LC"
  },
  {
   "name": "Lakeside",
@@ -1429,7 +1583,8 @@
   "city": "",
   "w": 400,
   "h": 232,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Lakeside"
  },
  {
   "name": "Lakin",
@@ -1438,7 +1593,8 @@
   "city": "",
   "w": 400,
   "h": 301,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Lakin"
  },
  {
   "name": "Lansing",
@@ -1447,7 +1603,8 @@
   "city": "",
   "w": 400,
   "h": 338,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Lansing"
  },
  {
   "name": "Larned",
@@ -1456,7 +1613,8 @@
   "city": "",
   "w": 202,
   "h": 250,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Larned"
  },
  {
   "name": "Lawrence Free State",
@@ -1467,7 +1625,8 @@
   "h": 349,
   "aliases": [
    "Free State"
-  ]
+  ],
+  "abbr": "LFS"
  },
  {
   "name": "Lawrence",
@@ -1476,7 +1635,8 @@
   "city": "",
   "w": 112,
   "h": 200,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Lawrence"
  },
  {
   "name": "Leavenworth",
@@ -1485,7 +1645,8 @@
   "city": "",
   "w": 317,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Leavenworth"
  },
  {
   "name": "Lebo",
@@ -1494,7 +1655,8 @@
   "city": "",
   "w": 273,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Lebo"
  },
  {
   "name": "Liberal",
@@ -1503,7 +1665,8 @@
   "city": "",
   "w": 270,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Liberal"
  },
  {
   "name": "Life Prep",
@@ -1512,7 +1675,8 @@
   "city": "",
   "w": 179,
   "h": 173,
-  "aliases": []
+  "aliases": [],
+  "abbr": "LP"
  },
  {
   "name": "Lincoln",
@@ -1521,7 +1685,8 @@
   "city": "",
   "w": 400,
   "h": 350,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Lincoln"
  },
  {
   "name": "Linn",
@@ -1530,7 +1695,8 @@
   "city": "",
   "w": 370,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Linn"
  },
  {
   "name": "Little River",
@@ -1539,7 +1705,8 @@
   "city": "",
   "w": 374,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "LR"
  },
  {
   "name": "Logan",
@@ -1548,7 +1715,8 @@
   "city": "",
   "w": 400,
   "h": 356,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Logan"
  },
  {
   "name": "Louisburg",
@@ -1557,7 +1725,8 @@
   "city": "",
   "w": 400,
   "h": 386,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Louisburg"
  },
  {
   "name": "Lyndon",
@@ -1566,7 +1735,8 @@
   "city": "",
   "w": 210,
   "h": 151,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Lyndon"
  },
  {
   "name": "Lyons",
@@ -1575,7 +1745,8 @@
   "city": "",
   "w": 361,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Lyons"
  },
  {
   "name": "Macksville",
@@ -1584,7 +1755,8 @@
   "city": "",
   "w": 250,
   "h": 196,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Macksville"
  },
  {
   "name": "Madison",
@@ -1593,7 +1765,8 @@
   "city": "",
   "w": 332,
   "h": 289,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Madison"
  },
  {
   "name": "Maize South",
@@ -1604,7 +1777,8 @@
   "h": 151,
   "aliases": [
    "Maize S"
-  ]
+  ],
+  "abbr": "MS"
  },
  {
   "name": "Maize",
@@ -1613,7 +1787,8 @@
   "city": "",
   "w": 400,
   "h": 175,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Maize"
  },
  {
   "name": "Manhattan",
@@ -1622,7 +1797,8 @@
   "city": "",
   "w": 400,
   "h": 375,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Manhattan"
  },
  {
   "name": "Marais des Cygnes Valley",
@@ -1631,7 +1807,8 @@
   "city": "",
   "w": 400,
   "h": 342,
-  "aliases": []
+  "aliases": [],
+  "abbr": "MDCV"
  },
  {
   "name": "Maranatha",
@@ -1640,7 +1817,8 @@
   "city": "",
   "w": 90,
   "h": 81,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Maranatha"
  },
  {
   "name": "Marion",
@@ -1649,7 +1827,8 @@
   "city": "",
   "w": 395,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Marion"
  },
  {
   "name": "Marmaton Valley",
@@ -1658,7 +1837,8 @@
   "city": "",
   "w": 354,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "MV"
  },
  {
   "name": "Marysville",
@@ -1667,7 +1847,8 @@
   "city": "",
   "w": 400,
   "h": 321,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Marysville"
  },
  {
   "name": "Maur Hill-Mount",
@@ -1676,7 +1857,8 @@
   "city": "",
   "w": 212,
   "h": 250,
-  "aliases": []
+  "aliases": [],
+  "abbr": "MHM"
  },
  {
   "name": "McLouth",
@@ -1685,7 +1867,8 @@
   "city": "",
   "w": 400,
   "h": 363,
-  "aliases": []
+  "aliases": [],
+  "abbr": "McLouth"
  },
  {
   "name": "McPherson",
@@ -1694,7 +1877,8 @@
   "city": "",
   "w": 400,
   "h": 398,
-  "aliases": []
+  "aliases": [],
+  "abbr": "McPherson"
  },
  {
   "name": "Meade",
@@ -1703,7 +1887,8 @@
   "city": "",
   "w": 288,
   "h": 194,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Meade"
  },
  {
   "name": "Medicine Lodge",
@@ -1712,7 +1897,8 @@
   "city": "",
   "w": 400,
   "h": 333,
-  "aliases": []
+  "aliases": [],
+  "abbr": "ML"
  },
  {
   "name": "Mill Valley",
@@ -1721,7 +1907,8 @@
   "city": "",
   "w": 400,
   "h": 309,
-  "aliases": []
+  "aliases": [],
+  "abbr": "MV"
  },
  {
   "name": "Minneapolis",
@@ -1730,7 +1917,8 @@
   "city": "",
   "w": 250,
   "h": 158,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Minneapolis"
  },
  {
   "name": "Minneola",
@@ -1739,7 +1927,8 @@
   "city": "",
   "w": 400,
   "h": 323,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Minneola"
  },
  {
   "name": "Mission Valley",
@@ -1748,7 +1937,8 @@
   "city": "",
   "w": 264,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "MV"
  },
  {
   "name": "Moscow",
@@ -1757,7 +1947,8 @@
   "city": "",
   "w": 400,
   "h": 329,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Moscow"
  },
  {
   "name": "Moundridge",
@@ -1766,7 +1957,8 @@
   "city": "",
   "w": 400,
   "h": 359,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Moundridge"
  },
  {
   "name": "Mulvane",
@@ -1775,7 +1967,8 @@
   "city": "",
   "w": 400,
   "h": 349,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Mulvane"
  },
  {
   "name": "Natoma",
@@ -1784,7 +1977,8 @@
   "city": "",
   "w": 400,
   "h": 303,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Natoma"
  },
  {
   "name": "Nemaha Central",
@@ -1793,7 +1987,8 @@
   "city": "",
   "w": 340,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "NC"
  },
  {
   "name": "Neodesha",
@@ -1802,7 +1997,8 @@
   "city": "",
   "w": 400,
   "h": 220,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Neodesha"
  },
  {
   "name": "Ness City",
@@ -1811,7 +2007,8 @@
   "city": "",
   "w": 400,
   "h": 178,
-  "aliases": []
+  "aliases": [],
+  "abbr": "NC"
  },
  {
   "name": "Newton",
@@ -1820,7 +2017,8 @@
   "city": "",
   "w": 262,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Newton"
  },
  {
   "name": "Nickerson",
@@ -1829,7 +2027,8 @@
   "city": "",
   "w": 292,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Nickerson"
  },
  {
   "name": "North",
@@ -1840,7 +2039,8 @@
   "h": 150,
   "aliases": [
    "Wichita North"
-  ]
+  ],
+  "abbr": "North"
  },
  {
   "name": "Northeast",
@@ -1849,7 +2049,8 @@
   "city": "",
   "w": 400,
   "h": 378,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Northeast"
  },
  {
   "name": "Northern Heights",
@@ -1858,7 +2059,8 @@
   "city": "",
   "w": 348,
   "h": 307,
-  "aliases": []
+  "aliases": [],
+  "abbr": "NH"
  },
  {
   "name": "Northern Valley",
@@ -1867,7 +2069,8 @@
   "city": "",
   "w": 400,
   "h": 349,
-  "aliases": []
+  "aliases": [],
+  "abbr": "NV"
  },
  {
   "name": "Norton",
@@ -1876,7 +2079,8 @@
   "city": "",
   "w": 394,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Norton"
  },
  {
   "name": "Norwich",
@@ -1885,7 +2089,8 @@
   "city": "",
   "w": 400,
   "h": 215,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Norwich"
  },
  {
   "name": "Oakley",
@@ -1894,7 +2099,8 @@
   "city": "",
   "w": 282,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Oakley"
  },
  {
   "name": "Olathe East",
@@ -1903,7 +2109,8 @@
   "city": "",
   "w": 400,
   "h": 365,
-  "aliases": []
+  "aliases": [],
+  "abbr": "OE"
  },
  {
   "name": "Olathe Heritage Christian",
@@ -1912,7 +2119,8 @@
   "city": "",
   "w": 371,
   "h": 286,
-  "aliases": []
+  "aliases": [],
+  "abbr": "OHC"
  },
  {
   "name": "Olathe North",
@@ -1921,7 +2129,8 @@
   "city": "",
   "w": 400,
   "h": 371,
-  "aliases": []
+  "aliases": [],
+  "abbr": "ON"
  },
  {
   "name": "Olathe Northwest",
@@ -1930,7 +2139,8 @@
   "city": "",
   "w": 400,
   "h": 159,
-  "aliases": []
+  "aliases": [],
+  "abbr": "ONW"
  },
  {
   "name": "Olathe South",
@@ -1939,7 +2149,8 @@
   "city": "",
   "w": 400,
   "h": 215,
-  "aliases": []
+  "aliases": [],
+  "abbr": "OS"
  },
  {
   "name": "Olathe West",
@@ -1948,7 +2159,8 @@
   "city": "",
   "w": 387,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "OW"
  },
  {
   "name": "Olpe",
@@ -1957,7 +2169,8 @@
   "city": "",
   "w": 319,
   "h": 312,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Olpe"
  },
  {
   "name": "Onaga",
@@ -1966,7 +2179,8 @@
   "city": "",
   "w": 400,
   "h": 272,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Onaga"
  },
  {
   "name": "Osage City",
@@ -1975,7 +2189,8 @@
   "city": "",
   "w": 400,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "OC"
  },
  {
   "name": "Osawatomie",
@@ -1984,7 +2199,8 @@
   "city": "",
   "w": 397,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Osawatomie"
  },
  {
   "name": "Osborne",
@@ -1993,7 +2209,8 @@
   "city": "",
   "w": 300,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Osborne"
  },
  {
   "name": "Oskaloosa",
@@ -2002,7 +2219,8 @@
   "city": "",
   "w": 349,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Oskaloosa"
  },
  {
   "name": "Oswego",
@@ -2011,7 +2229,8 @@
   "city": "",
   "w": 400,
   "h": 240,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Oswego"
  },
  {
   "name": "Otis-Bison",
@@ -2020,7 +2239,8 @@
   "city": "",
   "w": 298,
   "h": 287,
-  "aliases": []
+  "aliases": [],
+  "abbr": "OB"
  },
  {
   "name": "Ottawa",
@@ -2029,7 +2249,8 @@
   "city": "",
   "w": 400,
   "h": 389,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Ottawa"
  },
  {
   "name": "Oxford",
@@ -2038,7 +2259,8 @@
   "city": "",
   "w": 333,
   "h": 352,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Oxford"
  },
  {
   "name": "Paola",
@@ -2047,7 +2269,8 @@
   "city": "",
   "w": 316,
   "h": 225,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Paola"
  },
  {
   "name": "Parsons",
@@ -2056,7 +2279,8 @@
   "city": "",
   "w": 400,
   "h": 366,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Parsons"
  },
  {
   "name": "Pawnee Heights",
@@ -2065,7 +2289,8 @@
   "city": "",
   "w": 400,
   "h": 276,
-  "aliases": []
+  "aliases": [],
+  "abbr": "PH"
  },
  {
   "name": "Peabody-Burns",
@@ -2074,7 +2299,8 @@
   "city": "",
   "w": 337,
   "h": 341,
-  "aliases": []
+  "aliases": [],
+  "abbr": "PB"
  },
  {
   "name": "Perry-Lecompton",
@@ -2083,7 +2309,8 @@
   "city": "",
   "w": 400,
   "h": 200,
-  "aliases": []
+  "aliases": [],
+  "abbr": "PL"
  },
  {
   "name": "Phillipsburg",
@@ -2092,7 +2319,8 @@
   "city": "",
   "w": 400,
   "h": 239,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Phillipsburg"
  },
  {
   "name": "Pike Valley",
@@ -2101,7 +2329,8 @@
   "city": "",
   "w": 365,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "PK"
  },
  {
   "name": "Piper",
@@ -2112,7 +2341,8 @@
   "h": 372,
   "aliases": [
    "KC Piper"
-  ]
+  ],
+  "abbr": "Piper"
  },
  {
   "name": "Pittsburg",
@@ -2121,7 +2351,8 @@
   "city": "",
   "w": 256,
   "h": 221,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Pittsburg"
  },
  {
   "name": "Plainville",
@@ -2130,7 +2361,8 @@
   "city": "",
   "w": 348,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Plainville"
  },
  {
   "name": "Pleasant Ridge",
@@ -2139,7 +2371,8 @@
   "city": "",
   "w": 400,
   "h": 297,
-  "aliases": []
+  "aliases": [],
+  "abbr": "PR"
  },
  {
   "name": "Pleasanton",
@@ -2148,7 +2381,8 @@
   "city": "",
   "w": 400,
   "h": 388,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Pleasanton"
  },
  {
   "name": "Prairie View",
@@ -2157,7 +2391,8 @@
   "city": "",
   "w": 353,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "PV"
  },
  {
   "name": "Pratt",
@@ -2166,7 +2401,8 @@
   "city": "",
   "w": 265,
   "h": 385,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Pratt"
  },
  {
   "name": "Pretty Prairie",
@@ -2175,7 +2411,8 @@
   "city": "",
   "w": 400,
   "h": 316,
-  "aliases": []
+  "aliases": [],
+  "abbr": "PP"
  },
  {
   "name": "Quinter",
@@ -2184,7 +2421,8 @@
   "city": "",
   "w": 400,
   "h": 234,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Quinter"
  },
  {
   "name": "Rawlins County",
@@ -2193,7 +2431,8 @@
   "city": "",
   "w": 241,
   "h": 203,
-  "aliases": []
+  "aliases": [],
+  "abbr": "RAWL"
  },
  {
   "name": "Remington",
@@ -2204,7 +2443,8 @@
   "h": 233,
   "aliases": [
    "Whitewater-Remington"
-  ]
+  ],
+  "abbr": "Remington"
  },
  {
   "name": "Republic County",
@@ -2213,7 +2453,8 @@
   "city": "",
   "w": 287,
   "h": 242,
-  "aliases": []
+  "aliases": [],
+  "abbr": "RepC"
  },
  {
   "name": "Riley County",
@@ -2222,7 +2463,8 @@
   "city": "",
   "w": 400,
   "h": 336,
-  "aliases": []
+  "aliases": [],
+  "abbr": "RC"
  },
  {
   "name": "Riverside",
@@ -2231,7 +2473,8 @@
   "city": "",
   "w": 400,
   "h": 384,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Riverside"
  },
  {
   "name": "Riverton",
@@ -2240,7 +2483,8 @@
   "city": "",
   "w": 400,
   "h": 327,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Riverton"
  },
  {
   "name": "Rock Creek",
@@ -2249,7 +2493,8 @@
   "city": "",
   "w": 247,
   "h": 360,
-  "aliases": []
+  "aliases": [],
+  "abbr": "ROCR"
  },
  {
   "name": "Rock Hills",
@@ -2258,7 +2503,8 @@
   "city": "",
   "w": 400,
   "h": 339,
-  "aliases": []
+  "aliases": [],
+  "abbr": "RH"
  },
  {
   "name": "Rolla",
@@ -2267,7 +2513,8 @@
   "city": "",
   "w": 390,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Rolla"
  },
  {
   "name": "Rose Hill",
@@ -2276,7 +2523,8 @@
   "city": "",
   "w": 400,
   "h": 359,
-  "aliases": []
+  "aliases": [],
+  "abbr": "RH"
  },
  {
   "name": "Rossville",
@@ -2285,7 +2533,8 @@
   "city": "",
   "w": 400,
   "h": 389,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Rossville"
  },
  {
   "name": "Royal Valley",
@@ -2294,7 +2543,8 @@
   "city": "",
   "w": 400,
   "h": 323,
-  "aliases": []
+  "aliases": [],
+  "abbr": "RV"
  },
  {
   "name": "Rural Vista",
@@ -2303,7 +2553,8 @@
   "city": "",
   "w": 400,
   "h": 328,
-  "aliases": []
+  "aliases": [],
+  "abbr": "RV"
  },
  {
   "name": "Russell",
@@ -2312,7 +2563,8 @@
   "city": "",
   "w": 400,
   "h": 309,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Russell"
  },
  {
   "name": "Sabetha",
@@ -2321,7 +2573,8 @@
   "city": "",
   "w": 250,
   "h": 200,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Sabetha"
  },
  {
   "name": "Sacred Heart",
@@ -2330,7 +2583,8 @@
   "city": "",
   "w": 400,
   "h": 181,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SH"
  },
  {
   "name": "Saint Mary's Academy",
@@ -2339,7 +2593,8 @@
   "city": "",
   "w": 354,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SMA"
  },
  {
   "name": "Salina Central",
@@ -2348,7 +2603,8 @@
   "city": "",
   "w": 261,
   "h": 262,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SC"
  },
  {
   "name": "Salina South",
@@ -2357,7 +2613,8 @@
   "city": "",
   "w": 384,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SS"
  },
  {
   "name": "Santa Fe Trail",
@@ -2366,7 +2623,8 @@
   "city": "",
   "w": 102,
   "h": 250,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SFT"
  },
  {
   "name": "Satanta",
@@ -2375,7 +2633,8 @@
   "city": "",
   "w": 399,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Satanta"
  },
  {
   "name": "Schlagle",
@@ -2384,7 +2643,8 @@
   "city": "",
   "w": 316,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Schlagle"
  },
  {
   "name": "Scott City",
@@ -2393,7 +2653,8 @@
   "city": "",
   "w": 400,
   "h": 196,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SC"
  },
  {
   "name": "Seaman",
@@ -2402,7 +2663,8 @@
   "city": "",
   "w": 281,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Seaman"
  },
  {
   "name": "Sedan",
@@ -2411,7 +2673,8 @@
   "city": "",
   "w": 331,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Sedan"
  },
  {
   "name": "Sedgwick",
@@ -2420,7 +2683,8 @@
   "city": "",
   "w": 363,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Sedgwick"
  },
  {
   "name": "Shawnee Heights",
@@ -2429,7 +2693,8 @@
   "city": "",
   "w": 400,
   "h": 118,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SH"
  },
  {
   "name": "Shawnee Mission East",
@@ -2438,7 +2703,8 @@
   "city": "",
   "w": 368,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SME"
  },
  {
   "name": "Shawnee Mission North",
@@ -2450,7 +2716,8 @@
   "aliases": [
    "SM North",
    "SMN"
-  ]
+  ],
+  "abbr": "SMN"
  },
  {
   "name": "Shawnee Mission Northwest",
@@ -2459,7 +2726,8 @@
   "city": "",
   "w": 400,
   "h": 342,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SMNW"
  },
  {
   "name": "Shawnee Mission South",
@@ -2468,7 +2736,8 @@
   "city": "",
   "w": 224,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SMS"
  },
  {
   "name": "Shawnee Mission West",
@@ -2480,7 +2749,8 @@
   "aliases": [
    "SM West",
    "SMW"
-  ]
+  ],
+  "abbr": "SMW"
  },
  {
   "name": "Silver Lake",
@@ -2489,7 +2759,8 @@
   "city": "",
   "w": 400,
   "h": 158,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SL"
  },
  {
   "name": "Skyline",
@@ -2498,7 +2769,8 @@
   "city": "",
   "w": 400,
   "h": 117,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Skyline"
  },
  {
   "name": "Smith Center",
@@ -2507,7 +2779,8 @@
   "city": "",
   "w": 400,
   "h": 387,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SC"
  },
  {
   "name": "Smoky Valley",
@@ -2516,7 +2789,8 @@
   "city": "",
   "w": 248,
   "h": 368,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SV"
  },
  {
   "name": "Solomon",
@@ -2525,7 +2799,8 @@
   "city": "",
   "w": 400,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Solomon"
  },
  {
   "name": "South Barber",
@@ -2534,7 +2809,8 @@
   "city": "",
   "w": 396,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SB"
  },
  {
   "name": "South Central",
@@ -2543,7 +2819,8 @@
   "city": "",
   "w": 373,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SC"
  },
  {
   "name": "South Gray",
@@ -2552,7 +2829,8 @@
   "city": "",
   "w": 400,
   "h": 387,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SG"
  },
  {
   "name": "South Haven",
@@ -2561,7 +2839,8 @@
   "city": "",
   "w": 146,
   "h": 224,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SH"
  },
  {
   "name": "South Sumner",
@@ -2572,7 +2851,8 @@
   "h": 327,
   "aliases": [
    "South Sumner County"
-  ]
+  ],
+  "abbr": "SS"
  },
  {
   "name": "Southeast (Cherokee)",
@@ -2581,7 +2861,8 @@
   "city": "",
   "w": 302,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SEC"
  },
  {
   "name": "Southeast (Wichita)",
@@ -2592,7 +2873,8 @@
   "h": 276,
   "aliases": [
    "Wichita Southeast"
-  ]
+  ],
+  "abbr": "SEW"
  },
  {
   "name": "Southeast of Saline",
@@ -2603,7 +2885,8 @@
   "h": 400,
   "aliases": [
    "Southeast Saline"
-  ]
+  ],
+  "abbr": "SEOS"
  },
  {
   "name": "Southern Cloud",
@@ -2612,7 +2895,8 @@
   "city": "",
   "w": 400,
   "h": 387,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SC"
  },
  {
   "name": "Southern Coffey County",
@@ -2621,7 +2905,8 @@
   "city": "",
   "w": 360,
   "h": 283,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SCC"
  },
  {
   "name": "Southwestern Heights",
@@ -2630,7 +2915,8 @@
   "city": "",
   "w": 300,
   "h": 160,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SH"
  },
  {
   "name": "Spearville",
@@ -2639,7 +2925,8 @@
   "city": "",
   "w": 400,
   "h": 193,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Spearville"
  },
  {
   "name": "Spring Hill",
@@ -2648,7 +2935,8 @@
   "city": "",
   "w": 226,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SH"
  },
  {
   "name": "St Francis",
@@ -2657,7 +2945,8 @@
   "city": "",
   "w": 377,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SF"
  },
  {
   "name": "St James",
@@ -2669,7 +2958,8 @@
   "aliases": [
    "St James Academy",
    "St. James Academy"
-  ]
+  ],
+  "abbr": "SJA"
  },
  {
   "name": "St John's",
@@ -2678,7 +2968,8 @@
   "city": "",
   "w": 400,
   "h": 271,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SJ"
  },
  {
   "name": "St John",
@@ -2687,7 +2978,8 @@
   "city": "",
   "w": 262,
   "h": 267,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SJ"
  },
  {
   "name": "St Mary's Colgan",
@@ -2699,7 +2991,8 @@
   "aliases": [
    "St Marys Colgan",
    "St. Marys Colgan"
-  ]
+  ],
+  "abbr": "SMC"
  },
  {
   "name": "St Marys",
@@ -2711,7 +3004,8 @@
   "aliases": [
    "St Marys",
    "St. Mary's"
-  ]
+  ],
+  "abbr": "SM"
  },
  {
   "name": "St Paul",
@@ -2720,7 +3014,8 @@
   "city": "",
   "w": 400,
   "h": 380,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SP"
  },
  {
   "name": "St Thomas Aquinas",
@@ -2732,7 +3027,8 @@
   "aliases": [
    "Aquinas",
    "STA"
-  ]
+  ],
+  "abbr": "STA"
  },
  {
   "name": "St Xavier",
@@ -2741,7 +3037,8 @@
   "city": "",
   "w": 400,
   "h": 310,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SX"
  },
  {
   "name": "Stafford",
@@ -2750,7 +3047,8 @@
   "city": "",
   "w": 365,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Stafford"
  },
  {
   "name": "Stanton County",
@@ -2759,7 +3057,8 @@
   "city": "",
   "w": 380,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SC"
  },
  {
   "name": "Sterling",
@@ -2768,7 +3067,8 @@
   "city": "",
   "w": 400,
   "h": 357,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Sterling"
  },
  {
   "name": "Stockton",
@@ -2777,7 +3077,8 @@
   "city": "",
   "w": 400,
   "h": 287,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Stockton"
  },
  {
   "name": "Sublette",
@@ -2786,7 +3087,8 @@
   "city": "",
   "w": 400,
   "h": 292,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Sublette"
  },
  {
   "name": "Sunrise Christian",
@@ -2795,7 +3097,8 @@
   "city": "",
   "w": 400,
   "h": 337,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SC"
  },
  {
   "name": "Sylvan-Lucas Unified",
@@ -2804,7 +3107,8 @@
   "city": "",
   "w": 400,
   "h": 206,
-  "aliases": []
+  "aliases": [],
+  "abbr": "SLU"
  },
  {
   "name": "Syracuse",
@@ -2813,7 +3117,8 @@
   "city": "",
   "w": 90,
   "h": 72,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Syracuse"
  },
  {
   "name": "Tescott",
@@ -2822,7 +3127,8 @@
   "city": "",
   "w": 362,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Tescott"
  },
  {
   "name": "Thomas More Prep",
@@ -2834,7 +3140,8 @@
   "aliases": [
    "TMP-Marian",
    "Thomas More Prep-Marian"
-  ]
+  ],
+  "abbr": "TMP"
  },
  {
   "name": "Thunder Ridge",
@@ -2843,7 +3150,8 @@
   "city": "",
   "w": 400,
   "h": 209,
-  "aliases": []
+  "aliases": [],
+  "abbr": "TR"
  },
  {
   "name": "Tonganoxie",
@@ -2852,7 +3160,8 @@
   "city": "",
   "w": 400,
   "h": 274,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Tonganoxie"
  },
  {
   "name": "Topeka West",
@@ -2861,7 +3170,8 @@
   "city": "",
   "w": 299,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "TW"
  },
  {
   "name": "Topeka",
@@ -2870,7 +3180,8 @@
   "city": "",
   "w": 299,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Topeka"
  },
  {
   "name": "Triplains-Brewster",
@@ -2879,7 +3190,8 @@
   "city": "",
   "w": 400,
   "h": 230,
-  "aliases": []
+  "aliases": [],
+  "abbr": "TB"
  },
  {
   "name": "Troy",
@@ -2888,7 +3200,8 @@
   "city": "",
   "w": 359,
   "h": 343,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Troy"
  },
  {
   "name": "Turner",
@@ -2897,7 +3210,8 @@
   "city": "",
   "w": 358,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Turner"
  },
  {
   "name": "Udall",
@@ -2906,7 +3220,8 @@
   "city": "",
   "w": 400,
   "h": 241,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Udall"
  },
  {
   "name": "Ulysses",
@@ -2915,7 +3230,8 @@
   "city": "",
   "w": 400,
   "h": 303,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Ulysses"
  },
  {
   "name": "Uniontown",
@@ -2924,7 +3240,8 @@
   "city": "",
   "w": 400,
   "h": 218,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Uniontown"
  },
  {
   "name": "Valley Center",
@@ -2933,7 +3250,8 @@
   "city": "",
   "w": 400,
   "h": 374,
-  "aliases": []
+  "aliases": [],
+  "abbr": "VC"
  },
  {
   "name": "Valley Falls",
@@ -2942,7 +3260,8 @@
   "city": "",
   "w": 250,
   "h": 117,
-  "aliases": []
+  "aliases": [],
+  "abbr": "VF"
  },
  {
   "name": "Valley Heights",
@@ -2951,7 +3270,8 @@
   "city": "",
   "w": 400,
   "h": 240,
-  "aliases": []
+  "aliases": [],
+  "abbr": "VH"
  },
  {
   "name": "Veritas Christian",
@@ -2960,7 +3280,8 @@
   "city": "",
   "w": 117,
   "h": 93,
-  "aliases": []
+  "aliases": [],
+  "abbr": "VC"
  },
  {
   "name": "Victoria",
@@ -2969,7 +3290,8 @@
   "city": "",
   "w": 400,
   "h": 325,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Victoria"
  },
  {
   "name": "WaKeeney-Trego",
@@ -2978,7 +3300,8 @@
   "city": "",
   "w": 400,
   "h": 297,
-  "aliases": []
+  "aliases": [],
+  "abbr": "WT"
  },
  {
   "name": "Wabaunsee",
@@ -2987,7 +3310,8 @@
   "city": "",
   "w": 299,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Wabaunsee"
  },
  {
   "name": "Wakefield",
@@ -2996,7 +3320,8 @@
   "city": "",
   "w": 400,
   "h": 177,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Wakefield"
  },
  {
   "name": "Wallace County",
@@ -3005,7 +3330,8 @@
   "city": "",
   "w": 353,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "WC"
  },
  {
   "name": "Wamego",
@@ -3014,7 +3340,8 @@
   "city": "",
   "w": 400,
   "h": 284,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Wamego"
  },
  {
   "name": "Washburn Rural",
@@ -3023,7 +3350,8 @@
   "city": "",
   "w": 400,
   "h": 261,
-  "aliases": []
+  "aliases": [],
+  "abbr": "WR"
  },
  {
   "name": "Washington County",
@@ -3032,7 +3360,8 @@
   "city": "",
   "w": 400,
   "h": 313,
-  "aliases": []
+  "aliases": [],
+  "abbr": "WC"
  },
  {
   "name": "Washington",
@@ -3041,7 +3370,8 @@
   "city": "",
   "w": 333,
   "h": 323,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Washington"
  },
  {
   "name": "Waverly",
@@ -3050,7 +3380,8 @@
   "city": "",
   "w": 400,
   "h": 241,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Waverly"
  },
  {
   "name": "Wellington",
@@ -3059,7 +3390,8 @@
   "city": "",
   "w": 269,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Wellington"
  },
  {
   "name": "Wellsville",
@@ -3068,7 +3400,8 @@
   "city": "",
   "w": 400,
   "h": 225,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Wellsville"
  },
  {
   "name": "Weskan",
@@ -3077,7 +3410,8 @@
   "city": "",
   "w": 250,
   "h": 166,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Weskan"
  },
  {
   "name": "West Elk",
@@ -3088,7 +3422,8 @@
   "h": 268,
   "aliases": [
    "West Elk-Elk Valley"
-  ]
+  ],
+  "abbr": "WE"
  },
  {
   "name": "West Franklin",
@@ -3097,7 +3432,8 @@
   "city": "",
   "w": 400,
   "h": 312,
-  "aliases": []
+  "aliases": [],
+  "abbr": "WF"
  },
  {
   "name": "Western Plains",
@@ -3106,7 +3442,8 @@
   "city": "",
   "w": 400,
   "h": 200,
-  "aliases": []
+  "aliases": [],
+  "abbr": "WP"
  },
  {
   "name": "Wheatland-Grinnell",
@@ -3115,7 +3452,8 @@
   "city": "",
   "w": 377,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "WG"
  },
  {
   "name": "Wichita Classical",
@@ -3124,7 +3462,8 @@
   "city": "",
   "w": 200,
   "h": 200,
-  "aliases": []
+  "aliases": [],
+  "abbr": "WC"
  },
  {
   "name": "Wichita Collegiate",
@@ -3135,7 +3474,8 @@
   "h": 400,
   "aliases": [
    "Collegiate"
-  ]
+  ],
+  "abbr": "WCS"
  },
  {
   "name": "Wichita County",
@@ -3147,7 +3487,8 @@
   "aliases": [
    "Leoti",
    "Leoti-Wichita Co."
-  ]
+  ],
+  "abbr": "WC"
  },
  {
   "name": "Wichita East",
@@ -3156,7 +3497,8 @@
   "city": "",
   "w": 400,
   "h": 199,
-  "aliases": []
+  "aliases": [],
+  "abbr": "WE"
  },
  {
   "name": "Wichita Independent",
@@ -3165,7 +3507,8 @@
   "city": "",
   "w": 400,
   "h": 315,
-  "aliases": []
+  "aliases": [],
+  "abbr": "WI"
  },
  {
   "name": "Wichita Northwest",
@@ -3174,7 +3517,8 @@
   "city": "",
   "w": 321,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "WNW"
  },
  {
   "name": "Wichita South",
@@ -3183,7 +3527,8 @@
   "city": "",
   "w": 400,
   "h": 307,
-  "aliases": []
+  "aliases": [],
+  "abbr": "WS"
  },
  {
   "name": "Wichita Trinity",
@@ -3192,7 +3537,8 @@
   "city": "",
   "w": 362,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "WT"
  },
  {
   "name": "Wichita West",
@@ -3201,7 +3547,8 @@
   "city": "",
   "w": 400,
   "h": 326,
-  "aliases": []
+  "aliases": [],
+  "abbr": "WW"
  },
  {
   "name": "Wichita",
@@ -3210,7 +3557,8 @@
   "city": "",
   "w": 400,
   "h": 227,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Wichita"
  },
  {
   "name": "Winfield",
@@ -3219,7 +3567,8 @@
   "city": "",
   "w": 375,
   "h": 400,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Winfield"
  },
  {
   "name": "Wyandotte",
@@ -3228,7 +3577,8 @@
   "city": "",
   "w": 255,
   "h": 205,
-  "aliases": []
+  "aliases": [],
+  "abbr": "Wyandotte"
  },
  {
   "name": "Yates Center",
@@ -3237,6 +3587,7 @@
   "city": "",
   "w": 400,
   "h": 316,
-  "aliases": []
+  "aliases": [],
+  "abbr": "YC"
  }
 ]
