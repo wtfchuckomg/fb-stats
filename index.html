@@ -6884,11 +6884,12 @@ function dlgSchools(){
     const k = logoSlug(t.name), off = hide.has(k), shown = schoolAbbr(t.name) || t.abbr || shortName(t.name);
     return `<div class="sch-row${off ? ' off' : ''}"><span class="sch-nm">${esc(t.name)}</span>
       <input class="inp sch-ab" data-sch="${esc(t.name)}" value="${esc(shown)}" maxlength="12" autocomplete="off" aria-label="Short name for ${esc(t.name)}">
-      <button type="button" class="btn small${off ? ' primary' : ''}" data-sch-hide="${esc(t.name)}">${off ? 'Show' : 'Hide'}</button></div>`;
+      <button type="button" class="btn small${off ? ' primary' : ' danger'}" data-sch-hide="${esc(t.name)}">${off ? 'Put back' : 'Remove'}</button></div>`;
   }).join('');
   return `${dlgHead('Schools')}<div class="dlg-bd">
-    <p class="hint">Every school the pickers offer. Change a short name and it shows everywhere that school appears.
-      Hide one and it drops out of the pickers, while games already played keep it.</p>
+    <p class="hint">Every school the pickers offer. Change a short name — two to four letters fits everywhere, longer is cut
+      short in the scores strip — and it shows wherever that school appears. Remove the ones that don't play football and
+      they're gone from the pickers; a game already played keeps its school, and Put back undoes it.</p>
     <div class="fld"><input class="inp" id="sch-q" placeholder="Search schools" value="${esc(ui.schoolQ || '')}" autocomplete="off"></div>
     <div class="sch-list">${rows || '<p class="hint">No school by that name.</p>'}</div>
     <div class="grp"><h3>Add a school</h3><div class="line">
@@ -6921,7 +6922,7 @@ function saveSchoolAbbrs(){
 function toggleSchoolHidden(name){
   const hide = schoolsHidden(), k = logoSlug(name);
   const hidden = hide.has(k) ? schoolsDoc.hidden.filter(n => logoSlug(n) !== k) : [...schoolsDoc.hidden, name];
-  saveSchools({hidden}, hide.has(k) ? `${name} is back in the pickers` : `${name} hidden from the pickers`);
+  saveSchools({hidden}, hide.has(k) ? `${name} is back` : `${name} removed`);
 }
 function addSchool(){
   const el = $('#sch-new'), name = el ? el.value.trim() : '';
