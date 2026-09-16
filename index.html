@@ -3765,7 +3765,10 @@ function viewerTools(id){
     mine = localStorage.getItem('pressbox.scorer') === '1' && !!(d && d.games && d.games[id]);
   } catch (e) {}
   el.hidden = !mine;
-  el.innerHTML = mine ? `<a class="abtn" href="${esc(location.pathname)}?edit=${encodeURIComponent(id)}">Edit</a>` : '';
+  // Always the site's own address, never the current one: on a preview link the path is /g/<id>/, and that page
+  // only bounces back here, so Edit built from it would send the scorer round in a circle.
+  const home = location.hostname === 'stats.kansasmediarankings.com' || location.pathname.startsWith('/g/') ? '/' : location.pathname;
+  el.innerHTML = mine ? `<a class="abtn" href="${esc(home)}?edit=${encodeURIComponent(id)}">Edit</a>` : '';
 }
 function viewerMessage(msg){
   g = null;
@@ -6984,7 +6987,8 @@ if (HOME_PAGE) startHome();             // ?home: the front page, read-only
 else if (BOARD) startScoreboard();      // ?scores: the week's scoreboard, read-only
 else if (COUNTY_PAGE) startCounty();    // ?stats: the county's season stats, read-only
 else if (TEAM_PAGE) startTeamPage();    // ?teams, ?team=<name>: the schools, and each one's record and schedule
-else if (LIVE_ID) startViewer(LIVE_ID); // a shared link: watch that game, read-only
+// ?edit=<id> is the scorer coming back to their own game, and wins over ?game= — the preview page forwards both.
+else if (LIVE_ID && !new URLSearchParams(location.search).has('edit')) startViewer(LIVE_ID); // a shared link: watch that game, read-only
 else {
   load();
   if (db.games.sample && db.games.sample.sample !== 2) db.games.sample = sampleGame();
