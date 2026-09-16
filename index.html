@@ -247,6 +247,15 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .ctbl th:last-child,.ctbl td:last-child{padding-right:20px}
 .ctbl tr.cgrp th{text-align:center;cursor:default;font:700 13px/1 var(--sans);letter-spacing:.08em;padding:12px}
 .ctbl tr.cgrp th + th + th{border-left:1px solid var(--line)}
+/* AVCTL standings: a league table, so nothing sorts, the logo has the rank column to itself,
+   and the two groups of numbers are divided all the way down. */
+.av-st th{cursor:default}
+.av-st .rk{padding-right:0;width:44px;min-width:44px;max-width:44px}
+.av-st .nm{left:44px}
+.av-st .nm a{color:var(--ink-2);text-decoration:none;font-weight:500}
+.av-st .nm a:hover{color:var(--blue)}
+.av-st td.gsep,.av-st thead tr:last-child th.gsep{border-left:1px solid var(--line)}
+.av-st .nm + .num{padding-left:18px}
 .cn-in{display:flex;align-items:center;gap:10px}
 .c-pl{display:flex;align-items:baseline;gap:6px}
 .c-pl b{font-weight:500}
@@ -3627,17 +3636,18 @@ async function startStandings(){
   } catch (e) { stand.err = 'Can’t reach the games. Check your connection and reload.'; renderStandings(); }
 }
 
-// A team's league season: every final on the site, with division games counted apart from the rest.
+// A team's league season: every final on the site, with the division games counted apart from the rest,
+// and home and away kept apart the way a standings table shows them.
 function avRecord(name){
   const div = avctlDiv(name);
-  const r = {gp:0, w:0, l:0, t:0, dw:0, dl:0, dt:0, pf:0, pa:0};
+  const r = {gp:0, w:0, l:0, t:0, pf:0, pa:0, dgp:0, dw:0, dl:0, dt:0, dpf:0, dpa:0, hw:0, hl:0, ht:0, aw:0, al:0, at:0};
   schoolRows(name).forEach(row => {
     const f = finalOf(row.x); if (!f.fin) return;
     const us = f.score[row.side], them = f.score[row.opp];
-    r.gp++; r.pf += us; r.pa += them;
     const i = us > them ? 'w' : us < them ? 'l' : 't';
-    r[i]++;
-    if (avctlDiv(row.x.teams[row.opp].name) === div) r['d' + i]++;
+    r.gp++; r.pf += us; r.pa += them; r[i]++;
+    r[(row.side === 'H' ? 'h' : 'a') + i]++;
+    if (avctlDiv(row.x.teams[row.opp].name) === div){ r.dgp++; r.dpf += us; r.dpa += them; r['d' + i]++; }
   });
   return r;
 }
@@ -3652,14 +3662,23 @@ function standingsRows(div){
 function standingsHtml(){
   document.title = 'AVCTL Standings · Kansas Media Stats';
   const waiting = !allGames.list;
+  // Division first, then the whole season — the way a league table reads.
   const card = div => {
-    const rows = standingsRows(div).map((o, i) => {
-      const {r} = o, overall = o.rec && o.rec.rec ? o.rec.rec : avRec(r.w, r.l, r.t);
-      return `<tr><td class="rk">${i + 1}</td><td class="nm"><div class="cn-in"><a class="tlink" href="?team=${encodeURIComponent(o.name)}">${cMark(o.name)}<b>${esc(o.name)}</b></a></div></td>
-        <td class="num on">${avRec(r.dw, r.dl, r.dt)}</td><td class="num">${esc(overall)}</td><td class="num">${r.gp ? r.pf : '—'}</td><td class="num">${r.gp ? r.pa : '—'}</td></tr>`;
+    const rows = standingsRows(div).map(o => {
+      const {r} = o, rec = o.rec || {};
+      const overall = rec.rec || avRec(r.w, r.l, r.t);
+      const home = rec.home || avRec(r.hw, r.hl, r.ht);
+      const away = rec.away || avRec(r.aw, r.al, r.at);
+      return `<tr><td class="rk">${cMark(o.name)}</td><td class="nm"><a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
+        <td class="num gsep">${avRec(r.dw, r.dl, r.dt)}</td><td class="num">${r.dpf}</td><td class="num">${r.dpa}</td>
+        <td class="num gsep">${esc(overall)}</td><td class="num">${r.pf}</td><td class="num">${r.pa}</td>
+        <td class="num">${esc(home)}</td><td class="num">${esc(away)}</td></tr>`;
     }).join('');
     return `<section class="bcard ccard"><div class="ccard-hd"><h2>Division ${div}</h2></div>
-      <div class="tbl-wrap"><table class="ctbl"><thead><tr><th class="rk">RK</th><th class="nm">TEAM</th><th class="num on"><span>DIV</span></th><th class="num"><span>OVERALL</span></th><th class="num"><span>PF</span></th><th class="num"><span>PA</span></th></tr></thead>
+      <div class="tbl-wrap"><table class="ctbl av-st"><thead>
+        <tr class="cgrp"><th class="rk"></th><th class="nm"></th><th colspan="3">Division</th><th colspan="5">Overall</th></tr>
+        <tr><th class="rk"></th><th class="nm"></th><th class="num gsep">W-L</th><th class="num">PF</th><th class="num">PA</th>
+          <th class="num gsep">W-L</th><th class="num">PF</th><th class="num">PA</th><th class="num">Home</th><th class="num">Away</th></tr></thead>
       <tbody>${rows}</tbody></table></div></section>`;
   };
   const head = `<section class="bcard bhead"><div class="bhead-top"><h1 class="c-title">AVCTL Standings</h1></div>
@@ -6233,12 +6252,20 @@ function teamsIndexHtml(){
   // The teams the county plays, each with its whole schedule on the site (their own opponents aren't listed: the site
   // has only their games against these teams).
   const county = new Set(COUNTY.map(canonSchool));
-  const others = Object.keys(SCHOOL_INFO).filter(n => !county.has(canonSchool(n))).sort((a, b) => a.localeCompare(b));
+  // Everyone else the site covers: the county's opponents, the AVCTL, and any school that turns up in a game
+  // someone has kept — a school joins this list the moment its first game does.
+  const pretty = n => { const k = canonSchool(n), t = (logoLib.list || []).find(v => logoSlug(v.name) === k); return t ? t.name : n; };
+  const named = new Map();
+  const add = n => { const k = n && canonSchool(n); if (!k || county.has(k) || named.has(k)) return; named.set(k, pretty(n)); };
+  Object.keys(SCHOOL_INFO).forEach(add);
+  AVCTL.forEach(add);
+  (allGames.list || []).forEach(x => ['A', 'H'].forEach(sd => add(x.teams[sd] && x.teams[sd].name)));
+  const others = [...named.values()].sort((a, b) => a.localeCompare(b));
   const card = (n, size) => { const r = recParts(shownRecord(n));
     return `<a class="tp-card" href="?team=${encodeURIComponent(n)}">${markFor({name:n, abbr:shortName(n), color:'#4A4B4D'}, size)}<b>${esc(n)}</b>${r.length ? `<span>${esc(r[0])}</span>` : ''}</a>`; };
   return `<section class="bcard bhead"><div class="bhead-top"><h1>Teams</h1></div><p class="h-note" style="margin:0">Each team’s record, schedule and results.</p></section>
     <section class="bcard"><h2 class="tp-h">Butler County</h2><div class="tp-grid">${COUNTY.map(n => card(n, 56)).join('')}</div></section>
-    <section class="bcard"><h2 class="tp-h">Opponents</h2>${allGames.err ? `<p class="bempty">${esc(allGames.err)}</p>` : ''}
+    <section class="bcard"><h2 class="tp-h">Every other team</h2>${allGames.err ? `<p class="bempty">${esc(allGames.err)}</p>` : ''}
       <div class="tp-grid small">${others.map(n => card(n, 28)).join('')}</div></section>`;
 }
 

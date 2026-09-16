@@ -148,12 +148,20 @@ function teamsIndexHtml(){
   // The teams the county plays, each with its whole schedule on the site (their own opponents aren't listed: the site
   // has only their games against these teams).
   const county = new Set(COUNTY.map(canonSchool));
-  const others = Object.keys(SCHOOL_INFO).filter(n => !county.has(canonSchool(n))).sort((a, b) => a.localeCompare(b));
+  // Everyone else the site covers: the county's opponents, the AVCTL, and any school that turns up in a game
+  // someone has kept — a school joins this list the moment its first game does.
+  const pretty = n => { const k = canonSchool(n), t = (logoLib.list || []).find(v => logoSlug(v.name) === k); return t ? t.name : n; };
+  const named = new Map();
+  const add = n => { const k = n && canonSchool(n); if (!k || county.has(k) || named.has(k)) return; named.set(k, pretty(n)); };
+  Object.keys(SCHOOL_INFO).forEach(add);
+  AVCTL.forEach(add);
+  (allGames.list || []).forEach(x => ['A', 'H'].forEach(sd => add(x.teams[sd] && x.teams[sd].name)));
+  const others = [...named.values()].sort((a, b) => a.localeCompare(b));
   const card = (n, size) => { const r = recParts(shownRecord(n));
     return `<a class="tp-card" href="?team=${encodeURIComponent(n)}">${markFor({name:n, abbr:shortName(n), color:'#4A4B4D'}, size)}<b>${esc(n)}</b>${r.length ? `<span>${esc(r[0])}</span>` : ''}</a>`; };
   return `<section class="bcard bhead"><div class="bhead-top"><h1>Teams</h1></div><p class="h-note" style="margin:0">Each team’s record, schedule and results.</p></section>
     <section class="bcard"><h2 class="tp-h">Butler County</h2><div class="tp-grid">${COUNTY.map(n => card(n, 56)).join('')}</div></section>
-    <section class="bcard"><h2 class="tp-h">Opponents</h2>${allGames.err ? `<p class="bempty">${esc(allGames.err)}</p>` : ''}
+    <section class="bcard"><h2 class="tp-h">Every other team</h2>${allGames.err ? `<p class="bempty">${esc(allGames.err)}</p>` : ''}
       <div class="tp-grid small">${others.map(n => card(n, 28)).join('')}</div></section>`;
 }
 

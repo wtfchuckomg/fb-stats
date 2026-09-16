@@ -247,6 +247,15 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .ctbl th:last-child,.ctbl td:last-child{padding-right:20px}
 .ctbl tr.cgrp th{text-align:center;cursor:default;font:700 13px/1 var(--sans);letter-spacing:.08em;padding:12px}
 .ctbl tr.cgrp th + th + th{border-left:1px solid var(--line)}
+/* AVCTL standings: a league table, so nothing sorts, the logo has the rank column to itself,
+   and the two groups of numbers are divided all the way down. */
+.av-st th{cursor:default}
+.av-st .rk{padding-right:0;width:44px;min-width:44px;max-width:44px}
+.av-st .nm{left:44px}
+.av-st .nm a{color:var(--ink-2);text-decoration:none;font-weight:500}
+.av-st .nm a:hover{color:var(--blue)}
+.av-st td.gsep,.av-st thead tr:last-child th.gsep{border-left:1px solid var(--line)}
+.av-st .nm + .num{padding-left:18px}
 .cn-in{display:flex;align-items:center;gap:10px}
 .c-pl{display:flex;align-items:baseline;gap:6px}
 .c-pl b{font-weight:500}
