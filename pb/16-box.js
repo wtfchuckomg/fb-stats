@@ -164,6 +164,15 @@ function parseBox(txt){
     return same.length === 1 ? out.pl[s][same[0]] : player(s, raw);
   };
   const add = (o, k, v) => { o[k] = (o[k] || 0) + v; };
+  // A name with no team on it: whichever side already knows him — from a stat line, or from the scoring
+  // summary, where a kicker turns up as "(McFadden kick)". Only when exactly one side does.
+  function whoseName(raw){
+    const k = lastName(raw), re = new RegExp(`\\b${escRe(String(raw).trim())}\\b`, 'i');
+    const sides = ['A', 'H'].filter(s =>
+      Object.keys(out.pl[s]).some(n => lastName(n) === k)
+      || out.scoring.some(e => e.side === s && re.test(e.desc)));
+    return sides.length === 1 ? sides[0] : null;
+  }
   // Numbers in "14-94", "3--5", "2-(-33)" or "1-(4)"; a number in parentheses is a loss.
   const nums = s => [...s.replace(/(\d)\s*-\s*-(\d+)/g, '$1-(-$2)').matchAll(/\((-?\d+)\)|(\d+)/g)].map(m => m[1] != null ? -Math.abs(+m[1]) : +m[2]);
   const tds = rest => { const m = rest.match(/(\d+)?\s*TDs?\b/i); return m ? +(m[1] || 1) : 0; };
@@ -200,12 +209,16 @@ function parseBox(txt){
     // "MISSED FIELD GOALS: Newton — Oswald 39 (blocked), 45." Each distance is an attempt and no make;
     // a blocker who is named gets the block.
     if (kind === 'miss'){
-      for (const [s, part] of splitTeams(sc.body)){
-        part.split(/;\s*|\.\s+/).map(x => x.trim().replace(/\.$/, '')).filter(Boolean).forEach(item => {
-          const m = item.match(/^([A-Za-z][A-Za-z.'’ -]*?)\s+(\d[\s\S]*)$/);
-          if (!m) return;
-          const p = kicker(s, m[1]), dist = (m[2].match(/\d+/g) || []).map(Number);
-          missed.add(s + '|' + lastName(m[1]));
+      const teamed = splitTeams(sc.body);
+      // Often written with no team and no distance at all — "Missed field goals: McFadden".
+      for (const [s0, part] of (teamed.length ? teamed : [[null, sc.body]])){
+        part.split(/;\s*|,\s*(?=[A-Za-z])|\.\s+/).map(x => x.trim().replace(/\.$/, '')).filter(Boolean).forEach(item => {
+          const m = item.match(/^([A-Za-z][A-Za-z.'’ -]*?)(?:\s+(\d[\s\S]*))?$/);
+          if (!m || !m[1].trim()) return;
+          const who = m[1].trim(), s = s0 || whoseName(who);
+          if (!s){ out.warn.push(`Couldn’t tell which team ${who} kicks for, so that missed kick was left out. Put the team in front of it.`); return; }
+          const p = kicker(s, who), dist = ((m[2] || '').match(/\d+/g) || []).map(Number);
+          missed.add(s + '|' + lastName(who));
           (dist.length ? dist : [0]).forEach(() => add(p, 'fga', 1));
           const by = item.match(/blocked\s+by\s+([A-Za-z][A-Za-z.'’ -]*)/i);
           if (by) add(player(s === 'A' ? 'H' : 'A', by[1]), 'bk', 1);
