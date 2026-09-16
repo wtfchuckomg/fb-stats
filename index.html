@@ -4310,7 +4310,11 @@ function renderScores(){
 /* ---------- the scores strip scrolls itself like a ticker, and stops while someone's over it ---------- */
 const TICK_PX = 28;                                    // pixels a second: about one game every 6-7 seconds
 const ticker = {raf:0, last:0, pos:0, until:0};
+// Off while we see whether the constant scrolling was costing anything: it writes scrollLeft every animation
+// frame and doubles the cards in the strip to loop them. Set TICKER_ON back to true to bring it back.
+const TICKER_ON = false;
 function tickerSetup(list){
+  if (!TICKER_ON) return;
   if (!list || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if (list.scrollWidth <= list.clientWidth + 24) return;          // everything fits: nothing to scroll
   // A second copy of the cards right after the first, so it loops without jumping back. Screen readers and
