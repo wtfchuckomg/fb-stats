@@ -2667,7 +2667,7 @@ function dlgSetup(isNew){
   const ru = rulesOf(src);
   const rosterTxt = s => Object.entries(src.teams[s].roster || {}).sort((a, b) => a[0] - b[0]).map(([n, v]) => `${n} ${v}`).join('\n');
   const teamRow = (s, label) => `<div class="grp"><h3>${label}</h3><div class="teamset">
-      <div class="fld"><label class="eyebrow" for="s-${s}-name">School</label><input class="inp" id="s-${s}-name" list="teamlib" autocomplete="off" value="${esc(src.teams[s].name)}" placeholder="${s === 'A' ? 'Visiting school' : 'Home school'}"></div>
+      <div class="fld"><label class="eyebrow" for="s-${s}-name">School</label>${schoolPicker(`s-${s}-name`, src.teams[s].name, s === 'A' ? 'Visiting school' : 'Home school')}</div>
       <div class="fld"><label class="eyebrow" for="s-${s}-mascot">Mascot</label><input class="inp" id="s-${s}-mascot" value="${esc(src.teams[s].mascot || '')}" placeholder="e.g. Bulldogs"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-abbr">Short</label><input class="inp" id="s-${s}-abbr" maxlength="5" value="${esc(src.teams[s].abbr)}" placeholder="${s === 'A' ? 'VIS' : 'HOME'}"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-color">Color</label><input type="color" id="s-${s}-color" value="${esc(src.teams[s].color)}"></div></div>
@@ -2684,12 +2684,13 @@ function dlgSetup(isNew){
       <div class="fld"><label class="eyebrow" for="s-date">Game date · sets its week on the scoreboard</label><input class="inp" type="date" id="s-date" value="${from && from.date ? from.date : isNew ? ymd(new Date()) : ymd(gameDay(g))}"></div>
       <p class="hint" id="s-rulehint">${ruleHint(ru.men)}</p>
       ${isNew ? `<label style="display:flex;align-items:center;gap:8px;margin-top:10px;font:500 14px/1.3 var(--sans)"><input type="checkbox" id="s-private"> Keep this game private: off the scoreboard, with no live link</label>` : ''}</div></div>
-    <datalist id="teamlib">${savedTeams().map(t => `<option value="${esc(t.name)}"></option>`).join('')}</datalist>
     <div class="dlg-ft"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" data-save-setup="${isNew ? 1 : 0}">${isNew ? 'Start game' : 'Save'}</button></div>`;
 }
 function saveSetup(isNew){
   const v = id => $('#' + id).value.trim();
   const parseRoster = txt => { const o = {}; txt.split('\n').forEach(l => { const m = l.match(/^\s*#?(\d{1,2})\s*[-–,.:)]?\s*(.+?)\s*$/); if (m) o[m[1]] = m[2]; }); return o; };
+  // Both schools come from the list, so a game can't be started against a school that doesn't exist.
+  if (!v('s-A-name') || !v('s-H-name')) return toast('Pick both schools from the list');
   const team = (s, def) => {
     const name = v(`s-${s}-name`) || def;
     return {name, mascot:v(`s-${s}-mascot`), abbr:(v(`s-${s}-abbr`) || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(), color:$(`#s-${s}-color`).value, roster:parseRoster($(`#s-${s}-roster`).value),
@@ -2989,6 +2990,29 @@ function loadLogos(){
     .then(list => { src.list = Array.isArray(list) ? list : []; })))
     .then(() => { logoLib.list = LOGO_SRC.flatMap(src => src.list); if (g && R) refresh(); else { renderScoreboard(); renderCounty(); } });
 }
+/* ---------- the school list, for picking a school instead of typing one ----------
+   Every school the logo library knows, so a game can't be started against a school that doesn't exist (a typo
+   leaves a game with no logo, no roster and its own row in the stats). The list is fetched at runtime, so when
+   it hasn't arrived — a cold load on a bad connection — fall back to the schools saved on this device plus
+   whatever the game already says, rather than showing an empty list nobody can get past. */
+function schoolList(...keep){
+  const names = new Set((logoLib.list || []).map(t => t.name).filter(Boolean));
+  if (!names.size) (typeof savedTeams === 'function' ? savedTeams() : []).forEach(t => names.add(t.name));
+  keep.filter(Boolean).forEach(n => names.add(n));
+  return [...names].sort((a, b) => a.localeCompare(b));
+}
+// The list's own short name for a school ("ArkC" for Arkansas City), set in logos/teams.json.
+function listAbbr(name){
+  const k = logoSlug(name);
+  const hit = (logoLib.list || []).find(t => t.abbr && (logoSlug(t.name) === k || t.slug === k || (t.aliases || []).some(a => logoSlug(a) === k)));
+  return hit ? hit.abbr : '';
+}
+// A school picker: the whole list, with what the game already has kept selected even if the list is still coming.
+function schoolPicker(id, value, label){
+  const opts = schoolList(value).map(n => `<option value="${esc(n)}"${n === value ? ' selected' : ''}>${esc(n)}</option>`).join('');
+  return `<select class="inp" id="${esc(id)}" aria-label="${esc(label)}"><option value=""${value ? '' : ' selected'}>${esc(label)}</option>${opts}</select>`;
+}
+
 // Every place a school's logo might be, best first: the logo map (checked ahead of time across the three sites),
 // then the logo lists, then, for a school neither knows, its own name in this site's logos folder. An address
 // that failed to load once is skipped from then on.
@@ -3910,6 +3934,8 @@ const dayShort = d => `${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.get
 const inQuarter = per => /^[1-4]$/.test(String(per));
 // A short name for a school with none saved: initials for two or more words, else the first letters.
 function shortName(name){
+  const listed = typeof listAbbr === 'function' ? listAbbr(name) : '';   // the logo list's own short name wins
+  if (listed) return listed;
   const w = String(name).replace(/[^A-Za-z ]+/g, ' ').trim().split(/\s+/).filter(Boolean);
   if (w.length > 1) return w.map(x => x[0]).join('').slice(0, 4).toUpperCase();
   const one = w[0] || '?'; return (one.length <= 4 ? one : one.slice(0, 3)).toUpperCase();
@@ -3944,9 +3970,8 @@ function dlgScore(id){
   const x = id && qsLib()[id] && !qsLib()[id].deleted ? qsLib()[id] : null, per = x ? String(x.per) : '1';
   const date = x ? ymd(gameDay(x)) : scoreDefaultDate();
   // Saved teams and every school with a logo, so a typed name finds its logo.
-  const names = [...new Set([...savedTeams().map(t => t.name), ...(logoLib.list || []).map(t => t.name)])].sort((a, b) => a.localeCompare(b));
   const side = (s, label) => `<div class="qs-side"><div class="fld"><label class="eyebrow" for="qs-${s}-name">${label}</label>
-      <input class="inp qs-name" id="qs-${s}-name" list="qslib" autocomplete="off" value="${esc(x ? x.teams[s].name : '')}" placeholder="${s === 'A' ? 'Visiting school' : 'Home school'}"></div>
+      ${schoolPicker(`qs-${s}-name`, x ? x.teams[s].name : '', s === 'A' ? 'Visiting school' : 'Home school')}</div>
     <div class="fld qs-pts"><label class="eyebrow" for="qs-${s}-pts">Score</label>
       <input class="inp" id="qs-${s}-pts" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" value="${x ? +x[s] || 0 : ''}" placeholder="0"></div></div>
     <div class="row qs-rec">${recFields('qs', s, x && x.teams[s])}</div>`;
@@ -3963,13 +3988,13 @@ function dlgScore(id){
     <div class="fld"${inQuarter(per) ? '' : ' hidden'}><label class="eyebrow" for="qs-clk">Time left, optional</label><input class="inp" id="qs-clk" inputmode="numeric" placeholder="4:12" value="${esc(x && x.clk || '')}"></div>
     <div class="fld"><label class="eyebrow" for="qs-date">Game date</label><input class="inp" type="date" id="qs-date" value="${date}"></div>
     <p class="hint">${note}</p>
-    <datalist id="qslib">${names.map(n => `<option value="${esc(n)}"></option>`).join('')}</datalist></div>
+    </div>
     <div class="dlg-ft">${x ? `<button type="button" class="btn danger" data-qs-del="${esc(x.id)}" style="margin-right:auto">Delete</button>` : ''}
       <button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" data-qs-save="${esc(x ? x.id : '')}">Save</button></div>`;
 }
 function saveScore(id){
   const nm = s => $(`#qs-${s}-name`).value.trim(), A = nm('A'), H = nm('H');
-  if (!A || !H) return toast('Enter both schools');
+  if (!A || !H) return toast('Pick both schools from the list');
   const lib = qsLib(), old = id && lib[id] && !lib[id].deleted ? lib[id] : null;
   // A saved team brings its short name and color; otherwise keep what this score had, or make one up.
   const team = (s, name, was) => { const t = findTeam(name), same = was && was.name === name;
