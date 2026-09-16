@@ -1045,7 +1045,7 @@ function replay(g, upto = g.plays.length){
   const T = g.teams, qSec = (g.set.qtr || 12) * 60, otSpot = FL - RU.ot;
   let st = {q:1, phase:'kick', kickKind:'kickoff', poss:g.set.firstKick || 'H', kickFrom:RU.kickFrom,
     spot:0, down:1, ltg:10, score:{A:0,H:0}, lines:{A:[0,0,0,0,0],H:[0,0,0,0,0]}, to:{A:3,H:3},
-    ot:null, final:false, drive:null, fresh:false};
+    ot:null, final:false, drive:null, fresh:false, qPlayed:0};
   let S = {team:{A:zeros(TEAM_KEYS), H:zeros(TEAM_KEYS)}, pl:{A:{}, H:{}}};
   let scoring = [], drives = [], clk = null, tags = [], trace = [], curI = 0;   // curI: the play being replayed
   const log = [];
@@ -1548,6 +1548,10 @@ function replay(g, upto = g.plays.length){
     }
     curI = i;
     const pre = {sit: sit(), q: st.q, poss: st.poss};
+    // The last quarter football was actually played in. A game stopped early — 8-man's 45-point rule from the half
+    // on, or weather — never reaches the rest, and those quarters show an X instead of a 0. Ending the game is
+    // bookkeeping, not a play: it is recorded after the half has already turned the clock to the 3rd quarter.
+    if (!['final', 'note', 'to'].includes(p.t) && pre.q > st.qPlayed) st.qPlayed = pre.q;
     const r = apply(p);
     log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, trace, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q, A:st.score.A, H:st.score.H});
   }
@@ -1618,7 +1622,7 @@ function renderBoard(){
 function stripLines(){
   const st = R.st, L = st.lines; if (!L) return '';
   const cols = Array.from({length:st.q > 4 ? 5 : 4}, (_, i) => i);
-  const pts = (s, i) => i < 4 ? L[s][i] || 0 : L[s].slice(4).reduce((a, b) => a + (b || 0), 0);
+  const pts = (s, i) => i < 4 ? (i >= (st.qPlayed || 0) ? 'X' : L[s][i] || 0) : L[s].slice(4).reduce((a, b) => a + (b || 0), 0);
   const row = s => `<tr><td>${esc(g.teams[s].abbr || g.teams[s].name)}</td>${cols.map(i => `<td>${pts(s, i)}</td>`).join('')}<td>${st.score[s]}</td></tr>`;
   return `<table class="st-ls"><thead><tr><th></th>${cols.map(i => `<th>${i < 4 ? i + 1 : 'OT'}</th>`).join('')}<th>T</th></tr></thead><tbody>${row('A')}${row('H')}</tbody></table>`;
 }
@@ -2569,7 +2573,7 @@ function summaryText(){
   let out = `${T.A.name} at ${T.H.name}${rulesOf(g).men === 8 ? ' (8-man)' : ''}\n${st.final ? 'FINAL' : perLabel(st.q) + (st.q <= 4 ? ' ' + mmss(clockNow()) : '')}\n\n`;
   const cols = [0, 1, 2, 3].concat(st.q > 4 ? [4] : []);
   out += rp('', 8) + cols.map(i => lp(i < 4 ? i + 1 : 'OT', 4)).join('') + lp('T', 5) + '\n';
-  ['A', 'H'].forEach(s => out += rp(T[s].abbr, 8) + cols.map(i => lp(st.lines[s][i], 4)).join('') + lp(st.score[s], 5) + '\n');
+  ['A', 'H'].forEach(s => out += rp(T[s].abbr, 8) + cols.map(i => lp(qCell(st, s, i), 4)).join('') + lp(st.score[s], 5) + '\n');
   out += '\nSCORING\n' + (R.scoring.map(e => `${perLabel(e.q)} ${e.clk != null ? mmss(e.clk) : ''}  ${ab(e.side)} – ${e.desc}  (${T.A.abbr} ${e.A}, ${T.H.abbr} ${e.H})`).join('\n') || 'None') + '\n';
   out += '\n' + rp('TEAM STATS', 28) + lp(T.A.abbr, 10) + lp(T.H.abbr, 10) + '\n';
   teamRows().forEach(([l, f]) => out += rp(l, 28) + lp(f('A'), 10) + lp(f('H'), 10) + '\n');
@@ -3025,11 +3029,17 @@ function cardDrive(){
       <div class="lp-sit">${esc(lp.sit)}${lp.clk != null && lp.q <= 4 ? ` · ${whenTxt(lp.q, lp.clk)}` : ''}</div></div>` : ''}
   </section>`;
 }
+// One quarter's cell in a line score: blank while the game hasn't reached it, and an X in a finished game for a
+// quarter that was never played (8-man ends at 45 points from the half on; weather and forfeits do the same).
+function qCell(st, s, i){
+  if (i < 4 && st.final && i >= (st.qPlayed || 0)) return 'X';
+  return i === 4 || st.q > i || st.final ? st.lines[s][i] : '';
+}
 function cardLinescore(){
   const st = R.st, T = g.teams, cols = [0, 1, 2, 3].concat(st.q > 4 || st.lines.A[4] || st.lines.H[4] ? [4] : []);
   return `<section class="card"><div class="tbl-wrap"><table class="ls">
     <thead><tr><th></th>${cols.map(i => `<th>${i < 4 ? i + 1 : 'OT'}</th>`).join('')}<th>T</th></tr></thead>
-    <tbody>${['A', 'H'].map(s => `<tr><td><span class="tm">${teamMark(s, 22)}${esc(T[s].name)}</span></td>${cols.map(i => `<td>${i === 4 || st.q > i || st.final ? st.lines[s][i] : ''}</td>`).join('')}<td class="tot">${st.score[s]}</td></tr>`).join('')}</tbody>
+    <tbody>${['A', 'H'].map(s => `<tr><td><span class="tm">${teamMark(s, 22)}${esc(T[s].name)}</span></td>${cols.map(i => `<td>${qCell(st, s, i)}</td>`).join('')}<td class="tot">${st.score[s]}</td></tr>`).join('')}</tbody>
   </table></div></section>`;
 }
 function scoringList(){
@@ -3353,7 +3363,7 @@ function gameSheets(){
     ['Status', st.final ? 'Final' : `In progress, ${perLabel(st.q)}`],
     [],
     hdr(['Team', ...cols.map(i => i < 4 ? `Q${i + 1}` : 'OT'), 'Total']),
-    ...both.map(s => [T[s].name, ...cols.map(i => st.lines[s][i]), st.score[s]]),
+    ...both.map(s => [T[s].name, ...cols.map(i => qCell(st, s, i)), st.score[s]]),
     [],
     hdr(['Scoring plays']),
     hdr(['Qtr', 'Clock', 'Team', 'Play', T.A.abbr, T.H.abbr]),
@@ -4045,7 +4055,7 @@ function summary(x){
     else status = `${c ? mmss(c.run ? c.s - (Date.now() - c.at) / 1000 : c.s) + ' - ' : ''}${ord(st.q)}`;
   }
   return {quick:false, fin:st.final, pre:!x.plays.length && !x.box, live, q:st.q, status, score:st.score, poss:live && st.phase !== 'kick' ? st.poss : null,
-    lines:st.lines, S:r.S, men:rulesOf(x).men};
+    lines:st.lines, qPlayed:st.qPlayed, S:r.S, men:rulesOf(x).men};
 }
 const leadOf = m => m.score.A === m.score.H ? null : m.score.A > m.score.H ? 'A' : 'H';
 function scoreCard(x){
@@ -4326,7 +4336,7 @@ function boardGame(x){
     const rec = recordText(T[s], s, !m.fin), sub = rec ? `(${rec})` : [T[s].mascot, s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
     return `<div class="bt${cls}"><div class="bt-team">${markFor(T[s], 29)}<div class="bt-id">
         <div class="bt-name"><span><a class="tlink" href="?team=${encodeURIComponent(T[s].name)}">${esc(T[s].name)}</a></span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub${rec ? ' rec' : ''}">${esc(sub)}</div></div></div>
-      <div class="bt-q">${cells(i => i < played ? m.lines[s][i] : '')}</div><div class="bt-t">${m.pre ? '' : m.score[s]}</div><i class="sc-win"></i></div>`;
+      <div class="bt-q">${cells(i => i < 4 && m.fin && i >= (m.qPlayed || 0) ? 'X' : i < played ? m.lines[s][i] : '')}</div><div class="bt-t">${m.pre ? '' : m.score[s]}</div><i class="sc-win"></i></div>`;
   };
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
   // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
@@ -4756,7 +4766,9 @@ function boxInto(game, st, S, scoring){
     // Longest gains and sacks aren't in a box score: blank, not zero.
     Object.entries(b.pl[s] || {}).forEach(([k, p]) => { S.pl[s][k] = Object.assign(zeros(PL_KEYS), {plg:'', rlg:'', relg:'', psk:''}, p, {n:k}); });
   });
-  Object.assign(st, {final:true, phase:'final', q:Math.max(b.lines.A.length, b.lines.H.length) > 4 ? 5 : 4, drive:null});
+  // A box score only lists the quarters that were played, so a mercy-shortened game shows an X for the rest.
+  const nq = Math.max(b.lines.A.length, b.lines.H.length);
+  Object.assign(st, {final:true, phase:'final', q:nq > 4 ? 5 : 4, qPlayed:Math.min(nq, 5), drive:null});
   const run = {A:0, H:0};
   (b.scoring || []).forEach(e => { run[e.side] += e.pts || 0; scoring.push({q:e.q || 4, clk:null, side:e.side, how:e.how, desc:e.desc, A:run.A, H:run.H, i:-1}); });
 }
