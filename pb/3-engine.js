@@ -283,19 +283,32 @@ function replay(g, upto = g.plays.length){
   /* ---- plays ---- */
   function run(p){
     const O = st.poss, D = other(O), t = S.team[O], r = pl(O, p.r);
-    const g = clamp(+p.y || 0, -st.spot, FL - st.spot), end = st.spot + g, td = end >= FL;
+    // A lateral is one play with two carriers: each is credited with the yards he made, and the carry
+    // belongs to the man who started with the ball (the statisticians' rule).
+    const lat = p.lat && p.lat.r != null ? {r:String(p.lat.r), y:+p.lat.y || 0} : null;
+    const first = clamp(+p.y || 0, -st.spot, FL - st.spot);
+    const g = lat ? clamp(first + lat.y, -st.spot, FL - st.spot) : first, end = st.spot + g, td = end >= FL;
+    const r2 = lat ? pl(O, lat.r) : null, gained2 = g - first;
     leg('run', O, st.spot, end);
-    if (st.phase === 'try') return twoPoint(p, end >= FL, `${nm(O, p.r)} rush`);
+    if (st.phase === 'try') return twoPoint(p, end >= FL, `${nm(O, lat ? lat.r : p.r)} rush`);
     driveTouch(); t.plays++;
-    t.rushN++; t.rushY += g; bump(r, 'ru'); bump(r, 'ry', g); long(r, 'rlg', g);
+    t.rushN++; t.rushY += g; bump(r, 'ru'); bump(r, 'ry', lat ? first : g); long(r, 'rlg', lat ? first : g);
+    if (lat){ bump(r2, 'ry', gained2); long(r2, 'rlg', gained2); }
     tackles(D, p.tk, g); conversion(end);
-    let txt = td ? `${nm(O, p.r)} ${fy(g)}-yard rush` : `${nm(O, p.r)} rush ${yds(g)} to the ${yl(O, end)}${tackleTxt(D, p.tk)}.`;
+    let txt = lat
+      ? `${nm(O, p.r)} rush ${yds(first)}, lateral to ${nm(O, lat.r)} for ${fy(gained2)} more`
+        + (td ? '' : ` to the ${yl(O, end)}${tackleTxt(D, p.tk)}.`)
+      : td ? `${nm(O, p.r)} ${fy(g)}-yard rush` : `${nm(O, p.r)} rush ${yds(g)} to the ${yl(O, end)}${tackleTxt(D, p.tk)}.`;
     if (p.fum){
       if (p.fum.lost) return txt + fumbleLost(O, p.r, end, p.fum);
       txt += fumbleKept(O, p.r, p.fum, end);
       if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), 'R');
     }
-    if (td){ bump(r, 'rtd'); return txt + '.' + progress(end, 'R', `${nm(O, p.r)} ${fy(g)}-yard run`, r); }
+    if (td){
+      const scorer = lat ? r2 : r;
+      bump(scorer, 'rtd');
+      return txt + '.' + progress(end, 'R', `${nm(O, lat ? lat.r : p.r)} ${fy(lat ? gained2 : g)}-yard run`, scorer);
+    }
     return txt + progress(end, 'R');
   }
 
@@ -397,6 +410,9 @@ function replay(g, upto = g.plays.length){
       case 'oob': { const s = FL - (kf + NFHS.oobFreeKick); newSeries(R, s); return txt + `, out of bounds. ${ab(R)} ball at the ${yl(R, s)}.`; }
       case 'onside': { const s = kf + d; bump(pl(K, p.ret), 'fr'); newSeries(K, s); tags.push(['to', 'Onside']);
         return txt + `, onside, recovered by ${p.ret ? nm(K, p.ret) : ab(K)} at the ${yl(K, s)}.`; }
+      case 'muff': { const s = kf + d; if (p.ret != null) bump(pl(K, p.ret), 'fr'); newSeries(K, s); tags.push(['to', 'Muff']);
+        return txt + ` to the ${at <= 0 ? `${ab(R)} end zone` : yl(R, at)}, MUFFED${p.by ? ` by ${nm(R, p.by)}` : ''}, `
+          + `recovered by ${p.ret != null ? nm(K, p.ret) : ab(K)} at the ${yl(K, s)}.`; }
       case 'fc': case 'down': {
         const s = at <= 0 ? RU.tb : at; newSeries(R, s);
         return txt + (at <= 0 ? ', downed in the end zone. Touchback.' : p.res === 'fc' ? `, fair catch by ${nm(R, p.ret)} at the ${yl(R, s)}.` : `, downed at the ${yl(R, s)}.`);
@@ -427,6 +443,14 @@ function replay(g, upto = g.plays.length){
     leg('kick', O, st.spot, p.res === 'tb' || at <= 0 ? Math.max(st.spot + d, FL + 5) : st.spot + d);
     let txt = `${nm(O, p.k)} punt ${plural(d, 'yard')}`;
     if (p.res === 'tb' || at <= 0){ bump(k, 'ptb'); t.pntTB++; newSeries(R, RU.tb); return txt + `, touchback. ${ab(R)} ball at the ${yl(R, RU.tb)}.`; }
+    if (p.res === 'muff'){
+      // The receiving team never had it: the kicking team keeps the ball where it fell on it.
+      if (p.ret != null) bump(pl(O, p.ret), 'fr');
+      tags.push(['to', 'Muff']);
+      newSeries(O, st.spot + d);
+      return txt + ` to the ${yl(R, at)}, MUFFED${p.by ? ` by ${nm(R, p.by)}` : ''}, recovered by `
+        + `${p.ret != null ? nm(O, p.ret) : ab(O)} at the ${yl(R, at)}.`;
+    }
     if (p.res === 'ret'){
       const r = kickReturn(R, 'pr', p, at);
       if (r.fin < 20) bump(k, 'pi20');
@@ -522,7 +546,11 @@ function replay(g, upto = g.plays.length){
       case 'ko': return kickoff(p);
       case 'fg': return fieldGoal(p);
       case 'try': return tryPlay(p);
-      case 'pen': return p.pen.enf === 'off' ? (tags.push(['flag', 'Flag']), `Offsetting penalties${p.pen.name ? ` (${p.pen.name})` : ''}. Replay the down.`) : penalize(p.pen, false);
+      case 'pen':
+        if (p.pen.enf === 'off'){ tags.push(['flag', 'Flag']); return `Offsetting penalties${p.pen.name ? ` (${p.pen.name})` : ''}. Replay the down.`; }
+        // Declined: it happened, it is on the log, and nothing moves — not the ball, not the totals.
+        if (p.pen.enf === 'dec'){ tags.push(['flag', 'Declined']); return `Penalty ${ab(p.pen.side)} ${p.pen.name}, declined.`; }
+        return penalize(p.pen, false);
       case 'to': st.to[p.side] = Math.max(0, st.to[p.side] - 1); tags.push(['info', 'Timeout']);
         return `Timeout ${T[p.side].name || ab(p.side)} (${st.to[p.side]} left).`;
       case 'note': tags.push(['info', 'Note']); return p.text || '';

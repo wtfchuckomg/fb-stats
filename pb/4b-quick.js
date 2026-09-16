@@ -81,6 +81,7 @@ function plainWords(line){
     .replace(/\b(?:for\s+)?(?:a\s+)?gain\s+of\s+(\d+)/g, ' $1 ')
     // a runner's verb, so "runs 12 yards for a touchdown" is never read as a pass
     .replace(/\b(?:runs?|ran|rushe[sd]|rush|carrie[sd]|carry|keeps|kept|scrambles|scrambled)\b/g, ' rn ')
+    .replace(/\bspike[sd]?\b/g, ' inc ')            // a spike is an incompletion, and counts as one
     .replace(/\bpunt(?:s|ed)\b/g, ' punt ')
     .replace(/\bfield goal\b/g, ' fg ')
     .replace(/\b(?:extra point|pat)\b/g, ' xp ')
@@ -161,7 +162,8 @@ function parseQuick(raw, st){
     if (!side) return bad(`Whose timeout? Type to ${L('A')} or to ${L('H')}.`);
     return ok({t:'to', side});
   }
-  if (has('eoq', 'end', 'endq', 'half', 'halftime', 'eoh')){
+  // "end" ends the quarter — but not when the line is about the end zone.
+  if (has('eoq', 'endq', 'half', 'halftime', 'eoh') || (has('end') && !has('zone', 'ez'))){
     const side = toks.map(T).find(Boolean);
     return ok({t:'endq', ...(side ? {kick:side, first:side} : {})});
   }
@@ -185,9 +187,10 @@ function parseQuick(raw, st){
     if (pt.some(t => ['1st', 'auto', 'af'].includes(t))) pen.a = true;
     if (pt.includes('lod')) pen.l = true;
     const offset = pt.some(t => ['offset', 'offsetting', 'offsets'].includes(t));
-    if (!toks.length) return ok({t:'pen', pen:{...pen, enf:offset ? 'off' : 'acc'}});
+    const declined = pt.some(t => ['dec', 'declined'].includes(t));
+    if (!toks.length) return ok({t:'pen', pen:{...pen, enf:offset ? 'off' : declined ? 'dec' : 'acc'}});
     pen.enf = offset ? 'off' : pt.some(t => ['np', 'noplay', 'nullified', 'replay'].includes(t)) ? 'prev'
-      : pt.some(t => ['dec', 'declined'].includes(t)) ? 'dec' : 'end';
+      : declined ? 'dec' : 'end';
   }
   let fumErr = null;                       // set when a fumble's "ball on" spot can't be right
   const flag = p => { if (fumErr) return bad(fumErr); if (pen) p.pen = pen; return ok(p); };
@@ -196,6 +199,19 @@ function parseQuick(raw, st){
   // everywhere else, so keep a copy of the line before they go.
   const rawToks = toks.slice();
   if (toks.some(isNum)) toks = toks.filter(t => !FILLER.includes(t) || T(t));
+
+  // "muffed by 44, recovered by 22": who dropped it, and who fell on it. Anything before the word is
+  // the kick itself, so the distance is never mistaken for a jersey number.
+  const muffOf = list => {
+    const i = list.findIndex(t => ['muff', 'muffed', 'muffs'].includes(t));
+    if (i < 0) return null;
+    const tail = list.slice(i + 1), ri = tail.findIndex(t => ['rec', 'recovered', 'recovers'].includes(t));
+    const nums = (ri >= 0 ? tail.slice(0, ri) : tail).filter(isNum);
+    const by = nums[0];
+    // "…muff-44-22" with no word between them: the second number is whoever fell on it.
+    const ret = ri >= 0 ? tail.slice(ri + 1).filter(isNum)[0] : nums[1];
+    return {i, by:by != null ? by : null, ret:ret != null ? ret : null, before:list.slice(0, i).filter(isNum)};
+  };
 
   /* ---- kickoffs ---- */
   const kickWord = toks.findIndex(t => ['ko', 'kickoff', 'kicks', 'kicked', 'onside'].includes(t) || (t === 'kick' && st.phase === 'kick'));
@@ -229,6 +245,8 @@ function parseQuick(raw, st){
       const k = left.indexOf(+t); if (k >= 0){ left.splice(k, 1); return false; }
       return true;
     });
+    const muff = muffOf(rest);
+    if (muff) after.length = 0, muff.before.forEach(n => after.push(n));   // only the kick's own numbers left
     const sp = spots[0] || null, endSp = spots[1] || null;   // where it was caught, and where the return ended
     const pos = x => x.side === Rk ? FL - x.n : x.n;         // a yard line as the kicking team sees it
     const p = {t:'ko', res:'spot'};
@@ -243,6 +261,7 @@ function parseQuick(raw, st){
     if (has('tb')) p.res = 'tb';
     else if (has('oob')) p.res = 'oob';
     else if (has('onside')){ p.res = 'onside'; if (retNo != null) p.ret = retNo; if (p.d == null) p.d = 10; }
+    else if (muff){ p.res = 'muff'; if (muff.by != null) p.by = muff.by; if (muff.ret != null) p.ret = muff.ret; }
     else if (has('fc')){ p.res = 'fc'; if (retNo != null) p.ret = retNo; }
     else if (retNo != null || endSp){
       p.res = 'ret';
@@ -308,7 +327,8 @@ function parseQuick(raw, st){
       else if (prev != null && isNum(prev) && kickNamed) retNo = prev;
       rest = rest.slice(0, retNo != null ? ri - 1 : ri);
     }
-    const after = rest.filter(isNum), sp = rest.map(spotOf).find(Boolean);   // "punt to I25" or a distance
+    const muffP = muffOf(rest);
+    const after = muffP ? muffP.before : rest.filter(isNum), sp = rest.map(spotOf).find(Boolean);   // "punt to I25" or a distance
     if (sp) p.d = Math.max(0, (FL - toR(sp)) - st.spot);
     else if (after[0] != null) p.d = Math.abs(+after[0]);
     else if (start && retYds != null){
@@ -321,7 +341,8 @@ function parseQuick(raw, st){
     else if (start && retYds == null && !retEnd) p.d = Math.max(0, (FL - toR(start)) - st.spot);   // no return
     const nx = sp ? after : after.slice(1);                  // the older "19-punt-40-11-6" form
     const landR = p.d != null ? FL - (st.spot + p.d) : null;  // where the receiving team fielded it
-    if (has('fc')){ p.res = 'fc'; const r = retNo ?? nx[0]; if (r != null) p.ret = r; }
+    if (muffP){ p.res = 'muff'; if (muffP.by != null) p.by = muffP.by; if (muffP.ret != null) p.ret = muffP.ret; }
+    else if (has('fc')){ p.res = 'fc'; const r = retNo ?? nx[0]; if (r != null) p.ret = r; }
     else if (has('oob')) p.res = 'oob';
     else if (has('down', 'downed')) p.res = 'down';
     else {
@@ -347,6 +368,21 @@ function parseQuick(raw, st){
       if (has('td')) p.ry = st.spot;
     }
     return flag(p);
+  }
+
+  /* ---- a safety said as one: "3 tackled in the end zone", "7 sacked for a safety" ---- */
+  if (has('safety', 'saf') && st.phase === 'play'){
+    const nums = toks.filter(isNum);
+    if (has('sack', 'sacked', 'sk')) return flag({t:'pass', qb:nums[0], res:'s', sy:st.spot, ...(nums[1] != null ? {by:nums[1]} : {})});
+    return flag({t:'run', r:nums[0], y:-st.spot});
+  }
+
+  /* ---- a lateral: "8-5 lateral 11-35" is #8 for 5, then #11 for 35 more ---- */
+  const li = toks.findIndex(t => ['lateral', 'laterals', 'lateraled', 'lat', 'pitch', 'pitches', 'pitched'].includes(t));
+  if (li >= 0 && st.phase === 'play'){
+    const a = toks.slice(0, li).filter(isNum), b = toks.slice(li + 1).filter(isNum);
+    if (a.length < 2 || !b.length) return bad('A lateral takes both: 8-5 lateral 11-35 is #8 for 5, then #11 for 35 more.');
+    return flag({t:'run', r:a[0], y:+a[1], lat:{r:b[0], y:+(b[1] || 0)}});
   }
 
   /* ---- runs and passes ---- */
@@ -450,6 +486,9 @@ function cheatHtml(a, h){
     ['3--1 &nbsp;or&nbsp; 3-(-1)', '#3 runs for a loss of 1'],
     ['kneel &nbsp;·&nbsp; kneel-2', 'Kneel-down, charged to TEAM, not the quarterback: a 1-yard loss unless you give the yards'],
     ['team--20', 'A team play, like a snap over the punter’s head: TEAM rush for a loss of 20. It counts in team rushing, not against any player.'],
+    ['8-5 lateral 11-35', 'A lateral: #8 for 5, then #11 for 35 more. Each keeps the yards he made; the carry is #8’s.'],
+    ['3 tackled in the end zone for a safety', 'A safety in words. So is 7 sacked in the end zone for a safety.'],
+    ['19-punt-40-muff-44 &nbsp;·&nbsp; 15-ko-55-muff-28', 'Muffed by the receiving team and recovered by the kicking team, which keeps the ball.'],
     ['3-td', '#3 runs it in from wherever the ball is'],
     ['7-88-5', '#7 completes to #88 for 5'],
     ['15-0-50-td', '#15 to #0, 50-yard touchdown'],

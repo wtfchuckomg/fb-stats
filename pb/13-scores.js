@@ -34,8 +34,10 @@ const gameWeek = x => weekKey(gameDay(x).getTime());
 /* ---------- quick scores: a game's score and nothing else ---------- */
 // Kept apart from the games (db.scores), synced as their own documents (kind 'score'), always public.
 const qsLib = () => db.scores || (db.scores = {});
-const QS_PER = [['pre', 'Pre'], ['1', '1st'], ['2', '2nd'], ['half', 'Half'], ['3', '3rd'], ['4', '4th'], ['ot', 'OT'], ['final', 'Final']];
-const QS_STATUS = {pre:'Pregame', half:'Halftime', ot:'OT', final:'Final'};
+const QS_PER = [['pre', 'Pre'], ['1', '1st'], ['2', '2nd'], ['half', 'Half'], ['3', '3rd'], ['4', '4th'], ['ot', 'OT'], ['final', 'Final'], ['ff', 'Forfeit']];
+const QS_STATUS = {pre:'Pregame', half:'Halftime', ot:'OT', final:'Final', ff:'Forfeit'};
+// A forfeit is a 2-0 win, the way KSHSAA records it.
+const FORFEIT = 2;
 const dayShort = d => `${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]} ${d.getMonth() + 1}/${d.getDate()}`;
 const inQuarter = per => /^[1-4]$/.test(String(per));
 // A short name for a school with none saved: initials for two or more words, else the first letters.
@@ -92,6 +94,7 @@ function dlgScore(id){
     ${side('A', 'Visitors')}${side('H', 'Home')}
     <div class="fld"><span class="eyebrow">Status</span><div class="seg" id="qs-per">${QS_PER.map(([v, l]) => `<button type="button" data-qs-per="${v}" aria-pressed="${per === v}">${l}</button>`).join('')}</div></div>
     <div class="fld"${inQuarter(per) ? '' : ' hidden'}><label class="eyebrow" for="qs-clk">Time left, optional</label><input class="inp" id="qs-clk" inputmode="numeric" placeholder="4:12" value="${esc(x && x.clk || '')}"></div>
+    <p class="hint" id="qs-ff"${per === 'ff' ? '' : ' hidden'}>A forfeit goes down as ${FORFEIT}-0. Put the ${FORFEIT} beside the team that was awarded the win.</p>
     <div class="fld"><label class="eyebrow" for="qs-date">Game date</label><input class="inp" type="date" id="qs-date" value="${date}"></div>
     <p class="hint">${note}</p>
     </div>
@@ -109,8 +112,13 @@ function saveScore(id){
   const pts = s => { const el = $(`#qs-${s}-pts`); return clamp(parseInt(el.value || el.dataset.was || '0', 10) || 0, 0, 199); };
   const perBtn = $('#qs-per [aria-pressed="true"]'), per = perBtn ? perBtn.dataset.qsPer : '1', c = parseClock($('#qs-clk').value);
   const dv = $('#qs-date').value, date = /^\d{4}-\d\d-\d\d$/.test(dv) ? dv : ymd(new Date());
+  let a = pts('A'), h = pts('H');
+  if (per === 'ff'){
+    if (a === h) return toast(`Which team won it? Put ${FORFEIT} beside them and 0 beside the other`);
+    [a, h] = a > h ? [FORFEIT, 0] : [0, FORFEIT];
+  }
   const x = Object.assign(old || {id:'s' + Date.now().toString(36), kind:'score', created:Date.now()}, {
-    teams:{A:team('A', A, old && old.teams.A), H:team('H', H, old && old.teams.H)}, A:pts('A'), H:pts('H'),
+    teams:{A:team('A', A, old && old.teams.A), H:team('H', H, old && old.teams.H)}, A:a, H:h,
     per, clk:inQuarter(per) && c != null ? mmss(c) : '', date, updated:Date.now()});
   lib[x.id] = x; persist(); pushScore(x); closeDialog();
   // Show the week it went into, in case that isn't the week on screen.
@@ -238,8 +246,8 @@ const recValue = (pre, s, k) => { const el = $(`#${pre}-${s}-${k}`); return el ?
 function summary(x){
   if (x.kind === 'score'){
     // Before kickoff a scheduled game shows its day ("Fri 9/18") and no score.
-    const fin = x.per === 'final', pre = x.per === 'pre';
-    return {quick:true, fin, pre, live:!pre && !fin, q:{pre:0, half:2, ot:5, final:4}[x.per] ?? +x.per,
+    const fin = x.per === 'final' || x.per === 'ff', pre = x.per === 'pre';
+    return {quick:true, fin, pre, ff:x.per === 'ff', live:!pre && !fin, q:{pre:0, half:2, ot:5, final:4, ff:4}[x.per] ?? +x.per,
       status:pre ? x.time || dayShort(gameDay(x)) : QS_STATUS[x.per] || `${x.clk ? x.clk + ' - ' : ''}${ord(+x.per)}`,
       score:{A:+x.A || 0, H:+x.H || 0}, poss:null, lines:null, S:null, men:0};
   }
@@ -437,7 +445,14 @@ document.addEventListener('click', e => {
     const per = t.closest('[data-qs-per]');
     if (per){
       per.parentNode.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === per)));
-      $('#qs-clk').closest('.fld').hidden = !inQuarter(per.dataset.qsPer); return;
+      const v = per.dataset.qsPer;
+      $('#qs-clk').closest('.fld').hidden = !inQuarter(v);
+      const ffNote = $('#qs-ff'); if (ffNote) ffNote.hidden = v !== 'ff';
+      if (v === 'ff'){
+        const a = $('#qs-A-pts'), h = $('#qs-H-pts');
+        if (!(+a.value) && !(+h.value)){ a.value = String(FORFEIT); h.value = '0'; }
+      }
+      return;
     }
     const sv = t.closest('[data-qs-save]');
     if (sv) return saveScore(sv.dataset.qsSave);

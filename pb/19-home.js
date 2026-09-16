@@ -60,6 +60,8 @@ const HOME_CODES = [
   ['15-xp · 15-fg', 'Extra point / field goal good (add -no if it missed)'],
   ['19-punt-40-11-6', '#19 punts 40 yards, #11 returns it 6'],
   ['19-punt ball at E35', 'A punt with no return: the distance works itself out from where El Dorado starts'],
+  ['8-5 lateral 11-35', '#8 runs 5, laterals to #11 who goes 35 more'],
+  ['19-punt-40-muff-44', 'The punt is muffed by #44 and your team falls on it'],
   ['ko-A25', 'Kickoff; Augusta’s drive starts at its 25'],
   ['pen E 15 pf', '15-yard personal foul on El Dorado'],
   ['pen E 15 pf 1st', 'The same, with an automatic first down (1st, auto or af)'],
@@ -127,7 +129,9 @@ function renderHome(){
               ['8 for 9 yards tackled by 55', 'Shortest of all: a number, the yards, the tackler'],
               ['19 punts, 11 returns 5, ball at E35', '#19 punts, #11 returns it 5 — you never work out how far the punt went'],
               ['1 caught the kickoff at the 8 and ran it to the 20', 'Same for kickoffs: the yard lines are the receiving team’s, and the kick’s distance fills itself in'],
-              ['pen aug 15 personal foul', 'A penalty in words; add 1st for an automatic first down']
+              ['3 tackled in the end zone for a safety', 'A safety said plainly (7 sacked in the end zone works too)'],
+              ['pen aug 15 personal foul', 'A penalty in words; add 1st for an automatic first down'],
+              ['pen aug 5 false start declined', 'Declined: it goes on the log and nothing moves. Offsetting replays the down']
             ].map(([c, m]) => `<tr><td><code>${esc(c)}</code></td><td>${esc(m)}</td></tr>`).join('')}</tbody></table>
             <p class="h-note">Put the clock anywhere on the line (<code>3:55</code>) and the tackler after the play. A few things stay short because there’s no sentence for them: the extra point is <code>15 xp</code> or <code>15 kick good</code>, and a drive starts with <code>A ball at A35</code>.</p></div>
           <div class="h-mode"><span class="h-tag gray">After the game</span><h3>Paste a box score</h3>
