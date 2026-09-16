@@ -270,7 +270,8 @@ function parseQuick(raw, st){
       const prev = rest[ri - 1], ps = prev != null ? spotOf(prev) : null, ahead = rest.slice(ri + 1);
       const n = ahead.find(isNum), s = ahead.map(spotOf).find(Boolean);
       if (s) retEnd = s; else if (n != null) retYds = Math.abs(+n);
-      const kickNamed = rest.slice(0, Math.max(0, ri - 1)).some(t => isNum(t) || spotOf(t));
+      // Where the drive starts is given, so the distance comes from that: a number before "return" is a player.
+      const kickNamed = start || rest.slice(0, Math.max(0, ri - 1)).some(t => isNum(t) || spotOf(t));
       if (ps && ps.side === D) retNo = String(ps.n);
       else if (prev != null && isNum(prev) && kickNamed) retNo = prev;
       rest = rest.slice(0, retNo != null ? ri - 1 : ri);
@@ -278,6 +279,13 @@ function parseQuick(raw, st){
     const after = rest.filter(isNum), sp = rest.map(spotOf).find(Boolean);   // "punt to I25" or a distance
     if (sp) p.d = Math.max(0, (FL - toR(sp)) - st.spot);
     else if (after[0] != null) p.d = Math.abs(+after[0]);
+    else if (start && retYds != null){
+      // "5 punt 15 return 5 ball at SOU35": the ball was fielded retYds short of where the drive starts,
+      // and the punt is however far that is from the line of scrimmage.
+      const land = toR(start) - retYds, d = FL - land - st.spot;
+      if (land < 0 || d < 0) return bad(`Those don’t add up: a ${retYds}-yard return ending at ${L(start.side)} ${start.n}.`);
+      p.d = d;
+    }
     else if (start && retYds == null && !retEnd) p.d = Math.max(0, (FL - toR(start)) - st.spot);   // no return
     const nx = sp ? after : after.slice(1);                  // the older "19-punt-40-11-6" form
     const landR = p.d != null ? FL - (st.spot + p.d) : null;  // where the receiving team fielded it
@@ -423,6 +431,7 @@ function cheatHtml(a, h){
     [`${a} punt ${h} ball at ${h}25`, `Punt with no return: ${h}'s drive starts at its 25. Or just ${a} punt, then ${h} ball at ${h}25 on the next line.`],
     [`${a} punt to ${h}25-${h}2 return-10`, `Fielded at the ${h} 25, #2 returns it 10. Leave off the yards and type the drive start next (${h} ball at ${h}35); the return fills in.`],
     ['19-punt-40-11-6', '#19 punts 40, #11 returns it 6. Also punt-tb, punt-fc, punt-oob, punt-blk.'],
+    [`19 punt 11 return 5 ball at ${h}35`, `Give the return and where the drive starts and the punt's distance is worked out: #19 punts, #11 returns 5, ${h} ball at its 35.`],
     ['15-fg &nbsp;·&nbsp; 15-fg-no', 'Field goal good / no good (distance fills in)'],
     ['15-xp &nbsp;·&nbsp; 15-xp-no', 'Kick after a touchdown. For 2 points: 3 (run) or 7-88 (pass), add -no if it failed'],
     [`ko-${a}25 &nbsp;·&nbsp; ko-${a}25-3:25`, `Kickoff; the drive starts at the ${a} 25 (with 3:25 left). No need to say who kicked. After a touchdown, enter the extra point first.`],

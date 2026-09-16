@@ -59,6 +59,7 @@ const HOME_CODES = [
   ['7-int-24-E10', 'Intercepted by #24 at the El Dorado 10'],
   ['15-xp · 15-fg', 'Extra point / field goal good (add -no if it missed)'],
   ['19-punt-40-11-6', '#19 punts 40 yards, #11 returns it 6'],
+  ['19 punt 11 return 5 ball at E35', 'Or say where the ball ended up: the punt’s distance works itself out'],
   ['ko-A25', 'Kickoff; Augusta’s drive starts at its 25'],
   ['pen E 15 pf', '15-yard personal foul on El Dorado'],
   ['pen E 15 pf 1st', 'The same, with an automatic first down (1st, auto or af)'],
