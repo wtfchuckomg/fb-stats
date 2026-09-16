@@ -5227,7 +5227,9 @@ function parseBox(txt){
       // Often written with no team and no distance at all — "Missed field goals: McFadden".
       for (const [s0, part] of (teamed.length ? teamed : [[null, sc.body]])){
         part.split(/;\s*|,\s*(?=[A-Za-z])|\.\s+/).map(x => x.trim().replace(/\.$/, '')).filter(Boolean).forEach(item => {
-          const m = item.match(/^([A-Za-z][A-Za-z.'’ -]*?)(?:\s+(\d[\s\S]*))?$/);
+          // "McFadden 39", "McFadden, 36", "McFadden – 36 (blocked)": a name, then however it is separated
+          // from the distances, if there are any.
+          const m = item.match(/^([A-Za-z][A-Za-z.'’ -]*?)\s*[,;:–—-]?\s*(\d[\s\S]*)?$/);
           if (!m || !m[1].trim()) return;
           const who = m[1].trim(), s = s0 || whoseName(who);
           if (!s){ out.warn.push(`Couldn’t tell which team ${who} kicks for, so that missed kick was left out. Put the team in front of it.`); return; }
