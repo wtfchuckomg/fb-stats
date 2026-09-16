@@ -65,7 +65,7 @@ function standingsRows(div){
 function standingsHtml(){
   document.title = 'AVCTL Standings · Kansas Media Stats';
   const waiting = !allGames.list;
-  // Division first, then the whole season — the way a league table reads.
+  // The league first, then the whole season — the way a league table reads.
   const card = div => {
     const rows = standingsRows(div).map(o => {
       const {r} = o, rec = o.rec || {};
@@ -79,13 +79,13 @@ function standingsHtml(){
     }).join('');
     return `<section class="bcard ccard"><div class="ccard-hd"><h2>Division ${div}</h2></div>
       <div class="tbl-wrap"><table class="ctbl av-st"><thead>
-        <tr class="cgrp"><th class="rk"></th><th class="nm"></th><th colspan="3">Division</th><th colspan="5">Overall</th></tr>
+        <tr class="cgrp"><th class="rk"></th><th class="nm"></th><th colspan="3">League</th><th colspan="5">Overall</th></tr>
         <tr><th class="rk"></th><th class="nm"></th><th class="num gsep">W-L</th><th class="num">PF</th><th class="num">PA</th>
           <th class="num gsep">W-L</th><th class="num">PF</th><th class="num">PA</th><th class="num">Home</th><th class="num">Away</th></tr></thead>
       <tbody>${rows}</tbody></table></div></section>`;
   };
   const head = `<section class="bcard bhead"><div class="bhead-top"><h1 class="c-title">AVCTL Standings</h1></div>
-    <p class="hint">Division records count the league games kept on this site. Overall is each team’s record as the site has it.</p></section>`;
+    <p class="hint">League records count each team’s games against its own division, as they’re kept here. Overall is each team’s record as the site has it.</p></section>`;
   if (stand.err) return head + `<section class="bcard"><p class="bempty">${esc(stand.err)}</p></section>`;
   if (waiting) return head + '<section class="bcard"><p class="bempty">Loading the league…</p></section>';
   return head + AV_NAMES.map(card).join('');
