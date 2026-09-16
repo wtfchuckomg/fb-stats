@@ -677,6 +677,13 @@ table.dc tr.dc-half td{position:static;background:var(--surface);color:var(--mut
 table.dc td.dc-res{text-transform:uppercase;font:600 12px/1 var(--sans);letter-spacing:.03em;color:var(--ink-2)}
 .dc-note{margin:10px 0 0;font-size:12.5px}
 
+/* ---------- line score editor (the Line score window) ---------- */
+.ls-row{display:grid;grid-template-columns:minmax(110px,1fr) repeat(5,58px);gap:8px;align-items:end;margin-bottom:12px}
+.ls-team{display:flex;align-items:center;gap:6px;font:600 14px/1.2 var(--sans);color:var(--ink-2)}
+.ls-team span{font:400 12px/1.2 var(--sans);color:var(--muted)}
+.ls-row .inp{text-align:center;padding-left:6px;padding-right:6px}
+@media (max-width:560px){.ls-row{grid-template-columns:repeat(5,1fr)}.ls-team{grid-column:1/-1;margin-bottom:2px}}
+
 /* ---------- win probability (27-winprob.js) ---------- */
 .wp-team{display:flex;align-items:center;gap:10px;padding:6px 2px}
 .wp-ab{font:600 15px/1 var(--sans);color:var(--muted)}
@@ -966,6 +973,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
         <button class="abtn" data-open="games">Games</button>
         <button class="abtn" data-open="others" id="othersbtn" hidden>Others</button>
         <button class="abtn" data-open="setup">Setup</button>
+        <button class="abtn" data-open="lines">Line score</button>
         <button class="abtn" data-open="export">Export</button>
       </div>
     </div>
@@ -1040,12 +1048,29 @@ function rulesOf(game){
   return {men, len:f.len, kickFrom:num(s.kickFrom, f.kickFrom), tb:num(s.tb, f.tb), safety:num(s.safety, f.safety), ot:num(s.ot, f.ot)};
 }
 
+// A line score the scorer typed in (the Line score window) in place of what the plays added up to: each quarter's
+// points, or null for a quarter that was never played — an 8-man game stopped by the 45-point rule, say — which
+// shows an X. The total follows the numbers typed.
+function applyLines(L, st){
+  const num = v => v == null || v === '' ? null : (+v || 0);
+  let last = 0;
+  ['A', 'H'].forEach(s => {
+    const row = (L[s] || []).slice(0, 5).map(num);
+    while (row.length < 5) row.push(null);
+    st.lines[s] = row;
+    st.score[s] = row.reduce((a, v) => a + (v || 0), 0);
+    row.forEach((v, i) => { if (v != null && i + 1 > last) last = i + 1; });
+  });
+  st.qPlayed = last;
+  st.typed = true;   // show these numbers as typed, even in a quarter the clock hasn't reached
+}
+
 function replay(g, upto = g.plays.length){
   const RU = rulesOf(g), FL = RU.len, HALF = FL / 2;
   const T = g.teams, qSec = (g.set.qtr || 12) * 60, otSpot = FL - RU.ot;
   let st = {q:1, phase:'kick', kickKind:'kickoff', poss:g.set.firstKick || 'H', kickFrom:RU.kickFrom,
     spot:0, down:1, ltg:10, score:{A:0,H:0}, lines:{A:[0,0,0,0,0],H:[0,0,0,0,0]}, to:{A:3,H:3},
-    ot:null, final:false, drive:null, fresh:false, qPlayed:0};
+    ot:null, final:false, drive:null, fresh:false, qPlayed:0, typed:false};
   let S = {team:{A:zeros(TEAM_KEYS), H:zeros(TEAM_KEYS)}, pl:{A:{}, H:{}}};
   let scoring = [], drives = [], clk = null, tags = [], trace = [], curI = 0;   // curI: the play being replayed
   const log = [];
@@ -1556,6 +1581,7 @@ function replay(g, upto = g.plays.length){
     log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, trace, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q, A:st.score.A, H:st.score.H});
   }
   if (g.box) boxInto(g, st, S, scoring);   // entered from a pasted box score: no plays, just its totals
+  if (g.lines && upto >= g.plays.length) applyLines(g.lines, st);   // a typed line score wins over the plays
   const open = st.drive ? [{...st.drive, res:'In progress', open:true}] : [];
   return {st, S, log, scoring, drives:drives.concat(open), sit:sit(), yl, nm, ab, FL, RU, box:!!g.box};
 }
@@ -1621,8 +1647,9 @@ function renderBoard(){
 // A finished game's line score under Final, as ESPN has it, with every overtime period together in one OT column.
 function stripLines(){
   const st = R.st, L = st.lines; if (!L) return '';
-  const cols = Array.from({length:st.q > 4 ? 5 : 4}, (_, i) => i);
-  const pts = (s, i) => i < 4 ? (i >= (st.qPlayed || 0) ? 'X' : L[s][i] || 0) : L[s].slice(4).reduce((a, b) => a + (b || 0), 0);
+  // An OT column when overtime was played, or when a typed line score carries one.
+  const cols = Array.from({length:st.q > 4 || L.A[4] || L.H[4] ? 5 : 4}, (_, i) => i);
+  const pts = (s, i) => i < 4 ? (L[s][i] == null || i >= (st.qPlayed || 0) ? 'X' : L[s][i]) : L[s].slice(4).reduce((a, b) => a + (b || 0), 0);
   const row = s => `<tr><td>${esc(g.teams[s].abbr || g.teams[s].name)}</td>${cols.map(i => `<td>${pts(s, i)}</td>`).join('')}<td>${st.score[s]}</td></tr>`;
   return `<table class="st-ls"><thead><tr><th></th>${cols.map(i => `<th>${i < 4 ? i + 1 : 'OT'}</th>`).join('')}<th>T</th></tr></thead><tbody>${row('A')}${row('H')}</tbody></table>`;
 }
@@ -2571,7 +2598,7 @@ function teamRows(){
 function summaryText(){
   const st = R.st, T = g.teams, lp = (s, n) => String(s).padStart(n), rp = (s, n) => String(s).padEnd(n);
   let out = `${T.A.name} at ${T.H.name}${rulesOf(g).men === 8 ? ' (8-man)' : ''}\n${st.final ? 'FINAL' : perLabel(st.q) + (st.q <= 4 ? ' ' + mmss(clockNow()) : '')}\n\n`;
-  const cols = [0, 1, 2, 3].concat(st.q > 4 ? [4] : []);
+  const cols = [0, 1, 2, 3].concat(st.q > 4 || st.lines.A[4] || st.lines.H[4] ? [4] : []);
   out += rp('', 8) + cols.map(i => lp(i < 4 ? i + 1 : 'OT', 4)).join('') + lp('T', 5) + '\n';
   ['A', 'H'].forEach(s => out += rp(T[s].abbr, 8) + cols.map(i => lp(qCell(st, s, i), 4)).join('') + lp(st.score[s], 5) + '\n');
   out += '\nSCORING\n' + (R.scoring.map(e => `${perLabel(e.q)} ${e.clk != null ? mmss(e.clk) : ''}  ${ab(e.side)} – ${e.desc}  (${T.A.abbr} ${e.A}, ${T.H.abbr} ${e.H})`).join('\n') || 'None') + '\n';
@@ -2602,7 +2629,7 @@ const framed = (() => { try { return window.self !== window.top; } catch (e) { r
 const dlgHead = t => `<div class="dlg-hd"><h2>${t}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>`;
 function openDialog(kind){
   ui.dlg = kind; ui.confirm = null;
-  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : kind === 'others' ? dlgOthers() : dlgSetup(kind === 'new');
+  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : kind === 'others' ? dlgOthers() : kind === 'lines' ? dlgLines() : dlgSetup(kind === 'new');
   if (!dlg().hasAttribute('open')) showDialog();
 }
 // Phones without the pop-up window feature (iPhones before iOS 15.4, among others) get the same box, opened plainly.
@@ -2676,6 +2703,29 @@ function saveSetup(isNew){
   else { if (!g.plays.length && set.qtr !== g.set.qtr) g.clk = {s:set.qtr * 60, run:false, at:0}; Object.assign(g, {teams, set, date}); }
   save(); closeDialog(); refresh(); toast(isNew ? 'Game started' : 'Setup saved');
 }
+
+// The quarter-by-quarter summary, typed by hand: for a game the play-by-play doesn't tell the whole story of —
+// one stopped by the 45-point rule, or picked up partway through.
+function dlgLines(){
+  const st = R.st, T = g.teams, cell = (s, i) => { const v = st.lines[s][i]; return v == null ? '' : v; };
+  const row = (s, label) => `<div class="ls-row"><div class="ls-team">${teamMark(s, 22)}<b>${esc(T[s].abbr || T[s].name)}</b><span>${esc(label)}</span></div>
+    ${[0, 1, 2, 3, 4].map(i => `<div class="fld"><label class="eyebrow" for="ls-${s}-${i}">${i < 4 ? i + 1 : 'OT'}</label>
+      <input class="inp" id="ls-${s}-${i}" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" value="${cell(s, i)}" placeholder="—"></div>`).join('')}</div>`;
+  return `${dlgHead('Line score')}<div class="dlg-bd">
+    <p class="hint">What you type here becomes the line score and the final score, in place of what the plays add up to.
+      <b>Leave a quarter blank if it was never played</b> — an 8-man game stopped by the 45-point rule, say — and it shows an X.</p>
+    <div class="ls-edit">${row('A', 'Visitors')}${row('H', 'Home')}</div></div>
+    <div class="dlg-ft">${g.lines ? '<button type="button" class="btn danger" data-lines-clear style="margin-right:auto">Use the plays instead</button>' : ''}
+      <button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" data-lines-save>Save</button></div>`;
+}
+function saveLines(){
+  const read = (s, i) => { const el = $(`#ls-${s}-${i}`), v = el ? el.value.trim() : ''; return v === '' ? null : clamp(parseInt(v, 10) || 0, 0, 199); };
+  const L = {A:[0, 1, 2, 3, 4].map(i => read('A', i)), H:[0, 1, 2, 3, 4].map(i => read('H', i))};
+  if (![...L.A, ...L.H].some(v => v != null)) return toast('Type at least one quarter, or cancel');
+  g.lines = L; save(); closeDialog(); refresh();
+  toast(`Line score saved · ${ab('A')} ${R.st.score.A}, ${ab('H')} ${R.st.score.H}`);
+}
+function clearLines(){ delete g.lines; save(); closeDialog(); refresh(); toast('Back to the play-by-play'); }
 
 function dlgGames(){
   const list = Object.values(db.games).sort((a, b) => (b.updated || 0) - (a.updated || 0));
@@ -2866,6 +2916,8 @@ document.addEventListener('click', e => {
   if (d.side){ ui.side = d.side; return renderView(); }
   if (d.kick){ t.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === t))); return; }
   if (d.saveSetup) return saveSetup(d.saveSetup === '1');
+  if ('linesSave' in d) return saveLines();
+  if ('linesClear' in d) return clearLines();
   if (d.openGame){ g = db.games[d.openGame]; resetUi(); setCurrent(); closeDialog(); return refresh(); }
   if ('sync' in d) return sync.state === 'signed-out' ? signIn() : openDialog('games');
   if ('signin' in d) return signIn();
@@ -3032,8 +3084,11 @@ function cardDrive(){
 // One quarter's cell in a line score: blank while the game hasn't reached it, and an X in a finished game for a
 // quarter that was never played (8-man ends at 45 points from the half on; weather and forfeits do the same).
 function qCell(st, s, i){
+  const v = st.lines[s][i];
+  if (v == null) return 'X';                                        // the scorer left this quarter blank
+  if (st.typed) return v;                                           // typed by hand: show it, reached or not
   if (i < 4 && st.final && i >= (st.qPlayed || 0)) return 'X';
-  return i === 4 || st.q > i || st.final ? st.lines[s][i] : '';
+  return i === 4 || st.q > i || st.final ? v : '';
 }
 function cardLinescore(){
   const st = R.st, T = g.teams, cols = [0, 1, 2, 3].concat(st.q > 4 || st.lines.A[4] || st.lines.H[4] ? [4] : []);
@@ -4055,7 +4110,7 @@ function summary(x){
     else status = `${c ? mmss(c.run ? c.s - (Date.now() - c.at) / 1000 : c.s) + ' - ' : ''}${ord(st.q)}`;
   }
   return {quick:false, fin:st.final, pre:!x.plays.length && !x.box, live, q:st.q, status, score:st.score, poss:live && st.phase !== 'kick' ? st.poss : null,
-    lines:st.lines, qPlayed:st.qPlayed, S:r.S, men:rulesOf(x).men};
+    lines:st.lines, qPlayed:st.qPlayed, typed:st.typed, S:r.S, men:rulesOf(x).men};
 }
 const leadOf = m => m.score.A === m.score.H ? null : m.score.A > m.score.H ? 'A' : 'H';
 function scoreCard(x){
@@ -4336,7 +4391,7 @@ function boardGame(x){
     const rec = recordText(T[s], s, !m.fin), sub = rec ? `(${rec})` : [T[s].mascot, s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
     return `<div class="bt${cls}"><div class="bt-team">${markFor(T[s], 29)}<div class="bt-id">
         <div class="bt-name"><span><a class="tlink" href="?team=${encodeURIComponent(T[s].name)}">${esc(T[s].name)}</a></span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub${rec ? ' rec' : ''}">${esc(sub)}</div></div></div>
-      <div class="bt-q">${cells(i => i < 4 && m.fin && i >= (m.qPlayed || 0) ? 'X' : i < played ? m.lines[s][i] : '')}</div><div class="bt-t">${m.pre ? '' : m.score[s]}</div><i class="sc-win"></i></div>`;
+      <div class="bt-q">${cells(i => m.lines[s][i] == null ? 'X' : m.typed ? m.lines[s][i] : (i < 4 && m.fin && i >= (m.qPlayed || 0)) ? 'X' : i < played ? m.lines[s][i] : '')}</div><div class="bt-t">${m.pre ? '' : m.score[s]}</div><i class="sc-win"></i></div>`;
   };
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
   // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
