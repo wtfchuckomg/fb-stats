@@ -5038,6 +5038,17 @@ function canonSchool(n){
 }
 const sameSchool = (a, b) => { const x = logoSlug(a), y = logoSlug(b); return !!x && !!y && (x === y || x.startsWith(y) || y.startsWith(x) || canonSchool(a) === canonSchool(b)); };
 
+// The clock on a scoring line. Papers put it at the end, usually after a semicolon —
+// "Will Quinn 79 run (Vega kick); 3:45" — and sometimes at the front instead.
+function pullTime(d){
+  const s = String(d).trim();
+  let m = s.match(/[;,–—-]?\s*\(?(\d{1,2}:\d{2})\)?\s*(?:left|remaining|to go)?\s*[.]?\s*$/);
+  if (m) return {desc:s.slice(0, m.index).replace(/[;,\s–—-]+$/, '').trim(), time:m[1]};
+  m = s.match(/^\(?(\d{1,2}:\d{2})\)?\s*[;,—–-]?\s*/);
+  if (m) return {desc:s.slice(m[0].length).trim(), time:m[1]};
+  return {desc:s, time:null};
+}
+
 // Points and kind for one scoring-summary line, e.g. "Will Quinn 79 run (Pete Vega kick)".
 function scoreLine(d){
   const main = d.split('(')[0];
@@ -5100,7 +5111,11 @@ function parseBox(txt){
     if (qh){ curQ = qh[2] ? 5 : QN[qh[1].toLowerCase()]; sec = null; continue; }
     const sc = out.names.length === 2 && l.match(/^([A-Za-z][A-Za-z.'& ]{0,24}?)\s*[—–:-]\s+(.+)$/);
     const side = sc && sideOf(sc[1]);
-    if (side){ out.scoring.push({side, label:sc[1].trim(), desc:sc[2].trim(), q:curQ, ...scoreLine(sc[2])}); sec = null; continue; }
+    if (side){
+      const t = pullTime(sc[2]);
+      out.scoring.push({side, label:sc[1].trim(), desc:t.desc, time:t.time, q:curQ, ...scoreLine(t.desc)});
+      sec = null; continue;
+    }
     if (sec) sec.body += ' ' + l;
   }
   if (out.names.length < 2){
@@ -5294,7 +5309,12 @@ function boxInto(game, st, S, scoring){
   const played = ['A', 'H'].reduce((n, s) => st.lines[s].reduce((m, v, i) => v != null && i + 1 > m ? i + 1 : m, n), 0);
   Object.assign(st, {final:true, phase:'final', q:played > 4 ? 5 : 4, qPlayed:Math.min(played, 5), typed:true, drive:null});
   const run = {A:0, H:0};
-  (b.scoring || []).forEach(e => { run[e.side] += e.pts || 0; scoring.push({q:e.q || 4, clk:null, side:e.side, how:e.how, desc:e.desc, A:run.A, H:run.H, i:-1}); });
+  (b.scoring || []).forEach(e => {
+    run[e.side] += e.pts || 0;
+    // The time the paste gave for that score, so a box-score game reads like a tracked one.
+    const c = e.time ? parseClock(e.time) : null;
+    scoring.push({q:e.q || 4, clk:c == null ? null : c, side:e.side, how:e.how, desc:e.desc, A:run.A, H:run.H, i:-1});
+  });
 }
 
 /* ---------- the paste-a-box-score window ---------- */
