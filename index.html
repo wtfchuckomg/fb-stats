@@ -867,6 +867,13 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .navbar,.scores,.gtabs,.bcard,.hcard,.card,.navmenu{border:1px solid transparent;
   background:var(--glass-tint) padding-box,var(--glass-rim) border-box;
   -webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+/* Phones: the bars keep the glass, the cards don't. A card is tall and scrolls, so its blurred backdrop is
+   redrawn the whole way down the page — several screens' worth on a game — which is what makes scrolling choppy.
+   Behind a card is only the soft fixed wallpaper, so the tint, rim and shadow carry the look without it. */
+@media (max-width:800px){
+  .bcard,.hcard,.card{-webkit-backdrop-filter:none;backdrop-filter:none;
+    background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.78) 38%,rgba(255,255,255,.84)) padding-box,var(--glass-rim) border-box}
+}
 
 /* ---------- apple.com's dark frosted global bar ---------- */
 .sitebar{background:rgba(22,22,23,.72);-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8)}
