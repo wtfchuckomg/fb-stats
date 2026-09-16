@@ -64,7 +64,7 @@ function watchTeamRecs(api){
     teamRecs.map = map; recCache.clear(); recordsChanged();
   }, () => { teamRecs.unsub = null; });
 }
-function recordsChanged(){ renderScores(); renderScoreboard(); renderTeamPage(); if (g && R && !ui.board) renderBoard(); }
+function recordsChanged(){ renderScores(); renderScoreboard(); renderTeamPage(); renderStandings(); if (g && R && !ui.board) renderBoard(); }
 
 // "3-1" or "3-1-1" as numbers, or null when it's something else (left as typed).
 const parseRec = s => { const m = String(s || '').trim().match(/^(\d+)\s*-\s*(\d+)(?:\s*-\s*(\d+))?$/); return m ? [+m[1], +m[2], +(m[3] || 0)] : null; };

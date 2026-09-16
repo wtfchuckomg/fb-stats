@@ -23,6 +23,7 @@ function sampleGame(){
 
 /* ---------- boot ---------- */
 if (HOME_PAGE) startHome();             // ?home: the front page, read-only
+else if (AV_STAND) startStandings();    // ?standings: the AVCTL's four divisions
 else if (BOARD) startScoreboard();      // ?scores: the week's scoreboard, read-only
 else if (COUNTY_PAGE) startCounty();    // ?stats: the county's season stats, read-only
 else if (TEAM_PAGE) startTeamPage();    // ?teams, ?team=<name>: the schools, and each one's record and schedule

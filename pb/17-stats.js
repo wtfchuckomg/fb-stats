@@ -10,22 +10,27 @@
    ================================================================ */
 // State Stats (?statestats) is this same page for every school in the state, next to the State Scoreboard.
 const STATE_STATS = new URLSearchParams(location.search).has('statestats');
-const COUNTY_PAGE = new URLSearchParams(location.search).has('stats') || STATE_STATS;
+const COUNTY_PAGE = new URLSearchParams(location.search).has('stats') || STATE_STATS || AV_STATS;
 const COUNTY = ['Andover', 'Andover Central', 'Augusta', 'Bluestem', 'Circle', 'Douglass', 'El Dorado', 'Flinthills', 'Remington', 'Rose Hill'];
 const COUNTY_ALIASES = {Bluestem:['Leon-Bluestem'], Circle:['Towanda-Circle'], Remington:['Whitewater-Remington']};
+// Which schools this page covers: Butler County, the AVCTL, or (State Stats) whoever turns up in the games.
+const GROUP = AV_STATS ? AVCTL : COUNTY;
+const GROUP_ALIASES = AV_STATS ? AVCTL_ALIASES : COUNTY_ALIASES;
+const groupOf = name => GROUP.find(c => [c, ...(GROUP_ALIASES[c] || [])].some(a => logoSlug(a) === logoSlug(name))) || null;
 const countyOf = name => COUNTY.find(c => [c, ...(COUNTY_ALIASES[c] || [])].some(a => logoSlug(a) === logoSlug(name))) || null;
+const groupName = () => AV_STATS ? 'AVCTL' : STATE_STATS ? 'State' : 'BUCO';
 const C_VIEWS = ['passing', 'rushing', 'receiving', 'scoring', 'kicking', 'team'];
 const county = {games:null, err:'', team:'all', season:new Date().getFullYear(), view:'passing', sort:{}};
 
 async function startCounty(){
   ui.viewer = true; ui.county = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
-  document.title = `${STATE_STATS ? 'State' : 'BUCO'} Stats · Kansas Media Stats`;
-  const want = new URLSearchParams(location.search).get(STATE_STATS ? 'statestats' : 'stats');
+  document.title = `${groupName()} Stats · Kansas Media Stats`;
+  const want = new URLSearchParams(location.search).get(AV_STATS ? 'avstats' : STATE_STATS ? 'statestats' : 'stats');
   if (C_VIEWS.includes(want)) county.view = want;
   // &team=<school>, from a team's page: that team's stats (statewide, any school).
   const pickTeam = new URLSearchParams(location.search).get('team');
-  if (COUNTY.includes(pickTeam) || (STATE_STATS && pickTeam)) county.team = pickTeam;
+  if (GROUP.includes(pickTeam) || (STATE_STATS && pickTeam)) county.team = pickTeam;
   const pickSeason = +new URLSearchParams(location.search).get('season');   // &season=2025
   if (pickSeason) county.season = pickSeason;
   loadLogos(); renderCounty();
@@ -48,7 +53,7 @@ async function startCounty(){
 /* ---------- the numbers ---------- */
 const seasonOf = x => fromYmd(gameWeek(x)).getFullYear();
 function countySeasons(){
-  const ys = new Set([new Date().getFullYear(), ...(STATE_STATS ? [] : [2025])]);   // 2025: Butler County's season leaderboard (25-stats2025.js)
+  const ys = new Set([new Date().getFullYear(), ...(STATE_STATS || AV_STATS ? [] : [2025])]);   // 2025: Butler County's season leaderboard (25-stats2025.js)
   (county.games || []).forEach(x => ys.add(seasonOf(x)));
   return [...ys].sort((a, b) => b - a);
 }
@@ -68,10 +73,10 @@ function countyStats(games){
   // Each team's own offense and, from the other side of the same games, what opponents did against it ('o' keys).
   const blank = c => Object.assign({name:c, gp:0, w:0, l:0, t:0, pf:0, pa:0, qf:[0, 0, 0, 0, 0], qa:[0, 0, 0, 0, 0], ot:false},
     zeros(T_KEYS), zeros(T_KEYS.map(k => 'o' + k)));
-  const teams = Object.fromEntries((STATE_STATS ? [] : COUNTY).map(c => [c, blank(c)])), players = {};
+  const teams = Object.fromEntries((STATE_STATS ? [] : GROUP).map(c => [c, blank(c)])), players = {};
   // Whose side counts: in Butler County only its ten schools, by their proper names; statewide every school, one row
   // each however its name was typed (the first spelling seen names the row).
-  const names = {}, sideOf = n => STATE_STATS ? (names[canonSchool(n)] || (names[canonSchool(n)] = n)) : countyOf(n);
+  const names = {}, sideOf = n => STATE_STATS ? (names[canonSchool(n)] || (names[canonSchool(n)] = n)) : groupOf(n);
   for (const x of games){
     const r = replay(x), st = r.st;
     ['A', 'H'].forEach(s => {
@@ -218,17 +223,17 @@ function stateTeamList(games){
 function renderCounty(){
   if (!ui.county) return;
   const box = $('#board'), v = county.view, tab = tabOf(v), games = countyGames();
-  const allLabel = STATE_STATS ? 'All Kansas Teams' : 'All County Teams', teamList = STATE_STATS ? stateTeamList(games) : COUNTY;
+  const allLabel = STATE_STATS ? 'All Kansas Teams' : AV_STATS ? 'All AVCTL Teams' : 'All County Teams', teamList = STATE_STATS ? stateTeamList(games) : GROUP;
   const who = county.team === 'all' ? allLabel : county.team;
   const title = v === 'team' ? `${who} Team Stats ${county.season}` : `${who} Player ${P_VIEWS[v].label} Stats ${county.season}`;
-  document.title = `${title} · ${STATE_STATS ? 'State' : 'BUCO'} Stats`;
+  document.title = `${title} · ${groupName()} Stats`;
   const head = `<section class="bcard bhead"><div class="bhead-top"><h1 class="c-title">${esc(title)}</h1></div>
     <nav class="c-tabs">${C_TABS.map(([k, label, first]) => `<button type="button"${k === tab ? ' class="on"' : ''} data-cview="${first}">${label}</button>`).join('')}</nav>
     ${tab === 'offense' ? `<div class="c-pills">${['passing', 'rushing', 'receiving'].map(k => `<button type="button"${k === v ? ' class="on"' : ''} data-cview="${k}">${P_VIEWS[k].label}</button>`).join('')}</div>` : ''}
     <div class="c-filters"><select class="c-sel" id="cseason" aria-label="Season">${countySeasons().map(y => `<option value="${y}"${y === county.season ? ' selected' : ''}>${y}</option>`).join('')}</select>
       <select class="c-sel" id="cteam" aria-label="Team">${['all', ...teamList].map(c => `<option value="${esc(c)}"${county.team === c ? ' selected' : ''}>${c === 'all' ? allLabel : esc(c)}</option>`).join('')}</select></div></section>`;
   // 2025 comes from the season leaderboard, not games: passing, rushing, receiving and touchdowns, and nothing to load.
-  const y25 = county.season === 2025 && !STATE_STATS, note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
+  const y25 = county.season === 2025 && !STATE_STATS && !AV_STATS, note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (county.err && !y25) body = note(county.err);
   else if (!county.games && !y25) body = note('Loading stats…');

@@ -8,8 +8,10 @@
    scheduled games still to come.
    ================================================================ */
 const STATE_BOARD = new URLSearchParams(location.search).has('state');
-const BOARD = new URLSearchParams(location.search).has('scores') || STATE_BOARD;
-const boardParam = () => ui.state ? 'state' : 'scores';
+const BOARD = new URLSearchParams(location.search).has('scores') || STATE_BOARD || AV_BOARD;
+const boardParam = () => ui.av ? 'avctl' : ui.state ? 'state' : 'scores';
+// What each board is called, and which games it keeps.
+const boardName = () => ui.av ? 'AVCTL' : ui.state ? 'State' : 'BUCO';
 const fullyTracked = x => x.kind !== 'score' && ((x.plays && x.plays.length) || !!x.box);
 // A game still to come: a schedule entry or score not yet started, or a game set up for stats with no plays yet.
 // The State Scoreboard lists those too, until their day has passed; after that, only games with stats stay.
@@ -36,9 +38,9 @@ function weekRange(k){
 }
 
 async function startScoreboard(){
-  ui.viewer = true; ui.board = true; ui.state = STATE_BOARD; document.body.classList.add('viewer', 'bpage');
+  ui.viewer = true; ui.board = true; ui.state = STATE_BOARD; ui.av = AV_BOARD; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
-  document.title = `${ui.state ? 'State' : 'BUCO'} Scoreboard · Kansas Media Stats`;
+  document.title = `${boardName()} Scoreboard · Kansas Media Stats`;
   const want = new URLSearchParams(location.search).get(boardParam()) || '';
   ui.week = /^\d{4}-\d\d-\d\d$/.test(want) ? weekKey(fromYmd(want).getTime()) : boardDefaultWeek();
   loadLogos(); renderScoreboard();
@@ -111,7 +113,8 @@ function renderScoreboard(){
   const tabs = keys.map(k => `<button type="button" class="bw${k === key ? ' on' : ''}" data-bweek="${k}"${k === key ? ' aria-current="true"' : ''}>
     <b>${esc(weekLabel(k).toUpperCase())}</b><span>${weekRange(k)}</span></button>`).join('');
   // The State Scoreboard: games with stats kept on them, and games still to come. The admin also sees hidden games, faded.
-  const games = weekGames(key, ui.admin, ui.state).filter(x => !ui.state || onStateBoard(x)), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
+  // The league board draws on the same pool as the State board, then keeps its own schools' games.
+  const games = weekGames(key, ui.admin, ui.state || ui.av).filter(x => (!ui.state && !ui.av) || (onStateBoard(x) && (!ui.av || inAvctl(x)))), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (board.err) body = note(board.err);
   else if (scores.ready !== key) body = note('Loading scores…');
@@ -128,7 +131,7 @@ function renderScoreboard(){
   }
   const old = box.querySelector('.bweeks'), keep = old ? old.scrollLeft : 0;
   const adminNote = ui.admin ? `<p class="badmin">Signed in as the admin: Hide takes a game off both scoreboards, the scores strip and BUCO Stats for everyone.${ui.state ? ' Games between other schools stay hidden (they still count toward records) until you Show one.' : ''}</p>` : '';
-  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>${ui.state ? 'State' : 'BUCO'} Scoreboard</h1></div>${adminNote}
+  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>${boardName()} Scoreboard</h1></div>${adminNote}
     <div class="bweeks-wrap"><button type="button" class="bw-arrow" data-bscroll="-1" aria-label="Earlier weeks">${chev('M9 1L1 9l8 8')}</button>
       <div class="bweeks">${tabs}</div>
       <button type="button" class="bw-arrow" data-bscroll="1" aria-label="Later weeks">${chev('M1 1l8 8-8 8')}</button></div></section>${body}`;

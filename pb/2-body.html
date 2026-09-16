@@ -16,8 +16,8 @@
     <div class="navlinks">
       <a class="navlink" data-nav="home" href="?home">Home</a>
       <button type="button" class="navlink navdrop" data-nav="buco" id="nav-buco" aria-haspopup="true" aria-expanded="false" aria-controls="nav-buco-menu">Butler County<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
-      <a class="navlink" data-nav="state" href="?state">State Scoreboard</a>
-      <a class="navlink" data-nav="sstats" href="?statestats">State Stats</a>
+      <button type="button" class="navlink navdrop" data-nav="avctl" id="nav-avctl" aria-haspopup="true" aria-expanded="false" aria-controls="nav-avctl-menu">AVCTL<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+      <button type="button" class="navlink navdrop" data-nav="state" id="nav-state" aria-haspopup="true" aria-expanded="false" aria-controls="nav-state-menu">State<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
       <a class="navlink" data-nav="tracker" id="nav-tracker" href="?tracker">Game Tracker</a>
     </div>
     <div class="navmenu" id="nav-buco-menu" role="menu" aria-label="Butler County" hidden>
@@ -25,6 +25,16 @@
       <a role="menuitem" data-menu="stats" href="?stats">Player Stats</a>
       <a role="menuitem" data-menu="team" href="?stats=team">Team Stats</a>
       <a role="menuitem" data-menu="teams" href="?teams">Teams</a>
+    </div>
+    <div class="navmenu" id="nav-avctl-menu" role="menu" aria-label="AVCTL" hidden>
+      <a role="menuitem" data-menu="avscores" href="?avctl">Scoreboard</a>
+      <a role="menuitem" data-menu="standings" href="?standings">Standings</a>
+      <a role="menuitem" data-menu="avstats" href="?avstats">Player Stats</a>
+      <a role="menuitem" data-menu="avteam" href="?avstats=team">Team Stats</a>
+    </div>
+    <div class="navmenu" id="nav-state-menu" role="menu" aria-label="State" hidden>
+      <a role="menuitem" data-menu="state" href="?state">Scoreboard</a>
+      <a role="menuitem" data-menu="sstats" href="?statestats">Stats</a>
     </div>
     <div class="navtools">
       <div class="livebadge" id="livebadge" hidden></div>

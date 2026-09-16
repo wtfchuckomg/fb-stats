@@ -280,9 +280,13 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
 (function markNav(){
   const q = new URLSearchParams(location.search);
   // The site's plain address is Home; the Game Tracker is ?tracker (or ?edit=<id>).
-  const here = q.has('tracker') || q.has('edit') ? 'tracker' : q.has('scores') ? 'scores' : q.has('state') ? 'state' : q.has('statestats') ? 'sstats' : q.has('stats') ? 'stats' : q.has('team') || q.has('teams') ? 'teams' : q.has('game') || q.has('live') ? '' : 'home';
-  // The Butler County scoreboard, stats and team pages are all under its menu.
-  const top = here === 'scores' || here === 'stats' || here === 'teams' ? 'buco' : here;
+  const here = q.has('tracker') || q.has('edit') ? 'tracker'
+    : q.has('avctl') ? 'avscores' : q.has('standings') ? 'standings' : q.has('avstats') ? 'avstats'
+    : q.has('scores') ? 'scores' : q.has('state') ? 'state' : q.has('statestats') ? 'sstats'
+    : q.has('stats') ? 'stats' : q.has('team') || q.has('teams') ? 'teams' : q.has('game') || q.has('live') ? '' : 'home';
+  // Each menu's pages sit under its own name: Butler County, AVCTL, State.
+  const UNDER = {scores:'buco', stats:'buco', teams:'buco', avscores:'avctl', standings:'avctl', avstats:'avctl', state:'state', sstats:'state'};
+  const top = UNDER[here] || here;
   const a = top && document.querySelector(`.navlink[data-nav="${top}"]`);
   if (a){
     a.classList.add('on'); if (a.tagName === 'A') a.setAttribute('aria-current', 'page');
@@ -290,17 +294,34 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
     const nl = a.parentElement; nl.scrollLeft += a.getBoundingClientRect().left - nl.getBoundingClientRect().left - (nl.clientWidth - a.offsetWidth) / 2;
   }
 })();
-// The Butler County menu: opens on hover with a mouse, on a tap on a phone, and marks the page you're on.
-(function navMenu(){
-  const btn = $('#nav-buco'), menu = $('#nav-buco-menu'), bar = document.querySelector('.navbar');
-  if (!btn || !menu || !bar) return;
+// Which page of a menu is open, so the menu can mark it.
+function menuHere(){
+  if (ui.teamPage) return 'teams';
+  if (ui.stand) return 'standings';
+  if (ui.board) return ui.av ? 'avscores' : ui.state ? 'state' : 'scores';
+  if (ui.county){
+    if (STATE_STATS) return 'sstats';
+    const t = county.view === 'team';
+    return AV_STATS ? (t ? 'avteam' : 'avstats') : (t ? 'team' : 'stats');
+  }
+  return '';
+}
+// The menus: open on hover with a mouse, on a tap on a phone, and mark the page you're on. Opening one closes the rest.
+(function navMenus(){
+  const bar = document.querySelector('.navbar'); if (!bar) return;
+  const shut = [];
+  document.querySelectorAll('.navdrop').forEach(btn => {
+  const menu = document.getElementById(btn.getAttribute('aria-controls'));
+  if (!menu) return;
   const hover = matchMedia('(hover: hover)').matches;
   let t = 0;
   const close = () => { clearTimeout(t); menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
+  shut.push(close);
   const open = () => {
     clearTimeout(t);
     if (!menu.hidden) return;
-    const cur = ui.teamPage ? 'teams' : ui.board && !ui.state ? 'scores' : ui.county ? (county.view === 'team' ? 'team' : 'stats') : '';
+    shut.forEach(f => { if (f !== close) f(); });
+    const cur = menuHere();
     menu.querySelectorAll('[data-menu]').forEach(x => x.classList.toggle('on', x.dataset.menu === cur));
     menu.hidden = false; btn.setAttribute('aria-expanded', 'true');
     // Under the name and on screen, with the notch pointing up at the name.
@@ -315,6 +336,7 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
   document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
   btn.parentElement.addEventListener('scroll', close, {passive:true});
   addEventListener('resize', close);
+  });
 })();
 
 function renderScores(){
