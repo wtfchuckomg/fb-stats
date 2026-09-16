@@ -95,3 +95,10 @@ function renderStandings(){
   if (!ui.stand) return;
   $('#board').innerHTML = standingsHtml();
 }
+
+// A table scrolled sideways has its numbers passing under the pinned team name: mark it so the name can go
+// solid while that is true. Scroll doesn't bubble, so this listens on the way down, and it survives a redraw.
+document.addEventListener('scroll', e => {
+  const w = e.target;
+  if (w && w.classList && w.classList.contains('tbl-wrap')) w.classList.toggle('pinned', w.scrollLeft > 0);
+}, true);

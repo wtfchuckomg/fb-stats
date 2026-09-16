@@ -964,6 +964,22 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .ctbl tbody tr:nth-child(even) td{background:#FAFAFC}
 .ctbl th.on,.ctbl td.on,.ctbl tbody tr:nth-child(even) td.on{background:#EEF5FD}
 .ctbl tr.hi td,.ctbl tr.hi td.on{background:#F2F7FE}
+/* the standings are the one table that reads as a panel rather than a spreadsheet, so its rows sit on the
+   card's own glass: the tint and the wallpaper show through, the rules between rows become light instead of
+   grey, and only the logo and team name keep a backing — on a phone the numbers slide under them */
+.av-st th,.av-st td{background:transparent;border-bottom-color:rgba(255,255,255,.55)}
+.av-st tbody tr:nth-child(even) td{background:rgba(255,255,255,.30)}
+/* the logo and name are pinned. While the table sits still there is nothing behind them and they can be
+   glass like everything else; the moment it is scrolled sideways — a phone, a narrow window — they go solid,
+   or the numbers sliding underneath read straight through the names. */
+.av-st .rk,.av-st .nm{background:rgba(255,255,255,.5);transition:background-color .15s}
+.av-st tbody tr:nth-child(even) .rk,.av-st tbody tr:nth-child(even) .nm{background:rgba(255,255,255,.66)}
+.tbl-wrap.pinned .av-st .rk,.tbl-wrap.pinned .av-st .nm{background:#FFFFFF}
+.tbl-wrap.pinned .av-st tbody tr:nth-child(even) .rk,.tbl-wrap.pinned .av-st tbody tr:nth-child(even) .nm{background:#FBFBFD}
+.av-st .nm{border-right-color:rgba(255,255,255,.6)}
+.av-st td.gsep,.av-st thead tr:last-child th.gsep{border-left-color:rgba(255,255,255,.6)}
+.av-st tr.cgrp th{color:var(--ink-2);border-bottom-color:rgba(255,255,255,.55)}
+.av-st thead tr:last-child th{border-bottom-color:rgba(255,255,255,.7)}
 </style>
 <script>
 /* ?embed=1: the page is running inside someone else's page (the Times-Gazette
@@ -3694,6 +3710,13 @@ function renderStandings(){
   if (!ui.stand) return;
   $('#board').innerHTML = standingsHtml();
 }
+
+// A table scrolled sideways has its numbers passing under the pinned team name: mark it so the name can go
+// solid while that is true. Scroll doesn't bubble, so this listens on the way down, and it survives a redraw.
+document.addEventListener('scroll', e => {
+  const w = e.target;
+  if (w && w.classList && w.classList.contains('tbl-wrap')) w.classList.toggle('pinned', w.scrollLeft > 0);
+}, true);
 /* ================================================================
    Sync. Games follow a Google sign-in through the stats project's own
    Firebase (fb-stats, kept apart from the Pick 'ems pool): collection
