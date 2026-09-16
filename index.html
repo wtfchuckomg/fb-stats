@@ -971,6 +971,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
       <div class="abtns">
         <button class="abtn" data-open="share" id="sharebtn">Share</button>
         <button class="abtn" data-open="games">Games</button>
+        <button class="abtn" data-open="teams">Teams</button>
         <button class="abtn" data-open="others" id="othersbtn" hidden>Others</button>
         <button class="abtn" data-open="setup">Setup</button>
         <button class="abtn" data-open="lines">Line score</button>
@@ -2633,7 +2634,7 @@ const framed = (() => { try { return window.self !== window.top; } catch (e) { r
 const dlgHead = t => `<div class="dlg-hd"><h2>${t}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>`;
 function openDialog(kind){
   ui.dlg = kind; ui.confirm = null;
-  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : kind === 'others' ? dlgOthers() : kind === 'lines' ? dlgLines() : dlgSetup(kind === 'new');
+  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : kind === 'others' ? dlgOthers() : kind === 'lines' ? dlgLines() : kind === 'teams' ? dlgTeams() : dlgSetup(kind === 'new');
   if (!dlg().hasAttribute('open')) showDialog();
 }
 // Phones without the pop-up window feature (iPhones before iOS 15.4, among others) get the same box, opened plainly.
@@ -2737,7 +2738,7 @@ function dlgGames(){
     return `<div class="gitem"><div><b>${esc(x.teams.A.abbr)} ${r.st.score.A} at ${esc(x.teams.H.abbr)} ${r.st.score.H}</b>${x.id === g.id ? '<span class="cur-tag">Open</span>' : ''}${x.sample ? '<span class="cur-tag" style="color:var(--flag-ink)">Sample</span>' : ''}
       <div class="meta">${esc(x.teams.A.name)} at ${esc(x.teams.H.name)} · ${rulesOf(x).men === 8 ? '8-man · ' : ''}${gameDay(x).toLocaleDateString()} · ${r.st.final ? 'Final' : perLabel(r.st.q)} · ${x.box ? 'box score' : `${x.plays.length} plays`}</div></div>
       <div class="acts">${x.id !== g.id ? `<button class="btn small" data-open-game="${x.id}">Open</button>` : ''}<button class="btn small danger" data-del-game="${x.id}">${ui.confirm === 'g:' + x.id ? 'Tap again' : 'Delete'}</button></div></div>`; }).join('');
-  return `${dlgHead('Games')}<div class="dlg-bd">${syncBlock()}<div class="grp"><h3>Games</h3><div class="glist">${items}</div></div>${teamsBlock()}
+  return `${dlgHead('Games')}<div class="dlg-bd">${syncBlock()}<div class="grp"><h3>Games</h3><div class="glist">${items}</div></div>
     <p class="hint">Every game is saved in this browser${sync.user ? ' and to your Google account' : ''}. Export makes a backup you can keep anywhere.</p></div>
     <div class="dlg-ft"><button class="btn" data-box-new>Paste a box score</button><button class="btn primary" data-open="new">New game</button></div>`;
 }
@@ -3795,7 +3796,8 @@ function mergeTeams(json){
     if (b && (!a || (b.updated || 0) > (a.updated || 0))){ lib[k] = b; changed = true; }
     else if (a && (!b || (a.updated || 0) > (b.updated || 0))) mineNewer = true;
   }
-  if (changed){ persist(); if (ui.dlg === 'games' && dlg().open) dlg().innerHTML = dlgGames(); }
+  // Teams arriving from another device refresh whichever window is showing them.
+  if (changed){ persist(); if (dlg().open && (ui.dlg === 'teams' || ui.dlg === 'games')) dlg().innerHTML = ui.dlg === 'teams' ? dlgTeams() : dlgGames(); }
   if (mineNewer) syncTeams(0);
 }
 
@@ -3810,6 +3812,11 @@ function teamsBlock(){
       : '<p class="hint">No saved teams yet.</p>'}
     <div class="line"><button class="btn small" data-team-edit="">Add a team</button></div></div>`;
 }
+// Saved teams get their own window: the games list runs long, and teams shouldn't be buried under it.
+function dlgTeams(){
+  return `${dlgHead('Teams')}<div class="dlg-bd">${teamsBlock()}</div>
+    <div class="dlg-ft"><button type="button" class="btn" data-open="games">Games</button><button type="button" class="btn primary" data-close>Done</button></div>`;
+}
 function dlgTeam(key){
   const t = (key && findTeam(key)) || {name:'', mascot:'', abbr:'', color:'#1F4E9C', roster:{}};
   return `${dlgHead(key ? 'Edit team' : 'Add a team')}<div class="dlg-bd"><div class="grp"><div class="teamset">
@@ -3819,7 +3826,7 @@ function dlgTeam(key){
       <div class="fld"><label class="eyebrow" for="t-color">Color</label><input type="color" id="t-color" value="${esc(t.color || '#1F4E9C')}"></div></div>
     <div class="fld"><label class="eyebrow" for="t-roster">Roster · one player per line, number then name</label>
       <textarea class="inp" id="t-roster" rows="10" placeholder="7 Cole Brandt&#10;22 Mason Ortiz">${esc(rosterToText(t.roster))}</textarea></div></div></div>
-    <div class="dlg-ft"><button type="button" class="btn" data-open="games">Back</button><button type="button" class="btn primary" data-team-save="${esc(key || '')}">Save team</button></div>`;
+    <div class="dlg-ft"><button type="button" class="btn" data-open="teams">Back</button><button type="button" class="btn primary" data-team-save="${esc(key || '')}">Save team</button></div>`;
 }
 function saveTeamDialog(oldKey){
   const name = $('#t-name').value.trim();
@@ -3827,7 +3834,7 @@ function saveTeamDialog(oldKey){
   const t = {name, mascot:$('#t-mascot').value.trim(), abbr:($('#t-abbr').value.trim() || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(), color:$('#t-color').value, roster:parseRosterText($('#t-roster').value)};
   if (oldKey && oldKey !== teamKey(name)) forgetTeam(oldKey);
   teamLib()[teamKey(name)] = {...t, updated:Date.now()};   // an edit here replaces the saved roster outright
-  persist(); syncTeams(); shareRoster(t); openDialog('games'); toast('Team saved');
+  persist(); syncTeams(); shareRoster(t); openDialog('teams'); toast('Team saved');
 }
 
 document.addEventListener('click', e => {
