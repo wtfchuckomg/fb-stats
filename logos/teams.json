@@ -465,14 +465,14 @@
   "abbr": "CVD"
  },
  {
-  "name": "Central Christian",
-  "slug": "central-christian",
+  "name": "Hutch Central Christian",
+  "slug": "hutch-central-christian",
   "file": "Central Christian.png",
   "city": "",
   "w": 400,
   "h": 217,
   "aliases": [
-   "Hutch Central Christian",
+   "Central Christian",
    "Hutchinson Central Christian"
   ],
   "abbr": "HCC"
@@ -498,16 +498,16 @@
   "abbr": "CP"
  },
  {
-  "name": "Central",
-  "slug": "central",
+  "name": "Central Burden",
+  "slug": "central-burden",
   "file": "Central.png",
   "city": "",
   "w": 350,
   "h": 400,
   "aliases": [
-   "Central Burden"
+   "Central"
   ],
-  "abbr": "Central"
+  "abbr": "CB"
  },
  {
   "name": "Centralia",
@@ -672,16 +672,16 @@
   "abbr": "Clyd"
  },
  {
-  "name": "Coffeyville",
-  "slug": "coffeyville",
+  "name": "Field Kindley",
+  "slug": "field-kindley",
   "file": "Coffeyville.png",
   "city": "",
   "w": 400,
   "h": 350,
   "aliases": [
-   "Field Kindley"
+   "Coffeyville"
   ],
-  "abbr": "Coffeyville"
+  "abbr": "FK"
  },
  {
   "name": "Colby",
@@ -1213,16 +1213,16 @@
   "abbr": "Hays"
  },
  {
-  "name": "Heights",
-  "slug": "heights",
+  "name": "Wichita Heights",
+  "slug": "wichita-heights",
   "file": "Heights.png",
   "city": "",
   "w": 400,
   "h": 380,
   "aliases": [
-   "Wichita Heights"
+   "Heights"
   ],
-  "abbr": "Heights"
+  "abbr": "WH"
  },
  {
   "name": "Herington",
