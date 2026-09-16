@@ -5830,6 +5830,19 @@ function renderHome(){
               <li>Made a mistake? <b>Undo last</b> takes back the latest play, and <b>Edit</b> on any play in the Play-by-Play fixes an older one. Everything after it updates.</li>
             </ol>
             <p class="h-note">In the tracker, <b>Use the full form instead</b> switches to buttons and <b>Back to quick entry</b> switches back. It remembers your choice, and you can switch in the middle of a drive.</p></div>
+          <div class="h-mode"><span class="h-tag">Type it how you'd say it</span><h3>Plain English</h3>
+            <p>The same box takes a sentence. Write the play the way you’d say it out loud and the tracker works it out — numbers for the players, words for the rest. It’s longer than shorthand but nothing to memorize, and you can mix the two on one line.</p>
+            <table class="h-codes"><tbody>${[
+              ['3 runs for 9 yards tackled by 55', '#3 rush for 9 yards (#55)'],
+              ['3 sacked for 10 yards by 54 3:55', '#3 sacked by #54 for a loss of 10, at 3:55'],
+              ['7 pass complete to 88 for 15 yards', 'Completion to #88, first down if it gets there'],
+              ['7 incomplete to 88', 'Incomplete, intended for #88'],
+              ['7 intercepted by 24', 'Picked off by #24'],
+              ['3 runs it in for a touchdown', 'Touchdown from wherever the ball is'],
+              ['8 for 9 yards tackled by 55', 'Shortest of all: a number, the yards, the tackler'],
+              ['pen aug 15 personal foul', 'A penalty in words; add 1st for an automatic first down']
+            ].map(([c, m]) => `<tr><td><code>${esc(c)}</code></td><td>${esc(m)}</td></tr>`).join('')}</tbody></table>
+            <p class="h-note">Put the clock anywhere on the line (<code>3:55</code>) and the tackler after the play. A few things stay short because there’s no sentence for them: the extra point is <code>15 xp</code> or <code>15 kick good</code>, and a drive starts with <code>A ball at A35</code>.</p></div>
           <div class="h-mode"><span class="h-tag gray">After the game</span><h3>Paste a box score</h3>
             <p>No one at the game to keep stats? Copy the box score from the newspaper or the school and paste it in: tap the game in the scores strip and choose <b>Paste box score</b>, or tap <b>+ Score</b>, then <b>Paste a box score instead</b>.</p>
             <p>The line score, scoring summary and player stats fill in, the game opens to its Box Score, and its stats count toward the season totals.</p></div>
