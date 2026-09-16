@@ -370,6 +370,13 @@ function parseQuick(raw, st){
     return flag(p);
   }
 
+  /* ---- a jersey change: "5 is now 35", "N 5 changes to 35" ---- */
+  if (has('jersey') || (has('now', 'changes', 'changed', 'switches', 'switched') && toks.filter(isNum).length >= 2)){
+    const nums = toks.filter(isNum), side = toks.map(T).find(Boolean) || O;
+    if (nums.length < 2) return bad('Which numbers? Like 5 is now 35.');
+    return ok({t:'jersey', side, from:nums[0], to:nums[1]});
+  }
+
   /* ---- a safety said as one: "3 tackled in the end zone", "7 sacked for a safety" ---- */
   if (has('safety', 'saf') && st.phase === 'play'){
     const nums = toks.filter(isNum);
@@ -511,6 +518,7 @@ function cheatHtml(a, h){
     [`pen ${h} 15 pf`, `15 yards on ${h}. Codes: fs off hold pi pf fm uc rtp ig dog and more. Add 1st for an automatic first down.`],
     [`3-12 pen ${a} 10 hold np`, 'Flag wipes out the play (np = no play). Without np, the yards add on to the end of the play.'],
     [`to ${a}`, `${g.teams.A.name} timeout`],
+    ['28 is now 35', 'A jersey change. From there on #35 is that player: the play-by-play shows the number he is wearing, the box score keeps one line.'],
     ['eoq', 'End of the quarter (at halftime: eoq S = S kicks off)'],
     ['3-10 8:40 @54', 'Optional: a clock time anywhere on the line (it also sets the game clock), tacklers with @'],
     ['undo', 'Remove the last play']];

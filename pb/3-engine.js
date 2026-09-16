@@ -79,16 +79,25 @@ function replay(g, upto = g.plays.length){
   const T = g.teams, qSec = (g.set.qtr || 12) * 60, otSpot = FL - RU.ot;
   let st = {q:1, phase:'kick', kickKind:'kickoff', poss:g.set.firstKick || 'H', kickFrom:RU.kickFrom,
     spot:0, down:1, ltg:10, score:{A:0,H:0}, lines:{A:[0,0,0,0,0],H:[0,0,0,0,0]}, to:{A:3,H:3},
-    ot:null, final:false, drive:null, fresh:false, qPlayed:0, typed:false};
+    ot:null, final:false, drive:null, fresh:false, qPlayed:0, typed:false,
+    // A player who changes jerseys mid-game: the new number points back at the one he started in,
+    // so his stats stay on one line and his name still shows.
+    worn:{A:{}, H:{}}};
   let S = {team:{A:zeros(TEAM_KEYS), H:zeros(TEAM_KEYS)}, pl:{A:{}, H:{}}};
   let scoring = [], drives = [], clk = null, tags = [], trace = [], curI = 0;   // curI: the play being replayed
   const log = [];
 
   const ab = s => T[s].abbr || s;
+  // The number a jersey change points back at, following a chain (5 -> 35 -> 12).
+  const worn = (s, n) => {
+    let k = String(n);
+    for (let i = 0; i < 5 && st.worn[s][k] != null; i++) k = String(st.worn[s][k]);
+    return k;
+  };
   const nm = (s, n) => {
     if (n === '' || n == null) return ab(s);
     if (n === 'team') return 'TEAM';
-    const who = playerName((T[s].roster || {})[n]);
+    const who = playerName((T[s].roster || {})[n]) || playerName((T[s].roster || {})[worn(s, n)]);
     return who ? `#${n} ${who.split(' ').slice(-1)[0]}` : `#${n}`;
   };
   const yl = (s, pos) => { pos = clamp(pos, 0, FL); if (pos === HALF) return String(HALF);
@@ -97,7 +106,7 @@ function replay(g, upto = g.plays.length){
   const plural = (n, w) => `${fy(n)} ${w}${n === 1 ? '' : 's'}`;
   const pl = (s, n) => {
     if (n === '' || n == null) return null;
-    const k = String(n);
+    const k = n === 'team' ? 'team' : worn(s, n);
     return S.pl[s][k] || (S.pl[s][k] = Object.assign({n:k}, zeros(PL_KEYS)));
   };
   const bump = (o, k, v = 1) => { if (o) o[k] += v; };
@@ -553,6 +562,11 @@ function replay(g, upto = g.plays.length){
         return penalize(p.pen, false);
       case 'to': st.to[p.side] = Math.max(0, st.to[p.side] - 1); tags.push(['info', 'Timeout']);
         return `Timeout ${T[p.side].name || ab(p.side)} (${st.to[p.side]} left).`;
+      case 'jersey': {
+        st.worn[p.side][String(p.to)] = String(p.from);
+        tags.push(['info', 'Jersey']);
+        return `${nm(p.side, p.from)} is now #${p.to}.`;
+      }
       case 'note': tags.push(['info', 'Note']); return p.text || '';
       case 'set': {   // "N ball at N35 1-10": the scorer states the situation outright
         if (st.drive && st.drive.team !== p.poss) closeDrive();

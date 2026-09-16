@@ -65,6 +65,7 @@ const HOME_CODES = [
   ['ko-A25', 'Kickoff; Augusta’s drive starts at its 25'],
   ['pen E 15 pf', '15-yard personal foul on El Dorado'],
   ['pen E 15 pf 1st', 'The same, with an automatic first down (1st, auto or af)'],
+  ['28 is now 35', 'A player changed jerseys: everything he does stays on one line in the book'],
   ['to A · eoq · undo', 'Augusta timeout / end of the quarter / take back the last play'],
   ['3-10 8:40 @54', 'Extras on any line: the clock time, and the tackler after @']];
 

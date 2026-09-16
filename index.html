@@ -1161,16 +1161,25 @@ function replay(g, upto = g.plays.length){
   const T = g.teams, qSec = (g.set.qtr || 12) * 60, otSpot = FL - RU.ot;
   let st = {q:1, phase:'kick', kickKind:'kickoff', poss:g.set.firstKick || 'H', kickFrom:RU.kickFrom,
     spot:0, down:1, ltg:10, score:{A:0,H:0}, lines:{A:[0,0,0,0,0],H:[0,0,0,0,0]}, to:{A:3,H:3},
-    ot:null, final:false, drive:null, fresh:false, qPlayed:0, typed:false};
+    ot:null, final:false, drive:null, fresh:false, qPlayed:0, typed:false,
+    // A player who changes jerseys mid-game: the new number points back at the one he started in,
+    // so his stats stay on one line and his name still shows.
+    worn:{A:{}, H:{}}};
   let S = {team:{A:zeros(TEAM_KEYS), H:zeros(TEAM_KEYS)}, pl:{A:{}, H:{}}};
   let scoring = [], drives = [], clk = null, tags = [], trace = [], curI = 0;   // curI: the play being replayed
   const log = [];
 
   const ab = s => T[s].abbr || s;
+  // The number a jersey change points back at, following a chain (5 -> 35 -> 12).
+  const worn = (s, n) => {
+    let k = String(n);
+    for (let i = 0; i < 5 && st.worn[s][k] != null; i++) k = String(st.worn[s][k]);
+    return k;
+  };
   const nm = (s, n) => {
     if (n === '' || n == null) return ab(s);
     if (n === 'team') return 'TEAM';
-    const who = playerName((T[s].roster || {})[n]);
+    const who = playerName((T[s].roster || {})[n]) || playerName((T[s].roster || {})[worn(s, n)]);
     return who ? `#${n} ${who.split(' ').slice(-1)[0]}` : `#${n}`;
   };
   const yl = (s, pos) => { pos = clamp(pos, 0, FL); if (pos === HALF) return String(HALF);
@@ -1179,7 +1188,7 @@ function replay(g, upto = g.plays.length){
   const plural = (n, w) => `${fy(n)} ${w}${n === 1 ? '' : 's'}`;
   const pl = (s, n) => {
     if (n === '' || n == null) return null;
-    const k = String(n);
+    const k = n === 'team' ? 'team' : worn(s, n);
     return S.pl[s][k] || (S.pl[s][k] = Object.assign({n:k}, zeros(PL_KEYS)));
   };
   const bump = (o, k, v = 1) => { if (o) o[k] += v; };
@@ -1635,6 +1644,11 @@ function replay(g, upto = g.plays.length){
         return penalize(p.pen, false);
       case 'to': st.to[p.side] = Math.max(0, st.to[p.side] - 1); tags.push(['info', 'Timeout']);
         return `Timeout ${T[p.side].name || ab(p.side)} (${st.to[p.side]} left).`;
+      case 'jersey': {
+        st.worn[p.side][String(p.to)] = String(p.from);
+        tags.push(['info', 'Jersey']);
+        return `${nm(p.side, p.from)} is now #${p.to}.`;
+      }
       case 'note': tags.push(['info', 'Note']); return p.text || '';
       case 'set': {   // "N ball at N35 1-10": the scorer states the situation outright
         if (st.drive && st.drive.team !== p.poss) closeDrive();
@@ -2538,6 +2552,13 @@ function parseQuick(raw, st){
     return flag(p);
   }
 
+  /* ---- a jersey change: "5 is now 35", "N 5 changes to 35" ---- */
+  if (has('jersey') || (has('now', 'changes', 'changed', 'switches', 'switched') && toks.filter(isNum).length >= 2)){
+    const nums = toks.filter(isNum), side = toks.map(T).find(Boolean) || O;
+    if (nums.length < 2) return bad('Which numbers? Like 5 is now 35.');
+    return ok({t:'jersey', side, from:nums[0], to:nums[1]});
+  }
+
   /* ---- a safety said as one: "3 tackled in the end zone", "7 sacked for a safety" ---- */
   if (has('safety', 'saf') && st.phase === 'play'){
     const nums = toks.filter(isNum);
@@ -2679,6 +2700,7 @@ function cheatHtml(a, h){
     [`pen ${h} 15 pf`, `15 yards on ${h}. Codes: fs off hold pi pf fm uc rtp ig dog and more. Add 1st for an automatic first down.`],
     [`3-12 pen ${a} 10 hold np`, 'Flag wipes out the play (np = no play). Without np, the yards add on to the end of the play.'],
     [`to ${a}`, `${g.teams.A.name} timeout`],
+    ['28 is now 35', 'A jersey change. From there on #35 is that player: the play-by-play shows the number he is wearing, the box score keeps one line.'],
     ['eoq', 'End of the quarter (at halftime: eoq S = S kicks off)'],
     ['3-10 8:40 @54', 'Optional: a clock time anywhere on the line (it also sets the game clock), tacklers with @'],
     ['undo', 'Remove the last play']];
@@ -6108,6 +6130,7 @@ const HOME_CODES = [
   ['ko-A25', 'Kickoff; Augusta’s drive starts at its 25'],
   ['pen E 15 pf', '15-yard personal foul on El Dorado'],
   ['pen E 15 pf 1st', 'The same, with an automatic first down (1st, auto or af)'],
+  ['28 is now 35', 'A player changed jerseys: everything he does stays on one line in the book'],
   ['to A · eoq · undo', 'Augusta timeout / end of the quarter / take back the last play'],
   ['3-10 8:40 @54', 'Extras on any line: the clock time, and the tackler after @']];
 
