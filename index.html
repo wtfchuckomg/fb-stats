@@ -1649,7 +1649,11 @@ function stripLines(){
   const st = R.st, L = st.lines; if (!L) return '';
   // An OT column when overtime was played, or when a typed line score carries one.
   const cols = Array.from({length:st.q > 4 || L.A[4] || L.H[4] ? 5 : 4}, (_, i) => i);
-  const pts = (s, i) => i < 4 ? (L[s][i] == null || i >= (st.qPlayed || 0) ? 'X' : L[s][i]) : L[s].slice(4).reduce((a, b) => a + (b || 0), 0);
+  const pts = (s, i) => {
+    if (i < 4) return L[s][i] == null || i >= (st.qPlayed || 0) ? 'X' : L[s][i];
+    const ot = L[s].slice(4);                                   // every overtime period together, X if none was played
+    return ot.every(v => v == null) ? 'X' : ot.reduce((a, b) => a + (b || 0), 0);
+  };
   const row = s => `<tr><td>${esc(g.teams[s].abbr || g.teams[s].name)}</td>${cols.map(i => `<td>${pts(s, i)}</td>`).join('')}<td>${st.score[s]}</td></tr>`;
   return `<table class="st-ls"><thead><tr><th></th>${cols.map(i => `<th>${i < 4 ? i + 1 : 'OT'}</th>`).join('')}<th>T</th></tr></thead><tbody>${row('A')}${row('H')}</tbody></table>`;
 }
@@ -4623,12 +4627,16 @@ function parseBox(txt){
     // A stat section can run onto the next line ("Hutchinson — McCuan 12-56; …").
     if (sec && /\d+\s*-\s*\(?-?\d+/.test(l)){ sec.body += ' ' + l; continue; }
     if (out.names.length < 2){
-      const ls = l.match(/^(.*?[A-Za-z][^\d]*?)\s+((?:\d+\s+){2,7}\d+)(?:\s*[—–-]+\s*(\d+))?$/);
+      // A quarter is a number, or an X (or a bare dash) for one that was never played — how a mercy-rule game is
+      // posted: "Flinthills 44 14 X X — 58". The dash before the total is often jammed against that last column.
+      const ls = l.match(/^(.*?[A-Za-z][^\d]*?)\s+((?:(?:\d+|[Xx]|[—–-])\s*[ ]\s*){2,7}(?:\d+|[Xx]|[—–-]))\s*(?:[—–-]+\s*(\d+))?$/);
       if (ls){
-        let q = ls[2].split(' ').map(Number), tot = ls[3] != null ? +ls[3] : null;
-        if (tot == null && q.length >= 5 && q[q.length - 1] === q.slice(0, -1).reduce((a, b) => a + b, 0)) tot = q.pop();
-        if (q.length > 5) q = [...q.slice(0, 4), q.slice(4).reduce((a, b) => a + b, 0)];   // every overtime together
-        const s = out.names.length ? 'H' : 'A', name = ls[1].replace(/[\s:,.—–-]+$/, ''), sum = q.reduce((a, b) => a + b, 0);
+        const cell = v => /^[Xx]$/.test(v) || /^[—–-]$/.test(v) ? null : Number(v);
+        let q = ls[2].trim().split(/\s+/).map(cell), tot = ls[3] != null ? +ls[3] : null;
+        const add = a => a.reduce((t, v) => t + (v || 0), 0);
+        if (tot == null && q.length >= 5 && q[q.length - 1] != null && q[q.length - 1] === add(q.slice(0, -1))) tot = q.pop();
+        if (q.length > 5) q = [...q.slice(0, 4), q.slice(4).every(v => v == null) ? null : add(q.slice(4))];   // every overtime together
+        const s = out.names.length ? 'H' : 'A', name = ls[1].replace(/[\s:,.—–-]+$/, ''), sum = add(q);
         out.names.push(name); out.lines[s] = q; out.total[s] = tot ?? sum;
         if (tot != null && tot !== sum) out.warn.push(`${name}’s quarters add up to ${sum}, but the total says ${tot}. Using ${tot}.`);
         sec = null; continue;
@@ -4762,7 +4770,7 @@ function parseBox(txt){
   // Quarters for the scoring plays, when the summary has no quarter headings: each team's running score
   // against its line score, quarter by quarter.
   if (!out.scoring.some(e => e.q)){
-    const nq = Math.max(out.lines.A.length, out.lines.H.length), run = {A:0, H:0}, thru = (s, i) => out.lines[s].slice(0, i + 1).reduce((a, b) => a + b, 0);
+    const nq = Math.max(out.lines.A.length, out.lines.H.length), run = {A:0, H:0}, thru = (s, i) => out.lines[s].slice(0, i + 1).reduce((a, b) => a + (b || 0), 0);
     let q = 0;
     out.scoring.forEach(e => { run[e.side] += e.pts; while (q < nq - 1 && thru(e.side, q) < run[e.side]) q++; e.q = q + 1; });
   }
@@ -4814,16 +4822,19 @@ function boxInto(game, st, S, scoring){
   const b = boxData(game);
   ['A', 'H'].forEach(s => {
     const q = b.lines[s] || [];
-    st.lines[s] = [0, 1, 2, 3, 4].map(i => +q[i] || 0);
-    st.score[s] = b.total && b.total[s] != null ? +b.total[s] : st.lines[s].reduce((a, v) => a + v, 0);
+    // A quarter the paste marked X (or left off) stays null, so the line score shows an X rather than a 0.
+    st.lines[s] = [0, 1, 2, 3, 4].map(i => i < q.length ? (q[i] == null ? null : +q[i] || 0) : null);
+    st.score[s] = b.total && b.total[s] != null ? +b.total[s] : st.lines[s].reduce((a, v) => a + (v || 0), 0);
     Object.assign(S.team[s], b.team[s] || {});
     S.pl[s] = {};
     // Longest gains and sacks aren't in a box score: blank, not zero.
     Object.entries(b.pl[s] || {}).forEach(([k, p]) => { S.pl[s][k] = Object.assign(zeros(PL_KEYS), {plg:'', rlg:'', relg:'', psk:''}, p, {n:k}); });
   });
-  // A box score only lists the quarters that were played, so a mercy-shortened game shows an X for the rest.
-  const nq = Math.max(b.lines.A.length, b.lines.H.length);
-  Object.assign(st, {final:true, phase:'final', q:nq > 4 ? 5 : 4, qPlayed:Math.min(nq, 5), drive:null});
+  // A box score only lists the quarters that were played, so a mercy-shortened game shows an X for the rest —
+  // whether the paste stopped short or spelled the unplayed quarters out as X.
+  // Count only the columns that carry a figure: a trailing X (or a blank OT slot) must not read as overtime.
+  const played = ['A', 'H'].reduce((n, s) => st.lines[s].reduce((m, v, i) => v != null && i + 1 > m ? i + 1 : m, n), 0);
+  Object.assign(st, {final:true, phase:'final', q:played > 4 ? 5 : 4, qPlayed:Math.min(played, 5), typed:true, drive:null});
   const run = {A:0, H:0};
   (b.scoring || []).forEach(e => { run[e.side] += e.pts || 0; scoring.push({q:e.q || 4, clk:null, side:e.side, how:e.how, desc:e.desc, A:run.A, H:run.H, i:-1}); });
 }
