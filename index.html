@@ -845,9 +845,10 @@ body.viewer .pl:hover{background:none}
   /* glass: a light tint, a lit rim (bright top-left, dim bottom-right), a sheen across the top */
   --glass-tint:linear-gradient(180deg,rgba(255,255,255,.62),rgba(255,255,255,.34) 38%,rgba(255,255,255,.44));
   --glass-rim:linear-gradient(140deg,rgba(255,255,255,.95),rgba(255,255,255,.28) 38%,rgba(255,255,255,.18) 62%,rgba(255,255,255,.7));
-  /* Blur costs rise steeply with the radius, and every frame of a scroll pays it: 10px reads the same at this
-     tint but is a fraction of the work. Same for the shadow — a 40px spread over 90 elements is a lot of paint. */
-  --glass-blur:blur(10px) saturate(1.8);
+  /* Blur costs rise steeply with the radius and every frame of a scroll pays it, but take it too far and the
+     glass goes flat: 20px still looks like glass and paints a good deal less than 28. The shadow is the other
+     paint cost — a 40px spread over 90 elements — and trimming it doesn't show. */
+  --glass-blur:blur(20px) saturate(1.9);
   --glass-depth:0 8px 18px rgba(30,40,90,.12),0 1px 3px rgba(30,40,90,.05);
   --tint:rgba(0,113,227,.10); --fill:rgba(118,118,128,.14);
   --shadow:0 4px 24px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04); --shadow-sm:0 1px 3px rgba(0,0,0,.06);
@@ -869,13 +870,6 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .navbar,.scores,.gtabs,.bcard,.hcard,.card,.navmenu{border:1px solid transparent;
   background:var(--glass-tint) padding-box,var(--glass-rim) border-box;
   -webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
-/* Phones: the bars keep the glass, the cards don't. A card is tall and scrolls, so its blurred backdrop is
-   redrawn the whole way down the page — several screens' worth on a game — which is what makes scrolling choppy.
-   Behind a card is only the soft fixed wallpaper, so the tint, rim and shadow carry the look without it. */
-@media (max-width:800px){
-  .bcard,.hcard,.card{-webkit-backdrop-filter:none;backdrop-filter:none;
-    background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.78) 38%,rgba(255,255,255,.84)) padding-box,var(--glass-rim) border-box}
-}
 
 /* ---------- apple.com's dark frosted global bar ---------- */
 .sitebar{background:rgba(22,22,23,.72);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6)}
@@ -902,7 +896,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 /* menus are read, not looked through: nearly solid frosted white, so they stay readable over pictures */
 .navmenu{top:calc(100% + 8px);border-radius:20px;box-shadow:0 18px 50px rgba(30,40,90,.22),0 2px 8px rgba(30,40,90,.08);
   background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.92)) padding-box,var(--glass-rim) border-box;
-  -webkit-backdrop-filter:blur(16px) saturate(1.6);backdrop-filter:blur(16px) saturate(1.6)}
+  -webkit-backdrop-filter:blur(28px) saturate(1.8);backdrop-filter:blur(28px) saturate(1.8)}
 .navbar{background:linear-gradient(180deg,rgba(255,255,255,.84),rgba(255,255,255,.72)) padding-box,var(--glass-rim) border-box}
 .navmenu::before{display:none}
 .navmenu a{color:var(--ink);font-size:15px}
