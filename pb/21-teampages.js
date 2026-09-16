@@ -125,6 +125,7 @@ const recParts = r => r ? [r.rec, r.home && `${r.home} Home`, r.away && `${r.awa
 async function startTeamPage(){
   ui.viewer = true; ui.teamPage = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
+  loadLogos();   // the school list: without it "Haysville Campus" and "Campus" are two different schools
   renderTeamPage();
   // The admin's own devices sign in here too, for Edit record.
   let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
@@ -167,7 +168,8 @@ function teamsIndexHtml(){
 
 function teamPageHtml(nameIn){
   const k = canonSchool(nameIn), rows = schoolRows(nameIn), any = rows[0], tm = any ? any.x.teams[any.side] : null;
-  const name = COUNTY.find(n => canonSchool(n) === k) || (tm && tm.name) || nameIn;
+  const lib = (logoLib.list || []).find(t => logoSlug(t.name) === k);
+  const name = COUNTY.find(n => canonSchool(n) === k) || (lib && lib.name) || (tm && tm.name) || nameIn;
   tpage.name = name; document.title = `${name} · Kansas Media Stats`;
   const inCounty = COUNTY.some(n => canonSchool(n) === k), r = shownRecord(name);
   const mark = {name, abbr:(tm && tm.abbr) || shortName(name), color:(tm && tm.color) || '#4A4B4D'};

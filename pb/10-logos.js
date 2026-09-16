@@ -13,7 +13,14 @@ function loadLogos(){
   // Check for a newer list every time (a changed school name or logo shows right away, not after the browser's cache).
   Promise.all(LOGO_SRC.map(src => fetch(src.base + 'teams.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : []).catch(() => [])
     .then(list => { src.list = Array.isArray(list) ? list : []; })))
-    .then(() => { logoLib.list = LOGO_SRC.flatMap(src => src.list); if (g && R) refresh(); else { renderScoreboard(); renderCounty(); } });
+    .then(() => {
+      logoLib.list = LOGO_SRC.flatMap(src => src.list);
+      // Two names for one school only merge once the library is here, so anything already filed under the
+      // other name has to be filed again — or a school's page finds none of its own games.
+      schoolIdx = null;          // keyed by canonical name as well, so it is built again
+      if (allGames.list) indexGames();
+      if (g && R) refresh(); else { renderScoreboard(); renderCounty(); renderTeamPage(); renderStandings(); }
+    });
 }
 /* ---------- the school list, for picking a school instead of typing one ----------
    Every school the logo library knows, so a game can't be started against a school that doesn't exist (a typo

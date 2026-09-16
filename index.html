@@ -3229,7 +3229,14 @@ function loadLogos(){
   // Check for a newer list every time (a changed school name or logo shows right away, not after the browser's cache).
   Promise.all(LOGO_SRC.map(src => fetch(src.base + 'teams.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : []).catch(() => [])
     .then(list => { src.list = Array.isArray(list) ? list : []; })))
-    .then(() => { logoLib.list = LOGO_SRC.flatMap(src => src.list); if (g && R) refresh(); else { renderScoreboard(); renderCounty(); } });
+    .then(() => {
+      logoLib.list = LOGO_SRC.flatMap(src => src.list);
+      // Two names for one school only merge once the library is here, so anything already filed under the
+      // other name has to be filed again — or a school's page finds none of its own games.
+      schoolIdx = null;          // keyed by canonical name as well, so it is built again
+      if (allGames.list) indexGames();
+      if (g && R) refresh(); else { renderScoreboard(); renderCounty(); renderTeamPage(); renderStandings(); }
+    });
 }
 /* ---------- the school list, for picking a school instead of typing one ----------
    Every school the logo library knows, so a game can't be started against a school that doesn't exist (a typo
@@ -6521,6 +6528,7 @@ const recParts = r => r ? [r.rec, r.home && `${r.home} Home`, r.away && `${r.awa
 async function startTeamPage(){
   ui.viewer = true; ui.teamPage = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
+  loadLogos();   // the school list: without it "Haysville Campus" and "Campus" are two different schools
   renderTeamPage();
   // The admin's own devices sign in here too, for Edit record.
   let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
@@ -6563,7 +6571,8 @@ function teamsIndexHtml(){
 
 function teamPageHtml(nameIn){
   const k = canonSchool(nameIn), rows = schoolRows(nameIn), any = rows[0], tm = any ? any.x.teams[any.side] : null;
-  const name = COUNTY.find(n => canonSchool(n) === k) || (tm && tm.name) || nameIn;
+  const lib = (logoLib.list || []).find(t => logoSlug(t.name) === k);
+  const name = COUNTY.find(n => canonSchool(n) === k) || (lib && lib.name) || (tm && tm.name) || nameIn;
   tpage.name = name; document.title = `${name} · Kansas Media Stats`;
   const inCounty = COUNTY.some(n => canonSchool(n) === k), r = shownRecord(name);
   const mark = {name, abbr:(tm && tm.abbr) || shortName(name), color:(tm && tm.color) || '#4A4B4D'};
@@ -6948,11 +6957,13 @@ const SCHOOL_INFO = {   // school: [class, league]
   'Belle Plaine': ['1A', 'Central Plains League'],
   'Bluestem': ['1A', 'Tri-Valley League'],
   'Buhler': ['4A', 'AVCTL-III'],
+  'Campus': ['6A', 'AVCTL-I'],
   'Central Burden': ['8M-I', 'South Central Border League'],
   'Chanute': ['4A', 'Southeast Kansas League'],
   'Cherryvale': ['2A', 'Tri-Valley League'],
   'Circle': ['4A', 'AVCTL-III'],
   'Clearwater': ['3A', 'AVCTL-IV'],
+  'Derby': ['6A', 'AVCTL-I'],
   'Colony-Crest': ['8M-II', 'Three Rivers League'],
   'Conway Springs': ['1A', 'Central Plains League'],
   'Douglass': ['2A', 'Central Plains League'],
@@ -6988,6 +6999,7 @@ const SCHOOL_INFO = {   // school: [class, league]
   'Remington': ['1A', 'Heart of America'],
   'Rose Hill': ['4A', 'AVCTL-IV'],
   'Salina Central': ['5A', 'AVCTL-II'],
+  'Salina South': ['5A', 'AVCTL-I'],
   'Sedan': ['8M-II', 'South Central Border League'],
   'Sedgwick': ['1A', 'Heart of America'],
   'St. Paul': ['8M-II', 'Three Rivers League'],
