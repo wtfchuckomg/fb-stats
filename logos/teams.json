@@ -1,0 +1,3238 @@
+[
+ {
+  "name": "Abilene",
+  "slug": "abilene",
+  "file": "Abilene.png",
+  "city": "",
+  "w": 230,
+  "h": 217,
+  "aliases": []
+ },
+ {
+  "name": "Altoona-Midway",
+  "slug": "altoona-midway",
+  "file": "Altoona-Midway.png",
+  "city": "",
+  "w": 400,
+  "h": 324,
+  "aliases": []
+ },
+ {
+  "name": "Andale",
+  "slug": "andale",
+  "file": "Andale.png",
+  "city": "",
+  "w": 400,
+  "h": 347,
+  "aliases": []
+ },
+ {
+  "name": "Anderson County",
+  "slug": "anderson-county",
+  "file": "Anderson County.png",
+  "city": "",
+  "w": 400,
+  "h": 246,
+  "aliases": []
+ },
+ {
+  "name": "Andover Central",
+  "slug": "andover-central",
+  "file": "Andover Central.png",
+  "city": "",
+  "w": 400,
+  "h": 150,
+  "aliases": []
+ },
+ {
+  "name": "Andover",
+  "slug": "andover",
+  "file": "Andover.png",
+  "city": "",
+  "w": 400,
+  "h": 266,
+  "aliases": []
+ },
+ {
+  "name": "Argonia",
+  "slug": "argonia",
+  "file": "Argonia.png",
+  "city": "",
+  "w": 400,
+  "h": 383,
+  "aliases": []
+ },
+ {
+  "name": "Arkansas City",
+  "slug": "arkansas-city",
+  "file": "Arkansas City.png",
+  "city": "",
+  "w": 375,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Ashland",
+  "slug": "ashland",
+  "file": "Ashland.png",
+  "city": "",
+  "w": 400,
+  "h": 250,
+  "aliases": []
+ },
+ {
+  "name": "Atchison County",
+  "slug": "atchison-county",
+  "file": "Atchison County.png",
+  "city": "",
+  "w": 400,
+  "h": 199,
+  "aliases": []
+ },
+ {
+  "name": "Atchison",
+  "slug": "atchison",
+  "file": "Atchison.png",
+  "city": "",
+  "w": 400,
+  "h": 320,
+  "aliases": []
+ },
+ {
+  "name": "Attica-Argonia",
+  "slug": "attica-argonia",
+  "file": "Attica-Argonia.png",
+  "city": "",
+  "w": 400,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Attica",
+  "slug": "attica",
+  "file": "Attica.png",
+  "city": "",
+  "w": 400,
+  "h": 350,
+  "aliases": []
+ },
+ {
+  "name": "Augusta",
+  "slug": "augusta",
+  "file": "Augusta.png",
+  "city": "",
+  "w": 400,
+  "h": 270,
+  "aliases": []
+ },
+ {
+  "name": "Axtell",
+  "slug": "axtell",
+  "file": "Axtell.png",
+  "city": "",
+  "w": 400,
+  "h": 165,
+  "aliases": []
+ },
+ {
+  "name": "BV Randolph",
+  "slug": "bv-randolph",
+  "file": "BV Randolph.png",
+  "city": "",
+  "w": 387,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Baldwin",
+  "slug": "baldwin",
+  "file": "Baldwin.png",
+  "city": "",
+  "w": 400,
+  "h": 330,
+  "aliases": []
+ },
+ {
+  "name": "Basehor-Linwood",
+  "slug": "basehor-linwood",
+  "file": "Basehor-Linwood.png",
+  "city": "",
+  "w": 400,
+  "h": 287,
+  "aliases": []
+ },
+ {
+  "name": "Baxter Springs",
+  "slug": "baxter-springs",
+  "file": "Baxter Springs.png",
+  "city": "",
+  "w": 300,
+  "h": 230,
+  "aliases": []
+ },
+ {
+  "name": "Belle Plaine",
+  "slug": "belle-plaine",
+  "file": "Belle Plaine.png",
+  "city": "",
+  "w": 400,
+  "h": 243,
+  "aliases": []
+ },
+ {
+  "name": "Beloit",
+  "slug": "beloit",
+  "file": "Beloit.png",
+  "city": "",
+  "w": 380,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Bennington",
+  "slug": "bennington",
+  "file": "Bennington.png",
+  "city": "",
+  "w": 400,
+  "h": 240,
+  "aliases": []
+ },
+ {
+  "name": "Berean",
+  "slug": "berean",
+  "file": "Berean.png",
+  "city": "",
+  "w": 400,
+  "h": 278,
+  "aliases": []
+ },
+ {
+  "name": "Bishop Carroll",
+  "slug": "bishop-carroll",
+  "file": "Bishop Carroll.png",
+  "city": "",
+  "w": 373,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Bishop Miege",
+  "slug": "bishop-miege",
+  "file": "Bishop Miege.png",
+  "city": "",
+  "w": 207,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Bishop Seabury",
+  "slug": "bishop-seabury",
+  "file": "Bishop Seabury.png",
+  "city": "",
+  "w": 400,
+  "h": 257,
+  "aliases": []
+ },
+ {
+  "name": "Bishop Ward",
+  "slug": "bishop-ward",
+  "file": "Bishop Ward.png",
+  "city": "",
+  "w": 400,
+  "h": 288,
+  "aliases": []
+ },
+ {
+  "name": "Blue Valley North",
+  "slug": "blue-valley-north",
+  "file": "Blue Valley North.png",
+  "city": "",
+  "w": 400,
+  "h": 336,
+  "aliases": []
+ },
+ {
+  "name": "Blue Valley Northwest",
+  "slug": "blue-valley-northwest",
+  "file": "Blue Valley Northwest.png",
+  "city": "",
+  "w": 376,
+  "h": 400,
+  "aliases": [
+   "BV Northwest",
+   "BVNW"
+  ]
+ },
+ {
+  "name": "Blue Valley Southwest",
+  "slug": "blue-valley-southwest",
+  "file": "Blue Valley Southwest.png",
+  "city": "",
+  "w": 287,
+  "h": 400,
+  "aliases": [
+   "BV Southwest",
+   "BVSW"
+  ]
+ },
+ {
+  "name": "Blue Valley West",
+  "slug": "blue-valley-west",
+  "file": "Blue Valley West.png",
+  "city": "",
+  "w": 297,
+  "h": 237,
+  "aliases": [
+   "BV West",
+   "BVW"
+  ]
+ },
+ {
+  "name": "Blue Valley",
+  "slug": "blue-valley",
+  "file": "Blue Valley.png",
+  "city": "",
+  "w": 400,
+  "h": 241,
+  "aliases": [
+   "BV"
+  ]
+ },
+ {
+  "name": "Bluestem",
+  "slug": "bluestem",
+  "file": "Bluestem.png",
+  "city": "",
+  "w": 400,
+  "h": 245,
+  "aliases": [
+   "Leon-Bluestem"
+  ]
+ },
+ {
+  "name": "Bonner Springs",
+  "slug": "bonner-springs",
+  "file": "Bonner Springs.png",
+  "city": "",
+  "w": 400,
+  "h": 384,
+  "aliases": []
+ },
+ {
+  "name": "Bucklin",
+  "slug": "bucklin",
+  "file": "Bucklin.png",
+  "city": "",
+  "w": 400,
+  "h": 254,
+  "aliases": []
+ },
+ {
+  "name": "Buhler",
+  "slug": "buhler",
+  "file": "Buhler.png",
+  "city": "",
+  "w": 396,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Burlingame",
+  "slug": "burlingame",
+  "file": "Burlingame.png",
+  "city": "",
+  "w": 250,
+  "h": 214,
+  "aliases": []
+ },
+ {
+  "name": "Burlington",
+  "slug": "burlington",
+  "file": "Burlington.png",
+  "city": "",
+  "w": 400,
+  "h": 310,
+  "aliases": []
+ },
+ {
+  "name": "Burrton",
+  "slug": "burrton",
+  "file": "Burrton.png",
+  "city": "",
+  "w": 400,
+  "h": 320,
+  "aliases": []
+ },
+ {
+  "name": "Cair Paravel",
+  "slug": "cair-paravel",
+  "file": "Cair Paravel.png",
+  "city": "",
+  "w": 375,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Caldwell",
+  "slug": "caldwell",
+  "file": "Caldwell.png",
+  "city": "",
+  "w": 400,
+  "h": 298,
+  "aliases": []
+ },
+ {
+  "name": "Campus",
+  "slug": "campus",
+  "file": "Campus.png",
+  "city": "",
+  "w": 319,
+  "h": 195,
+  "aliases": [
+   "Haysville Campus"
+  ]
+ },
+ {
+  "name": "Caney Valley",
+  "slug": "caney-valley",
+  "file": "Caney Valley.png",
+  "city": "",
+  "w": 379,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Canton-Galva",
+  "slug": "canton-galva",
+  "file": "Canton-Galva.png",
+  "city": "",
+  "w": 400,
+  "h": 174,
+  "aliases": []
+ },
+ {
+  "name": "Cedar Vale-Dexter",
+  "slug": "cedar-vale-dexter",
+  "file": "Cedar Vale-Dexter.png",
+  "city": "",
+  "w": 361,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Central Christian",
+  "slug": "central-christian",
+  "file": "Central Christian.png",
+  "city": "",
+  "w": 400,
+  "h": 217,
+  "aliases": [
+   "Hutch Central Christian",
+   "Hutchinson Central Christian"
+  ]
+ },
+ {
+  "name": "Central Heights",
+  "slug": "central-heights",
+  "file": "Central Heights.png",
+  "city": "",
+  "w": 400,
+  "h": 362,
+  "aliases": []
+ },
+ {
+  "name": "Central Plains",
+  "slug": "central-plains",
+  "file": "Central Plains.png",
+  "city": "",
+  "w": 216,
+  "h": 250,
+  "aliases": []
+ },
+ {
+  "name": "Central",
+  "slug": "central",
+  "file": "Central.png",
+  "city": "",
+  "w": 350,
+  "h": 400,
+  "aliases": [
+   "Central Burden"
+  ]
+ },
+ {
+  "name": "Centralia",
+  "slug": "centralia",
+  "file": "Centralia.png",
+  "city": "",
+  "w": 400,
+  "h": 303,
+  "aliases": []
+ },
+ {
+  "name": "Centre",
+  "slug": "centre",
+  "file": "Centre.png",
+  "city": "",
+  "w": 400,
+  "h": 206,
+  "aliases": []
+ },
+ {
+  "name": "Chanute",
+  "slug": "chanute",
+  "file": "Chanute.png",
+  "city": "",
+  "w": 400,
+  "h": 225,
+  "aliases": []
+ },
+ {
+  "name": "Chaparral",
+  "slug": "chaparral",
+  "file": "Chaparral.png",
+  "city": "",
+  "w": 391,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Chapman",
+  "slug": "chapman",
+  "file": "Chapman.png",
+  "city": "",
+  "w": 353,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Chase County",
+  "slug": "chase-county",
+  "file": "Chase County.png",
+  "city": "",
+  "w": 400,
+  "h": 368,
+  "aliases": []
+ },
+ {
+  "name": "Chase",
+  "slug": "chase",
+  "file": "Chase.png",
+  "city": "",
+  "w": 380,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Cheney",
+  "slug": "cheney",
+  "file": "Cheney.png",
+  "city": "",
+  "w": 261,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Cherryvale",
+  "slug": "cherryvale",
+  "file": "Cherryvale.png",
+  "city": "",
+  "w": 209,
+  "h": 250,
+  "aliases": []
+ },
+ {
+  "name": "Chetopa",
+  "slug": "chetopa",
+  "file": "Chetopa.png",
+  "city": "",
+  "w": 332,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Cheylin",
+  "slug": "cheylin",
+  "file": "Cheylin.png",
+  "city": "",
+  "w": 267,
+  "h": 202,
+  "aliases": []
+ },
+ {
+  "name": "Cimarron",
+  "slug": "cimarron",
+  "file": "Cimarron.png",
+  "city": "",
+  "w": 400,
+  "h": 292,
+  "aliases": []
+ },
+ {
+  "name": "Circle",
+  "slug": "circle",
+  "file": "Circle.png",
+  "city": "",
+  "w": 379,
+  "h": 400,
+  "aliases": [
+   "Towanda-Circle"
+  ]
+ },
+ {
+  "name": "Clay Center",
+  "slug": "clay-center",
+  "file": "Clay Center.png",
+  "city": "",
+  "w": 400,
+  "h": 335,
+  "aliases": []
+ },
+ {
+  "name": "Clearwater",
+  "slug": "clearwater",
+  "file": "Clearwater.png",
+  "city": "",
+  "w": 345,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Clifton-Clyde",
+  "slug": "clifton-clyde",
+  "file": "Clifton-Clyde.png",
+  "city": "",
+  "w": 400,
+  "h": 172,
+  "aliases": []
+ },
+ {
+  "name": "Coffeyville",
+  "slug": "coffeyville",
+  "file": "Coffeyville.png",
+  "city": "",
+  "w": 400,
+  "h": 350,
+  "aliases": [
+   "Field Kindley"
+  ]
+ },
+ {
+  "name": "Colby",
+  "slug": "colby",
+  "file": "Colby.png",
+  "city": "",
+  "w": 400,
+  "h": 335,
+  "aliases": []
+ },
+ {
+  "name": "Colony-Crest",
+  "slug": "colony-crest",
+  "file": "Colony-Crest.png",
+  "city": "",
+  "w": 400,
+  "h": 380,
+  "aliases": []
+ },
+ {
+  "name": "Columbus",
+  "slug": "columbus",
+  "file": "Columbus.png",
+  "city": "",
+  "w": 250,
+  "h": 232,
+  "aliases": []
+ },
+ {
+  "name": "Concordia",
+  "slug": "concordia",
+  "file": "Concordia.png",
+  "city": "",
+  "w": 400,
+  "h": 366,
+  "aliases": []
+ },
+ {
+  "name": "Conway Springs",
+  "slug": "conway-springs",
+  "file": "Conway Springs.png",
+  "city": "",
+  "w": 400,
+  "h": 230,
+  "aliases": []
+ },
+ {
+  "name": "Council Grove",
+  "slug": "council-grove",
+  "file": "Council Grove.png",
+  "city": "",
+  "w": 283,
+  "h": 351,
+  "aliases": []
+ },
+ {
+  "name": "Cunningham",
+  "slug": "cunningham",
+  "file": "Cunningham.png",
+  "city": "",
+  "w": 400,
+  "h": 273,
+  "aliases": []
+ },
+ {
+  "name": "De Soto",
+  "slug": "de-soto",
+  "file": "De Soto.png",
+  "city": "",
+  "w": 400,
+  "h": 390,
+  "aliases": []
+ },
+ {
+  "name": "Decatur",
+  "slug": "decatur",
+  "file": "Decatur.png",
+  "city": "",
+  "w": 300,
+  "h": 250,
+  "aliases": [
+   "Decatur Community",
+   "Oberlin-Decatur"
+  ]
+ },
+ {
+  "name": "Deerfield",
+  "slug": "deerfield",
+  "file": "Deerfield.png",
+  "city": "",
+  "w": 382,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Derby",
+  "slug": "derby",
+  "file": "Derby.png",
+  "city": "",
+  "w": 400,
+  "h": 386,
+  "aliases": []
+ },
+ {
+  "name": "Dighton",
+  "slug": "dighton",
+  "file": "Dighton.png",
+  "city": "",
+  "w": 333,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Dodge City",
+  "slug": "dodge-city",
+  "file": "Dodge City.png",
+  "city": "",
+  "w": 301,
+  "h": 336,
+  "aliases": []
+ },
+ {
+  "name": "Doniphan West",
+  "slug": "doniphan-west",
+  "file": "Doniphan West.png",
+  "city": "",
+  "w": 400,
+  "h": 228,
+  "aliases": []
+ },
+ {
+  "name": "Douglass",
+  "slug": "douglass",
+  "file": "Douglass.png",
+  "city": "",
+  "w": 400,
+  "h": 306,
+  "aliases": []
+ },
+ {
+  "name": "Eisenhower",
+  "slug": "eisenhower",
+  "file": "Eisenhower.png",
+  "city": "",
+  "w": 400,
+  "h": 296,
+  "aliases": [
+   "Goddard-Eisenhower"
+  ]
+ },
+ {
+  "name": "El Dorado",
+  "slug": "el-dorado",
+  "file": "El Dorado.png",
+  "city": "",
+  "w": 400,
+  "h": 308,
+  "aliases": []
+ },
+ {
+  "name": "Elk Valley",
+  "slug": "elk-valley",
+  "file": "Elk Valley.png",
+  "city": "",
+  "w": 400,
+  "h": 240,
+  "aliases": []
+ },
+ {
+  "name": "Elkhart",
+  "slug": "elkhart",
+  "file": "Elkhart.png",
+  "city": "",
+  "w": 400,
+  "h": 311,
+  "aliases": []
+ },
+ {
+  "name": "Ell-Saline",
+  "slug": "ell-saline",
+  "file": "Ell-Saline.png",
+  "city": "",
+  "w": 400,
+  "h": 283,
+  "aliases": []
+ },
+ {
+  "name": "Ellinwood",
+  "slug": "ellinwood",
+  "file": "Ellinwood.png",
+  "city": "",
+  "w": 400,
+  "h": 240,
+  "aliases": []
+ },
+ {
+  "name": "Ellis",
+  "slug": "ellis",
+  "file": "Ellis.png",
+  "city": "",
+  "w": 355,
+  "h": 256,
+  "aliases": []
+ },
+ {
+  "name": "Ellsworth",
+  "slug": "ellsworth",
+  "file": "Ellsworth.png",
+  "city": "",
+  "w": 400,
+  "h": 355,
+  "aliases": []
+ },
+ {
+  "name": "Elyria Christian",
+  "slug": "elyria-christian",
+  "file": "Elyria Christian.png",
+  "city": "",
+  "w": 400,
+  "h": 238,
+  "aliases": []
+ },
+ {
+  "name": "Emporia",
+  "slug": "emporia",
+  "file": "Emporia.png",
+  "city": "",
+  "w": 380,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Erie",
+  "slug": "erie",
+  "file": "Erie.png",
+  "city": "",
+  "w": 300,
+  "h": 250,
+  "aliases": []
+ },
+ {
+  "name": "Eudora",
+  "slug": "eudora",
+  "file": "Eudora.png",
+  "city": "",
+  "w": 400,
+  "h": 271,
+  "aliases": []
+ },
+ {
+  "name": "Eureka",
+  "slug": "eureka",
+  "file": "Eureka.png",
+  "city": "",
+  "w": 400,
+  "h": 394,
+  "aliases": []
+ },
+ {
+  "name": "Fairfield",
+  "slug": "fairfield",
+  "file": "Fairfield.png",
+  "city": "",
+  "w": 400,
+  "h": 261,
+  "aliases": []
+ },
+ {
+  "name": "Flinthills",
+  "slug": "flinthills",
+  "file": "Flinthills.png",
+  "city": "",
+  "w": 293,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Fort Scott",
+  "slug": "fort-scott",
+  "file": "Fort Scott.png",
+  "city": "",
+  "w": 250,
+  "h": 233,
+  "aliases": []
+ },
+ {
+  "name": "Frankfort",
+  "slug": "frankfort",
+  "file": "Frankfort.png",
+  "city": "",
+  "w": 400,
+  "h": 369,
+  "aliases": []
+ },
+ {
+  "name": "Fredonia",
+  "slug": "fredonia",
+  "file": "Fredonia.png",
+  "city": "",
+  "w": 287,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Frontenac",
+  "slug": "frontenac",
+  "file": "Frontenac.png",
+  "city": "",
+  "w": 323,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Galena",
+  "slug": "galena",
+  "file": "Galena.png",
+  "city": "",
+  "w": 384,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Garden City",
+  "slug": "garden-city",
+  "file": "Garden City.png",
+  "city": "",
+  "w": 400,
+  "h": 222,
+  "aliases": []
+ },
+ {
+  "name": "Garden Plain",
+  "slug": "garden-plain",
+  "file": "Garden Plain.png",
+  "city": "",
+  "w": 400,
+  "h": 313,
+  "aliases": []
+ },
+ {
+  "name": "Gardner-Edgerton",
+  "slug": "gardner-edgerton",
+  "file": "Gardner-Edgerton.png",
+  "city": "",
+  "w": 281,
+  "h": 188,
+  "aliases": []
+ },
+ {
+  "name": "Girard",
+  "slug": "girard",
+  "file": "Girard.png",
+  "city": "",
+  "w": 355,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Goddard",
+  "slug": "goddard",
+  "file": "Goddard.png",
+  "city": "",
+  "w": 400,
+  "h": 328,
+  "aliases": []
+ },
+ {
+  "name": "Goessel",
+  "slug": "goessel",
+  "file": "Goessel.png",
+  "city": "",
+  "w": 400,
+  "h": 138,
+  "aliases": []
+ },
+ {
+  "name": "Golden Plains",
+  "slug": "golden-plains",
+  "file": "Golden Plains.png",
+  "city": "",
+  "w": 400,
+  "h": 266,
+  "aliases": []
+ },
+ {
+  "name": "Goodland",
+  "slug": "goodland",
+  "file": "Goodland.png",
+  "city": "",
+  "w": 250,
+  "h": 242,
+  "aliases": []
+ },
+ {
+  "name": "Great Bend",
+  "slug": "great-bend",
+  "file": "Great Bend.png",
+  "city": "",
+  "w": 250,
+  "h": 188,
+  "aliases": []
+ },
+ {
+  "name": "Greeley County",
+  "slug": "greeley-county",
+  "file": "Greeley County.png",
+  "city": "",
+  "w": 343,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Halstead",
+  "slug": "halstead",
+  "file": "Halstead.png",
+  "city": "",
+  "w": 400,
+  "h": 248,
+  "aliases": []
+ },
+ {
+  "name": "Hanover",
+  "slug": "hanover",
+  "file": "Hanover.png",
+  "city": "",
+  "w": 400,
+  "h": 316,
+  "aliases": []
+ },
+ {
+  "name": "Harmon",
+  "slug": "harmon",
+  "file": "Harmon.png",
+  "city": "",
+  "w": 400,
+  "h": 237,
+  "aliases": [
+   "JC Harmon"
+  ]
+ },
+ {
+  "name": "Hartford",
+  "slug": "hartford",
+  "file": "Hartford.png",
+  "city": "",
+  "w": 400,
+  "h": 338,
+  "aliases": []
+ },
+ {
+  "name": "Haven",
+  "slug": "haven",
+  "file": "Haven.png",
+  "city": "",
+  "w": 400,
+  "h": 216,
+  "aliases": []
+ },
+ {
+  "name": "Hayden",
+  "slug": "hayden",
+  "file": "Hayden.png",
+  "city": "",
+  "w": 400,
+  "h": 358,
+  "aliases": [
+   "Topeka Hayden"
+  ]
+ },
+ {
+  "name": "Hays",
+  "slug": "hays",
+  "file": "Hays.png",
+  "city": "",
+  "w": 400,
+  "h": 264,
+  "aliases": []
+ },
+ {
+  "name": "Heights",
+  "slug": "heights",
+  "file": "Heights.png",
+  "city": "",
+  "w": 400,
+  "h": 380,
+  "aliases": []
+ },
+ {
+  "name": "Herington",
+  "slug": "herington",
+  "file": "Herington.png",
+  "city": "",
+  "w": 400,
+  "h": 276,
+  "aliases": []
+ },
+ {
+  "name": "Hesston",
+  "slug": "hesston",
+  "file": "Hesston.png",
+  "city": "",
+  "w": 400,
+  "h": 260,
+  "aliases": []
+ },
+ {
+  "name": "Hiawatha",
+  "slug": "hiawatha",
+  "file": "Hiawatha.png",
+  "city": "",
+  "w": 400,
+  "h": 332,
+  "aliases": []
+ },
+ {
+  "name": "Highland Park",
+  "slug": "highland-park",
+  "file": "Highland Park.png",
+  "city": "",
+  "w": 400,
+  "h": 196,
+  "aliases": []
+ },
+ {
+  "name": "Hill City",
+  "slug": "hill-city",
+  "file": "Hill City.png",
+  "city": "",
+  "w": 400,
+  "h": 288,
+  "aliases": []
+ },
+ {
+  "name": "Hillsboro",
+  "slug": "hillsboro",
+  "file": "Hillsboro.png",
+  "city": "",
+  "w": 386,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Hodgeman County",
+  "slug": "hodgeman-county",
+  "file": "Hodgeman County.png",
+  "city": "",
+  "w": 400,
+  "h": 204,
+  "aliases": []
+ },
+ {
+  "name": "Hoisington",
+  "slug": "hoisington",
+  "file": "Hoisington.png",
+  "city": "",
+  "w": 340,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Holcomb",
+  "slug": "holcomb",
+  "file": "Holcomb.png",
+  "city": "",
+  "w": 300,
+  "h": 168,
+  "aliases": []
+ },
+ {
+  "name": "Holton",
+  "slug": "holton",
+  "file": "Holton.png",
+  "city": "",
+  "w": 400,
+  "h": 366,
+  "aliases": []
+ },
+ {
+  "name": "Horton",
+  "slug": "horton",
+  "file": "Horton.png",
+  "city": "",
+  "w": 400,
+  "h": 195,
+  "aliases": []
+ },
+ {
+  "name": "Hoxie",
+  "slug": "hoxie",
+  "file": "Hoxie.png",
+  "city": "",
+  "w": 389,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Hugoton",
+  "slug": "hugoton",
+  "file": "Hugoton.png",
+  "city": "",
+  "w": 400,
+  "h": 230,
+  "aliases": []
+ },
+ {
+  "name": "Humboldt",
+  "slug": "humboldt",
+  "file": "Humboldt.png",
+  "city": "",
+  "w": 400,
+  "h": 383,
+  "aliases": []
+ },
+ {
+  "name": "Hutch Trinity",
+  "slug": "hutch-trinity",
+  "file": "Hutch Trinity.png",
+  "city": "",
+  "w": 258,
+  "h": 400,
+  "aliases": [
+   "Hutchinson Trinity"
+  ]
+ },
+ {
+  "name": "Hutchinson",
+  "slug": "hutchinson",
+  "file": "Hutchinson.png",
+  "city": "",
+  "w": 400,
+  "h": 236,
+  "aliases": []
+ },
+ {
+  "name": "Independence",
+  "slug": "independence",
+  "file": "Independence.png",
+  "city": "",
+  "w": 400,
+  "h": 329,
+  "aliases": []
+ },
+ {
+  "name": "Ingalls",
+  "slug": "ingalls",
+  "file": "Ingalls.png",
+  "city": "",
+  "w": 400,
+  "h": 310,
+  "aliases": []
+ },
+ {
+  "name": "Inman",
+  "slug": "inman",
+  "file": "Inman.png",
+  "city": "",
+  "w": 344,
+  "h": 362,
+  "aliases": []
+ },
+ {
+  "name": "Iola",
+  "slug": "iola",
+  "file": "Iola.png",
+  "city": "",
+  "w": 250,
+  "h": 123,
+  "aliases": []
+ },
+ {
+  "name": "Jackson Heights",
+  "slug": "jackson-heights",
+  "file": "Jackson Heights.png",
+  "city": "",
+  "w": 400,
+  "h": 309,
+  "aliases": []
+ },
+ {
+  "name": "Jayhawk-Linn",
+  "slug": "jayhawk-linn",
+  "file": "Jayhawk-Linn.png",
+  "city": "",
+  "w": 359,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Jefferson County North",
+  "slug": "jefferson-county-north",
+  "file": "Jefferson County North.png",
+  "city": "",
+  "w": 283,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Jefferson West",
+  "slug": "jefferson-west",
+  "file": "Jefferson West.png",
+  "city": "",
+  "w": 400,
+  "h": 387,
+  "aliases": []
+ },
+ {
+  "name": "Jennings",
+  "slug": "jennings",
+  "file": "Jennings.png",
+  "city": "",
+  "w": 130,
+  "h": 137,
+  "aliases": []
+ },
+ {
+  "name": "Junction City",
+  "slug": "junction-city",
+  "file": "Junction City.png",
+  "city": "",
+  "w": 312,
+  "h": 322,
+  "aliases": []
+ },
+ {
+  "name": "KC Sumner",
+  "slug": "kc-sumner",
+  "file": "KC Sumner.png",
+  "city": "",
+  "w": 400,
+  "h": 304,
+  "aliases": []
+ },
+ {
+  "name": "Kansas City Christian",
+  "slug": "kansas-city-christian",
+  "file": "Kansas City Christian.png",
+  "city": "",
+  "w": 400,
+  "h": 249,
+  "aliases": []
+ },
+ {
+  "name": "Kansas School for the Deaf",
+  "slug": "kansas-school-for-the-deaf",
+  "file": "Kansas School for the Deaf.png",
+  "city": "",
+  "w": 400,
+  "h": 336,
+  "aliases": []
+ },
+ {
+  "name": "Kapaun Mt Carmel",
+  "slug": "kapaun-mt-carmel",
+  "file": "Kapaun Mt Carmel.png",
+  "city": "",
+  "w": 205,
+  "h": 280,
+  "aliases": []
+ },
+ {
+  "name": "Kingman",
+  "slug": "kingman",
+  "file": "Kingman.png",
+  "city": "",
+  "w": 400,
+  "h": 220,
+  "aliases": []
+ },
+ {
+  "name": "Kinsley",
+  "slug": "kinsley",
+  "file": "Kinsley.png",
+  "city": "",
+  "w": 400,
+  "h": 365,
+  "aliases": []
+ },
+ {
+  "name": "Kiowa County",
+  "slug": "kiowa-county",
+  "file": "Kiowa County.png",
+  "city": "",
+  "w": 400,
+  "h": 200,
+  "aliases": []
+ },
+ {
+  "name": "La Crosse",
+  "slug": "la-crosse",
+  "file": "La Crosse.png",
+  "city": "",
+  "w": 400,
+  "h": 320,
+  "aliases": []
+ },
+ {
+  "name": "Labette County",
+  "slug": "labette-county",
+  "file": "Labette County.png",
+  "city": "",
+  "w": 250,
+  "h": 234,
+  "aliases": []
+ },
+ {
+  "name": "Lakeside",
+  "slug": "lakeside",
+  "file": "Lakeside.png",
+  "city": "",
+  "w": 400,
+  "h": 232,
+  "aliases": []
+ },
+ {
+  "name": "Lakin",
+  "slug": "lakin",
+  "file": "Lakin.png",
+  "city": "",
+  "w": 400,
+  "h": 301,
+  "aliases": []
+ },
+ {
+  "name": "Lansing",
+  "slug": "lansing",
+  "file": "Lansing.png",
+  "city": "",
+  "w": 400,
+  "h": 338,
+  "aliases": []
+ },
+ {
+  "name": "Larned",
+  "slug": "larned",
+  "file": "Larned.png",
+  "city": "",
+  "w": 202,
+  "h": 250,
+  "aliases": []
+ },
+ {
+  "name": "Lawrence Free State",
+  "slug": "lawrence-free-state",
+  "file": "Lawrence Free State.png",
+  "city": "",
+  "w": 281,
+  "h": 349,
+  "aliases": [
+   "Free State"
+  ]
+ },
+ {
+  "name": "Lawrence",
+  "slug": "lawrence",
+  "file": "Lawrence.png",
+  "city": "",
+  "w": 112,
+  "h": 200,
+  "aliases": []
+ },
+ {
+  "name": "Leavenworth",
+  "slug": "leavenworth",
+  "file": "Leavenworth.png",
+  "city": "",
+  "w": 317,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Lebo",
+  "slug": "lebo",
+  "file": "Lebo.png",
+  "city": "",
+  "w": 273,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Liberal",
+  "slug": "liberal",
+  "file": "Liberal.png",
+  "city": "",
+  "w": 270,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Life Prep",
+  "slug": "life-prep",
+  "file": "Life Prep.png",
+  "city": "",
+  "w": 179,
+  "h": 173,
+  "aliases": []
+ },
+ {
+  "name": "Lincoln",
+  "slug": "lincoln",
+  "file": "Lincoln.png",
+  "city": "",
+  "w": 400,
+  "h": 350,
+  "aliases": []
+ },
+ {
+  "name": "Linn",
+  "slug": "linn",
+  "file": "Linn.png",
+  "city": "",
+  "w": 370,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Little River",
+  "slug": "little-river",
+  "file": "Little River.png",
+  "city": "",
+  "w": 374,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Logan",
+  "slug": "logan",
+  "file": "Logan.png",
+  "city": "",
+  "w": 400,
+  "h": 356,
+  "aliases": []
+ },
+ {
+  "name": "Louisburg",
+  "slug": "louisburg",
+  "file": "Louisburg.png",
+  "city": "",
+  "w": 400,
+  "h": 386,
+  "aliases": []
+ },
+ {
+  "name": "Lyndon",
+  "slug": "lyndon",
+  "file": "Lyndon.png",
+  "city": "",
+  "w": 210,
+  "h": 151,
+  "aliases": []
+ },
+ {
+  "name": "Lyons",
+  "slug": "lyons",
+  "file": "Lyons.png",
+  "city": "",
+  "w": 361,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Macksville",
+  "slug": "macksville",
+  "file": "Macksville.png",
+  "city": "",
+  "w": 250,
+  "h": 196,
+  "aliases": []
+ },
+ {
+  "name": "Madison",
+  "slug": "madison",
+  "file": "Madison.png",
+  "city": "",
+  "w": 332,
+  "h": 289,
+  "aliases": []
+ },
+ {
+  "name": "Maize South",
+  "slug": "maize-south",
+  "file": "Maize South.png",
+  "city": "",
+  "w": 186,
+  "h": 151,
+  "aliases": [
+   "Maize S"
+  ]
+ },
+ {
+  "name": "Maize",
+  "slug": "maize",
+  "file": "Maize.png",
+  "city": "",
+  "w": 400,
+  "h": 175,
+  "aliases": []
+ },
+ {
+  "name": "Manhattan",
+  "slug": "manhattan",
+  "file": "Manhattan.png",
+  "city": "",
+  "w": 400,
+  "h": 375,
+  "aliases": []
+ },
+ {
+  "name": "Marais des Cygnes Valley",
+  "slug": "marais-des-cygnes-valley",
+  "file": "Marais des Cygnes Valley.png",
+  "city": "",
+  "w": 400,
+  "h": 342,
+  "aliases": []
+ },
+ {
+  "name": "Maranatha",
+  "slug": "maranatha",
+  "file": "Maranatha.png",
+  "city": "",
+  "w": 90,
+  "h": 81,
+  "aliases": []
+ },
+ {
+  "name": "Marion",
+  "slug": "marion",
+  "file": "Marion.png",
+  "city": "",
+  "w": 395,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Marmaton Valley",
+  "slug": "marmaton-valley",
+  "file": "Marmaton Valley.png",
+  "city": "",
+  "w": 354,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Marysville",
+  "slug": "marysville",
+  "file": "Marysville.png",
+  "city": "",
+  "w": 400,
+  "h": 321,
+  "aliases": []
+ },
+ {
+  "name": "Maur Hill-Mount",
+  "slug": "maur-hill-mount",
+  "file": "Maur Hill-Mount.png",
+  "city": "",
+  "w": 212,
+  "h": 250,
+  "aliases": []
+ },
+ {
+  "name": "McLouth",
+  "slug": "mclouth",
+  "file": "McLouth.png",
+  "city": "",
+  "w": 400,
+  "h": 363,
+  "aliases": []
+ },
+ {
+  "name": "McPherson",
+  "slug": "mcpherson",
+  "file": "McPherson.png",
+  "city": "",
+  "w": 400,
+  "h": 398,
+  "aliases": []
+ },
+ {
+  "name": "Meade",
+  "slug": "meade",
+  "file": "Meade.png",
+  "city": "",
+  "w": 288,
+  "h": 194,
+  "aliases": []
+ },
+ {
+  "name": "Medicine Lodge",
+  "slug": "medicine-lodge",
+  "file": "Medicine Lodge.png",
+  "city": "",
+  "w": 400,
+  "h": 333,
+  "aliases": []
+ },
+ {
+  "name": "Mill Valley",
+  "slug": "mill-valley",
+  "file": "Mill Valley.png",
+  "city": "",
+  "w": 400,
+  "h": 309,
+  "aliases": []
+ },
+ {
+  "name": "Minneapolis",
+  "slug": "minneapolis",
+  "file": "Minneapolis.png",
+  "city": "",
+  "w": 250,
+  "h": 158,
+  "aliases": []
+ },
+ {
+  "name": "Minneola",
+  "slug": "minneola",
+  "file": "Minneola.png",
+  "city": "",
+  "w": 400,
+  "h": 323,
+  "aliases": []
+ },
+ {
+  "name": "Mission Valley",
+  "slug": "mission-valley",
+  "file": "Mission Valley.png",
+  "city": "",
+  "w": 264,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Moscow",
+  "slug": "moscow",
+  "file": "Moscow.png",
+  "city": "",
+  "w": 400,
+  "h": 329,
+  "aliases": []
+ },
+ {
+  "name": "Moundridge",
+  "slug": "moundridge",
+  "file": "Moundridge.png",
+  "city": "",
+  "w": 400,
+  "h": 359,
+  "aliases": []
+ },
+ {
+  "name": "Mulvane",
+  "slug": "mulvane",
+  "file": "Mulvane.png",
+  "city": "",
+  "w": 400,
+  "h": 349,
+  "aliases": []
+ },
+ {
+  "name": "Natoma",
+  "slug": "natoma",
+  "file": "Natoma.png",
+  "city": "",
+  "w": 400,
+  "h": 303,
+  "aliases": []
+ },
+ {
+  "name": "Nemaha Central",
+  "slug": "nemaha-central",
+  "file": "Nemaha Central.png",
+  "city": "",
+  "w": 340,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Neodesha",
+  "slug": "neodesha",
+  "file": "Neodesha.png",
+  "city": "",
+  "w": 400,
+  "h": 220,
+  "aliases": []
+ },
+ {
+  "name": "Ness City",
+  "slug": "ness-city",
+  "file": "Ness City.png",
+  "city": "",
+  "w": 400,
+  "h": 178,
+  "aliases": []
+ },
+ {
+  "name": "Newton",
+  "slug": "newton",
+  "file": "Newton.png",
+  "city": "",
+  "w": 262,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Nickerson",
+  "slug": "nickerson",
+  "file": "Nickerson.png",
+  "city": "",
+  "w": 292,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "North",
+  "slug": "north",
+  "file": "North.png",
+  "city": "",
+  "w": 400,
+  "h": 150,
+  "aliases": []
+ },
+ {
+  "name": "Northeast",
+  "slug": "northeast",
+  "file": "Northeast.png",
+  "city": "",
+  "w": 400,
+  "h": 378,
+  "aliases": []
+ },
+ {
+  "name": "Northern Heights",
+  "slug": "northern-heights",
+  "file": "Northern Heights.png",
+  "city": "",
+  "w": 348,
+  "h": 307,
+  "aliases": []
+ },
+ {
+  "name": "Northern Valley",
+  "slug": "northern-valley",
+  "file": "Northern Valley.png",
+  "city": "",
+  "w": 400,
+  "h": 349,
+  "aliases": []
+ },
+ {
+  "name": "Norton",
+  "slug": "norton",
+  "file": "Norton.png",
+  "city": "",
+  "w": 394,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Norwich",
+  "slug": "norwich",
+  "file": "Norwich.png",
+  "city": "",
+  "w": 400,
+  "h": 215,
+  "aliases": []
+ },
+ {
+  "name": "Oakley",
+  "slug": "oakley",
+  "file": "Oakley.png",
+  "city": "",
+  "w": 282,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Olathe East",
+  "slug": "olathe-east",
+  "file": "Olathe East.png",
+  "city": "",
+  "w": 400,
+  "h": 365,
+  "aliases": []
+ },
+ {
+  "name": "Olathe Heritage Christian",
+  "slug": "olathe-heritage-christian",
+  "file": "Olathe Heritage Christian.png",
+  "city": "",
+  "w": 371,
+  "h": 286,
+  "aliases": []
+ },
+ {
+  "name": "Olathe North",
+  "slug": "olathe-north",
+  "file": "Olathe North.png",
+  "city": "",
+  "w": 400,
+  "h": 371,
+  "aliases": []
+ },
+ {
+  "name": "Olathe Northwest",
+  "slug": "olathe-northwest",
+  "file": "Olathe Northwest.png",
+  "city": "",
+  "w": 400,
+  "h": 159,
+  "aliases": []
+ },
+ {
+  "name": "Olathe South",
+  "slug": "olathe-south",
+  "file": "Olathe South.png",
+  "city": "",
+  "w": 400,
+  "h": 215,
+  "aliases": []
+ },
+ {
+  "name": "Olathe West",
+  "slug": "olathe-west",
+  "file": "Olathe West.png",
+  "city": "",
+  "w": 387,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Olpe",
+  "slug": "olpe",
+  "file": "Olpe.png",
+  "city": "",
+  "w": 319,
+  "h": 312,
+  "aliases": []
+ },
+ {
+  "name": "Onaga",
+  "slug": "onaga",
+  "file": "Onaga.png",
+  "city": "",
+  "w": 400,
+  "h": 272,
+  "aliases": []
+ },
+ {
+  "name": "Osage City",
+  "slug": "osage-city",
+  "file": "Osage City.png",
+  "city": "",
+  "w": 400,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Osawatomie",
+  "slug": "osawatomie",
+  "file": "Osawatomie.png",
+  "city": "",
+  "w": 397,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Osborne",
+  "slug": "osborne",
+  "file": "Osborne.png",
+  "city": "",
+  "w": 300,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Oskaloosa",
+  "slug": "oskaloosa",
+  "file": "Oskaloosa.png",
+  "city": "",
+  "w": 349,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Oswego",
+  "slug": "oswego",
+  "file": "Oswego.png",
+  "city": "",
+  "w": 400,
+  "h": 240,
+  "aliases": []
+ },
+ {
+  "name": "Otis-Bison",
+  "slug": "otis-bison",
+  "file": "Otis-Bison.png",
+  "city": "",
+  "w": 298,
+  "h": 287,
+  "aliases": []
+ },
+ {
+  "name": "Ottawa",
+  "slug": "ottawa",
+  "file": "Ottawa.png",
+  "city": "",
+  "w": 400,
+  "h": 389,
+  "aliases": []
+ },
+ {
+  "name": "Oxford",
+  "slug": "oxford",
+  "file": "Oxford.png",
+  "city": "",
+  "w": 333,
+  "h": 352,
+  "aliases": []
+ },
+ {
+  "name": "Paola",
+  "slug": "paola",
+  "file": "Paola.png",
+  "city": "",
+  "w": 316,
+  "h": 225,
+  "aliases": []
+ },
+ {
+  "name": "Parsons",
+  "slug": "parsons",
+  "file": "Parsons.png",
+  "city": "",
+  "w": 400,
+  "h": 366,
+  "aliases": []
+ },
+ {
+  "name": "Pawnee Heights",
+  "slug": "pawnee-heights",
+  "file": "Pawnee Heights.png",
+  "city": "",
+  "w": 400,
+  "h": 276,
+  "aliases": []
+ },
+ {
+  "name": "Peabody-Burns",
+  "slug": "peabody-burns",
+  "file": "Peabody-Burns.png",
+  "city": "",
+  "w": 337,
+  "h": 341,
+  "aliases": []
+ },
+ {
+  "name": "Perry-Lecompton",
+  "slug": "perry-lecompton",
+  "file": "Perry-Lecompton.png",
+  "city": "",
+  "w": 400,
+  "h": 200,
+  "aliases": []
+ },
+ {
+  "name": "Phillipsburg",
+  "slug": "phillipsburg",
+  "file": "Phillipsburg.png",
+  "city": "",
+  "w": 400,
+  "h": 239,
+  "aliases": []
+ },
+ {
+  "name": "Pike Valley",
+  "slug": "pike-valley",
+  "file": "Pike Valley.png",
+  "city": "",
+  "w": 365,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Piper",
+  "slug": "piper",
+  "file": "Piper.png",
+  "city": "",
+  "w": 400,
+  "h": 372,
+  "aliases": [
+   "KC Piper"
+  ]
+ },
+ {
+  "name": "Pittsburg",
+  "slug": "pittsburg",
+  "file": "Pittsburg.png",
+  "city": "",
+  "w": 256,
+  "h": 221,
+  "aliases": []
+ },
+ {
+  "name": "Plainville",
+  "slug": "plainville",
+  "file": "Plainville.png",
+  "city": "",
+  "w": 348,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Pleasant Ridge",
+  "slug": "pleasant-ridge",
+  "file": "Pleasant Ridge.png",
+  "city": "",
+  "w": 400,
+  "h": 297,
+  "aliases": []
+ },
+ {
+  "name": "Pleasanton",
+  "slug": "pleasanton",
+  "file": "Pleasanton.png",
+  "city": "",
+  "w": 400,
+  "h": 388,
+  "aliases": []
+ },
+ {
+  "name": "Prairie View",
+  "slug": "prairie-view",
+  "file": "Prairie View.png",
+  "city": "",
+  "w": 353,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Pratt",
+  "slug": "pratt",
+  "file": "Pratt.png",
+  "city": "",
+  "w": 265,
+  "h": 385,
+  "aliases": []
+ },
+ {
+  "name": "Pretty Prairie",
+  "slug": "pretty-prairie",
+  "file": "Pretty Prairie.png",
+  "city": "",
+  "w": 400,
+  "h": 316,
+  "aliases": []
+ },
+ {
+  "name": "Quinter",
+  "slug": "quinter",
+  "file": "Quinter.png",
+  "city": "",
+  "w": 400,
+  "h": 234,
+  "aliases": []
+ },
+ {
+  "name": "Rawlins County",
+  "slug": "rawlins-county",
+  "file": "Rawlins County.png",
+  "city": "",
+  "w": 241,
+  "h": 203,
+  "aliases": []
+ },
+ {
+  "name": "Remington",
+  "slug": "remington",
+  "file": "Remington.png",
+  "city": "",
+  "w": 400,
+  "h": 233,
+  "aliases": [
+   "Whitewater-Remington"
+  ]
+ },
+ {
+  "name": "Republic County",
+  "slug": "republic-county",
+  "file": "Republic County.png",
+  "city": "",
+  "w": 287,
+  "h": 242,
+  "aliases": []
+ },
+ {
+  "name": "Riley County",
+  "slug": "riley-county",
+  "file": "Riley County.png",
+  "city": "",
+  "w": 400,
+  "h": 336,
+  "aliases": []
+ },
+ {
+  "name": "Riverside",
+  "slug": "riverside",
+  "file": "Riverside.png",
+  "city": "",
+  "w": 400,
+  "h": 384,
+  "aliases": []
+ },
+ {
+  "name": "Riverton",
+  "slug": "riverton",
+  "file": "Riverton.png",
+  "city": "",
+  "w": 400,
+  "h": 327,
+  "aliases": []
+ },
+ {
+  "name": "Rock Creek",
+  "slug": "rock-creek",
+  "file": "Rock Creek.png",
+  "city": "",
+  "w": 247,
+  "h": 360,
+  "aliases": []
+ },
+ {
+  "name": "Rock Hills",
+  "slug": "rock-hills",
+  "file": "Rock Hills.png",
+  "city": "",
+  "w": 400,
+  "h": 339,
+  "aliases": []
+ },
+ {
+  "name": "Rolla",
+  "slug": "rolla",
+  "file": "Rolla.png",
+  "city": "",
+  "w": 390,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Rose Hill",
+  "slug": "rose-hill",
+  "file": "Rose Hill.png",
+  "city": "",
+  "w": 400,
+  "h": 359,
+  "aliases": []
+ },
+ {
+  "name": "Rossville",
+  "slug": "rossville",
+  "file": "Rossville.png",
+  "city": "",
+  "w": 400,
+  "h": 389,
+  "aliases": []
+ },
+ {
+  "name": "Royal Valley",
+  "slug": "royal-valley",
+  "file": "Royal Valley.png",
+  "city": "",
+  "w": 400,
+  "h": 323,
+  "aliases": []
+ },
+ {
+  "name": "Rural Vista",
+  "slug": "rural-vista",
+  "file": "Rural Vista.png",
+  "city": "",
+  "w": 400,
+  "h": 328,
+  "aliases": []
+ },
+ {
+  "name": "Russell",
+  "slug": "russell",
+  "file": "Russell.png",
+  "city": "",
+  "w": 400,
+  "h": 309,
+  "aliases": []
+ },
+ {
+  "name": "Sabetha",
+  "slug": "sabetha",
+  "file": "Sabetha.png",
+  "city": "",
+  "w": 250,
+  "h": 200,
+  "aliases": []
+ },
+ {
+  "name": "Sacred Heart",
+  "slug": "sacred-heart",
+  "file": "Sacred Heart.png",
+  "city": "",
+  "w": 400,
+  "h": 181,
+  "aliases": []
+ },
+ {
+  "name": "Saint Mary's Academy",
+  "slug": "saint-mary-s-academy",
+  "file": "Saint Mary's Academy.png",
+  "city": "",
+  "w": 354,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Salina Central",
+  "slug": "salina-central",
+  "file": "Salina Central.png",
+  "city": "",
+  "w": 261,
+  "h": 262,
+  "aliases": []
+ },
+ {
+  "name": "Salina South",
+  "slug": "salina-south",
+  "file": "Salina South.png",
+  "city": "",
+  "w": 384,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Santa Fe Trail",
+  "slug": "santa-fe-trail",
+  "file": "Santa Fe Trail.png",
+  "city": "",
+  "w": 102,
+  "h": 250,
+  "aliases": []
+ },
+ {
+  "name": "Satanta",
+  "slug": "satanta",
+  "file": "Satanta.png",
+  "city": "",
+  "w": 399,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Schlagle",
+  "slug": "schlagle",
+  "file": "Schlagle.png",
+  "city": "",
+  "w": 316,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Scott City",
+  "slug": "scott-city",
+  "file": "Scott City.png",
+  "city": "",
+  "w": 400,
+  "h": 196,
+  "aliases": []
+ },
+ {
+  "name": "Seaman",
+  "slug": "seaman",
+  "file": "Seaman.png",
+  "city": "",
+  "w": 281,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Sedan",
+  "slug": "sedan",
+  "file": "Sedan.png",
+  "city": "",
+  "w": 331,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Sedgwick",
+  "slug": "sedgwick",
+  "file": "Sedgwick.png",
+  "city": "",
+  "w": 363,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Shawnee Heights",
+  "slug": "shawnee-heights",
+  "file": "Shawnee Heights.png",
+  "city": "",
+  "w": 400,
+  "h": 118,
+  "aliases": []
+ },
+ {
+  "name": "Shawnee Mission East",
+  "slug": "shawnee-mission-east",
+  "file": "Shawnee Mission East.png",
+  "city": "",
+  "w": 368,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Shawnee Mission North",
+  "slug": "shawnee-mission-north",
+  "file": "Shawnee Mission North.png",
+  "city": "",
+  "w": 397,
+  "h": 400,
+  "aliases": [
+   "SM North",
+   "SMN"
+  ]
+ },
+ {
+  "name": "Shawnee Mission Northwest",
+  "slug": "shawnee-mission-northwest",
+  "file": "Shawnee Mission Northwest.png",
+  "city": "",
+  "w": 400,
+  "h": 342,
+  "aliases": []
+ },
+ {
+  "name": "Shawnee Mission South",
+  "slug": "shawnee-mission-south",
+  "file": "Shawnee Mission South.png",
+  "city": "",
+  "w": 224,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Shawnee Mission West",
+  "slug": "shawnee-mission-west",
+  "file": "Shawnee Mission West.png",
+  "city": "",
+  "w": 276,
+  "h": 400,
+  "aliases": [
+   "SM West",
+   "SMW"
+  ]
+ },
+ {
+  "name": "Silver Lake",
+  "slug": "silver-lake",
+  "file": "Silver Lake.png",
+  "city": "",
+  "w": 400,
+  "h": 158,
+  "aliases": []
+ },
+ {
+  "name": "Skyline",
+  "slug": "skyline",
+  "file": "Skyline.png",
+  "city": "",
+  "w": 400,
+  "h": 117,
+  "aliases": []
+ },
+ {
+  "name": "Smith Center",
+  "slug": "smith-center",
+  "file": "Smith Center.png",
+  "city": "",
+  "w": 400,
+  "h": 387,
+  "aliases": []
+ },
+ {
+  "name": "Smoky Valley",
+  "slug": "smoky-valley",
+  "file": "Smoky Valley.png",
+  "city": "",
+  "w": 248,
+  "h": 368,
+  "aliases": []
+ },
+ {
+  "name": "Solomon",
+  "slug": "solomon",
+  "file": "Solomon.png",
+  "city": "",
+  "w": 400,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "South Barber",
+  "slug": "south-barber",
+  "file": "South Barber.png",
+  "city": "",
+  "w": 396,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "South Central",
+  "slug": "south-central",
+  "file": "South Central.png",
+  "city": "",
+  "w": 373,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "South Gray",
+  "slug": "south-gray",
+  "file": "South Gray.png",
+  "city": "",
+  "w": 400,
+  "h": 387,
+  "aliases": []
+ },
+ {
+  "name": "South Haven",
+  "slug": "south-haven",
+  "file": "South Haven.png",
+  "city": "",
+  "w": 146,
+  "h": 224,
+  "aliases": []
+ },
+ {
+  "name": "South Sumner",
+  "slug": "south-sumner",
+  "file": "South Sumner.png",
+  "city": "",
+  "w": 400,
+  "h": 327,
+  "aliases": [
+   "South Sumner County"
+  ]
+ },
+ {
+  "name": "Southeast (Cherokee)",
+  "slug": "southeast-cherokee",
+  "file": "Southeast (Cherokee).png",
+  "city": "",
+  "w": 302,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Southeast (Wichita)",
+  "slug": "southeast-wichita",
+  "file": "Southeast (Wichita).png",
+  "city": "",
+  "w": 400,
+  "h": 276,
+  "aliases": [
+   "Wichita Southeast"
+  ]
+ },
+ {
+  "name": "Southeast of Saline",
+  "slug": "southeast-of-saline",
+  "file": "Southeast of Saline.png",
+  "city": "",
+  "w": 322,
+  "h": 400,
+  "aliases": [
+   "Southeast Saline"
+  ]
+ },
+ {
+  "name": "Southern Cloud",
+  "slug": "southern-cloud",
+  "file": "Southern Cloud.png",
+  "city": "",
+  "w": 400,
+  "h": 387,
+  "aliases": []
+ },
+ {
+  "name": "Southern Coffey County",
+  "slug": "southern-coffey-county",
+  "file": "Southern Coffey County.png",
+  "city": "",
+  "w": 360,
+  "h": 283,
+  "aliases": []
+ },
+ {
+  "name": "Southwestern Heights",
+  "slug": "southwestern-heights",
+  "file": "Southwestern Heights.png",
+  "city": "",
+  "w": 300,
+  "h": 160,
+  "aliases": []
+ },
+ {
+  "name": "Spearville",
+  "slug": "spearville",
+  "file": "Spearville.png",
+  "city": "",
+  "w": 400,
+  "h": 193,
+  "aliases": []
+ },
+ {
+  "name": "Spring Hill",
+  "slug": "spring-hill",
+  "file": "Spring Hill.png",
+  "city": "",
+  "w": 226,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "St Francis",
+  "slug": "st-francis",
+  "file": "St Francis.png",
+  "city": "",
+  "w": 377,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "St James",
+  "slug": "st-james",
+  "file": "St James.png",
+  "city": "",
+  "w": 400,
+  "h": 264,
+  "aliases": [
+   "St James Academy",
+   "St. James Academy"
+  ]
+ },
+ {
+  "name": "St John's",
+  "slug": "st-john-s",
+  "file": "St John's.png",
+  "city": "",
+  "w": 400,
+  "h": 271,
+  "aliases": []
+ },
+ {
+  "name": "St John",
+  "slug": "st-john",
+  "file": "St John.png",
+  "city": "",
+  "w": 262,
+  "h": 267,
+  "aliases": []
+ },
+ {
+  "name": "St Mary's Colgan",
+  "slug": "st-mary-s-colgan",
+  "file": "St Mary's Colgan.png",
+  "city": "",
+  "w": 400,
+  "h": 242,
+  "aliases": [
+   "St Marys Colgan",
+   "St. Marys Colgan"
+  ]
+ },
+ {
+  "name": "St Marys",
+  "slug": "st-marys",
+  "file": "St Marys.png",
+  "city": "",
+  "w": 395,
+  "h": 400,
+  "aliases": [
+   "St Marys",
+   "St. Mary's"
+  ]
+ },
+ {
+  "name": "St Paul",
+  "slug": "st-paul",
+  "file": "St Paul.png",
+  "city": "",
+  "w": 400,
+  "h": 380,
+  "aliases": []
+ },
+ {
+  "name": "St Thomas Aquinas",
+  "slug": "st-thomas-aquinas",
+  "file": "St Thomas Aquinas.png",
+  "city": "",
+  "w": 197,
+  "h": 241,
+  "aliases": [
+   "Aquinas",
+   "STA"
+  ]
+ },
+ {
+  "name": "St Xavier",
+  "slug": "st-xavier",
+  "file": "St Xavier.png",
+  "city": "",
+  "w": 400,
+  "h": 310,
+  "aliases": []
+ },
+ {
+  "name": "Stafford",
+  "slug": "stafford",
+  "file": "Stafford.png",
+  "city": "",
+  "w": 365,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Stanton County",
+  "slug": "stanton-county",
+  "file": "Stanton County.png",
+  "city": "",
+  "w": 380,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Sterling",
+  "slug": "sterling",
+  "file": "Sterling.png",
+  "city": "",
+  "w": 400,
+  "h": 357,
+  "aliases": []
+ },
+ {
+  "name": "Stockton",
+  "slug": "stockton",
+  "file": "Stockton.png",
+  "city": "",
+  "w": 400,
+  "h": 287,
+  "aliases": []
+ },
+ {
+  "name": "Sublette",
+  "slug": "sublette",
+  "file": "Sublette.png",
+  "city": "",
+  "w": 400,
+  "h": 292,
+  "aliases": []
+ },
+ {
+  "name": "Sunrise Christian",
+  "slug": "sunrise-christian",
+  "file": "Sunrise Christian.png",
+  "city": "",
+  "w": 400,
+  "h": 337,
+  "aliases": []
+ },
+ {
+  "name": "Sylvan-Lucas Unified",
+  "slug": "sylvan-lucas-unified",
+  "file": "Sylvan-Lucas Unified.png",
+  "city": "",
+  "w": 400,
+  "h": 206,
+  "aliases": []
+ },
+ {
+  "name": "Syracuse",
+  "slug": "syracuse",
+  "file": "Syracuse.png",
+  "city": "",
+  "w": 90,
+  "h": 72,
+  "aliases": []
+ },
+ {
+  "name": "Tescott",
+  "slug": "tescott",
+  "file": "Tescott.png",
+  "city": "",
+  "w": 362,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Thomas More Prep",
+  "slug": "thomas-more-prep",
+  "file": "Thomas More Prep.png",
+  "city": "",
+  "w": 400,
+  "h": 338,
+  "aliases": [
+   "TMP-Marian",
+   "Thomas More Prep-Marian"
+  ]
+ },
+ {
+  "name": "Thunder Ridge",
+  "slug": "thunder-ridge",
+  "file": "Thunder Ridge.png",
+  "city": "",
+  "w": 400,
+  "h": 209,
+  "aliases": []
+ },
+ {
+  "name": "Tonganoxie",
+  "slug": "tonganoxie",
+  "file": "Tonganoxie.png",
+  "city": "",
+  "w": 400,
+  "h": 274,
+  "aliases": []
+ },
+ {
+  "name": "Topeka West",
+  "slug": "topeka-west",
+  "file": "Topeka West.png",
+  "city": "",
+  "w": 299,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Topeka",
+  "slug": "topeka",
+  "file": "Topeka.png",
+  "city": "",
+  "w": 299,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Triplains-Brewster",
+  "slug": "triplains-brewster",
+  "file": "Triplains-Brewster.png",
+  "city": "",
+  "w": 400,
+  "h": 230,
+  "aliases": []
+ },
+ {
+  "name": "Troy",
+  "slug": "troy",
+  "file": "Troy.png",
+  "city": "",
+  "w": 359,
+  "h": 343,
+  "aliases": []
+ },
+ {
+  "name": "Turner",
+  "slug": "turner",
+  "file": "Turner.png",
+  "city": "",
+  "w": 358,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Udall",
+  "slug": "udall",
+  "file": "Udall.png",
+  "city": "",
+  "w": 400,
+  "h": 241,
+  "aliases": []
+ },
+ {
+  "name": "Ulysses",
+  "slug": "ulysses",
+  "file": "Ulysses.png",
+  "city": "",
+  "w": 400,
+  "h": 303,
+  "aliases": []
+ },
+ {
+  "name": "Uniontown",
+  "slug": "uniontown",
+  "file": "Uniontown.png",
+  "city": "",
+  "w": 400,
+  "h": 218,
+  "aliases": []
+ },
+ {
+  "name": "Valley Center",
+  "slug": "valley-center",
+  "file": "Valley Center.png",
+  "city": "",
+  "w": 400,
+  "h": 374,
+  "aliases": []
+ },
+ {
+  "name": "Valley Falls",
+  "slug": "valley-falls",
+  "file": "Valley Falls.png",
+  "city": "",
+  "w": 250,
+  "h": 117,
+  "aliases": []
+ },
+ {
+  "name": "Valley Heights",
+  "slug": "valley-heights",
+  "file": "Valley Heights.png",
+  "city": "",
+  "w": 400,
+  "h": 240,
+  "aliases": []
+ },
+ {
+  "name": "Veritas Christian",
+  "slug": "veritas-christian",
+  "file": "Veritas Christian.png",
+  "city": "",
+  "w": 117,
+  "h": 93,
+  "aliases": []
+ },
+ {
+  "name": "Victoria",
+  "slug": "victoria",
+  "file": "Victoria.png",
+  "city": "",
+  "w": 400,
+  "h": 325,
+  "aliases": []
+ },
+ {
+  "name": "WaKeeney-Trego",
+  "slug": "wakeeney-trego",
+  "file": "WaKeeney-Trego.png",
+  "city": "",
+  "w": 400,
+  "h": 297,
+  "aliases": []
+ },
+ {
+  "name": "Wabaunsee",
+  "slug": "wabaunsee",
+  "file": "Wabaunsee.png",
+  "city": "",
+  "w": 299,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Wakefield",
+  "slug": "wakefield",
+  "file": "Wakefield.png",
+  "city": "",
+  "w": 400,
+  "h": 177,
+  "aliases": []
+ },
+ {
+  "name": "Wallace County",
+  "slug": "wallace-county",
+  "file": "Wallace County.png",
+  "city": "",
+  "w": 353,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Wamego",
+  "slug": "wamego",
+  "file": "Wamego.png",
+  "city": "",
+  "w": 400,
+  "h": 284,
+  "aliases": []
+ },
+ {
+  "name": "Washburn Rural",
+  "slug": "washburn-rural",
+  "file": "Washburn Rural.png",
+  "city": "",
+  "w": 400,
+  "h": 261,
+  "aliases": []
+ },
+ {
+  "name": "Washington County",
+  "slug": "washington-county",
+  "file": "Washington County.png",
+  "city": "",
+  "w": 400,
+  "h": 313,
+  "aliases": []
+ },
+ {
+  "name": "Washington",
+  "slug": "washington",
+  "file": "Washington.png",
+  "city": "",
+  "w": 333,
+  "h": 323,
+  "aliases": []
+ },
+ {
+  "name": "Waverly",
+  "slug": "waverly",
+  "file": "Waverly.png",
+  "city": "",
+  "w": 400,
+  "h": 241,
+  "aliases": []
+ },
+ {
+  "name": "Wellington",
+  "slug": "wellington",
+  "file": "Wellington.png",
+  "city": "",
+  "w": 269,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Wellsville",
+  "slug": "wellsville",
+  "file": "Wellsville.png",
+  "city": "",
+  "w": 400,
+  "h": 225,
+  "aliases": []
+ },
+ {
+  "name": "Weskan",
+  "slug": "weskan",
+  "file": "Weskan.png",
+  "city": "",
+  "w": 250,
+  "h": 166,
+  "aliases": []
+ },
+ {
+  "name": "West Elk",
+  "slug": "west-elk",
+  "file": "West Elk.png",
+  "city": "",
+  "w": 400,
+  "h": 268,
+  "aliases": [
+   "West Elk-Elk Valley"
+  ]
+ },
+ {
+  "name": "West Franklin",
+  "slug": "west-franklin",
+  "file": "West Franklin.png",
+  "city": "",
+  "w": 400,
+  "h": 312,
+  "aliases": []
+ },
+ {
+  "name": "Western Plains",
+  "slug": "western-plains",
+  "file": "Western Plains.png",
+  "city": "",
+  "w": 400,
+  "h": 200,
+  "aliases": []
+ },
+ {
+  "name": "Wheatland-Grinnell",
+  "slug": "wheatland-grinnell",
+  "file": "Wheatland-Grinnell.png",
+  "city": "",
+  "w": 377,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Wichita Classical",
+  "slug": "wichita-classical",
+  "file": "Wichita Classical.png",
+  "city": "",
+  "w": 200,
+  "h": 200,
+  "aliases": []
+ },
+ {
+  "name": "Wichita Collegiate",
+  "slug": "wichita-collegiate",
+  "file": "Wichita Collegiate.png",
+  "city": "",
+  "w": 343,
+  "h": 400,
+  "aliases": [
+   "Collegiate"
+  ]
+ },
+ {
+  "name": "Wichita County",
+  "slug": "wichita-county",
+  "file": "Wichita County.png",
+  "city": "",
+  "w": 356,
+  "h": 400,
+  "aliases": [
+   "Leoti",
+   "Leoti-Wichita Co."
+  ]
+ },
+ {
+  "name": "Wichita East",
+  "slug": "wichita-east",
+  "file": "Wichita East.png",
+  "city": "",
+  "w": 400,
+  "h": 199,
+  "aliases": []
+ },
+ {
+  "name": "Wichita Independent",
+  "slug": "wichita-independent",
+  "file": "Wichita Independent.png",
+  "city": "",
+  "w": 400,
+  "h": 315,
+  "aliases": []
+ },
+ {
+  "name": "Wichita Northwest",
+  "slug": "wichita-northwest",
+  "file": "Wichita Northwest.png",
+  "city": "",
+  "w": 321,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Wichita South",
+  "slug": "wichita-south",
+  "file": "Wichita South.png",
+  "city": "",
+  "w": 400,
+  "h": 307,
+  "aliases": []
+ },
+ {
+  "name": "Wichita Trinity",
+  "slug": "wichita-trinity",
+  "file": "Wichita Trinity.png",
+  "city": "",
+  "w": 362,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Wichita West",
+  "slug": "wichita-west",
+  "file": "Wichita West.png",
+  "city": "",
+  "w": 400,
+  "h": 326,
+  "aliases": []
+ },
+ {
+  "name": "Wichita",
+  "slug": "wichita",
+  "file": "Wichita.png",
+  "city": "",
+  "w": 400,
+  "h": 227,
+  "aliases": []
+ },
+ {
+  "name": "Winfield",
+  "slug": "winfield",
+  "file": "Winfield.png",
+  "city": "",
+  "w": 375,
+  "h": 400,
+  "aliases": []
+ },
+ {
+  "name": "Wyandotte",
+  "slug": "wyandotte",
+  "file": "Wyandotte.png",
+  "city": "",
+  "w": 255,
+  "h": 205,
+  "aliases": []
+ },
+ {
+  "name": "Yates Center",
+  "slug": "yates-center",
+  "file": "Yates Center.png",
+  "city": "",
+  "w": 400,
+  "h": 316,
+  "aliases": []
+ }
+]
