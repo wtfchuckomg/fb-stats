@@ -1055,6 +1055,19 @@ const FORMATS = {
   11: {len:100, kickFrom:40, tb:20, safety:20, ot:10},
   8:  {len:80,  kickFrom:30, tb:15, safety:15, ot:10}
 };
+/* A roster line can carry the player's class: "7 Cole Brandt SR". The number and the name are what the game runs
+   on, so the class is split off here — otherwise a play reads "#3 SR rush for 3 yards", the last word of the name
+   being taken for a surname. It is shown wherever a player is listed by name (box score, leaders, stats). */
+const CLASS_WORD = {sr:'SR', jr:'JR', so:'SO', fr:'FR', sen:'SR', senior:'SR', jun:'JR', junior:'JR', soph:'SO', sophomore:'SO', fresh:'FR', freshman:'FR', 9:'FR', 10:'SO', 11:'JR', 12:'SR'};
+function splitClass(s){
+  // A second jersey number sometimes rides along ("35 /50 Nathan Miller"): the roster keeps the first.
+  const full = String(s || '').replace(/^[\/,&]?\s*\d{1,2}\s+(?=\D)/, '').trim();
+  const m = full.match(/\s+([A-Za-z]{2,9}|9|1[0-2])\.?$/);
+  const yr = m && CLASS_WORD[m[1].toLowerCase()];
+  return yr ? {name:full.slice(0, m.index).trim(), yr} : {name:full, yr:''};
+}
+const playerName = s => splitClass(s).name;
+
 function rulesOf(game){
   const s = (game && game.set) || {}, men = +s.men === 8 ? 8 : 11, f = FORMATS[men];
   const num = (v, d) => +v > 0 ? +v : d;
@@ -1092,7 +1105,7 @@ function replay(g, upto = g.plays.length){
   const nm = (s, n) => {
     if (n === '' || n == null) return ab(s);
     if (n === 'team') return 'TEAM';
-    const who = (T[s].roster || {})[n];
+    const who = playerName((T[s].roster || {})[n]);
     return who ? `#${n} ${who.split(' ').slice(-1)[0]}` : `#${n}`;
   };
   const yl = (s, pos) => { pos = clamp(pos, 0, FL); if (pos === HALF) return String(HALF);
@@ -1610,7 +1623,7 @@ const ui = {type:null, draft:null, editing:null, ctx:null, tab:'gamecast', pbp:n
   qtext:'', qedit:false, cheat:false};
 
 const ab = s => g.teams[s].abbr || s;
-const rosterName = (s, n) => (g.teams[s].roster || {})[String(n)] || '';
+const rosterName = (s, n) => playerName((g.teams[s].roster || {})[String(n)]);
 const mmss = s => { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 const perShort = q => q <= 4 ? ord(q) : `OT${q - 4 > 1 ? q - 4 : ''}`;
 const perLabel = q => q <= 4 ? `${ord(q)} Qtr` : `OT${q - 4 > 1 ? ' ' + (q - 4) : ''}`;
@@ -2697,7 +2710,7 @@ function dlgSetup(isNew){
 }
 function saveSetup(isNew){
   const v = id => $('#' + id).value.trim();
-  const parseRoster = txt => { const o = {}; txt.split('\n').forEach(l => { const m = l.match(/^\s*#?(\d{1,2})\s*[-–,.:)]?\s*(.+?)\s*$/); if (m) o[m[1]] = m[2]; }); return o; };
+  const parseRoster = txt => { const o = {}; txt.split('\n').forEach(l => { const m = l.match(/^\s*#?(\d{1,2})\s*[-–,.:)]?\s*(.+?)\s*$/); if (m) o[m[1]] = m[2].replace(/^[\/,&]?\s*\d{1,2}\s+(?=\D)/, ''); }); return o; };
   // Both schools come from the list, so a game can't be started against a school that doesn't exist.
   if (!v('s-A-name') || !v('s-H-name')) return toast('Pick both schools from the list');
   const team = (s, def) => {
@@ -3070,7 +3083,7 @@ function markFor(t, size){
    (game leaders, team stat bars). Shared by the scorer and viewers.
    ================================================================ */
 // Players go by name, number if none; a box score's players are keyed by their names.
-const PT = (s, n) => n === 'team' ? 'Team' : rosterName(s, n) || (/^\d+$/.test(n) ? `#${n}` : n);
+const PT = (s, n) => n === 'team' ? 'Team' : rosterName(s, n) || (/^\d+$/.test(n) ? `#${n}` : playerName(n));
 const whenTxt = (q, clk) => clk != null && q <= 4 ? `${mmss(clk)} - ${perShort(q)}` : q <= 4 ? `${ord(q)} Quarter` : perShort(q);
 const openDrive = () => { const d = R.drives[R.drives.length - 1]; return d && d.open ? d : null; };
 const plural2 = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
@@ -3793,7 +3806,8 @@ function findTeam(name){ const t = teamLib()[teamKey(name)]; return t && !t.dele
 const rosterToText = r => Object.entries(r || {}).sort((a, b) => a[0] - b[0]).map(([n, v]) => `${n} ${v}`).join('\n');
 function parseRosterText(txt){
   const o = {};
-  String(txt || '').split('\n').forEach(l => { const m = l.match(/^\s*#?(\d{1,2})\s*[-–,.:)]?\s*(.+?)\s*$/); if (m) o[m[1]] = m[2]; });
+  // "35 /50 Nathan Miller SR": the first number is the player's, the second rides along in the name — drop it.
+  String(txt || '').split('\n').forEach(l => { const m = l.match(/^\s*#?(\d{1,2})\s*[-–,.:)]?\s*(.+?)\s*$/); if (m) o[m[1]] = m[2].replace(/^[\/,&]?\s*\d{1,2}\s+(?=\D)/, ''); });
   return o;
 }
 // From a game's Setup. A newer save wins, and an empty roster or mascot never wipes out a saved one.
@@ -4419,7 +4433,7 @@ async function startScoreboard(){
 function leaderName(x, s, n){
   if (n === 'team') return 'TEAM';
   // A box score's players are keyed by name and have no number.
-  const num = /^\d+$/.test(n), full = String((x.teams[s].roster || {})[n] || (num ? '' : n)).trim();
+  const num = /^\d+$/.test(n), full = playerName((x.teams[s].roster || {})[n] || (num ? '' : n));
   if (!full) return `#${n}`;
   const p = full.split(/\s+/);
   return `${p.length > 1 ? `${p[0][0]}. ${p.slice(1).join(' ')}` : full}${num ? ` #${n}` : ''}`;
