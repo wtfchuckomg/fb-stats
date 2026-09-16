@@ -1,0 +1,105 @@
+<style>
+/* Apple-style Liquid Glass layer (preview): apple.com's type and blue; see-through glass with a lit rim and sheen,
+   over a soft wallpaper of color so the glass has something to bend. Same pages, same features, same density. */
+:root{
+  --page:#EEF0F6; --surface:#F5F5F7; --surface-2:#E8E8ED; --pill:#E8E8ED; --seg:#D2D2D7;
+  --ink:#1D1D1F; --ink-2:#1D1D1F; --muted:#5E5E66; --line:#D2D2D7; --line-2:#E4E4EA;
+  --blue:#0071E3; --accent:#0071E3; --red:#FF3B30;
+  --top:#161617; --top-2:#161617; --top-muted:#A1A1A6;
+  /* glass: a light tint, a lit rim (bright top-left, dim bottom-right), a sheen across the top */
+  --glass-tint:linear-gradient(180deg,rgba(255,255,255,.62),rgba(255,255,255,.34) 38%,rgba(255,255,255,.44));
+  --glass-rim:linear-gradient(140deg,rgba(255,255,255,.95),rgba(255,255,255,.28) 38%,rgba(255,255,255,.18) 62%,rgba(255,255,255,.7));
+  /* Blur costs rise steeply with the radius and every frame of a scroll pays it, but take it too far and the
+     glass goes flat: 20px still looks like glass and paints a good deal less than 28. The shadow is the other
+     paint cost — a 40px spread over 90 elements — and trimming it doesn't show. */
+  --glass-blur:blur(20px) saturate(1.9);
+  --glass-depth:0 8px 18px rgba(30,40,90,.12),0 1px 3px rgba(30,40,90,.05);
+  --tint:rgba(0,113,227,.10); --fill:rgba(118,118,128,.14);
+  --shadow:0 4px 24px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04); --shadow-sm:0 1px 3px rgba(0,0,0,.06);
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --cond:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+body{letter-spacing:-.01em}
+/* the wallpaper: soft fields of color that stay put while the glass slides over them */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(42% 38% at 8% 6%,rgba(10,132,255,.55),transparent 70%),
+    radial-gradient(38% 34% at 92% 10%,rgba(255,159,10,.42),transparent 70%),
+    radial-gradient(44% 40% at 78% 62%,rgba(94,92,230,.45),transparent 72%),
+    radial-gradient(40% 36% at 14% 70%,rgba(255,55,95,.30),transparent 72%),
+    radial-gradient(46% 40% at 48% 104%,rgba(100,210,255,.45),transparent 72%),
+    linear-gradient(160deg,#EAF0FF,#F6EEF6 48%,#EEF3FA)}
+
+/* one glass recipe for bars, cards, menus and thumbs */
+.navbar,.scores,.gtabs,.bcard,.hcard,.card,.navmenu{border:1px solid transparent;
+  background:var(--glass-tint) padding-box,var(--glass-rim) border-box;
+  -webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+
+/* ---------- apple.com's dark frosted global bar ---------- */
+.sitebar{background:rgba(22,22,23,.72);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6)}
+.sitebar-in{min-height:44px}
+.sitelink{padding:15px 0;font:400 12px/1 var(--sans);letter-spacing:-.01em;text-transform:none;color:rgba(255,255,255,.8)}
+.sitelink.active{border-bottom-color:transparent;color:#FFFFFF}
+.mark img{height:30px}
+
+/* ---------- the scores strip and the menu: glass shelves; the menu stays put ---------- */
+.scores{border-width:0 0 1px;box-shadow:0 1px 0 rgba(255,255,255,.6)}
+.sc-game,.sc-wk{border-right-color:rgba(255,255,255,.55)}
+.sc-game:hover{background:rgba(255,255,255,.35)}
+.sc-game.cur{background:rgba(255,255,255,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.8)}
+.sc-wk select,.c-sel{border:0;background-color:rgba(255,255,255,.55);border-radius:980px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.8)}
+.navbar{position:sticky;top:0;border-width:0 0 1px;color:var(--ink);box-shadow:0 8px 24px rgba(30,40,90,.08)}
+.navlink{color:var(--ink);font:400 14px/1 var(--sans);letter-spacing:-.01em;border-bottom:0;opacity:.85}
+.navlink.on{font-weight:600;opacity:1}
+.navlink:hover{opacity:1}
+.navbar .abtn{color:var(--ink)}
+.navbar .abtn:hover{background:rgba(255,255,255,.45)}
+.navbar .livebadge{color:var(--ink)}
+#sync .abtn:not(.syncbtn){background:var(--blue);color:#FFFFFF;border-radius:980px;padding:7px 15px;font:500 13px/1 var(--sans);box-shadow:0 4px 14px rgba(0,113,227,.35)}
+#sync .abtn:not(.syncbtn):hover{background:#0077ED}
+/* menus are read, not looked through: nearly solid frosted white, so they stay readable over pictures */
+.navmenu{top:calc(100% + 8px);border-radius:20px;box-shadow:0 18px 50px rgba(30,40,90,.22),0 2px 8px rgba(30,40,90,.08);
+  background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.92)) padding-box,var(--glass-rim) border-box;
+  -webkit-backdrop-filter:blur(28px) saturate(1.8);backdrop-filter:blur(28px) saturate(1.8)}
+.navbar{background:linear-gradient(180deg,rgba(255,255,255,.84),rgba(255,255,255,.72)) padding-box,var(--glass-rim) border-box}
+.navmenu::before{display:none}
+.navmenu a{color:var(--ink);font-size:15px}
+.navmenu a:hover{background:rgba(255,255,255,.5)}
+@media (max-width:640px){.navlink{font-size:13px}.navtools{border-top-color:rgba(255,255,255,.5)}}
+
+/* ---------- cards and panels ---------- */
+.bcard,.hcard,.card{border-radius:26px;box-shadow:var(--glass-depth)}
+.inner{border-radius:16px;background:rgba(255,255,255,.5);box-shadow:inset 0 0 0 1px rgba(255,255,255,.7)}
+.bhead h1,.bhead-top h1,.h-hero h1,.s-hero h1,.tp-id h1{font-weight:700;letter-spacing:-.025em}
+
+/* ---------- segmented controls with a glass thumb ---------- */
+.c-tabs{display:inline-flex;max-width:100%;gap:2px;padding:3px;border-bottom:0;border-radius:980px;background:var(--fill)}
+.c-tabs button{flex:0 0 auto;border-bottom:0;border-radius:980px;padding:8px 18px;font:500 14px/1 var(--sans);color:var(--ink)}
+.c-tabs button.on,.c-pills button.on,.gtab[aria-selected="true"],.bw.on{background:rgba(255,255,255,.85);color:var(--ink);
+  box-shadow:inset 0 1px 0 #FFFFFF,0 0 0 1px rgba(255,255,255,.6),0 4px 14px rgba(30,40,90,.14)}
+.c-pills{background:var(--fill)}
+.c-pills button{padding:8px 18px;font:500 14px/1 var(--sans)}
+.gtabs{border-width:0 0 1px}
+.gtabs-in{gap:4px;padding-top:8px;padding-bottom:8px}
+.gtab{border-bottom:0;border-radius:980px;padding:8px 16px}
+.bw{border-radius:16px}
+
+/* ---------- buttons: Gamecast is the one solid blue pill; box scores and the rest are glass pills ---------- */
+.bbtn{border:0;border-radius:980px;font-weight:500;background:rgba(255,255,255,.6);color:var(--blue);box-shadow:inset 0 0 0 1px rgba(255,255,255,.85),0 2px 8px rgba(30,40,90,.08)}
+.bbtn:hover{background:rgba(255,255,255,.85)}
+.bbtn:not([href*="tab=box"]){background:var(--blue);color:#FFFFFF;box-shadow:0 4px 14px rgba(0,113,227,.35)}
+.bbtn:not([href*="tab=box"]):hover{background:#0077ED}
+.btn{border-color:transparent;background:rgba(255,255,255,.55);border-radius:980px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.8)}
+.btn.primary{background:var(--blue);border-color:var(--blue);box-shadow:0 4px 14px rgba(0,113,227,.3)}
+.h-btn,.s-go,.abtn,.chip,.bhide{border-radius:980px}
+.qk{border:0;border-radius:16px;background:rgba(255,255,255,.6);box-shadow:inset 0 0 0 1px rgba(255,255,255,.85)}
+.qk:focus{outline:0;background:rgba(255,255,255,.9);box-shadow:0 0 0 4px rgba(0,113,227,.25)}
+
+/* ---------- numbers and tables: tables sit on frosted white so they stay easy to read ---------- */
+.bt-t,.st-score{font-weight:600;letter-spacing:-.02em}
+.st-name{font-weight:600;letter-spacing:-.02em}
+.ctbl th{color:var(--muted);font-weight:600;letter-spacing:.02em}
+.ctbl tbody tr:nth-child(even) td{background:#FAFAFC}
+.ctbl th.on,.ctbl td.on,.ctbl tbody tr:nth-child(even) td.on{background:#EEF5FD}
+.ctbl tr.hi td,.ctbl tr.hi td.on{background:#F2F7FE}
+</style>
