@@ -1181,7 +1181,11 @@ function replay(g, upto = g.plays.length){
 
   /* ---- scoring ---- */
   function score(s, pts, how, desc){
-    st.score[s] += pts; st.lines[s][Math.min(st.q, 5) - 1] += pts;
+    // Every overtime gets its own column: 1-4 are the quarters, 5 is OT, 6 is 2OT, and so on for as long as it goes.
+    st.score[s] += pts;
+    const qi = st.q - 1;
+    ['A', 'H'].forEach(t => { while (st.lines[t].length <= qi) st.lines[t].push(0); });
+    st.lines[s][qi] += pts;
     tags.push(['score', `${ab('A')} ${st.score.A} – ${ab('H')} ${st.score.H}`]);
     if (how === 'try'){
       const last = scoring[scoring.length - 1];
@@ -1675,15 +1679,10 @@ function renderBoard(){
 // A finished game's line score under Final, as ESPN has it, with every overtime period together in one OT column.
 function stripLines(){
   const st = R.st, L = st.lines; if (!L) return '';
-  // An OT column when overtime was played, or when a typed line score carries one.
-  const cols = Array.from({length:st.q > 4 || L.A[4] || L.H[4] ? 5 : 4}, (_, i) => i);
-  const pts = (s, i) => {
-    if (i < 4) return L[s][i] == null || i >= (st.qPlayed || 0) ? 'X' : L[s][i];
-    const ot = L[s].slice(4);                                   // every overtime period together, X if none was played
-    return ot.every(v => v == null) ? 'X' : ot.reduce((a, b) => a + (b || 0), 0);
-  };
-  const row = s => `<tr><td>${esc(g.teams[s].abbr || g.teams[s].name)}</td>${cols.map(i => `<td>${pts(s, i)}</td>`).join('')}<td>${st.score[s]}</td></tr>`;
-  return `<table class="st-ls"><thead><tr><th></th>${cols.map(i => `<th>${i < 4 ? i + 1 : 'OT'}</th>`).join('')}<th>T</th></tr></thead><tbody>${row('A')}${row('H')}</tbody></table>`;
+  // One column per quarter, then one for each overtime the game went to.
+  const cols = lineCols(st);
+  const row = s => `<tr><td>${esc(g.teams[s].abbr || g.teams[s].name)}</td>${cols.map(i => `<td>${qCell(st, s, i)}</td>`).join('')}<td>${st.score[s]}</td></tr>`;
+  return `<table class="st-ls"><thead><tr><th></th>${cols.map(i => `<th>${colLabel(i)}</th>`).join('')}<th>T</th></tr></thead><tbody>${row('A')}${row('H')}</tbody></table>`;
 }
 // The thin bar under the strip on phones: where the ball is, the line to gain, and this drive so far.
 function driveBar(){
@@ -2630,8 +2629,8 @@ function teamRows(){
 function summaryText(){
   const st = R.st, T = g.teams, lp = (s, n) => String(s).padStart(n), rp = (s, n) => String(s).padEnd(n);
   let out = `${T.A.name} at ${T.H.name}${rulesOf(g).men === 8 ? ' (8-man)' : ''}\n${st.final ? 'FINAL' : perLabel(st.q) + (st.q <= 4 ? ' ' + mmss(clockNow()) : '')}\n\n`;
-  const cols = [0, 1, 2, 3].concat(st.q > 4 || st.lines.A[4] || st.lines.H[4] ? [4] : []);
-  out += rp('', 8) + cols.map(i => lp(i < 4 ? i + 1 : 'OT', 4)).join('') + lp('T', 5) + '\n';
+  const cols = lineCols(st);
+  out += rp('', 8) + cols.map(i => lp(colLabel(i), 4)).join('') + lp('T', 5) + '\n';
   ['A', 'H'].forEach(s => out += rp(T[s].abbr, 8) + cols.map(i => lp(qCell(st, s, i), 4)).join('') + lp(st.score[s], 5) + '\n');
   out += '\nSCORING\n' + (R.scoring.map(e => `${perLabel(e.q)} ${e.clk != null ? mmss(e.clk) : ''}  ${ab(e.side)} – ${e.desc}  (${T.A.abbr} ${e.A}, ${T.H.abbr} ${e.H})`).join('\n') || 'None') + '\n';
   out += '\n' + rp('TEAM STATS', 28) + lp(T.A.abbr, 10) + lp(T.H.abbr, 10) + '\n';
@@ -3163,6 +3162,18 @@ function cardDrive(){
 }
 // One quarter's cell in a line score: blank while the game hasn't reached it, and an X in a finished game for a
 // quarter that was never played (8-man ends at 45 points from the half on; weather and forfeits do the same).
+// The columns a line score shows: four quarters, then one for each overtime the game went to — OT, 2OT, 3OT…
+// Everywhere that draws a line score asks this, so the card, the strip, the scoreboard and the exports agree.
+function lineCols(st){
+  const A = st.lines.A || [], H = st.lines.H || [];
+  // The last overtime the game actually reached: whoever scored in it, or the clock having got there. A scoreless
+  // overtime still gets its column — leaving it out would shift 4OT's points under 3OT.
+  let last = 3;
+  for (let i = 4; i < Math.max(A.length, H.length); i++) if (A[i] || H[i]) last = i;   // 0 alone isn't an overtime
+  if (st.q > 4) last = Math.max(last, st.q - 1);                                       // the clock reached it
+  return Array.from({length:last + 1}, (_, i) => i);
+}
+const colLabel = i => i < 4 ? String(i + 1) : i === 4 ? 'OT' : `${i - 3}OT`;
 function qCell(st, s, i){
   const v = st.lines[s][i];
   if (v == null) return 'X';                                        // the scorer left this quarter blank
@@ -3171,9 +3182,9 @@ function qCell(st, s, i){
   return i === 4 || st.q > i || st.final ? v : '';
 }
 function cardLinescore(){
-  const st = R.st, T = g.teams, cols = [0, 1, 2, 3].concat(st.q > 4 || st.lines.A[4] || st.lines.H[4] ? [4] : []);
+  const st = R.st, T = g.teams, cols = lineCols(st);
   return `<section class="card"><div class="tbl-wrap"><table class="ls">
-    <thead><tr><th></th>${cols.map(i => `<th>${i < 4 ? i + 1 : 'OT'}</th>`).join('')}<th>T</th></tr></thead>
+    <thead><tr><th></th>${cols.map(i => `<th>${colLabel(i)}</th>`).join('')}<th>T</th></tr></thead>
     <tbody>${['A', 'H'].map(s => `<tr><td><span class="tm">${teamMark(s, 22)}${esc(T[s].name)}</span></td>${cols.map(i => `<td>${qCell(st, s, i)}</td>`).join('')}<td class="tot">${st.score[s]}</td></tr>`).join('')}</tbody>
   </table></div></section>`;
 }
@@ -3490,14 +3501,14 @@ function gameSheets(){
   const P = (name, heads, keep, row, key) => ({name, rows:[hdr(['Team', '#', 'Name', ...heads]),
     ...both.flatMap(s => Object.values(S.pl[s]).filter(keep).sort((a, b) => (b[key] || 0) - (a[key] || 0))
       .map(p => [T[s].abbr, p.n === 'team' ? '' : num(p.n), p.n === 'team' ? 'TEAM' : rosterName(s, p.n), ...row(p)]))]});
-  const cols = [0, 1, 2, 3].concat(st.q > 4 || st.lines.A[4] || st.lines.H[4] ? [4] : []);
+  const cols = lineCols(st);
   const summary = [
     hdr([`${T.A.name} at ${T.H.name}`]),
     ['Date', new Date(g.created).toLocaleDateString()],
     ['Game', rulesOf(g).men === 8 ? '8-man' : '11-man'],
     ['Status', st.final ? 'Final' : `In progress, ${perLabel(st.q)}`],
     [],
-    hdr(['Team', ...cols.map(i => i < 4 ? `Q${i + 1}` : 'OT'), 'Total']),
+    hdr(['Team', ...cols.map(i => i < 4 ? `Q${i + 1}` : colLabel(i)), 'Total']),
     ...both.map(s => [T[s].name, ...cols.map(i => qCell(st, s, i)), st.score[s]]),
     [],
     hdr(['Scoring plays']),
@@ -4480,15 +4491,17 @@ function boardLeaders(x, S){
 function boardGame(x){
   const m = summary(x), T = x.teams, lead = leadOf(m), id = encodeURIComponent(x.id);
   // Quarters played so far (every one, once it's final; OT when there was one); a quick score has no line score.
-  const nq = m.lines ? (m.q > 4 ? 5 : 4) : 0, played = m.fin ? nq : Math.min(m.q, nq);
-  const cells = f => Array.from({length:nq}, (_, i) => `<span>${f(i)}</span>`).join('');
+  // Four quarters, plus a column for each overtime the game went to.
+  const idx = m.lines ? lineCols({q:m.q, lines:m.lines}) : [];
+  const nq = idx.length, played = m.fin ? nq : Math.min(m.q, nq);
+  const cells = f => idx.map((i, n) => `<span>${f(i, n)}</span>`).join('');
   const team = s => {
     const cls = m.fin && lead ? (lead === s ? ' won' : ' lose') : '';
     // The record as entered, ESPN style "(1-2, 0-1 Away)"; until then the mascot and Away or Home.
     const rec = recordText(T[s], s, !m.fin), sub = rec ? `(${rec})` : [T[s].mascot, s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
     return `<div class="bt${cls}"><div class="bt-team">${markFor(T[s], 29)}<div class="bt-id">
         <div class="bt-name"><span><a class="tlink" href="?team=${encodeURIComponent(T[s].name)}">${esc(T[s].name)}</a></span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub${rec ? ' rec' : ''}">${esc(sub)}</div></div></div>
-      <div class="bt-q">${cells(i => m.lines[s][i] == null ? 'X' : m.typed ? m.lines[s][i] : (i < 4 && m.fin && i >= (m.qPlayed || 0)) ? 'X' : i < played ? m.lines[s][i] : '')}</div><div class="bt-t">${m.pre ? '' : m.score[s]}</div><i class="sc-win"></i></div>`;
+      <div class="bt-q">${cells((i, n) => m.lines[s][i] == null ? 'X' : m.typed ? m.lines[s][i] : (i < 4 && m.fin && i >= (m.qPlayed || 0)) ? 'X' : n < played ? m.lines[s][i] : '')}</div><div class="bt-t">${m.pre ? '' : m.score[s]}</div><i class="sc-win"></i></div>`;
   };
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
   // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
@@ -4722,13 +4735,14 @@ function parseBox(txt){
     if (out.names.length < 2){
       // A quarter is a number, or an X (or a bare dash) for one that was never played — how a mercy-rule game is
       // posted: "Flinthills 44 14 X X — 58". The dash before the total is often jammed against that last column.
-      const ls = l.match(/^(.*?[A-Za-z][^\d]*?)\s+((?:(?:\d+|[Xx]|[—–-])\s*[ ]\s*){2,7}(?:\d+|[Xx]|[—–-]))\s*(?:[—–-]+\s*(\d+))?$/);
+      // Up to twelve columns: four quarters and as many overtimes as the game went to.
+      const ls = l.match(/^(.*?[A-Za-z][^\d]*?)\s+((?:(?:\d+|[Xx]|[—–-])\s*[ ]\s*){2,11}(?:\d+|[Xx]|[—–-]))\s*(?:[—–-]+\s*(\d+))?$/);
       if (ls){
         const cell = v => /^[Xx]$/.test(v) || /^[—–-]$/.test(v) ? null : Number(v);
         let q = ls[2].trim().split(/\s+/).map(cell), tot = ls[3] != null ? +ls[3] : null;
         const add = a => a.reduce((t, v) => t + (v || 0), 0);
         if (tot == null && q.length >= 5 && q[q.length - 1] != null && q[q.length - 1] === add(q.slice(0, -1))) tot = q.pop();
-        if (q.length > 5) q = [...q.slice(0, 4), q.slice(4).every(v => v == null) ? null : add(q.slice(4))];   // every overtime together
+        // Each overtime keeps its own column, however many there were: "10 10 0 7 0 6 0 6 0 — 39".
         const s = out.names.length ? 'H' : 'A', name = ls[1].replace(/[\s:,.—–-]+$/, ''), sum = add(q);
         out.names.push(name); out.lines[s] = q; out.total[s] = tot ?? sum;
         if (tot != null && tot !== sum) out.warn.push(`${name}’s quarters add up to ${sum}, but the total says ${tot}. Using ${tot}.`);
@@ -4913,10 +4927,14 @@ function boxData(game){
 // The replay's totals for a box-score game (called from replay).
 function boxInto(game, st, S, scoring){
   const b = boxData(game);
+  // The paste didn't read as a box score (or hasn't been re-read yet): leave the game empty rather than throw.
+  if (!b || !b.lines || !b.lines.A || !b.lines.H) return;
   ['A', 'H'].forEach(s => {
     const q = b.lines[s] || [];
     // A quarter the paste marked X (or left off) stays null, so the line score shows an X rather than a 0.
-    st.lines[s] = [0, 1, 2, 3, 4].map(i => i < q.length ? (q[i] == null ? null : +q[i] || 0) : null);
+    // However many columns the paste had, they all come through — four quarters and an overtime apiece.
+    const cols = Math.max(5, q.length, (b.lines[s === 'A' ? 'H' : 'A'] || []).length);
+    st.lines[s] = Array.from({length:cols}, (_, i) => i < q.length ? (q[i] == null ? null : +q[i] || 0) : null);
     st.score[s] = b.total && b.total[s] != null ? +b.total[s] : st.lines[s].reduce((a, v) => a + (v || 0), 0);
     Object.assign(S.team[s], b.team[s] || {});
     S.pl[s] = {};
@@ -5094,7 +5112,11 @@ function countyStats(games){
       const o = other(s), T = teams[c] || (teams[c] = blank(c)), S = r.S.team[s], O = r.S.team[o];
       T.gp++; T.pf += st.score[s]; T.pa += st.score[o];
       T_KEYS.forEach(k => { T[k] += +S[k] || 0; T['o' + k] += +O[k] || 0; });
-      for (let i = 0; i < 5; i++){ T.qf[i] += +st.lines[s][i] || 0; T.qa[i] += +st.lines[o][i] || 0; }
+      // Four quarters of their own; every overtime a game went to adds into the one OT column.
+      for (let i = 0; i < Math.max(5, st.lines[s].length); i++){
+        const j = Math.min(i, 4);
+        T.qf[j] += +st.lines[s][i] || 0; T.qa[j] += +st.lines[o][i] || 0;
+      }
       if (st.q > 4 || st.lines[s][4] || st.lines[o][4]) T.ot = true;
       if (st.final) T[st.score[s] > st.score[o] ? 'w' : st.score[s] < st.score[o] ? 'l' : 't']++;
       Object.values(r.S.pl[s]).forEach(p => {
@@ -5752,6 +5774,7 @@ const HOME_CODES = [
   ['19-punt-40-11-6', '#19 punts 40 yards, #11 returns it 6'],
   ['ko-A25', 'Kickoff; Augusta’s drive starts at its 25'],
   ['pen E 15 pf', '15-yard personal foul on El Dorado'],
+  ['pen E 15 pf 1st', 'The same, with an automatic first down (1st, auto or af)'],
   ['to A · eoq · undo', 'Augusta timeout / end of the quarter / take back the last play'],
   ['3-10 8:40 @54', 'Extras on any line: the clock time, and the tackler after @']];
 
