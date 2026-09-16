@@ -59,7 +59,7 @@ const HOME_CODES = [
   ['7-int-24-E10', 'Intercepted by #24 at the El Dorado 10'],
   ['15-xp · 15-fg', 'Extra point / field goal good (add -no if it missed)'],
   ['19-punt-40-11-6', '#19 punts 40 yards, #11 returns it 6'],
-  ['19 punt 11 return 5 ball at E35', 'Or say where the ball ended up: the punt’s distance works itself out'],
+  ['19-punt ball at E35', 'A punt with no return: the distance works itself out from where El Dorado starts'],
   ['ko-A25', 'Kickoff; Augusta’s drive starts at its 25'],
   ['pen E 15 pf', '15-yard personal foul on El Dorado'],
   ['pen E 15 pf 1st', 'The same, with an automatic first down (1st, auto or af)'],
@@ -125,6 +125,8 @@ function renderHome(){
               ['7 intercepted by 24', 'Picked off by #24'],
               ['3 runs it in for a touchdown', 'Touchdown from wherever the ball is'],
               ['8 for 9 yards tackled by 55', 'Shortest of all: a number, the yards, the tackler'],
+              ['19 punts, 11 returns 5, ball at E35', '#19 punts, #11 returns it 5 — you never work out how far the punt went'],
+              ['1 caught the kickoff at the 8 and ran it to the 20', 'Same for kickoffs: the yard lines are the receiving team’s, and the kick’s distance fills itself in'],
               ['pen aug 15 personal foul', 'A penalty in words; add 1st for an automatic first down']
             ].map(([c, m]) => `<tr><td><code>${esc(c)}</code></td><td>${esc(m)}</td></tr>`).join('')}</tbody></table>
             <p class="h-note">Put the clock anywhere on the line (<code>3:55</code>) and the tackler after the play. A few things stay short because there’s no sentence for them: the extra point is <code>15 xp</code> or <code>15 kick good</code>, and a drive starts with <code>A ball at A35</code>.</p></div>

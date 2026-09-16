@@ -192,6 +192,9 @@ function parseQuick(raw, st){
   let fumErr = null;                       // set when a fumble's "ball on" spot can't be right
   const flag = p => { if (fumErr) return bad(fumErr); if (pen) p.pen = pen; return ok(p); };
   // Drop filler words, but never a team letter: for Augusta, "a" is the team, not the article.
+  // A kickoff reads its yard lines off the words "caught at the 8 … to the 20", and those words are filler
+  // everywhere else, so keep a copy of the line before they go.
+  const rawToks = toks.slice();
   if (toks.some(isNum)) toks = toks.filter(t => !FILLER.includes(t) || T(t));
 
   /* ---- kickoffs ---- */
@@ -204,21 +207,50 @@ function parseQuick(raw, st){
     if (st.phase === 'try') return bad('Extra point first: 15-xp (or 15-xp-no, or 3 / 7-88 for a two-point try). Then the kickoff.');
     if (st.phase !== 'kick') return bad(`No kickoff is due — ${L(O)} has the ball. If there was one, type where it ended: ${L(O)} ball at ${L(O)}25.`);
     const Rk = other(st.poss), rest = toks.slice(kickWord + 1);
-    const before = toks.slice(0, kickWord).filter(isNum), after = rest.filter(isNum);
-    const sp = rest.map(spotOf).find(Boolean);             // a yard line instead of a distance
+    // Nobody at the game measures a kickoff: they see it caught and they see where it ends. Both yard lines
+    // are the receiving team's, so "caught at the 8 and returned to the 20" needs no team on either number.
+    const AT = ['at', 'to', 'on', 'inside', 'near'], CAUGHT = ['caught', 'catch', 'catches', 'fielded', 'fields'];
+    const KICK = ['ko', 'kickoff', 'kicks', 'kicked', 'onside'];
+    const rk0 = rawToks.findIndex(t => KICK.includes(t) || (t === 'kick' && st.phase === 'kick'));
+    const rawRest = rk0 >= 0 ? rawToks.slice(rk0 + 1) : rest;
+    const bare = [];
+    rawRest.forEach((t, i) => {
+      if (!isNum(t) || +t < 0 || +t > FL / 2) return;
+      let j = i - 1; while (j >= 0 && rawRest[j] === 'the') j--;
+      if (j >= 0 && AT.includes(rawRest[j])) bare.push(+t);
+    });
+    const tagged = rest.map(spotOf).filter(Boolean);
+    const spots = tagged.concat(bare.filter(n => !tagged.some(x => x.side === Rk && x.n === n)).map(n => ({side:Rk, n})));
+    const caught = rawToks.some(t => CAUGHT.includes(t));
+    const before = toks.slice(0, kickWord).filter(isNum);
+    const left = bare.slice();                     // a number already read as a yard line isn't a player
+    const after = rest.filter(t => {
+      if (!isNum(t) || spotOf(t)) return false;
+      const k = left.indexOf(+t); if (k >= 0){ left.splice(k, 1); return false; }
+      return true;
+    });
+    const sp = spots[0] || null, endSp = spots[1] || null;   // where it was caught, and where the return ended
+    const pos = x => x.side === Rk ? FL - x.n : x.n;         // a yard line as the kicking team sees it
     const p = {t:'ko', res:'spot'};
-    if (before[0] != null) p.k = before[0];
-    if (sp) p.d = Math.max(0, (sp.side === Rk ? FL - sp.n : sp.n) - st.kickFrom);
+    if (sp) p.d = Math.max(0, pos(sp) - st.kickFrom);
     else if (after[0] != null) p.d = Math.abs(+after[0]);
     const nx = sp ? after : after.slice(1);                // then the returner and return yards
+    // "1 caught the kickoff at the 8": with no number after the word, the one before it is the returner.
+    const retNo = nx[0] != null ? nx[0] : (caught && before[0] != null ? before[0] : null);
+    if (before[0] != null && retNo !== before[0]) p.k = before[0];
     // "ko-C25": no kick details, just where the receiving team's drive starts.
-    if (sp && !nx.length && !has('tb', 'oob', 'onside', 'fc')){ delete p.d; p.bs = sp.side === Rk ? sp.n : FL - sp.n; return flag(p); }
+    if (sp && !endSp && !nx.length && !caught && !has('tb', 'oob', 'onside', 'fc')){ delete p.d; p.bs = sp.side === Rk ? sp.n : FL - sp.n; return flag(p); }
     if (has('tb')) p.res = 'tb';
     else if (has('oob')) p.res = 'oob';
-    else if (has('onside')){ p.res = 'onside'; if (nx[0] != null) p.ret = nx[0]; if (p.d == null) p.d = 10; }
-    else if (has('fc')){ p.res = 'fc'; if (nx[0] != null) p.ret = nx[0]; }
-    else if (nx[0] != null){ p.res = 'ret'; p.ret = nx[0]; p.ry = Math.abs(+(nx[1] || 0)); }
-    if (p.res === 'ret' && p.d == null) return bad('Put the kick distance before the returner: 15-ko-55-28-21.');
+    else if (has('onside')){ p.res = 'onside'; if (retNo != null) p.ret = retNo; if (p.d == null) p.d = 10; }
+    else if (has('fc')){ p.res = 'fc'; if (retNo != null) p.ret = retNo; }
+    else if (retNo != null || endSp){
+      p.res = 'ret';
+      if (retNo != null) p.ret = retNo;
+      p.ry = endSp ? pos(sp) - pos(endSp) : Math.abs(+(nx[1] || 0));
+      if (p.ry < 0) return bad(`Those don’t add up: caught at the ${sp.n} and returned to the ${endSp.n}.`);
+    }
+    if (p.res === 'ret' && p.d == null) return bad('Say where it was caught (ko 28 caught at the 8) or how far it was kicked: 15-ko-55-28-21.');
     if (p.res === 'ret' && has('td')) p.ry = st.kickFrom + p.d;
     return flag(p);
   }
@@ -436,6 +468,7 @@ function cheatHtml(a, h){
     ['15-xp &nbsp;·&nbsp; 15-xp-no', 'Kick after a touchdown. For 2 points: 3 (run) or 7-88 (pass), add -no if it failed'],
     [`ko-${a}25 &nbsp;·&nbsp; ko-${a}25-3:25`, `Kickoff; the drive starts at the ${a} 25 (with 3:25 left). No need to say who kicked. After a touchdown, enter the extra point first.`],
     ['15-ko-tb &nbsp;·&nbsp; 15-ko-55-28-21', 'Kickoff with details: touchback / 55 yards, #28 returns it 21. Also 15-ko-oob, 15-ko-onside-44.'],
+    ['28 caught the kickoff at the 8 and ran it to the 20', 'Or say what you saw: both yard lines are the receiving team’s, and the kick’s distance works itself out.'],
     [`pen ${h} 15 pf`, `15 yards on ${h}. Codes: fs off hold pi pf fm uc rtp ig dog and more. Add 1st for an automatic first down.`],
     [`3-12 pen ${a} 10 hold np`, 'Flag wipes out the play (np = no play). Without np, the yards add on to the end of the play.'],
     [`to ${a}`, `${g.teams.A.name} timeout`],
