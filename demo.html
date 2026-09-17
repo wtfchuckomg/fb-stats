@@ -239,7 +239,7 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .pg-when b{font:600 16px/1.2 var(--sans);color:var(--ink-2)}
 .pg-at{margin-top:4px;padding:3px 10px;border:1px solid var(--line);border-radius:6px;font-size:12px}
 .pg-live{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font:500 15px/1.3 var(--sans)}
-.pg-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(0,1fr);gap:16px;align-items:start;margin-top:16px}
+.pg-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start;margin-top:16px}
 .pg-col{display:grid;gap:16px;min-width:0}
 .pg-card{padding:18px 20px}
 .pg-h{margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--line);font:700 15px/1 var(--cond);text-transform:uppercase;color:var(--ink-2)}
@@ -261,10 +261,18 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .pg-info{display:grid;gap:2px;padding:10px 0;border-top:1px solid var(--line-2);font:400 14px/1.35 var(--sans);color:var(--muted)}
 .pg-info:first-of-type{border-top:0;padding-top:0}
 .pg-info b{color:var(--ink-2);font-weight:600}
-.pg-odds td,.pg-odds th{padding:8px 6px}
-.pg-odds td:first-child{display:flex;align-items:center;gap:8px}
-.pg-odds td:first-child div{display:grid;gap:1px}
-.pg-odds td:first-child span{font:400 11px/1 var(--sans);color:var(--muted)}
+.pg-tbl{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.pg-tbl .ctbl th,.pg-tbl .ctbl td{border-bottom:1px solid var(--line-2);padding:8px 8px}
+.pg-tbl .ctbl th:last-child,.pg-tbl .ctbl td:last-child{padding-right:12px}
+.pg-tbl .ctbl th:first-child,.pg-tbl .ctbl td:first-child{padding-left:12px}
+.pg-tbl .ctbl tr:last-child td{border-bottom:0}
+.pg-odds{table-layout:fixed}
+.pg-odds td,.pg-odds th{padding:9px 8px}
+.pg-odds th:first-child,.pg-odds td:first-child{width:40%;text-align:left}
+.pg-odds th:last-child,.pg-odds td:last-child{padding-right:12px}
+.pg-oteam{display:flex;align-items:center;gap:8px;min-width:0}
+.pg-oteam div{display:grid;gap:1px;min-width:0}
+.pg-oteam span{font:400 11px/1 var(--sans);color:var(--muted)}
 .pg-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .pg-by{font:500 12px/1 var(--sans);text-transform:none;color:var(--blue);text-decoration:none}
 .mas-list{margin:6px 0 0;padding-left:18px;font:400 13px/1.5 var(--sans);color:var(--ink)}
@@ -273,12 +281,12 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .mas-tbl td:first-child,.mas-tbl th:first-child{text-align:left}
 .pg-lhead{display:flex;justify-content:space-between;align-items:center;padding:4px 0 10px;border-bottom:1px solid var(--line-2)}
 .pg-lhead span{display:flex;align-items:center;gap:8px;font:700 14px/1 var(--sans)}
-.pg-who .tlogo,.pg-who .tmono{display:none}
-.pg-lrow{display:grid;grid-template-columns:minmax(0,1fr) 56px 80px 56px minmax(0,1fr);align-items:center;gap:8px;padding:14px 0;border-bottom:1px solid var(--line-2)}
-.pg-who{display:flex;align-items:center;gap:10px;min-width:0;font:400 12.5px/1.3 var(--sans);color:var(--muted)}
-.pg-who div{display:grid;gap:2px;min-width:0}
-.pg-who b{font:600 15px/1.2 var(--sans);color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pg-who.r{justify-content:flex-end;text-align:right;flex-direction:row-reverse}
+.pg-leaders,.pg-lhead{max-width:720px;margin-inline:auto}
+.pg-five .ctbl th:first-child,.pg-five .ctbl td:first-child{text-align:left}
+.pg-lrow{display:grid;grid-template-columns:minmax(0,1fr) 60px 84px 60px minmax(0,1fr);align-items:center;gap:8px;padding:14px 0;border-bottom:1px solid var(--line-2)}
+.pg-who{display:grid;gap:2px;min-width:0;justify-items:start;text-align:left;font:400 12.5px/1.3 var(--sans);color:var(--muted)}
+.pg-who.r{justify-items:end;text-align:right}
+.pg-who b{max-width:100%;font:600 15px/1.2 var(--sans);color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pg-n{font:700 22px/1 var(--sans);text-align:center;color:var(--ink-2)}
 .pg-l{font:600 12px/1.2 var(--sans);text-align:center;color:var(--ink)}
 .pg-fives{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
@@ -290,7 +298,8 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .pg-st td:first-child,.pg-st th:first-child,.pg-five td:nth-child(2),.pg-five th:nth-child(2){text-align:left}
 .pg-st td,.pg-st th{padding:7px 6px;font-size:13.5px}
 .pg-st tr.pg-us td{font-weight:700;background:var(--surface)}
-@media (max-width:1080px){.pg-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .pg-mid{grid-column:1 / -1;order:-1}}
+.pg-wide{grid-column:1 / -1;min-width:0}
+.pg-wide > .bcard{height:100%}
 @media (max-width:700px){
   .pg-head{grid-template-columns:1fr 1fr;padding:16px}
   .pg-when{grid-column:1 / -1;grid-row:2}
@@ -298,7 +307,6 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
   .pg-team .tlogo,.pg-team .tmono{width:44px!important;height:44px!important}
   .pg-grid{grid-template-columns:minmax(0,1fr)}
   .pg-lrow{grid-template-columns:minmax(0,1fr) 40px 64px 40px minmax(0,1fr);gap:4px}
-  .pg-who .tlogo,.pg-who .tmono{display:none}
   .pg-who b{font-size:13px;white-space:normal}
   .pg-n{font-size:17px} .pg-l{font-size:10.5px}
   .pg-fives{grid-template-columns:minmax(0,1fr)}
@@ -1080,7 +1088,9 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .bt-t,.st-score{font-weight:600;letter-spacing:-.02em}
 .st-name{font-weight:600;letter-spacing:-.02em}
 .ctbl th{color:var(--muted);font-weight:600;letter-spacing:.02em}
-.ctbl tbody tr:nth-child(even) td{background:#FAFAFC}
+.ctbl{background:var(--card)}
+.ctbl td{border-bottom-color:#E2E3E6}
+.ctbl tbody tr:nth-child(even) td{background:#F2F3F5}
 .ctbl th.on,.ctbl td.on,.ctbl tbody tr:nth-child(even) td.on{background:#EEF5FD}
 .ctbl tr.hi td,.ctbl tr.hi td.on{background:#F2F7FE}
 /* the standings are the one table that reads as a panel rather than a spreadsheet, so its rows sit on the
@@ -8766,12 +8776,12 @@ function previewHtml(){
   const oddsRow = (s, n, p) => {
     const m = ML && ML[s], spread = !ML ? '&#8212;' : !ML.spread ? 'PK' : m.fav ? `&#8722;${ML.spread}` : `+${ML.spread}`;
     const total = ML && ML.total != null ? `${s === 'A' ? 'o' : 'u'}${ML.total}` : '&#8212;';
-    return `<tr><td>${markFor(T[s], 22)}<div><b>${esc(T[s].abbr || shortName(n))}</b>${m && m.rank ? `<span>#${m.rank} Massey</span>` : ''}</div></td>
+    return `<tr><td><div class="pg-oteam">${markFor(T[s], 22)}<div><b>${esc(T[s].abbr || shortName(n))}</b>${m && m.rank ? `<span>#${m.rank} Massey</span>` : ''}</div></div></td>
       <td class="num">${spread}</td><td class="num">${total}</td><td class="num">${m && m.pwin != null ? `${Math.round(m.pwin)}%` : `${Math.round(p * 100)}%`}</td></tr>`;
   };
   const odds = `<section class="bcard pg-card"><h2 class="pg-h">Game line${ML ? '<a class="pg-by" href="https://masseyratings.com/hsf/ks/games" target="_blank" rel="noopener">Massey Ratings</a>' : ''}</h2>
-      <table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th><th class="num">Win</th></tr></thead><tbody>
-        ${oddsRow('A', A, P.away)}${oddsRow('H', H, P.home)}</tbody></table>
+      <div class="pg-tbl"><table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th><th class="num">Win</th></tr></thead><tbody>
+        ${oddsRow('A', A, P.away)}${oddsRow('H', H, P.home)}</tbody></table></div>
       ${ML ? `<p class="pg-proj">Massey’s pick: <b>${esc(ML.A.pred >= ML.H.pred ? A : H)} ${Math.max(ML.A.pred, ML.H.pred)}, ${esc(ML.A.pred >= ML.H.pred ? H : A)} ${Math.min(ML.A.pred, ML.H.pred)}</b></p>
         <p class="hint">Lines from Massey Ratings${massey.updated ? `, brought in ${esc(new Date(massey.updated).toLocaleDateString('en-US', {month:'short', day:'numeric'}))}` : ''}. For fun only: there’s no betting here.</p>`
         : `<p class="hint">No Massey Ratings line for this game yet. Win chances are this site’s predictor. For fun only: there’s no betting here.</p>`}
@@ -8780,16 +8790,16 @@ function previewHtml(){
   // Season leaders, the two teams side by side.
   const LA = seasonLeaders(A), LH = seasonLeaders(H);
   const line = (p, k) => !p ? '' : k === 'pass' ? `${p.pc || 0}/${p.pa || 0}, ${p.ptd || 0} TD${p.pint ? `, ${p.pint} INT` : ''}` : k === 'rush' ? `${p.ru || 0} CAR, ${p.rtd || 0} TD` : `${p.re || 0} REC, ${p.retd || 0} TD`;
-  const who = (p, t) => `<div class="pg-who">${markFor(t, 36)}<div><b>${p ? esc(shortPlayer(p.name)) : 'No stats yet'}</b><span>${p ? esc(line(p, p._k)) : ''}</span></div></div>`;
+  const who = (p, key, right) => `<div class="pg-who${right ? ' r' : ''}"><b>${p ? esc(shortPlayer(p.name)) : 'No stats yet'}</b>${p ? `<span>${esc(line(p, key))}</span>` : ''}</div>`;
   const leadRow = (label, key, stat) => {
-    const a = LA[key], h = LH[key]; if (a) a._k = key; if (h) h._k = key;
-    return `<div class="pg-lrow">${who(a, T.A)}<b class="num pg-n">${a ? a[stat] : '&#8212;'}</b><span class="pg-l">${label}</span><b class="num pg-n">${h ? h[stat] : '&#8212;'}</b><div class="pg-who r">${who(h, T.H).replace('<div class="pg-who">', '').replace(/<\/div>$/, '')}</div></div>`;
+    const a = LA[key], h = LH[key];
+    return `<div class="pg-lrow">${who(a, key)}<b class="num pg-n">${a ? a[stat] : '&#8212;'}</b><span class="pg-l">${label}</span><b class="num pg-n">${h ? h[stat] : '&#8212;'}</b>${who(h, key, true)}</div>`;
   };
   const noStats = pre.stats && !LA.pass && !LA.rush && !LA.rec && !LH.pass && !LH.rush && !LH.rec;
   const leaders = `<section class="bcard pg-card"><h2 class="pg-h">Season leaders</h2>
       <div class="pg-lhead"><span>${markFor(T.A, 26)}<b>${esc(T.A.abbr || shortName(A))}</b></span><span><b>${esc(T.H.abbr || shortName(H))}</b>${markFor(T.H, 26)}</span></div>
-      ${!pre.stats ? '<p class="bempty">Loading the stats…</p>' : noStats ? '<p class="bempty">Neither team has stats on the site yet.</p>'
-        : leadRow('Passing yards', 'pass', 'py') + leadRow('Rushing yards', 'rush', 'ry') + leadRow('Receiving yards', 'rec', 'rey')}
+      <div class="pg-leaders">${!pre.stats ? '<p class="bempty">Loading the stats…</p>' : noStats ? '<p class="bempty">Neither team has stats on the site yet.</p>'
+        : leadRow('Passing yards', 'pass', 'py') + leadRow('Rushing yards', 'rush', 'ry') + leadRow('Receiving yards', 'rec', 'rey')}</div>
     </section>`;
 
   // Last five games.
@@ -8799,19 +8809,20 @@ function previewHtml(){
       return `<tr><td class="num">${d.getMonth() + 1}/${d.getDate()}</td><td><span class="pg-opp">${row.side === 'H' ? 'vs' : '@'} ${markFor(o, 20)}<a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.abbr || shortName(o.name))}</a></span></td>
         <td class="num"><b class="${us > them ? 'pg-w' : us < them ? 'pg-lo' : ''}">${us > them ? 'W' : us < them ? 'L' : 'T'}</b> ${us}-${them}</td></tr>`; }).join('');
     return `<div class="pg-five"><div class="pg-fhead">${markFor({name:n, abbr:shortName(n), color:'#4A4B4D'}, 26)}<b>${esc(n)}</b></div>
-      ${rows ? `<table class="ctbl"><thead><tr><th>Date</th><th>Opp</th><th class="num">Result</th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="bempty">No finals on the site yet.</p>'}</div>`;
+      ${rows ? `<div class="pg-tbl"><table class="ctbl"><thead><tr><th>Date</th><th>Opp</th><th class="num">Result</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="bempty">No finals on the site yet.</p>'}</div>`;
   };
   const five = `<section class="bcard pg-card"><h2 class="pg-h">Last five games</h2><div class="pg-fives">${lastFive(A)}${lastFive(H)}</div></section>`;
 
   // Standings: each team's AVCTL division (one table when they share it).
   const divs = [...new Set([A, H].map(avctlDiv).filter(Boolean))];
   const standings = divs.length ? `<section class="bcard pg-card"><h2 class="pg-h">${new Date().getFullYear()} standings</h2>
-      ${divs.map(div => `<h3 class="pg-sub-h">AVCTL Division ${div}</h3><table class="ctbl pg-st"><thead><tr><th>Team</th><th class="num">League</th><th class="num">Overall</th></tr></thead><tbody>
+      ${divs.map(div => `<h3 class="pg-sub-h">AVCTL Division ${div}</h3><div class="pg-tbl"><table class="ctbl pg-st"><thead><tr><th>Team</th><th class="num">League</th><th class="num">Overall</th></tr></thead><tbody>
         ${standingsRows(div).map(o => `<tr class="${[A, H].some(n => canonSchool(n) === canonSchool(o.name)) ? 'pg-us' : ''}"><td><a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
-          <td class="num">${avRec(o.r.dw, o.r.dl, o.r.dt)}</td><td class="num">${esc((o.rec && o.rec.rec) || avRec(o.r.w, o.r.l, o.r.t))}</td></tr>`).join('')}</tbody></table>`).join('')}
+          <td class="num">${avRec(o.r.dw, o.r.dl, o.r.dt)}</td><td class="num">${esc((o.rec && o.rec.rec) || avRec(o.r.w, o.r.l, o.r.t))}</td></tr>`).join('')}</tbody></table></div>`).join('')}
     </section>` : '';
 
-  return `${head}<div class="pg-grid"><div class="pg-col">${predictor}${gameInfo}</div><div class="pg-col pg-mid">${leaders}${five}</div><div class="pg-col">${odds}${standings}</div></div>`;
+  // Two across on a computer: the predictor beside the line, the leaders and last games the full width, then the rest.
+  return `${head}<div class="pg-grid">${predictor}${odds}<div class="pg-wide">${leaders}</div><div class="pg-wide">${five}</div>${gameInfo}${standings || '<div></div>'}</div>`;
 }
 /* ================================================================
    Massey Ratings lines, for the pregame page's Game line card. Massey's
