@@ -1,0 +1,36 @@
+# Keeps a preview page for every shared game (g/<game id>/), so a link to a game shows that game on social
+# media. See .github/previews.py.
+name: Game previews
+
+# The clock is off. Firestore turns this job down for asking too fast (HTTP 429), so on a schedule it would
+# fail every ten minutes and mail the failure each time. It runs only when someone presses Run workflow, and
+# the cron line goes back in once the job fetches more gently or uses a service account.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: game-previews
+  cancel-in-progress: false
+
+jobs:
+  previews:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the game preview pages
+        run: python3 .github/previews.py
+      - name: Save and publish any changes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git add -A g
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          git -c user.name="Game previews" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "Update game previews"
+          git push -q
+          # A push by this job doesn't start a Pages build by itself, so ask for one.
+          curl -s -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pages/builds" > /dev/null || true
