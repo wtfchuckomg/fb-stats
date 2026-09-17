@@ -66,14 +66,20 @@ function leaderName(x, s, n){
   return `${p.length > 1 ? `${p[0][0]}. ${p.slice(1).join(' ')}` : full}${num ? ` #${n}` : ''}`;
 }
 function boardLeaders(x, S){
-  const best = k => { let top = null; ['A', 'H'].forEach(s => Object.values(S.pl[s]).forEach(p => { if (p.n !== 'team' && p[k] > 0 && (!top || p[k] > top.p[k])) top = {s, p}; })); return top; };
+  // Each team's best in each group, side by side — the visitors first, the way the score reads.
+  const best = (s, k) => { let top = null; Object.values(S.pl[s]).forEach(p => { if (p.n !== 'team' && p[k] > 0 && (!top || p[k] > top[k])) top = p; }); return top; };
   const td = (n, w) => n ? `, <b>${n}</b> ${w}` : '';
   return [
-    ['Pass', best('py'), p => `<b>${p.pc}/${p.pa}</b>, <b>${p.py}</b> YDS${td(p.ptd, 'TD')}${td(p.pint, 'INT')}`],
-    ['Rush', best('ry'), p => `<b>${p.ru}</b> CAR, <b>${p.ry}</b> YDS${td(p.rtd, 'TD')}`],
-    ['Rec', best('rey'), p => `<b>${p.re}</b> REC, <b>${p.rey}</b> YDS${td(p.retd, 'TD')}`]
-  ].filter(r => r[1]).map(([k, t, line]) => `<div class="bl"><span class="bl-k">${k}</span><div class="bl-body">
-    <div class="bl-who">${esc(leaderName(x, t.s, t.p.n))} <span>- ${esc(x.teams[t.s].abbr)}</span></div><div class="bl-line">${line(t.p)}</div></div></div>`).join('');
+    ['Pass', 'py', p => `<b>${p.pc}/${p.pa}</b>, <b>${p.py}</b> YDS${td(p.ptd, 'TD')}${td(p.pint, 'INT')}`],
+    ['Rush', 'ry', p => `<b>${p.ru}</b> CAR, <b>${p.ry}</b> YDS${td(p.rtd, 'TD')}`],
+    ['Rec', 'rey', p => `<b>${p.re}</b> REC, <b>${p.rey}</b> YDS${td(p.retd, 'TD')}`]
+  ].map(([k, key, line]) => {
+    const sides = ['A', 'H'].map(s => ({s, p:best(s, key)})).filter(o => o.p);
+    if (!sides.length) return '';
+    return `<div class="bl"><span class="bl-k">${k}</span><div class="bl-body">${sides.map(o => `<div class="bl-side">
+      <div class="bl-who">${esc(leaderName(x, o.s, o.p.n))} <span>- ${esc(x.teams[o.s].abbr)}</span></div>
+      <div class="bl-line">${line(o.p)}</div></div>`).join('')}</div></div>`;
+  }).join('');
 }
 function boardGame(x){
   const m = summary(x), T = x.teams, lead = leadOf(m), id = encodeURIComponent(x.id);
