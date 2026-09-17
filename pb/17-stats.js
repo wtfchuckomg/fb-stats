@@ -58,7 +58,7 @@ async function loadStats(api){
     if (!r.ok) throw new Error(r.status);
     const d = await r.json();
     if (!d || !Array.isArray(d.games) || !d.games.length) throw new Error('empty');
-    county.games = d.games.map(statsGame); built = d.built || 0; county.err = ''; renderCounty();
+    county.games = d.games.map(statsGame); built = d.built || 0; county.err = ''; renderCounty(); if (ui.preview) renderPreview();
   } catch (e) { built = 0; }      // no file: ask for every game, the way this used to work
   const col = fsM.collection(fsdb, 'pressbox'), pub = fsM.where('public', '==', true);
   listenStats(fsM, built ? fsM.query(col, pub, fsM.where('updated', '>', built)) : fsM.query(col, pub), () => {
@@ -75,7 +75,7 @@ function listenStats(fsM, q, onRefused){
       if (v.deleted || v.kind === 'score' || !v.json){ by.delete(d.id); return; }
       try { const x = JSON.parse(v.json); if (x.teams && ((x.plays && x.plays.length) || x.box)) by.set(d.id, Object.assign(x, {id:d.id})); } catch (e) {}
     });
-    county.games = [...by.values()]; county.err = ''; renderCounty();
+    county.games = [...by.values()]; county.err = ''; renderCounty(); if (ui.preview) renderPreview();
   }, e => {
     if (onRefused) return onRefused(e);
     if (!county.games){ county.err = 'Can’t load the stats right now. Reload to try again.'; renderCounty(); }
