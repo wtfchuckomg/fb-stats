@@ -299,11 +299,16 @@ function scoreCard(x){
   // A game opens once stats are being kept on it; the scorer can always open their own.
   if (!m.quick){
     const title = esc(`${T.A.name} at ${T.H.name}`);
-    return x.plays.length || x.box || (!ui.viewer && db.games[x.id]) ? `<a class="${cls}" href="?game=${encodeURIComponent(x.id)}" data-sc="${esc(x.id)}" title="${title}">${inner}</a>`
-      : `<div class="${cls}" title="${title}">${inner}</div>`;
+    if (x.plays.length || x.box || (!ui.viewer && db.games[x.id]))
+      return `<a class="${cls}" href="?game=${encodeURIComponent(x.id)}" data-sc="${esc(x.id)}" title="${title}">${inner}</a>`;
+    // Not started yet: the card opens its pregame page.
+    if (m.pre) return `<a class="${cls}" href="?preview=${encodeURIComponent(x.id)}" data-sc="${esc(x.id)}" title="${title}">${inner}</a>`;
+    return `<div class="${cls}" title="${title}">${inner}</div>`;
   }
-  // A quick score: the scorer taps it to update; for fans there's no game behind it to open.
-  const title = esc(`${T.A.name} at ${T.H.name} · score updated ${new Date(x.updated).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})}`);
+  // A quick score: the scorer taps it to update; for fans there's no game behind it to open. Before kickoff
+  // there's nothing to update yet, so everyone gets the pregame page instead.
+  const title = esc(`${T.A.name} at ${T.H.name}${m.pre ? '' : ` · score updated ${new Date(x.updated).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})}`}`);
+  if (m.pre) return `<a class="${cls}" href="?preview=${encodeURIComponent(x.id)}" title="${title}">${inner}</a>`;
   return ui.viewer ? `<div class="${cls}" title="${title}">${inner}</div>` : `<a class="${cls}" href="#" role="button" data-qs="${esc(x.id)}" title="${title}">${inner}</a>`;
 }
 const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>`;

@@ -53,7 +53,9 @@ async function startScoreboard(){
     const [appM, fsM, authM] = await Promise.all(['app', 'firestore', ...(admin ? ['auth'] : [])].map(m => import(base + m + '.js')));
     const app = appM.initializeApp(firebaseConfig);
     if (authM) authM.onAuthStateChanged(authM.getAuth(app), u => { ui.admin = !!u && u.uid === ADMIN_UID; renderScoreboard(); });
-    scoresReady({fsM, fsdb:fsM.getFirestore(app)});
+    const fsdb = fsM.getFirestore(app);
+    scoresReady({fsM, fsdb});
+    loadStats({fsM, fsdb});   // season leaders for the games that haven't kicked off
   } catch (e) { board.err = 'Can’t reach the scores. Check your connection and reload.'; renderScoreboard(); }
 }
 
@@ -83,6 +85,25 @@ function boardLeaders(x, S){
       <div class="bl-line">${line(o.p)}</div></div>`).join('')}</div></div>`;
   }).join('');
 }
+// Before kickoff there's no box score to show, so the space beside the line score carries what each team
+// has done this season: its passing, rushing and receiving leader.
+function preLeaders(x){
+  if (typeof seasonLeaders !== 'function' || !(county.games || []).length) return '';
+  const L = {A:seasonLeaders(x.teams.A.name), H:seasonLeaders(x.teams.H.name)};
+  const td = (n, w) => n ? `, <b>${n}</b> ${w}` : '';
+  const rows = [
+    ['Pass', 'pass', p => `<b>${p.pc || 0}/${p.pa || 0}</b>, <b>${p.py}</b> YDS${td(p.ptd, 'TD')}${td(p.pint, 'INT')}`],
+    ['Rush', 'rush', p => `<b>${p.ru || 0}</b> CAR, <b>${p.ry}</b> YDS${td(p.rtd, 'TD')}`],
+    ['Rec', 'rec', p => `<b>${p.re || 0}</b> REC, <b>${p.rey}</b> YDS${td(p.retd, 'TD')}`]
+  ].map(([k, key, line]) => {
+    const sides = ['A', 'H'].map(s => ({s, p:L[s] && L[s][key]})).filter(o => o.p);
+    if (!sides.length) return '';
+    return `<div class="bl"><span class="bl-k">${k}</span><div class="bl-body">${sides.map(o => `<div class="bl-side">
+      <div class="bl-who">${esc(shortPlayer(o.p.name))} <span>- ${esc(x.teams[o.s].abbr || shortName(x.teams[o.s].name))}</span></div>
+      <div class="bl-line">${line(o.p)}</div></div>`).join('')}</div></div>`;
+  }).join('');
+  return rows ? `<div class="bl-hd">Season leaders</div>${rows}` : '';
+}
 function boardGame(x){
   const m = summary(x), T = x.teams, lead = leadOf(m), id = encodeURIComponent(x.id);
   // Quarters played so far (every one, once it's final; OT when there was one); a quick score has no line score.
@@ -107,7 +128,7 @@ function boardGame(x){
   return `<article class="bgame${m.live ? ' live' : ''}${off ? ' bhid' : ''}">
     <div class="b-main"><div class="b-hd"><span class="b-st">${status}</span><div class="bt-q b-qh">${cells(i => i < 4 ? i + 1 : 'OT')}</div><span class="b-th">T</span><i></i></div>
       ${team('A')}${team('H')}</div>
-    <div class="b-lead">${m.S ? boardLeaders(x, m.S) : ''}</div>
+    <div class="b-lead">${m.pre ? preLeaders(x) : m.S ? boardLeaders(x, m.S) : ''}</div>
     <div class="b-acts"><span class="b-st2">${status}</span>${acts}${hide}</div></article>`;
 }
 
