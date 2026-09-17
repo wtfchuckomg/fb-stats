@@ -26,6 +26,18 @@ function rostersFor(name){
   return (sharedRosters.list || []).filter(r => canonSchool(r.name) === k && Object.keys(r.roster).length && !(sync.user && r.owner === sync.user.uid))
     .sort((a, b) => (b.updated || 0) - (a.updated || 0));
 }
+// The best copy of a school's roster for showing on its page: the fullest, then the newest, counting this
+// device's saved team as well as everyone else's shared copies.
+function rosterFor(name){
+  const k = name && canonSchool(name); if (!k) return null;
+  const all = (sharedRosters.list || []).filter(r => canonSchool(r.name) === k && Object.keys(r.roster || {}).length)
+    .map(r => ({roster:r.roster, updated:r.updated || 0}));
+  const mine = (typeof savedTeams === 'function' ? savedTeams() : []).find(t => canonSchool(t.name) === k && Object.keys(t.roster || {}).length);
+  if (mine) all.push({roster:mine.roster, updated:mine.updated || 0});
+  return all.map(r => Object.assign(r, {count:Object.keys(r.roster).length}))
+    .sort((a, b) => b.count - a.count || b.updated - a.updated)[0] || null;
+}
+
 // Put a saved roster up for everyone (only when signed in, and only a real school with players on it).
 function shareRoster(t){
   if (!sync.user || !sync.api || !t || !t.name || DEFAULT_TEAM_NAMES.includes(teamKey(t.name))) return;
@@ -42,6 +54,7 @@ function sharedHint(s, name){
 }
 function refreshRosterHints(){
   ['A', 'H'].forEach(s => { const el = $(`#s-${s}-shared`), nm = $(`#s-${s}-name`); if (el && nm) el.innerHTML = sharedHint(s, nm.value.trim()); });
+  renderTeamPage();   // a school's page lists its roster too
 }
 document.addEventListener('input', e => { if (e.target.id && /^s-[AH]-name$/.test(e.target.id)) refreshRosterHints(); });
 document.addEventListener('click', e => {

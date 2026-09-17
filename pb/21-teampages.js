@@ -153,7 +153,9 @@ async function startTeamPage(){
     const [appM, fsM, authM] = await Promise.all(['app', 'firestore', ...(admin ? ['auth'] : [])].map(m => import(base + m + '.js')));
     const app = appM.initializeApp(firebaseConfig);
     if (authM) authM.onAuthStateChanged(authM.getAuth(app), u => { ui.admin = !!u && u.uid === ADMIN_UID; renderTeamPage(); });
-    scoresReady({fsM, fsdb:fsM.getFirestore(app)});   // the scores strip, the records and every shared game
+    const fsdb = fsM.getFirestore(app);
+    scoresReady({fsM, fsdb});   // the scores strip, the records and every shared game
+    watchRosters({fsM, fsdb});  // and the rosters scorers have shared, for the roster card
   } catch (e) { allGames.err = 'Can’t reach the games. Check your connection and reload.'; allGames.list = []; renderTeamPage(); }
 }
 
@@ -242,7 +244,16 @@ function teamPageHtml(nameIn){
       ${coveredSchool(name) || !r ? '' : `<p class="h-note" style="margin:0 0 10px">${esc(name)}’s record here counts the games this site has — a paste or a tracked game adds to it.</p>`}
       ${allGames.list ? (sched ? `<div class="tbl-x"><table class="tp-sched"><tbody>${sched}</tbody></table></div>` : `<p class="bempty">No games for ${esc(name)} on the site yet.</p>`)
         : `<p class="bempty">${esc(allGames.err || 'Loading…')}</p>`}
-    </section>`;
+    </section>
+    ${(() => {
+      // Whoever has kept a game for this school has shared its roster; anyone setting one up can use it.
+      const r = rosterFor(name); if (!r) return '';
+      const list = Object.entries(r.roster).sort((a, b) => (+a[0] || 0) - (+b[0] || 0))
+        .map(([n, v]) => `<div class="tp-p"><b>${esc(n)}</b><span>${esc(playerName(v))}</span></div>`).join('');
+      return `<section class="bcard"><h2 class="tp-h">Roster</h2><div class="tp-roster">${list}</div>
+        <p class="h-note" style="margin:10px 0 0">${plural2(r.count, 'player')}, from a scorer who has kept a game for ${esc(name)}.
+          Anyone starting a game with them can use it in Setup.</p></section>`;
+    })()}`;
 }
 
 // Save a score fixed on a team page: the game's own document, which the admin's account owns (it loaded the schedule).
