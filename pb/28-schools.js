@@ -228,6 +228,13 @@ function similarSchools(v, max = 3){
   return [...best].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, max).map(e => e[0]);
 }
 
+// Not close enough to ask "did you mean", but worth a look before adding: schools sharing a word ("Northwest").
+function relatedSchools(v, max = 4){
+  const words = schoolWords(v).filter(w => w.length >= 4 && !/^\d+$/.test(w)); if (!words.length) return [];
+  return schoolList().map(n => [n, schoolWords(n).filter(w => words.includes(w)).length]).filter(e => e[1])
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, max).map(e => e[0]);
+}
+
 /* ---------- "Did you mean …?" ---------- */
 let askDone = null;
 function askDialog(){
@@ -240,20 +247,26 @@ function askDialog(){
   return d;
 }
 const schoolMark = (n, size) => markFor({name:n, abbr:listAbbr(n) || shortName(n), color:'#4A4B4D'}, size);
-// Resolves with the school picked (Yes), false (No, it's a different school) or null (closed without answering).
-function askSimilar(typed, names){
+// Asked before any school goes on the list. Resolves with the school picked (Yes), false (add the typed one)
+// or null (go back and fix it). like: close look-alikes; near: schools sharing a word, when nothing is close.
+function askSimilar(typed, like, near = []){
   return new Promise(res => {
-    const d = askDialog(), one = names.length === 1;
-    d.innerHTML = `<div class="dlg-hd"><h2>Did you mean${one ? ` ${esc(names[0])}` : ' one of these'}?</h2></div>
-      <div class="dlg-bd"><p class="ask-q">You typed <b>${esc(typed)}</b>. ${one ? 'That looks like a school already on the list.' : 'Those look like schools already on the list.'}</p>
-        <div class="ask-opts">${names.map(n => `<button type="button" class="ask-opt" data-ask-yes="${esc(n)}">${schoolMark(n, 32)}<span>${esc(n)}</span><b>Yes</b></button>`).join('')}</div></div>
-      <div class="dlg-ft"><button type="button" class="btn" data-ask-no>No, ${esc(typed)} is a different school</button></div>`;
+    const d = askDialog(), names = like.length ? like : near, T = `<b>${esc(typed)}</b>`;
+    const title = like.length === 1 ? `Did you mean ${esc(like[0])}?` : like.length ? 'Did you mean one of these?' : near.length ? 'Is it one of these?' : 'Add a new school?';
+    const lead = like.length ? `You typed ${T}. ${like.length === 1 ? 'That looks like a school already on the list.' : 'Those look like schools already on the list.'}`
+      : near.length ? `${T} isn’t on the school list. These have a similar name:`
+      : `${T} isn’t on the school list. Check the spelling first: a school added under two names splits its games and stats.`;
+    d.innerHTML = `<div class="dlg-hd"><h2>${title}</h2></div>
+      <div class="dlg-bd"><p class="ask-q">${lead}</p>
+        ${names.length ? `<div class="ask-opts">${names.map(n => `<button type="button" class="ask-opt" data-ask-yes="${esc(n)}">${schoolMark(n, 32)}<span>${esc(n)}</span><b>Yes</b></button>`).join('')}</div>` : ''}</div>
+      <div class="dlg-ft"><button type="button" class="btn" data-ask-back>Go back</button>
+        <button type="button" class="btn${names.length ? '' : ' primary'}" data-ask-no>${names.length ? `No, add ${esc(typed)} as a new school` : `Add ${esc(typed)}`}</button></div>`;
     askDone = res;
     if (!d.hasAttribute('open')){
       if (typeof d.showModal === 'function'){ try { d.showModal(); } catch (e) { d.classList.add('fallback'); d.setAttribute('open', ''); } }
       else { d.classList.add('fallback'); d.setAttribute('open', ''); }
     }
-    const first = d.querySelector('.ask-opt'); if (first) first.focus();
+    const first = d.querySelector('.ask-opt') || d.querySelector('[data-ask-back]'); if (first) first.focus();
   });
 }
 function finishAsk(v){
@@ -265,6 +278,7 @@ function finishAsk(v){
 document.addEventListener('click', e => {
   const y = e.target.closest && e.target.closest('[data-ask-yes]'); if (y) return finishAsk(y.dataset.askYes);
   if (e.target.closest && e.target.closest('[data-ask-no]')) return finishAsk(false);
+  if (e.target.closest && e.target.closest('[data-ask-back]')) return finishAsk(null);
 });
 
 // Settle what's in a school box: the list's own spelling, a Yes to a look-alike, or a new school on this scorer's list.
@@ -275,12 +289,10 @@ function settleSchool(el){
     const v = el.value.trim().replace(/\s+/g, ' '); if (!v) return true;
     const known = knownSchool(v);
     if (known){ if (known !== el.value) setSchoolValue(el, known); return true; }
-    const like = similarSchools(v);
-    if (like.length){
-      const pick = await askSimilar(v, like);
-      if (pick === null){ el.focus(); return false; }
-      if (pick){ setSchoolValue(el, pick); return true; }
-    }
+    // Nothing goes on the list without asking first: look-alikes, then schools sharing a word, then plain "add it?".
+    const like = similarSchools(v), pick = await askSimilar(v, like, like.length ? [] : relatedSchools(v));
+    if (pick === null){ el.focus(); return false; }
+    if (pick){ setSchoolValue(el, pick); return true; }
     setSchoolValue(el, v); addMySchool(v); return true;
   })().finally(() => { el._settling = null; });
   return el._settling;
@@ -317,12 +329,16 @@ function schoolMatches(q){
 }
 function showSchoolSug(el){
   const box = document.getElementById(el.id + '-sug'); if (!box) return;
-  const q = el.value.trim(), mine = new Set(mySchoolNames().map(logoSlug));
-  const list = schoolMatches(q).slice(0, 400);
-  let html = list.map((m, i) => `<div class="sch-opt" role="option" id="${esc(el.id)}-o${i}" data-pick="${esc(m.name)}" aria-selected="false">${schoolMark(m.name, 24).replace('<img ', '<img loading="lazy" ')}
-    <span class="sch-opt-nm">${esc(m.name)}</span>${m.also ? `<span class="sch-opt-note">${esc(m.also)}</span>` : mine.has(logoSlug(m.name)) ? '<span class="sch-opt-note">Added by you</span>' : ''}</div>`).join('');
-  if (q && !knownSchool(q)) html += `<div class="sch-opt new" role="option" id="${esc(el.id)}-onew" data-pick-new="1" aria-selected="false"><span class="sch-plus" aria-hidden="true">+</span>
-    <span class="sch-opt-nm">Add “${esc(q)}”</span><span class="sch-opt-note">New school</span></div>`;
+  const q = el.value.trim(), mine = new Set(mySchoolNames().map(logoSlug)), known = q && knownSchool(q);
+  // A name we don't have that looks like one we do: say so while they're still typing, before they add anything.
+  const close = q.length >= 3 && !known ? similarSchools(q, 3) : [];
+  const list = [...close.map(name => ({name, close:true})), ...schoolMatches(q).filter(m => !close.includes(m.name))].slice(0, 400);
+  const row = (m, i) => `<div class="sch-opt${m.close ? ' close' : ''}" role="option" id="${esc(el.id)}-o${i}" data-pick="${esc(m.name)}" aria-selected="false">${schoolMark(m.name, 24).replace('<img ', '<img loading="lazy" ')}
+    <span class="sch-opt-nm">${esc(m.name)}</span>${m.close ? '<span class="sch-opt-note">Close match</span>' : m.also ? `<span class="sch-opt-note">${esc(m.also)}</span>` : mine.has(logoSlug(m.name)) ? '<span class="sch-opt-note">Added by you</span>' : ''}</div>`;
+  let html = close.length ? `<div class="sch-head" role="presentation">Did you mean${close.length === 1 ? '' : ' one of these'}?</div>` : '';
+  html += list.map(row).join('');
+  if (q && !known) html += `<div class="sch-opt new" role="option" id="${esc(el.id)}-onew" data-pick-new="1" aria-selected="false"><span class="sch-plus" aria-hidden="true">+</span>
+    <span class="sch-opt-nm">Add “${esc(q)}”</span><span class="sch-opt-note">Not on the list</span></div>`;
   box.innerHTML = html; box.hidden = !html; box.scrollTop = 0;
   el.setAttribute('aria-expanded', String(!!html)); el.removeAttribute('aria-activedescendant');
 }

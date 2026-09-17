@@ -836,7 +836,7 @@ dialog.fallback[open]{display:block;position:fixed;top:50%;left:50%;transform:tr
 /* the school picker: type to find a school, or add one */
 .sch-pick{position:relative}
 .inp.sch-in{font:500 16px/1 var(--sans)}
-.sch-sug{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:30;max-height:min(300px,45vh);overflow-y:auto;overscroll-behavior:contain;
+.sch-sug{position:absolute;left:0;width:max(100%,320px);max-width:calc(100vw - 56px);top:calc(100% + 4px);z-index:30;max-height:min(300px,45vh);overflow-y:auto;overscroll-behavior:contain;
   background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.2);padding:4px}
 .sch-opt{display:flex;align-items:center;gap:10px;min-height:42px;padding:6px 8px;border-radius:7px;cursor:pointer;font:500 15px/1.2 var(--sans);color:var(--ink-2)}
 .sch-opt[aria-selected="true"]{background:var(--surface-2)}
@@ -844,6 +844,10 @@ dialog.fallback[open]{display:block;position:fixed;top:50%;left:50%;transform:tr
 .sch-opt .tlogo,.sch-opt .tmono{flex:none}
 .sch-opt-nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sch-opt-note{flex:none;color:var(--muted);font-size:12px}
+.sch-head{padding:6px 8px 4px;font:700 11px/1.2 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--flag-ink);background:var(--flag-wash);border-radius:7px 7px 0 0}
+.sch-opt.close{background:var(--flag-wash)}
+.sch-opt.close[aria-selected="true"]{background:var(--surface-2)}
+.sch-opt.close + .sch-opt:not(.close){border-top:1px solid var(--line-2);border-radius:0 0 7px 7px}
 .sch-opt.new{color:var(--blue);border-top:1px solid var(--line-2);border-radius:0 0 7px 7px;margin-top:2px}
 .sch-plus{flex:none;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:var(--surface-2);font:700 16px/1 var(--sans)}
 /* "Did you mean …?" */
