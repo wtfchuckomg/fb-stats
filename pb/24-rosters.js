@@ -38,7 +38,7 @@ function rosterFor(name){
     .sort((a, b) => b.count - a.count || b.updated - a.updated)[0];
   if (!best) return null;
   return {players:Object.entries(best.roster).map(([num, v]) => ({num:String(num), name:playerName(v)}))
-    .sort((a, b) => (+a.num || 999) - (+b.num || 999)), count:best.count, fromGames:false};
+    .sort((a, b) => (parseInt(a.num) || 999) - (parseInt(b.num) || 999)), count:best.count, fromGames:false};
 }
 
 // Failing a shared roster, the players a school's own games know: a pasted box score gives names with no
@@ -63,7 +63,7 @@ function rosterFromGames(name){
     const roster = (x.teams[r.side] || {}).roster || {};
     Object.values(rep.S.pl[r.side] || {}).forEach(p => {
       if (p.n === 'team') return;
-      const nm = playerName(roster[p.n]) || '';
+      const nm = playerName(rosterGet(roster, p.n, r.side)) || '';
       const key = nm || '#' + p.n;
       if (!out.has(key)) out.set(key, {num:String(p.n), name:nm});
     });

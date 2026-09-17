@@ -43,13 +43,31 @@ const FORMATS = {
    being taken for a surname. It is shown wherever a player is listed by name (box score, leaders, stats). */
 const CLASS_WORD = {sr:'SR', jr:'JR', so:'SO', fr:'FR', sen:'SR', senior:'SR', jun:'JR', junior:'JR', soph:'SO', sophomore:'SO', fresh:'FR', freshman:'FR', 9:'FR', 10:'SO', 11:'JR', 12:'SR'};
 function splitClass(s){
-  // A second jersey number sometimes rides along ("35 /50 Nathan Miller"): the roster keeps the first.
-  const full = String(s || '').replace(/^[\/,&]?\s*\d{1,2}\s+(?=\D)/, '').trim();
+  // A roster copied out of a spreadsheet keeps its columns ("Brett Lemonds⇥SR⇥WR⇥LB⇥5'9"⇥155"): the name is the
+  // first, and the class the next when it is one. Rosters saved before this was read carry the columns still.
+  let str = String(s || '');
+  if (str.includes('\t')){ const f = str.split('\t').map(v => v.trim()); str = f[0] + (f[1] && CLASS_WORD[f[1].toLowerCase()] ? ' ' + f[1] : ''); }
+  // An old "35 /50 Nathan Miller" line: the second number rode along in the name.
+  const full = str.replace(/^[\/,&]?\s*\d{1,2}\s+(?=\D)/, '').trim();
   const m = full.match(/\s+([A-Za-z]{2,9}|9|1[0-2])\.?$/);
   const yr = m && CLASS_WORD[m[1].toLowerCase()];
   return yr ? {name:full.slice(0, m.index).trim(), yr} : {name:full, yr:''};
 }
 const playerName = s => splitClass(s).name;
+// A player with one number at home and another on the road is on the roster once, as "7/82": home number first.
+// Side A is the visitors, so they're looked up by the second number; everyone else by the number they wear.
+function rosterGet(roster, n, side){
+  if (!roster || n == null || n === '') return undefined;
+  const want = String(n);
+  for (const k in roster){
+    if (!k.includes('/')) continue;
+    const [home, away] = k.split('/');
+    if ((side === 'A' ? away : home) === want) return roster[k];
+  }
+  return roster[want];
+}
+// The number a player wears in this game, from a roster key: "7/82" is 7 at home, 82 on the road.
+const rosterNum = (k, side) => String(k).includes('/') ? String(k).split('/')[side === 'A' ? 1 : 0] : String(k);
 
 function rulesOf(game){
   const s = (game && game.set) || {}, men = +s.men === 8 ? 8 : 11, f = FORMATS[men];
@@ -97,7 +115,7 @@ function replay(g, upto = g.plays.length){
   const nm = (s, n) => {
     if (n === '' || n == null) return ab(s);
     if (n === 'team') return 'TEAM';
-    const who = playerName((T[s].roster || {})[n]) || playerName((T[s].roster || {})[worn(s, n)]);
+    const who = playerName(rosterGet(T[s].roster, n, s)) || playerName(rosterGet(T[s].roster, worn(s, n), s));
     return who ? `#${n} ${who.split(' ').slice(-1)[0]}` : `#${n}`;
   };
   const yl = (s, pos) => { pos = clamp(pos, 0, FL); if (pos === HALF) return String(HALF);

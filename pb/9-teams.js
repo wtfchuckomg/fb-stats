@@ -9,12 +9,22 @@ const DEFAULT_TEAM_NAMES = ['', 'visitors', 'home'];
 const teamLib = () => db.teams || (db.teams = {});
 const savedTeams = () => Object.values(teamLib()).filter(t => !t.deleted && t.name).sort((a, b) => a.name.localeCompare(b.name));
 function findTeam(name){ const t = teamLib()[teamKey(name)]; return t && !t.deleted ? t : null; }
-const rosterToText = r => Object.entries(r || {}).sort((a, b) => a[0] - b[0]).map(([n, v]) => `${n} ${v}`).join('\n');
+const rosterToText = r => Object.entries(r || {}).sort((a, b) => parseInt(a[0]) - parseInt(b[0])).map(([n, v]) => `${n} ${v}`).join('\n');
 function parseRosterText(txt){
   const o = {};
-  // "35 /50 Nathan Miller SR": the first number is the player's, the second rides along in the name — drop it.
-  String(txt || '').split('\n').forEach(l => { const m = l.match(/^\s*#?(\d{1,2})\s*[-–,.:)]?\s*(.+?)\s*$/); if (m) o[m[1]] = m[2].replace(/^[\/,&]?\s*\d{1,2}\s+(?=\D)/, ''); });
+  // "7/82 Brett Lemonds SR": a player who wears 7 at home and 82 on the road, kept as "7/82" (home first).
+  // A line copied from a spreadsheet has its columns (class, positions, height, weight): the name and class are kept.
+  String(txt || '').split('\n').forEach(l => {
+    const m = l.match(/^\s*#?(\d{1,2})(?:\s*\/\s*(\d{1,2}))?\s*[-–,.:)]?\s*(.+?)\s*$/); if (!m) return;
+    const name = rosterNameCase(splitClass(m[3]).name), yr = splitClass(m[3]).yr;
+    if (name) o[m[2] && m[2] !== m[1] ? `${m[1]}/${m[2]}` : m[1]] = yr ? `${name} ${yr}` : name;
+  });
   return o;
+}
+// "BRETT LEMONDS" reads as "Brett Lemonds" in the play-by-play; a name typed in ordinary capitals is left alone.
+function rosterNameCase(s){
+  if (!/[A-Z]{2}/.test(s) || /[a-z]/.test(s)) return s;
+  return s.toLowerCase().replace(/(^|[\s'’-])([a-z])/g, (m, a, b) => a + b.toUpperCase()).replace(/\bMc([a-z])/g, (m, a) => 'Mc' + a.toUpperCase());
 }
 // From a game's Setup. A newer save wins, and an empty roster or mascot never wipes out a saved one.
 function rememberTeam(t, when = Date.now()){

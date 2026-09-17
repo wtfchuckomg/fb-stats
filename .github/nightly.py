@@ -42,7 +42,7 @@ async () => {
       if (x.box){ const b = boxData(x); if (b){ out.a = Object.keys(b.pl.A || {}).filter(n => n !== 'team'); out.h = Object.keys(b.pl.H || {}).filter(n => n !== 'team'); } }
       else if (x.plays && x.plays.length){ const r = replay(x);
         ['A', 'H'].forEach(s => { const roster = x.teams[s].roster || {};
-          out[s === 'A' ? 'a' : 'h'] = Object.values(r.S.pl[s] || {}).filter(p => p.n !== 'team').map(p => playerName(roster[p.n]) || ('#' + p.n)); }); }
+          out[s === 'A' ? 'a' : 'h'] = Object.values(r.S.pl[s] || {}).filter(p => p.n !== 'team').map(p => playerName(rosterGet(roster, p.n, s)) || ('#' + p.n)); }); }
     } catch (e) {}
     return out;
   };

@@ -93,14 +93,14 @@ function dlgSetup(isNew){
     src.teams[s] = {name:from.teams[s].name, mascot:t.mascot || '', abbr:t.abbr || from.teams[s].abbr, color:t.color || from.teams[s].color, roster:t.roster || {},
       rec:from.teams[s].rec || '', hrec:from.teams[s].hrec || ''}; });
   const ru = rulesOf(src);
-  const rosterTxt = s => Object.entries(src.teams[s].roster || {}).sort((a, b) => a[0] - b[0]).map(([n, v]) => `${n} ${v}`).join('\n');
+  const rosterTxt = s => rosterToText(src.teams[s].roster);
   const teamRow = (s, label) => `<div class="grp"><h3>${label}</h3><div class="teamset">
       <div class="fld"><label class="eyebrow" for="s-${s}-name">School</label>${schoolPicker(`s-${s}-name`, src.teams[s].name, s === 'A' ? 'Visiting school' : 'Home school')}</div>
       <div class="fld"><label class="eyebrow" for="s-${s}-mascot">Mascot</label><input class="inp" id="s-${s}-mascot" value="${esc(src.teams[s].mascot || '')}" placeholder="e.g. Bulldogs"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-abbr">Short</label><input class="inp" id="s-${s}-abbr" maxlength="5" value="${esc(src.teams[s].abbr)}" placeholder="${s === 'A' ? 'VIS' : 'HOME'}"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-color">Color</label><input type="color" id="s-${s}-color" value="${esc(src.teams[s].color)}"></div></div>
       <div class="row">${recFields('s', s, src.teams[s])}</div>
-      <div class="fld"><label class="eyebrow" for="s-${s}-roster">Roster, optional · one player per line, number then name</label>
+      <div class="fld"><label class="eyebrow" for="s-${s}-roster">Roster, optional · one player per line, number then name · home/road numbers: 7/82</label>
       <textarea class="inp" id="s-${s}-roster" rows="4" placeholder="7 Cole Brandt&#10;22 Mason Ortiz">${esc(rosterTxt(s))}</textarea><div class="hint" id="s-${s}-lib"></div>
       <div class="hint" id="s-${s}-shared">${sharedHint(s, src.teams[s].name)}</div></div></div>`;
   return `${dlgHead(isNew ? 'New game' : 'Game setup')}<div class="dlg-bd">${teamRow('A', 'Visitors')}${teamRow('H', 'Home')}
@@ -116,7 +116,7 @@ function dlgSetup(isNew){
 }
 function saveSetup(isNew){
   const v = id => $('#' + id).value.trim();
-  const parseRoster = txt => { const o = {}; txt.split('\n').forEach(l => { const m = l.match(/^\s*#?(\d{1,2})\s*[-–,.:)]?\s*(.+?)\s*$/); if (m) o[m[1]] = m[2].replace(/^[\/,&]?\s*\d{1,2}\s+(?=\D)/, ''); }); return o; };
+  const parseRoster = parseRosterText;
   if (!v('s-A-name') || !v('s-H-name')) return toast('Type both schools');
   // A school not on the list is checked against the ones that are ("Did you mean …?") before the game starts.
   if (!schoolsSettled(['s-A-name', 's-H-name'], () => saveSetup(isNew))) return;

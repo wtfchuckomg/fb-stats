@@ -112,7 +112,7 @@ function gameNumbers(x){
     team:Object.fromEntries(T_KEYS.map(k => [k, +r.S.team[s][k] || 0])),
     pl:Object.values(r.S.pl[s]).filter(p => p.n !== 'team').map(p => {
       // A statted game keys players by number (named from its roster); a box score keys them by name.
-      const name = /^\d+$/.test(p.n) ? (x.teams[s].roster || {})[p.n] || `#${p.n}` : p.n;
+      const name = /^\d+$/.test(p.n) ? rosterGet(x.teams[s].roster, p.n, s) || `#${p.n}` : p.n;
       // Return touchdowns: a box score's own count, or a statted game's touchdowns that weren't runs or catches.
       const ret = (+p.rettd || 0) + Math.max(0, (+p.tds || 0) - (+p.rtd || 0) - (+p.retd || 0));
       const row = {name};
