@@ -89,9 +89,10 @@ function shownRecord(name){
       });
       ['rec', 'home', 'away'].forEach(kk => { if (P[kk]) out[kk] = fmtRec(P[kk]); });
     }
-  } else if (allGames.idx && coveredSchool(name)){
-    // No record set: tally every final on the site, overall and home or away (only for a school whose whole
-    // schedule is here; anyone else has just their games against those schools).
+  } else if (allGames.idx){
+    // No record set: tally every final on the site, overall and home or away. A pasted box score is a final
+    // like any other, so it counts. For a school whose whole schedule isn't here this is the record as far as
+    // the site knows, and its page says so.
     const T = {rec:[0, 0, 0], home:[0, 0, 0], away:[0, 0, 0]}; let n = 0;
     schoolRows(name).forEach(r => {
       const f = finalOf(r.x); if (!f.fin) return;
@@ -220,7 +221,7 @@ function teamPageHtml(nameIn){
       })() : ''}
     </section>
     <section class="bcard"><h2 class="tp-h">Schedule &amp; Results</h2>
-      ${coveredSchool(name) ? '' : `<p class="h-note" style="margin:0 0 10px">Only ${esc(name)}’s games against Butler County schools and their opponents are on the site, so there’s no record here.</p>`}
+      ${coveredSchool(name) || !r ? '' : `<p class="h-note" style="margin:0 0 10px">${esc(name)}’s record here counts the games this site has — a paste or a tracked game adds to it.</p>`}
       ${allGames.list ? (sched ? `<div class="tbl-x"><table class="tp-sched"><tbody>${sched}</tbody></table></div>` : `<p class="bempty">No games for ${esc(name)} on the site yet.</p>`)
         : `<p class="bempty">${esc(allGames.err || 'Loading…')}</p>`}
     </section>`;
