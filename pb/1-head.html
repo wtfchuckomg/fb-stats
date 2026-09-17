@@ -833,6 +833,29 @@ dialog.fallback[open]{display:block;position:fixed;top:50%;left:50%;transform:tr
 .dlg-hd h2{margin:0;font:700 19px/1 var(--cond);text-transform:uppercase;color:var(--ink-2)}
 .dlg-bd{padding:14px 16px;display:flex;flex-direction:column;gap:14px}
 .dlg-ft{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--line-2)}
+/* the school picker: type to find a school, or add one */
+.sch-pick{position:relative}
+.inp.sch-in{font:500 16px/1 var(--sans)}
+.sch-sug{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:30;max-height:min(300px,45vh);overflow-y:auto;overscroll-behavior:contain;
+  background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.2);padding:4px}
+.sch-opt{display:flex;align-items:center;gap:10px;min-height:42px;padding:6px 8px;border-radius:7px;cursor:pointer;font:500 15px/1.2 var(--sans);color:var(--ink-2)}
+.sch-opt[aria-selected="true"]{background:var(--surface-2)}
+@media (hover:hover){.sch-opt:hover{background:var(--surface-2)}}
+.sch-opt .tlogo,.sch-opt .tmono{flex:none}
+.sch-opt-nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sch-opt-note{flex:none;color:var(--muted);font-size:12px}
+.sch-opt.new{color:var(--blue);border-top:1px solid var(--line-2);border-radius:0 0 7px 7px;margin-top:2px}
+.sch-plus{flex:none;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:var(--surface-2);font:700 16px/1 var(--sans)}
+/* "Did you mean …?" */
+dialog.ask{width:min(460px,calc(100vw - 24px))}
+.ask-q{margin:0;font:400 15px/1.45 var(--sans);color:var(--ink)}
+.ask-opts{display:grid;gap:8px}
+.ask-opt{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);
+  font:600 16px/1.2 var(--sans);color:var(--ink-2);text-align:left;cursor:pointer}
+.ask-opt span{flex:1;min-width:0}
+.ask-opt b{flex:none;color:var(--blue);font-size:14px}
+.ask-opt:hover,.ask-opt:focus-visible{border-color:var(--blue)}
+dialog.ask .dlg-ft .btn{white-space:normal;text-align:center;height:auto;min-height:40px;padding:8px 14px;border:1px solid var(--line);border-radius:999px}
 .x{background:none;border:0;font-size:24px;line-height:1;color:var(--muted);padding:2px 6px}
 .teamset{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 84px 54px;gap:8px;align-items:end}
 @media (max-width:560px){.teamset{grid-template-columns:minmax(0,1fr) 84px 54px}.teamset>.fld:first-child{grid-column:1/-1}}

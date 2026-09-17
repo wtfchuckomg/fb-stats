@@ -84,7 +84,7 @@ function dlgTeams(){
 function dlgTeam(key){
   const t = (key && findTeam(key)) || {name:'', mascot:'', abbr:'', color:'#1F4E9C', roster:{}};
   return `${dlgHead(key ? 'Edit team' : 'Add a team')}<div class="dlg-bd"><div class="grp"><div class="teamset">
-      <div class="fld"><label class="eyebrow" for="t-name">School</label><input class="inp" id="t-name" value="${esc(t.name)}" placeholder="School name"></div>
+      <div class="fld"><label class="eyebrow" for="t-name">School</label>${schoolPicker('t-name', t.name, 'School name')}</div>
       <div class="fld"><label class="eyebrow" for="t-mascot">Mascot</label><input class="inp" id="t-mascot" value="${esc(t.mascot || '')}" placeholder="e.g. Bulldogs"></div>
       <div class="fld"><label class="eyebrow" for="t-abbr">Short</label><input class="inp" id="t-abbr" maxlength="5" value="${esc(t.abbr || '')}"></div>
       <div class="fld"><label class="eyebrow" for="t-color">Color</label><input type="color" id="t-color" value="${esc(t.color || '#1F4E9C')}"></div></div>
@@ -95,6 +95,7 @@ function dlgTeam(key){
 function saveTeamDialog(oldKey){
   const name = $('#t-name').value.trim();
   if (!name) return toast('Give the team a name');
+  if (!schoolsSettled(['t-name'], () => saveTeamDialog(oldKey))) return;
   const t = {name, mascot:$('#t-mascot').value.trim(), abbr:($('#t-abbr').value.trim() || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(), color:$('#t-color').value, roster:parseRosterText($('#t-roster').value)};
   if (oldKey && oldKey !== teamKey(name)) forgetTeam(oldKey);
   teamLib()[teamKey(name)] = {...t, updated:Date.now()};   // an edit here replaces the saved roster outright

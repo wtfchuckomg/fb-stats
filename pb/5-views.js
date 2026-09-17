@@ -117,8 +117,9 @@ function dlgSetup(isNew){
 function saveSetup(isNew){
   const v = id => $('#' + id).value.trim();
   const parseRoster = txt => { const o = {}; txt.split('\n').forEach(l => { const m = l.match(/^\s*#?(\d{1,2})\s*[-–,.:)]?\s*(.+?)\s*$/); if (m) o[m[1]] = m[2].replace(/^[\/,&]?\s*\d{1,2}\s+(?=\D)/, ''); }); return o; };
-  // Both schools come from the list, so a game can't be started against a school that doesn't exist.
-  if (!v('s-A-name') || !v('s-H-name')) return toast('Pick both schools from the list');
+  if (!v('s-A-name') || !v('s-H-name')) return toast('Type both schools');
+  // A school not on the list is checked against the ones that are ("Did you mean …?") before the game starts.
+  if (!schoolsSettled(['s-A-name', 's-H-name'], () => saveSetup(isNew))) return;
   const team = (s, def) => {
     const name = v(`s-${s}-name`) || def;
     return {name, mascot:v(`s-${s}-mascot`), abbr:(v(`s-${s}-abbr`) || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(), color:$(`#s-${s}-color`).value, roster:parseRoster($(`#s-${s}-roster`).value),

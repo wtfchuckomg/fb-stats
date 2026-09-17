@@ -34,11 +34,12 @@ const schoolName = n => {
 };
 function schoolList(...keep){
   // This site's own list (logos/teams.json) as the admin keeps it — not the Pick 'Em library, which carries
-  // schools that don't belong in these pickers.
-  const names = new Set(typeof schoolsAll === 'function' ? schoolsAll() : (LOGO_SRC[0].list || []).map(t => t.name).filter(Boolean));
-  if (!names.size) (typeof savedTeams === 'function' ? savedTeams() : []).forEach(t => names.add(t.name));
-  keep.filter(Boolean).forEach(n => names.add(n));   // whatever the game already says, so it is never lost
-  return [...names].sort((a, b) => a.localeCompare(b));
+  // schools that don't belong in these pickers — plus the schools this scorer added or saved as teams.
+  const own = typeof schoolsAll === 'function' ? schoolsAll() : (LOGO_SRC[0].list || []).map(t => t.name).filter(Boolean);
+  const extra = [...(typeof mySchoolNames === 'function' ? mySchoolNames() : []), ...(typeof savedTeams === 'function' ? savedTeams() : []).map(t => t.name)];
+  const byKey = new Map();
+  [...own, ...extra, ...keep.filter(Boolean)].forEach(n => { const k = canonSchool(n); if (k && !byKey.has(k)) byKey.set(k, n); });   // one row per school
+  return [...byKey.values()].sort((a, b) => a.localeCompare(b));
 }
 // A school's short name: the admin's own (Schools window), then logos/teams.json ("ArkC" for Arkansas City).
 function listAbbr(name){
@@ -48,10 +49,11 @@ function listAbbr(name){
   const hit = (logoLib.list || []).find(t => t.abbr && (logoSlug(t.name) === k || t.slug === k || (t.aliases || []).some(a => logoSlug(a) === k)));
   return hit ? hit.abbr : '';
 }
-// A school picker: the whole list, with what the game already has kept selected even if the list is still coming.
+// A school picker: type to find a school on the list, or add one that isn't (pb/28-schools.js does the rest).
 function schoolPicker(id, value, label){
-  const opts = schoolList(value).map(n => `<option value="${esc(n)}"${n === value ? ' selected' : ''}>${esc(n)}</option>`).join('');
-  return `<select class="inp" id="${esc(id)}" aria-label="${esc(label)}"><option value=""${value ? '' : ' selected'}>${esc(label)}</option>${opts}</select>`;
+  return `<div class="sch-pick"><input class="inp sch-in" id="${esc(id)}" value="${esc(value || '')}" placeholder="${esc(label)}" aria-label="${esc(label)}"
+    role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="${esc(id)}-sug" autocomplete="off" autocapitalize="words" spellcheck="false">
+    <div class="sch-sug" id="${esc(id)}-sug" role="listbox" hidden></div></div>`;
 }
 
 // Every place a school's logo might be, best first: the logo map (checked ahead of time across the three sites),

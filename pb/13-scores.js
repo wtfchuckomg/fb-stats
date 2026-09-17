@@ -123,7 +123,8 @@ function dlgScore(id){
 }
 function saveScore(id){
   const nm = s => $(`#qs-${s}-name`).value.trim(), A = nm('A'), H = nm('H');
-  if (!A || !H) return toast('Pick both schools from the list');
+  if (!A || !H) return toast('Type both schools');
+  if (!schoolsSettled(['qs-A-name', 'qs-H-name'], () => saveScore(id))) return;
   const lib = qsLib(), old = id && lib[id] && !lib[id].deleted ? lib[id] : null;
   // A saved team brings its short name and color; otherwise keep what this score had, or make one up.
   const team = (s, name, was) => { const t = findTeam(name), same = was && was.name === name;

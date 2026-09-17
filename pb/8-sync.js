@@ -58,6 +58,7 @@ function listen(){
       if (ch.type === 'removed' || ch.doc.metadata.hasPendingWrites) return;
       const id = ch.doc.id, d = ch.doc.data(), local = db.games[id];
       if (id === teamsDocId()) return mergeTeams(d.json);        // the saved-teams library, not a game
+      if (id === mySchoolsDocId() || d.kind === 'my-schools') return mergeMySchools(d.json);   // schools this scorer added, not a game
       if (id === HIDE_DOC || id === RECS_DOC || d.kind === 'roster') return;   // hidden games, team records, shared rosters: not games
       if (d.kind === 'score') return mergeScore(id, d);           // a quick score, not a game
       const lu = local ? local.updated || 0 : -1, ru = d.updated || 0;
@@ -78,6 +79,7 @@ function listen(){
       Object.values(db.games).forEach(x => { if (!x.sample && !x.foreign && !remoteIds.has(x.id)) syncPush(x, 0); });
       Object.values(qsLib()).forEach(x => { if (!remoteIds.has(x.id)) pushScore(x); });
       if (!remoteIds.has(teamsDocId()) && savedTeams().length) syncTeams(0);
+      if (!remoteIds.has(mySchoolsDocId()) && mySchoolNames().length) syncMySchools(0);
       // A device still showing the sample opens the latest real game instead.
       if (g && g.sample && newestGame()){ g = newestGame(); resetUi(); ui.start = idleGame(g); current = 'opened'; changed = true; }
     }
