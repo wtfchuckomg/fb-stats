@@ -76,7 +76,9 @@ function renderHome(){
   const I = {board:'M3 4h14v12H3zM3 8h14M8 8v8', stats:'M4 16V9M10 16V4M16 16v-5', team:'M10 3l6 3v4c0 4-3 6-6 7-3-1-6-3-6-7V6z',
     state:'M3 6l5-2 4 2 5-2v10l-5 2-4-2-5 2zM8 4v10M12 6v10', track:'M3 10h3l2-5 4 10 2-5h3', ext:'M8 4H4v12h12v-4M11 3h6v6M17 3l-8 8',
     list:'M4 5h12M4 10h12M4 15h8', link:'M8 12l4-4M7 9l-2 2a3 3 0 004 4l2-2M13 11l2-2a3 3 0 00-4-4L9 7', shield:'M10 3l6 3v4c0 4-3 6-6 7-3-1-6-3-6-7V6z'};
-  const links = [['BUCO Scoreboard', '?scores', I.board], ['Player Stats', '?stats', I.stats], ['Team Stats', '?stats=team', I.team],
+  // With two leagues' pages here, each stats link says whose it is.
+  const links = [['BUCO Scoreboard', '?scores', I.board], ['BUCO Player Stats', '?stats', I.stats], ['BUCO Team Stats', '?stats=team', I.team],
+    ['AVCTL Scoreboard', '?avctl', I.board], ['AVCTL Standings', '?standings', I.list], ['AVCTL Player Stats', '?avstats', I.stats], ['AVCTL Team Stats', '?avstats=team', I.team],
     ['State Scoreboard', '?state', I.state], ['Game Tracker', tracker, I.track],
     ['Media Rankings', 'https://kansasmediarankings.com/', I.ext], ['Pick ’Em', 'https://picks.kansasmediarankings.com', I.ext], ['Helmets', 'https://kansasmediarankings.com/helmets.html', I.ext]];
   $('#board').innerHTML = `<div class="hpage">
