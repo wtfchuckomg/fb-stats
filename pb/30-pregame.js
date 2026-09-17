@@ -147,7 +147,6 @@ function teamSeason(name){
   r.last = r.last.sort((a, b) => gameDay(b.row.x) - gameDay(a.row.x)).slice(0, 5);
   return r;
 }
-const CLASS_STEP = {'6A':6, '5A':5, '4A':4, '3A':3, '2A':2, '1A':1, '8M-I':0, '8M-II':-.5, '6M':-1};
 // The predictor, in points: who's better and by how much, from what the site knows. Each part is spelled out on
 // the page. Past meetings join it once the earlier seasons are loaded.
 function predict(A, H){
@@ -156,9 +155,8 @@ function predict(A, H){
     const wp = (s.w + s.t / 2 + 1) / (g + 2);                  // a record, pulled toward .500 while it's short
     const margin = s.gp ? (s.pf - s.pa) / s.gp : 0;
     const info = schoolInfo(n), rk = rankOf(n);
-    const cls = info ? CLASS_STEP[info[0]] : CLASS_STEP[({'8-Man I':'8M-I', '8-Man II':'8M-II', '6-Man':'6M'}[rankClassOf(n)]) || rankClassOf(n)];
     const five = fiveYear(n), fwp = five ? (five.w + five.t / 2 + 2) / (five.gp + 4) : null;
-    return {s, wp, margin, five, fwp, cls:cls == null ? null : cls, bonus:rk ? (rk.rank ? (11 - rk.rank) * 1.2 : 1) : 0, rk};
+    return {s, wp, margin, five, fwp, bonus:rk ? (rk.rank ? (11 - rk.rank) * 1.2 : 1) : 0, rk};
   };
   const a = side(A), h = side(H);
   // Past meetings: the average margin of the games on file, counted lightly and never worth more than a touchdown.
@@ -166,7 +164,6 @@ function predict(A, H){
   const parts = [
     ['Scoring margin', .5 * (h.margin - a.margin)],
     ['Record', 14 * (h.wp - a.wp)],
-    ['Class', a.cls != null && h.cls != null ? 3.5 * (h.cls - a.cls) : 0],
     ['Media Rankings', h.bonus - a.bonus],
     ['Past meetings', Math.max(-7, Math.min(7, .35 * hh))],
     // The last five seasons, when both schools have them on file: how good these programs have been, counted lightly.

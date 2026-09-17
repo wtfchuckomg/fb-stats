@@ -21,7 +21,7 @@ EARLY = 3.0       # and how much harder before that: a team with no games starts
 CLASS_PRIOR = 1.5 # points per class step (6A highest), where a team starts before it has played
 # Schools Chuck says play above what the numbers alone show. Their strength is lifted by this much at the end;
 # 0.15 is a 15% bump. Keyed by KPreps slug.
-BUMP = {'kapaun-mt-carmel': .15, 'st-thomas-aquinas': .15, 'st-james-academy': .15, 'andale': .15}
+BUMP = {'kapaun-mt-carmel': .15, 'st-thomas-aquinas': .15, 'st-james-academy': .15, 'andale': .15, 'bishop-miege': .15}
 PREV = .80        # last season's weight in week 1...
 PREV_DROP = .25   # ...falling by this much a week as this season fills in
 PREV_FLOOR = .15  # but never below this
