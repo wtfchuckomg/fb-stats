@@ -227,6 +227,91 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 /* the table runs the full width of the card: clip it to the card's rounded corners, and leave the last
    row the same room at the bottom that the heading has at the top, so it doesn't sit on the edge */
 .ccard{padding:16px 0 14px;overflow:hidden}
+/* ---------- pregame (?preview=) ---------- */
+.pg-head{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:16px 24px;padding:22px 28px}
+.pg-team{display:flex;align-items:center;gap:16px;min-width:0}
+.pg-team.h{justify-content:flex-end;text-align:right}
+.pg-name{font:700 22px/1.15 var(--sans);color:var(--ink-2);display:flex;align-items:baseline;gap:6px}
+.pg-team.h .pg-name{justify-content:flex-end}
+.pg-rank{font:600 14px/1 var(--sans);color:var(--muted)}
+.pg-sub{font:400 14px/1.3 var(--sans);color:var(--muted);margin-top:4px}
+.pg-when{display:grid;justify-items:center;gap:3px;text-align:center;font:400 14px/1.3 var(--sans);color:var(--muted)}
+.pg-when b{font:600 16px/1.2 var(--sans);color:var(--ink-2)}
+.pg-at{margin-top:4px;padding:3px 10px;border:1px solid var(--line);border-radius:6px;font-size:12px}
+.pg-live{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font:500 15px/1.3 var(--sans)}
+.pg-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.75fr) minmax(0,1fr);gap:16px;align-items:start;margin-top:16px}
+.pg-col{display:grid;gap:16px;min-width:0}
+.pg-card{padding:18px 20px}
+.pg-h{margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--line);font:700 15px/1 var(--cond);text-transform:uppercase;color:var(--ink-2)}
+.pg-sub-h{margin:14px 0 6px;font:700 12px/1 var(--sans);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.pg-pred{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start;gap:6px}
+.pg-pct{display:grid;gap:2px;font:400 12px/1.2 var(--sans);color:var(--muted)}
+.pg-pct b{font:700 24px/1 var(--sans);color:var(--ink-2)}
+.pg-pct.r{text-align:right}
+.pg-ringwrap{position:relative;max-width:180px;width:100%;justify-self:center;margin-top:10px}
+.pg-ring{width:100%;height:auto;display:block}
+.pg-marks{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px}
+.pg-proj{margin:10px 0 0;text-align:center;font:400 14px/1.3 var(--sans);color:var(--muted)}
+.pg-proj b{color:var(--ink-2)}
+.pg-how{margin-top:10px;font:400 13px/1.4 var(--sans)}
+.pg-how summary{cursor:pointer;color:var(--blue);font-weight:500}
+.pg-parts{width:100%;margin:8px 0;border-collapse:collapse;font-size:13px}
+.pg-parts td{padding:4px 0;border-top:1px solid var(--line-2)}
+.pg-parts td.num{text-align:right}
+.pg-info{display:grid;gap:2px;padding:10px 0;border-top:1px solid var(--line-2);font:400 14px/1.35 var(--sans);color:var(--muted)}
+.pg-info:first-of-type{border-top:0;padding-top:0}
+.pg-info b{color:var(--ink-2);font-weight:600}
+.pg-tbl{min-width:0}
+.pg-tbl .ctbl th{padding:4px 6px 10px;background:transparent;font:600 12px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid rgba(60,60,67,.12)}
+.pg-tbl .ctbl td{padding:13px 6px;background:transparent;font:400 15px/1.3 var(--sans);color:var(--ink-2);border-bottom:1px solid rgba(60,60,67,.12)}
+.pg-tbl .ctbl tr:last-child td{border-bottom:0}
+.pg-st td:first-child,.pg-five td:nth-child(2){font-weight:600}
+.pg-tbl .ctbl tbody tr:nth-child(even) td{background:transparent}
+.pg-tbl .ctbl th:last-child,.pg-tbl .ctbl td:last-child{padding-right:2px}
+.pg-tbl .ctbl th:first-child,.pg-tbl .ctbl td:first-child{padding-left:2px}
+.pg-tbl .ctbl tr:last-child td{border-bottom:0}
+.pg-odds{table-layout:fixed}
+.pg-odds td{font-variant-numeric:tabular-nums}
+.pg-odds th:first-child,.pg-odds td:first-child{width:50%;text-align:left}
+.pg-odds th:last-child,.pg-odds td:last-child{padding-right:12px}
+.pg-oteam{display:flex;align-items:center;gap:8px;min-width:0}
+.pg-oteam b{font-weight:600}
+.pg-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.pg-by{font:500 12px/1 var(--sans);text-transform:none;color:var(--blue);text-decoration:none}
+.mas-list{margin:6px 0 0;padding-left:18px;font:400 13px/1.5 var(--sans);color:var(--ink)}
+.mas-tbl{max-height:320px;overflow:auto}
+.mas-tbl td,.mas-tbl th{padding:6px;font-size:13px}
+.mas-tbl td:first-child,.mas-tbl th:first-child{text-align:left}
+.pg-lhead{display:flex;justify-content:space-between;align-items:center;padding:4px 0 10px;border-bottom:1px solid var(--line-2)}
+.pg-lhead span{display:flex;align-items:center;gap:8px;font:700 14px/1 var(--sans)}
+.pg-leaders,.pg-lhead{max-width:760px;margin-inline:auto}
+.pg-five .ctbl th:first-child,.pg-five .ctbl td:first-child{text-align:left}
+.pg-lrow{display:grid;grid-template-columns:minmax(0,1fr) 60px 84px 60px minmax(0,1fr);align-items:center;gap:8px;padding:14px 0;border-bottom:1px solid var(--line-2)}
+.pg-who{display:grid;gap:2px;min-width:0;justify-items:start;text-align:left;font:400 12.5px/1.3 var(--sans);color:var(--muted)}
+.pg-who.r{justify-items:end;text-align:right}
+.pg-who b{max-width:100%;font:600 15px/1.2 var(--sans);color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg-n{font:700 22px/1 var(--sans);text-align:center;color:var(--ink-2)}
+.pg-l{font:600 12px/1.2 var(--sans);text-align:center;color:var(--ink)}
+.pg-fives{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 36px}
+.pg-fhead{display:flex;align-items:center;gap:8px;margin-bottom:6px;font:700 14px/1 var(--sans)}
+
+.pg-opp{display:inline-flex;align-items:center;gap:5px;color:var(--muted)}
+.pg-opp .tlink{color:var(--ink-2);font-weight:600}
+.pg-w{color:var(--good)} .pg-lo{color:var(--bad)}
+.pg-st td:first-child,.pg-st th:first-child,.pg-five td:nth-child(2),.pg-five th:nth-child(2){text-align:left}
+.pg-st tr.pg-us td{font-weight:700}
+@media (max-width:1180px){.pg-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .pg-mid{grid-column:1 / -1;order:-1}}
+@media (max-width:700px){
+  .pg-head{grid-template-columns:1fr 1fr;padding:16px}
+  .pg-when{grid-column:1 / -1;grid-row:2}
+  .pg-name{font-size:17px} .pg-team{gap:10px}
+  .pg-team .tlogo,.pg-team .tmono{width:44px!important;height:44px!important}
+  .pg-grid{grid-template-columns:minmax(0,1fr)}
+  .pg-lrow{grid-template-columns:minmax(0,1fr) 40px 64px 40px minmax(0,1fr);gap:4px}
+  .pg-who b{font-size:13px;white-space:normal}
+  .pg-n{font-size:17px} .pg-l{font-size:10.5px}
+  .pg-fives{grid-template-columns:minmax(0,1fr)}
+}
 .ccard-hd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 20px 10px}
 .ccard-hd h2{margin:0;font:700 19px/1.2 var(--sans);color:var(--ink-2)}
 .ccard-hd span{color:var(--muted);font:500 13px/1 var(--sans)}
@@ -1004,7 +1089,12 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .bt-t,.st-score{font-weight:600;letter-spacing:-.02em}
 .st-name{font-weight:600;letter-spacing:-.02em}
 .ctbl th{color:var(--muted);font-weight:600;letter-spacing:.02em}
-.ctbl tbody tr:nth-child(even) td{background:#FAFAFC}
+.ctbl{background:transparent}
+.ctbl th{background:transparent;border-bottom-color:rgba(60,60,67,.18)}
+.ctbl td{background:transparent;border-bottom-color:rgba(60,60,67,.12)}
+.ctbl tbody tr:nth-child(even) td{background:rgba(255,255,255,.34)}
+.ctbl th.on,.ctbl td.on,.ctbl tbody tr:nth-child(even) td.on{background:rgba(226,239,253,.55)}
+.ctbl tr.hi td,.ctbl tr.hi td.on{background:rgba(232,242,255,.5)}
 .ctbl th.on,.ctbl td.on,.ctbl tbody tr:nth-child(even) td.on{background:#EEF5FD}
 .ctbl tr.hi td,.ctbl tr.hi td.on{background:#F2F7FE}
 /* the standings are the one table that reads as a panel rather than a spreadsheet, so its rows sit on the
@@ -1092,6 +1182,7 @@ try { if (new URLSearchParams(location.search).has('embed')) document.documentEl
         <button class="abtn" data-open="teams">Teams</button>
         <button class="abtn" data-open="others" id="othersbtn" hidden>Others</button>
         <button class="abtn" data-open="schools" id="schoolsbtn" hidden>Schools</button>
+        <button class="abtn" data-open="massey" id="masseybtn" hidden>Massey</button>
         <button class="abtn" data-open="setup">Setup</button>
         <button class="abtn" data-open="lines">Line score</button>
       </div>
@@ -2932,7 +3023,7 @@ const framed = (() => { try { return window.self !== window.top; } catch (e) { r
 const dlgHead = t => `<div class="dlg-hd"><h2>${t}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>`;
 function openDialog(kind){
   ui.dlg = kind; ui.confirm = null;
-  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : kind === 'others' ? dlgOthers() : kind === 'lines' ? dlgLines() : kind === 'teams' ? dlgTeams() : kind === 'schools' ? dlgSchools() : dlgSetup(kind === 'new');
+  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : kind === 'others' ? dlgOthers() : kind === 'lines' ? dlgLines() : kind === 'teams' ? dlgTeams() : kind === 'schools' ? dlgSchools() : kind === 'massey' ? dlgMassey() : dlgSetup(kind === 'new');
   if (!dlg().hasAttribute('open')) showDialog();
   if ($('#s-A-roster')) ['A', 'H'].forEach(fillSetupRoster);
 }
@@ -4013,7 +4104,7 @@ function listen(){
       const id = ch.doc.id, d = ch.doc.data(), local = db.games[id];
       if (id === teamsDocId()) return mergeTeams(d.json);        // the saved-teams library, not a game
       if (id === mySchoolsDocId() || d.kind === 'my-schools') return mergeMySchools(d.json);   // schools this scorer added, not a game
-      if (id === HIDE_DOC || id === RECS_DOC || d.kind === 'roster') return;   // hidden games, team records, shared rosters: not games
+      if (id === HIDE_DOC || id === RECS_DOC || d.kind === 'roster' || d.kind === 'massey') return;   // hidden games, team records, shared rosters: not games
       if (d.kind === 'score') return mergeScore(id, d);           // a quick score, not a game
       const lu = local ? local.updated || 0 : -1, ru = d.updated || 0;
       if (ru > lu){
@@ -4147,6 +4238,7 @@ function renderSync(){
   const admin = !!(sync.user && sync.user.uid === ADMIN_UID);
   const ob = $('#othersbtn'); if (ob) ob.hidden = !admin;
   const sb = $('#schoolsbtn'); if (sb) sb.hidden = !admin;
+  const mb = $('#masseybtn'); if (mb) mb.hidden = !admin;
   if (ui.dlg === 'others' && dlg().open) dlg().innerHTML = dlgOthers();
   if (ui.dlg === 'games' && dlg().open){ const a = $('#acct'); if (a) a.outerHTML = syncBlock(); }
   if (ui.dlg === 'share' && dlg().open) dlg().innerHTML = dlgShare();
@@ -4591,7 +4683,7 @@ function deleteScore(id){
 
 /* ---------- shared games for the week, live from Firestore ---------- */
 const scores = {api:null, key:null, unsub:null, docs:{}, seen:null};
-function scoresReady(api){ scores.api = api; scores.key = null; watchHidden(api); watchTeamRecs(api); watchAllGames(api); watchSchools(api); renderScores(); }
+function scoresReady(api){ scores.api = api; scores.key = null; watchHidden(api); watchTeamRecs(api); watchAllGames(api); watchSchools(api); if (ui.preview || !ui.viewer) watchMassey(api); renderScores(); }
 
 /* ---------- games the admin has hidden from the scoreboards ---------- */
 // One shared list, in a document only the admin's account can change (the rules let only a document's owner write
@@ -4752,7 +4844,7 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
   const here = q.has('tracker') || q.has('edit') ? 'tracker'
     : q.has('avctl') ? 'avscores' : q.has('standings') ? 'standings' : q.has('avstats') ? 'avstats'
     : q.has('scores') ? 'scores' : q.has('state') ? 'state' : q.has('statestats') ? 'sstats'
-    : q.has('stats') ? 'stats' : q.has('team') || q.has('teams') ? 'teams' : q.has('game') || q.has('live') || q.has('gamecast') ? '' : 'home';
+    : q.has('stats') ? 'stats' : q.has('team') || q.has('teams') ? 'teams' : q.has('game') || q.has('live') || q.has('gamecast') || q.has('preview') ? '' : 'home';
   // Each menu's pages sit under its own name: Butler County, AVCTL, State.
   const UNDER = {scores:'buco', stats:'buco', teams:'buco', avscores:'avctl', standings:'avctl', avstats:'avctl', state:'state', sstats:'state'};
   const top = UNDER[here] || here;
@@ -5057,7 +5149,7 @@ function boardGame(x){
   };
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
   // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
-  const acts = m.quick || (!x.plays.length && !x.box) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a>`;
+  const acts = m.pre ? `<a class="bbtn" href="?preview=${id}">Preview</a>` : m.quick || (!x.plays.length && !x.box) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a>`;
   // The admin can hide any game from the scoreboards, or bring a hidden one back.
   const off = ui.admin && isHidden(x);
   const hide = ui.admin ? `${off ? '<span class="b-hidtag">Hidden</span>' : ''}<button type="button" class="bhide" data-hide="${esc(x.id)}"${x.opp ? ' data-opp="1"' : ''}>${off ? 'Show' : 'Hide'}</button>` : '';
@@ -5070,6 +5162,7 @@ function boardGame(x){
 
 /* ---------- the page ---------- */
 function renderScoreboard(){
+  if (ui.preview) renderPreview();   // a game's preview follows the week's live games too
   if (!ui.board) return;
   const box = $('#board'), key = ui.week;
   watchWeek(key);
@@ -6472,7 +6565,7 @@ const LOGO_MAP = {
 // The front door: the site's plain address opens here. The Game Tracker has its own, ?tracker (and ?edit=<id>).
 const PAGE_Q = new URLSearchParams(location.search);
 const TRACKER_PAGE = PAGE_Q.has('tracker') || PAGE_Q.has('edit');
-const HOME_PAGE = PAGE_Q.has('home') || (!TRACKER_PAGE && !['scores', 'state', 'stats', 'statestats', 'avctl', 'avstats', 'standings', 'game', 'live', 'gamecast', 'team', 'teams'].some(k => PAGE_Q.has(k)));
+const HOME_PAGE = PAGE_Q.has('home') || (!TRACKER_PAGE && !['scores', 'state', 'stats', 'statestats', 'avctl', 'avstats', 'standings', 'game', 'live', 'gamecast', 'preview', 'team', 'teams'].some(k => PAGE_Q.has(k)));
 
 // On a scorer's device (signed in on the Game Tracker), the menu bar's scorer buttons show on every page too. Away
 // from the tracker they open it, with that window up: ?tracker&open=games, setup, export or share.
@@ -6920,6 +7013,7 @@ async function startTeamPage(){
 }
 
 function renderTeamPage(){
+  if (ui.preview) renderPreview();
   if (!ui.teamPage) return;
   const name = PAGE_Q.get('team');
   $('#board').innerHTML = name ? teamPageHtml(name) : teamsIndexHtml();
@@ -8508,6 +8602,373 @@ document.addEventListener('click', e => {
   if (t.dataset.embCopy) return copyFrom(t.dataset.embCopy);
   if ('embClose' in t.dataset) return closeDialog();
 });
+/* ================================================================
+   Pregame (?preview=<game id>): what a game looks like before anyone
+   starts keeping stats on it. Both schools with their records and
+   Media Rankings, a matchup predictor, each team's season leaders, its
+   last five games and its league standings. Once the tracker starts the
+   game, the page points to the gamecast.
+   ================================================================ */
+const PREVIEW_ID = new URLSearchParams(location.search).get('preview');
+const pre = {rank:null, stats:null, err:''};
+
+// The Media Rankings live in their own database (kansasmediarankings.com). Only published weeks are read, and
+// the points are tallied the way that site does: 10 for a first-place vote down to 1 for tenth (5 in 6-Man).
+const RANK_FIREBASE = {apiKey:'AIzaSyBTiNraruWtESR_ioYAEM4QaxkqBYY3ZAg', authDomain:'ks-football-poll.firebaseapp.com', projectId:'ks-football-poll',
+  appId:'1:359451879003:web:36df8102763cfab727817e'};
+const RANK_CLASS = {'6A':'6A', '5A':'5A', '4A':'4A', '3A':'3A', '2A':'2A', '1A':'1A', '8M-I':'8-Man I', '8M-II':'8-Man II', '6M':'6-Man'};
+async function loadRankings(classes){
+  const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
+  const [appM, fsM] = await Promise.all([import(base + 'app.js'), import(base + 'firestore.js')]);
+  const app = appM.getApps().find(a => a.name === 'rankings') || appM.initializeApp(RANK_FIREBASE, 'rankings');
+  const db = fsM.getFirestore(app);
+  const settings = await fsM.getDoc(fsM.doc(db, 'meta', 'settings'));
+  const weeks = (settings.exists() && settings.data().weeks) || [];
+  let week = null;
+  for (let i = weeks.length - 1; i >= 0; i--){
+    const r = await fsM.getDoc(fsM.doc(db, 'releases', weeks[i]));
+    if (r.exists() && r.data().released){ week = weeks[i]; break; }
+  }
+  const out = {week, byClass:{}};
+  if (!week) return out;
+  await Promise.all([...new Set(classes)].filter(Boolean).map(async cls => {
+    const snap = await fsM.getDocs(fsM.collection(db, 'polls', `${week}__${cls}`, 'entries'));
+    const count = cls === '6-Man' ? 5 : 10, points = {}, first = {};
+    snap.forEach(d => (d.data().rankings || []).forEach((school, i) => {
+      if (!school) return;
+      points[school] = (points[school] || 0) + (count - i);
+      if (i === 0) first[school] = (first[school] || 0) + 1;
+    }));
+    const rows = Object.keys(points).map(school => ({school, pts:points[school], fpv:first[school] || 0}))
+      .sort((a, b) => b.pts - a.pts || b.fpv - a.fpv || a.school.localeCompare(b.school));
+    let rank = 0;
+    rows.forEach((r, i) => { if (!i || r.pts !== rows[i - 1].pts || r.fpv !== rows[i - 1].fpv) rank = i + 1; r.rank = rank; });
+    out.byClass[cls] = {rows, ballots:snap.size, top:count};
+  }));
+  return out;
+}
+// A school's place in its class: {rank, pts, top} (ranked) or {votes, pts} (receiving votes), or null.
+function rankOf(name){
+  const info = schoolInfo(name), cls = info && RANK_CLASS[info[0]];
+  const c = cls && pre.rank && pre.rank.byClass[cls]; if (!c) return null;
+  const k = canonSchool(name), row = c.rows.find(r => canonSchool(r.school) === k);
+  if (!row) return null;
+  return row.rank <= c.top ? {rank:row.rank, pts:row.pts, cls} : {votes:true, pts:row.pts, cls};
+}
+
+/* ---------- the numbers behind the page ---------- */
+function teamSeason(name){
+  const r = {gp:0, w:0, l:0, t:0, pf:0, pa:0, last:[]};
+  schoolRows(name).forEach(row => {
+    const f = finalOf(row.x); if (!f.fin) return;
+    const us = f.score[row.side], them = f.score[row.opp];
+    r.gp++; r.pf += us; r.pa += them; r[us > them ? 'w' : us < them ? 'l' : 't']++;
+    r.last.push({row, us, them});
+  });
+  r.last = r.last.sort((a, b) => gameDay(b.row.x) - gameDay(a.row.x)).slice(0, 5);
+  return r;
+}
+const CLASS_STEP = {'6A':6, '5A':5, '4A':4, '3A':3, '2A':2, '1A':1, '8M-I':0, '8M-II':-.5, '6M':-1};
+// The predictor, in points: who's better and by how much, from what the site knows. Each part is spelled out on
+// the page. Past meetings join it once the earlier seasons are loaded.
+function predict(A, H){
+  const side = n => {
+    const s = teamSeason(n), g = s.w + s.l + s.t;
+    const wp = (s.w + s.t / 2 + 1) / (g + 2);                  // a record, pulled toward .500 while it's short
+    const margin = s.gp ? (s.pf - s.pa) / s.gp : 0;
+    const info = schoolInfo(n), rk = rankOf(n);
+    return {s, wp, margin, cls:info ? CLASS_STEP[info[0]] : null, bonus:rk ? (rk.rank ? (11 - rk.rank) * 1.2 : 1) : 0, rk};
+  };
+  const a = side(A), h = side(H);
+  const parts = [
+    ['Scoring margin', .5 * (h.margin - a.margin)],
+    ['Record', 14 * (h.wp - a.wp)],
+    ['Class', a.cls != null && h.cls != null ? 3.5 * (h.cls - a.cls) : 0],
+    ['Media Rankings', h.bonus - a.bonus],
+    ['Home field', 2.5]];
+  const pts = parts.reduce((t, p) => t + p[1], 0);
+  const home = Math.min(.97, Math.max(.03, 1 / (1 + Math.exp(-pts / 8))));
+  return {home, away:1 - home, pts, parts, a, h};
+}
+// Season leaders from the stats file: the most passing, rushing and receiving yards on each team.
+function seasonLeaders(name){
+  const k = canonSchool(name), pl = {};
+  (pre.stats || []).forEach(g => ['A', 'H'].forEach(s => {
+    const T = g.numbers[s]; if (!T || canonSchool(T.name) !== k) return;
+    (T.pl || []).forEach(p => { const o = pl[p.name] || (pl[p.name] = {name:p.name}); C_KEYS.forEach(c => { if (p[c]) o[c] = (o[c] || 0) + p[c]; }); });
+  }));
+  const best = key => Object.values(pl).filter(p => p[key] > 0).sort((a, b) => b[key] - a[key])[0] || null;
+  return {pass:best('py'), rush:best('ry'), rec:best('rey')};
+}
+
+const shortPlayer = n => { const w = playerName(n).split(/\s+/); return w.length > 1 ? `${w[0][0]}. ${w.slice(1).join(' ')}` : w[0]; };
+
+/* ---------- the page ---------- */
+async function startPreview(id){
+  ui.viewer = true; ui.preview = true; document.body.classList.add('viewer', 'bpage');
+  $('#board').hidden = false;
+  loadLogos(); renderPreview();
+  fetch('/stats.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).then(d => { pre.stats = (d && d.games) || []; renderPreview(); })
+    .catch(() => { pre.stats = []; renderPreview(); });
+  try {
+    const api = await viewerApi();
+    scoresReady({fsM:api.fsM, fsdb:api.fsdb});   // the scores strip, every shared game and the records
+  } catch (e) { pre.err = 'Can’t reach the games. Check your connection and reload.'; renderPreview(); }
+  // The rankings wait for the game (they need its schools' classes).
+  const wait = setInterval(() => {
+    const x = previewGame(); if (!x) return;
+    clearInterval(wait);
+    const classes = ['A', 'H'].map(s => { const i = schoolInfo(x.teams[s].name); return i && RANK_CLASS[i[0]]; });
+    loadRankings(classes).then(r => { pre.rank = r; renderPreview(); }).catch(() => { pre.rank = {week:null, byClass:{}}; renderPreview(); });
+  }, 300);
+}
+function previewGame(){
+  const x = (allGames.list || []).find(g => g.id === PREVIEW_ID) || (scores.docs && scores.docs[PREVIEW_ID]);
+  return x && x.teams && x.teams.A && x.teams.H ? x : null;
+}
+function renderPreview(){
+  if (!ui.preview) return;
+  $('#board').innerHTML = previewHtml();
+}
+function previewHtml(){
+  const x = previewGame();
+  if (!x) return `<section class="bcard"><p class="bempty">${esc(pre.err || (allGames.list ? 'That game isn’t on the site.' : 'Loading the game…'))}</p></section>`;
+  const T = x.teams, A = T.A.name, H = T.H.name;
+  document.title = `${A} at ${H} · Preview · Kansas Media Stats`;
+  const P = predict(A, H), day = gameDay(x);
+  const when = `${day.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'})}`;
+  const time = '7:00 PM';   // every Kansas game kicks off at 7 p.m.; a listing that says otherwise is ignored
+  // A game someone has started keeping stats on: send people to it.
+  const live = Object.values(scores.docs || {}).find(g => g.kind !== 'score' && g.plays && g.plays.length && gameWeek(g) === gameWeek(x)
+    && [g.teams.A.name, g.teams.H.name].map(canonSchool).sort().join('|') === [A, H].map(canonSchool).sort().join('|'));
+  const recLine = n => { const r = shownRecord(n), info = schoolInfo(n); return [r && r.rec, info && info[1]].filter(Boolean).join(' · '); };
+  const rankTag = n => { const r = rankOf(n); return r && r.rank ? `<span class="pg-rank">${r.rank}</span>` : ''; };
+  const head = `<section class="bcard pg-head">
+      <div class="pg-team">${markFor(T.A, 64)}<div><div class="pg-name">${rankTag(A)}<a class="tlink" href="?team=${encodeURIComponent(A)}">${esc(A)}</a></div><div class="pg-sub">${esc(recLine(A))}</div></div></div>
+      <div class="pg-when"><b>${esc(when)}</b><span>${esc(time)}</span><span class="pg-at">at ${esc(H)}</span></div>
+      <div class="pg-team h"><div><div class="pg-name">${rankTag(H)}<a class="tlink" href="?team=${encodeURIComponent(H)}">${esc(H)}</a></div><div class="pg-sub">${esc(recLine(H))}</div></div>${markFor(T.H, 64)}</div>
+    </section>
+    ${live ? `<section class="bcard pg-live"><b>This game has started.</b> <a class="bbtn" href="?game=${encodeURIComponent(live.id)}">Watch the gamecast</a></section>` : ''}`;
+
+  // Matchup predictor: a ring split between the two schools.
+  const pctA = Math.round(P.away * 1000) / 10, pctH = Math.round(P.home * 1000) / 10;
+  const R = 70, C = 2 * Math.PI * R, fav = P.pts >= 0 ? H : A;
+  const colorA = T.A.color && T.A.color !== '#4A4B4D' ? T.A.color : '#2B2C2D', colorH = T.H.color && T.H.color !== '#4A4B4D' ? T.H.color : '#A5A6A7';
+  const ring = `<svg class="pg-ring" viewBox="0 0 180 180" role="img" aria-label="${esc(A)} ${pctA} percent, ${esc(H)} ${pctH} percent">
+      <circle cx="90" cy="90" r="${R}" fill="none" stroke="${esc(colorH)}" stroke-width="16"/>
+      <circle cx="90" cy="90" r="${R}" fill="none" stroke="${esc(colorA)}" stroke-width="16" stroke-dasharray="${(P.away * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 90 90) scale(1 -1) translate(0 -180)"/>
+    </svg>`;
+  const partRows = P.parts.map(([k, v]) => `<tr><td>${k}</td><td class="num">${Math.abs(v) < .05 ? 'even' : `${esc(v > 0 ? H : A)} +${Math.abs(v).toFixed(1)}`}</td></tr>`).join('');
+  const predictor = `<section class="bcard pg-card"><h2 class="pg-h">Matchup predictor</h2>
+      <div class="pg-pred"><div class="pg-pct"><b>${pctA}%</b><span>${esc(T.A.abbr || shortName(A))}</span></div>
+        <div class="pg-ringwrap">${ring}<div class="pg-marks">${markFor(T.A, 34)}${markFor(T.H, 34)}</div></div>
+        <div class="pg-pct r"><b>${pctH}%</b><span>${esc(T.H.abbr || shortName(H))}</span></div></div>
+      <p class="pg-proj">Projected: <b>${esc(fav)} by ${Math.max(1, Math.round(Math.abs(P.pts)))}</b></p>
+      <details class="pg-how"><summary>How it’s figured</summary>
+        <table class="pg-parts">${partRows}</table>
+        <p class="hint">Scoring margin and records from the finals on this site, class from KPreps, and the ${pre.rank && pre.rank.week ? esc(pre.rank.week) + ' ' : ''}Media Rankings. Past meetings will count once earlier seasons are loaded.</p></details>
+    </section>`;
+
+  const info = n => { const i = schoolInfo(n); return i ? `Class ${i[0].replace('8M-', '8-Man ').replace('6M', '6-Man')} · ${i[1]}` : ''; };
+  const gameInfo = `<section class="bcard pg-card"><h2 class="pg-h">Game information</h2>
+      <div class="pg-info"><b>${esc(time)}, ${esc(day.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}))}</b><span>At ${esc(H)}</span></div>
+      ${[A, H].map(n => info(n) ? `<div class="pg-info"><b>${esc(n)}</b><span>${esc(info(n))}</span></div>` : '').join('')}
+    </section>`;
+
+  // The line: Massey Ratings, when the admin has brought this week's in; the site's own win chances otherwise.
+  const ML = masseyLine(x);
+  const oddsRow = (s, n, p) => {
+    const m = ML && ML[s], spread = !ML ? '&#8212;' : !ML.spread ? 'PK' : m.fav ? `&#8722;${ML.spread}` : `+${ML.spread}`;
+    const total = ML && ML.total != null ? `${s === 'A' ? 'o' : 'u'}${ML.total}` : '&#8212;';
+    return `<tr><td><div class="pg-oteam">${markFor(T[s], 22)}<b>${esc(T[s].abbr || shortName(n))}</b></div></td>
+      <td class="num">${spread}</td><td class="num">${total}</td></tr>`;
+  };
+  const odds = `<section class="bcard pg-card"><h2 class="pg-h">Game line${ML ? '<a class="pg-by" href="https://masseyratings.com/hsf/ks/games" target="_blank" rel="noopener">Massey Ratings</a>' : ''}</h2>
+      <div class="pg-tbl"><table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th></tr></thead><tbody>
+        ${oddsRow('A', A, P.away)}${oddsRow('H', H, P.home)}</tbody></table></div>
+      ${ML ? `<p class="pg-proj">Massey’s pick: <b>${esc(ML.A.pred >= ML.H.pred ? A : H)} ${Math.max(ML.A.pred, ML.H.pred)}, ${esc(ML.A.pred >= ML.H.pred ? H : A)} ${Math.min(ML.A.pred, ML.H.pred)}</b></p>
+        <p class="hint">Lines from Massey Ratings${massey.updated ? `, brought in ${esc(new Date(massey.updated).toLocaleDateString('en-US', {month:'short', day:'numeric'}))}` : ''}. For fun only: there’s no betting here.</p>`
+        : `<p class="hint">No Massey Ratings line for this game yet. For fun only: there’s no betting here.</p>`}
+    </section>`;
+
+  // Season leaders, the two teams side by side.
+  const LA = seasonLeaders(A), LH = seasonLeaders(H);
+  const line = (p, k) => !p ? '' : k === 'pass' ? `${p.pc || 0}/${p.pa || 0}, ${p.ptd || 0} TD${p.pint ? `, ${p.pint} INT` : ''}` : k === 'rush' ? `${p.ru || 0} CAR, ${p.rtd || 0} TD` : `${p.re || 0} REC, ${p.retd || 0} TD`;
+  const who = (p, key, right) => `<div class="pg-who${right ? ' r' : ''}"><b>${p ? esc(shortPlayer(p.name)) : 'No stats yet'}</b>${p ? `<span>${esc(line(p, key))}</span>` : ''}</div>`;
+  const leadRow = (label, key, stat) => {
+    const a = LA[key], h = LH[key];
+    return `<div class="pg-lrow">${who(a, key)}<b class="num pg-n">${a ? a[stat] : '&#8212;'}</b><span class="pg-l">${label}</span><b class="num pg-n">${h ? h[stat] : '&#8212;'}</b>${who(h, key, true)}</div>`;
+  };
+  const noStats = pre.stats && !LA.pass && !LA.rush && !LA.rec && !LH.pass && !LH.rush && !LH.rec;
+  const leaders = `<section class="bcard pg-card"><h2 class="pg-h">Season leaders</h2>
+      <div class="pg-lhead"><span>${markFor(T.A, 26)}<b>${esc(T.A.abbr || shortName(A))}</b></span><span><b>${esc(T.H.abbr || shortName(H))}</b>${markFor(T.H, 26)}</span></div>
+      <div class="pg-leaders">${!pre.stats ? '<p class="bempty">Loading the stats…</p>' : noStats ? '<p class="bempty">Neither team has stats on the site yet.</p>'
+        : leadRow('Passing yards', 'pass', 'py') + leadRow('Rushing yards', 'rush', 'ry') + leadRow('Receiving yards', 'rec', 'rey')}</div>
+    </section>`;
+
+  // Last five games.
+  const lastFive = n => {
+    const s = teamSeason(n);
+    const rows = s.last.map(({row, us, them}) => { const o = row.x.teams[row.opp], d = gameDay(row.x);
+      return `<tr><td class="num">${d.getMonth() + 1}/${d.getDate()}</td><td><span class="pg-opp">${row.side === 'H' ? 'vs' : '@'} ${markFor(o, 20)}<a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.abbr || shortName(o.name))}</a></span></td>
+        <td class="num"><b class="${us > them ? 'pg-w' : us < them ? 'pg-lo' : ''}">${us > them ? 'W' : us < them ? 'L' : 'T'}</b> ${us}-${them}</td></tr>`; }).join('');
+    return `<div class="pg-five"><div class="pg-fhead">${markFor({name:n, abbr:shortName(n), color:'#4A4B4D'}, 26)}<b>${esc(n)}</b></div>
+      ${rows ? `<div class="pg-tbl"><table class="ctbl"><thead><tr><th>Date</th><th>Opp</th><th class="num">Result</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="bempty">No finals on the site yet.</p>'}</div>`;
+  };
+  const five = `<section class="bcard pg-card"><h2 class="pg-h">Last five games</h2><div class="pg-fives">${lastFive(A)}${lastFive(H)}</div></section>`;
+
+  // Standings: each team's AVCTL division (one table when they share it).
+  const divs = [...new Set([A, H].map(avctlDiv).filter(Boolean))];
+  const standings = divs.length ? `<section class="bcard pg-card"><h2 class="pg-h">${new Date().getFullYear()} standings</h2>
+      ${divs.map(div => `<h3 class="pg-sub-h">AVCTL Division ${div}</h3><div class="pg-tbl"><table class="ctbl pg-st"><thead><tr><th>Team</th><th class="num">League</th><th class="num">Overall</th></tr></thead><tbody>
+        ${standingsRows(div).map(o => `<tr class="${[A, H].some(n => canonSchool(n) === canonSchool(o.name)) ? 'pg-us' : ''}"><td><a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
+          <td class="num">${avRec(o.r.dw, o.r.dl, o.r.dt)}</td><td class="num">${esc((o.rec && o.rec.rec) || avRec(o.r.w, o.r.l, o.r.t))}</td></tr>`).join('')}</tbody></table></div>`).join('')}
+    </section>` : '';
+
+  // Three columns on a computer, the way a gamecast reads: the predictor and the game's details down the left, the
+  // leaders and last games in the middle, the line and standings down the right.
+  return `${head}<div class="pg-grid"><div class="pg-col">${predictor}${gameInfo}</div><div class="pg-col pg-mid">${leaders}${five}</div><div class="pg-col">${odds}${standings}</div></div>`;
+}
+/* ================================================================
+   Massey Ratings lines, for the pregame page's Game line card. Massey's
+   site won't let another site read it, so once a week the admin saves
+   masseyratings.com/hsf/ks/games from the browser (File > Save Page As)
+   and opens that file here. Each game in it is matched to the game on
+   this site with the same schools that week, and the lines go up in one
+   public document everyone reads. For fun: nothing here is a bet.
+   ================================================================ */
+const MASSEY_DOC = 'massey-lines';
+const massey = {lines:null, updated:0, api:null, file:null};
+
+// One game from the saved page. Massey lists the visitor first and the home team as "@ Home" ("vs" at a neutral site).
+function parseMassey(html){
+  const docm = new DOMParser().parseFromString(html, 'text/html');
+  const title = (docm.querySelector('#title0') || {}).textContent || '';
+  const year = +((title.match(/(20\d\d)/) || [])[1]) || new Date().getFullYear();
+  const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+  const two = td => { if (!td) return ['', '']; const inner = td.querySelector('div'); const b = txt(inner); return [txt(td).slice(0, txt(td).length - b.length).trim(), b]; };
+  const out = [];
+  docm.querySelectorAll('tr.bodyrow').forEach(tr => {
+    const td = [...tr.children];
+    const dateA = td[0] && td[0].querySelector('a'), m = dateA && txt(dateA).match(/(\d\d)\.(\d\d)/);
+    const teamA = td[1] && td[1].querySelectorAll('a');
+    if (!m || !teamA || teamA.length < 2) return;
+    const away = txt(teamA[0]), homeRaw = txt(teamA[1]), neutral = /^vs\b/i.test(homeRaw), home = homeRaw.replace(/^(@|vs\.?)\s*/i, '');
+    const [rankA, rankH] = two(td[2]).map(s => { const r = s.match(/#\s*(\d+)/), rec = s.match(/\(([\d-]+)\)/); return {rank:r ? +r[1] : null, rec:rec ? rec[1] : ''}; });
+    const [scA, scH] = two(td[3]).map(Number), [pA, pH] = two(td[4]).map(Number), [wA, wH] = two(td[5]).map(s => parseFloat(s));
+    // The spread cell has a line for each team; the favorite's is the one that isn't hidden.
+    const sp = td[6] ? [...td[6].querySelectorAll('div')] : [], spread = sp.map(d => d.classList.contains('visHidden') ? null : parseFloat(txt(d)));
+    const total = td[7] ? parseFloat(txt(td[7])) : NaN;
+    const status = tr.classList.contains('rcFinal') ? 'final' : tr.classList.contains('rcInProgress') ? 'live' : 'scheduled';
+    out.push({date:`${year}-${m[1]}-${m[2]}`, time:txt(td[0].querySelector('.detail')).replace(/\./g, ' ').replace(/\s*LT$/, '').trim(),
+      away, home, neutral, status, rank:{away:rankA, home:rankH}, pred:{away:pA, home:pH}, pwin:{away:wA, home:wH}, score:{away:scA, home:scH},
+      fav:spread[0] != null && !Number.isNaN(spread[0]) ? 'away' : spread[1] != null && !Number.isNaN(spread[1]) ? 'home' : null,
+      spread:Math.abs(spread.find(v => v != null && !Number.isNaN(v)) || 0), total:Number.isNaN(total) ? null : total});
+  });
+  return out;
+}
+
+// Match Massey's games to this site's. Massey shortens names ("Shawnee Mis W", "Andover Cent", "Salina-South"),
+// so a game matches on its week and both schools together, the closest pair winning. Massey's home and away are
+// often the wrong way round; this site's schedule is the one that's right, and the lines follow the teams, not the sides.
+const masseyKey = (wk, a, b) => `${wk}|${[a, b].map(canonSchool).sort().join('|')}`;
+function matchMassey(rows){
+  const games = new Map();
+  [...(allGames.list || []), ...Object.values(scores.docs || {})].forEach(x => {
+    if (!x || !x.teams || !x.teams.A || !x.teams.H) return;
+    const k = masseyKey(gameWeek(x), x.teams.A.name, x.teams.H.name);
+    if (!games.has(k) || (x.kind === 'score' && games.get(k).kind !== 'score')) games.set(k, x);
+  });
+  const like = (m, ours) => canonSchool(m) === canonSchool(ours) ? 1 : schoolLikeness(m, ours);
+  const byWeek = {};
+  games.forEach(x => (byWeek[gameWeek(x)] = byWeek[gameWeek(x)] || []).push(x));
+  return rows.map(r => {
+    const wk = weekKey(fromYmd(r.date).getTime());
+    let best = null;
+    (byWeek[wk] || []).forEach(x => {
+      const A = x.teams.A.name, H = x.teams.H.name;
+      [[like(r.away, A), like(r.home, H), false], [like(r.away, H), like(r.home, A), true]].forEach(([a, h, flipped]) => {
+        if (a < .7 || h < .7) return;
+        const s = a + h + (flipped ? 0 : .01) + (ymd(gameDay(x)) === r.date ? .02 : 0);
+        if (!best || s > best.s) best = {s, x, flipped};
+      });
+    });
+    return best ? {...r, game:best.x, flipped:best.flipped && !r.neutral} : {...r, game:null};
+  });
+}
+
+/* ---------- storing and reading ---------- */
+function watchMassey(api){
+  if (massey.api || !api) return;
+  massey.api = api;
+  const {fsM, fsdb} = api;
+  // Until the admin saves the first week there's no document, and reading one that isn't there is refused.
+  fsM.onSnapshot(fsM.doc(fsdb, 'pressbox', MASSEY_DOC), snap => {
+    const d = snap.exists() ? snap.data() : null;
+    let j = null; if (d && d.owner === ADMIN_UID && !d.deleted){ try { j = JSON.parse(d.json); } catch (e) {} }
+    massey.lines = (j && j.lines) || {}; massey.updated = (j && j.updated) || 0;
+    renderPreview();
+  }, () => { massey.lines = massey.lines || {}; });
+}
+// The line for a game on this site, told from each school's side: {spread, fav, total, pred, pwin, rank} by name.
+function masseyLine(x){
+  if (!massey.lines || !x || !x.teams) return null;
+  return massey.lines[masseyKey(gameWeek(x), x.teams.A.name, x.teams.H.name)] || null;
+}
+async function saveMassey(){
+  const api = sync.api; if (!ui.admin || !api || !massey.file) return toast('Sign in as the admin first');
+  const lines = {...(massey.lines || {})}, cutoff = Date.now() - 21 * 864e5;
+  Object.keys(lines).forEach(k => { if ((lines[k].at || 0) < cutoff) delete lines[k]; });   // three weeks is plenty
+  let n = 0;
+  massey.file.rows.forEach(r => {
+    if (!r.game) return;
+    const T = r.game.teams, side = s => r.flipped ? (s === 'A' ? 'home' : 'away') : (s === 'A' ? 'away' : 'home');
+    const per = s => ({name:T[s].name, rank:r.rank[side(s)].rank, rec:r.rank[side(s)].rec, pred:r.pred[side(s)], pwin:r.pwin[side(s)], fav:r.fav === side(s)});
+    lines[masseyKey(gameWeek(r.game), T.A.name, T.H.name)] = {at:Date.now(), date:r.date, spread:r.spread, total:r.total, status:r.status,
+      flipped:r.flipped, massey:`${r.away} ${r.neutral ? 'vs' : 'at'} ${r.home}`, A:per('A'), H:per('H')};
+    n++;
+  });
+  const {fsM, fsdb} = api;
+  try {
+    await fsM.setDoc(fsM.doc(fsdb, 'pressbox', MASSEY_DOC), {owner:ADMIN_UID, updated:Date.now(), public:true, kind:'massey', title:'Massey Ratings lines',
+      json:JSON.stringify({updated:Date.now(), lines})});
+    massey.lines = lines; massey.updated = Date.now();
+    closeDialog(); toast(`Massey lines saved for ${n} game${n === 1 ? '' : 's'}`);
+  } catch (e) { toast('Couldn’t save the lines. Sign in on the Game Tracker, then try again.'); }
+}
+
+/* ---------- the admin's window ---------- */
+function dlgMassey(){
+  const f = massey.file;
+  const intro = `<p class="hint">Once a week: open <b>masseyratings.com/hsf/ks/games</b>, save the page (File &gt; Save Page As, “Webpage, Complete” or “HTML only”), then choose that file here. Each game is matched to this site’s game with the same two schools that week.</p>
+    <div class="fld"><label class="btn small primary" style="align-self:flex-start">Choose the saved Massey page<input type="file" id="massey-file" accept=".html,.htm,text/html" hidden></label></div>`;
+  if (!f) return `${dlgHead('Massey lines')}<div class="dlg-bd">${intro}${massey.updated ? `<p class="hint">Last saved ${esc(new Date(massey.updated).toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}))}.</p>` : ''}</div>
+    <div class="dlg-ft"><button type="button" class="btn" data-close>Close</button></div>`;
+  const ours = f.rows.filter(r => r.game), missing = f.rows.filter(r => !r.game);
+  const row = r => { const T = r.game.teams, fav = r.fav ? T[(r.fav === 'away') !== r.flipped ? 'A' : 'H'].name : '';
+    return `<tr><td>${esc(T.A.name)} at ${esc(T.H.name)}</td><td class="num">${fav ? `${esc(fav)} −${r.spread}` : 'Even'}</td><td class="num">${r.total ?? '—'}</td></tr>`; };
+  return `${dlgHead('Massey lines')}<div class="dlg-bd">
+      <p class="hint"><b>${esc(f.name)}</b>: ${f.rows.length} games. <b>${ours.length}</b> match games on this site${missing.length ? `; ${missing.length} aren’t on the site, and are left out` : ''}.</p>
+      <div class="grp"><h3>Matched (${ours.length})</h3><div class="tbl-wrap mas-tbl"><table class="ctbl"><thead><tr><th>Game</th><th class="num">Line</th><th class="num">Total</th></tr></thead><tbody>${ours.map(row).join('')}</tbody></table></div></div>
+      ${missing.length ? `<details class="grp"><summary>Not on this site (${missing.length})</summary><ul class="mas-list">${missing.map(r => `<li>${esc(r.away)} ${r.neutral ? 'vs' : 'at'} ${esc(r.home)} · ${esc(r.date.slice(5).replace('-', '/'))}</li>`).join('')}</ul></details>` : ''}
+    </div>
+    <div class="dlg-ft"><button type="button" class="btn" data-massey-again>Choose another file</button><button type="button" class="btn primary" data-massey-save ${ours.length ? '' : 'disabled'}>Save ${ours.length} lines</button></div>`;
+}
+document.addEventListener('change', e => {
+  if (e.target.id !== 'massey-file' || !e.target.files[0]) return;
+  const file = e.target.files[0];
+  file.text().then(html => {
+    const rows = parseMassey(html);
+    if (!rows.length) return toast('No games in that file. Save masseyratings.com/hsf/ks/games and choose it again.');
+    massey.file = {name:file.name, rows:matchMassey(rows)};
+    dlg().innerHTML = dlgMassey();
+  });
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('button'); if (!b) return;
+  if ('masseySave' in b.dataset) return saveMassey();
+  if ('masseyAgain' in b.dataset){ massey.file = null; dlg().innerHTML = dlgMassey(); }
+});
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
@@ -8532,7 +8993,8 @@ function sampleGame(){
 }
 
 /* ---------- boot ---------- */
-if (HOME_PAGE) startHome();             // ?home: the front page, read-only
+if (PREVIEW_ID) startPreview(PREVIEW_ID);   // ?preview=<id>: a game before kickoff
+else if (HOME_PAGE) startHome();             // ?home: the front page, read-only
 else if (AV_STAND) startStandings();    // ?standings: the AVCTL's four divisions
 else if (BOARD) startScoreboard();      // ?scores: the week's scoreboard, read-only
 else if (COUNTY_PAGE) startCounty();    // ?stats: the county's season stats, read-only

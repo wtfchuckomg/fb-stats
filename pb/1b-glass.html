@@ -99,7 +99,12 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .bt-t,.st-score{font-weight:600;letter-spacing:-.02em}
 .st-name{font-weight:600;letter-spacing:-.02em}
 .ctbl th{color:var(--muted);font-weight:600;letter-spacing:.02em}
-.ctbl tbody tr:nth-child(even) td{background:#FAFAFC}
+.ctbl{background:transparent}
+.ctbl th{background:transparent;border-bottom-color:rgba(60,60,67,.18)}
+.ctbl td{background:transparent;border-bottom-color:rgba(60,60,67,.12)}
+.ctbl tbody tr:nth-child(even) td{background:rgba(255,255,255,.34)}
+.ctbl th.on,.ctbl td.on,.ctbl tbody tr:nth-child(even) td.on{background:rgba(226,239,253,.55)}
+.ctbl tr.hi td,.ctbl tr.hi td.on{background:rgba(232,242,255,.5)}
 .ctbl th.on,.ctbl td.on,.ctbl tbody tr:nth-child(even) td.on{background:#EEF5FD}
 .ctbl tr.hi td,.ctbl tr.hi td.on{background:#F2F7FE}
 /* the standings are the one table that reads as a panel rather than a spreadsheet, so its rows sit on the

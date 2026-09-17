@@ -59,7 +59,7 @@ function listen(){
       const id = ch.doc.id, d = ch.doc.data(), local = db.games[id];
       if (id === teamsDocId()) return mergeTeams(d.json);        // the saved-teams library, not a game
       if (id === mySchoolsDocId() || d.kind === 'my-schools') return mergeMySchools(d.json);   // schools this scorer added, not a game
-      if (id === HIDE_DOC || id === RECS_DOC || d.kind === 'roster') return;   // hidden games, team records, shared rosters: not games
+      if (id === HIDE_DOC || id === RECS_DOC || d.kind === 'roster' || d.kind === 'massey') return;   // hidden games, team records, shared rosters: not games
       if (d.kind === 'score') return mergeScore(id, d);           // a quick score, not a game
       const lu = local ? local.updated || 0 : -1, ru = d.updated || 0;
       if (ru > lu){
@@ -193,6 +193,7 @@ function renderSync(){
   const admin = !!(sync.user && sync.user.uid === ADMIN_UID);
   const ob = $('#othersbtn'); if (ob) ob.hidden = !admin;
   const sb = $('#schoolsbtn'); if (sb) sb.hidden = !admin;
+  const mb = $('#masseybtn'); if (mb) mb.hidden = !admin;
   if (ui.dlg === 'others' && dlg().open) dlg().innerHTML = dlgOthers();
   if (ui.dlg === 'games' && dlg().open){ const a = $('#acct'); if (a) a.outerHTML = syncBlock(); }
   if (ui.dlg === 'share' && dlg().open) dlg().innerHTML = dlgShare();

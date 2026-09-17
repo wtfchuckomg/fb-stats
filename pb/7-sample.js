@@ -22,7 +22,8 @@ function sampleGame(){
 }
 
 /* ---------- boot ---------- */
-if (HOME_PAGE) startHome();             // ?home: the front page, read-only
+if (PREVIEW_ID) startPreview(PREVIEW_ID);   // ?preview=<id>: a game before kickoff
+else if (HOME_PAGE) startHome();             // ?home: the front page, read-only
 else if (AV_STAND) startStandings();    // ?standings: the AVCTL's four divisions
 else if (BOARD) startScoreboard();      // ?scores: the week's scoreboard, read-only
 else if (COUNTY_PAGE) startCounty();    // ?stats: the county's season stats, read-only

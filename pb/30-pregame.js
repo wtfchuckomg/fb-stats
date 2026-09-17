@@ -1,0 +1,227 @@
+/* ================================================================
+   Pregame (?preview=<game id>): what a game looks like before anyone
+   starts keeping stats on it. Both schools with their records and
+   Media Rankings, a matchup predictor, each team's season leaders, its
+   last five games and its league standings. Once the tracker starts the
+   game, the page points to the gamecast.
+   ================================================================ */
+const PREVIEW_ID = new URLSearchParams(location.search).get('preview');
+const pre = {rank:null, stats:null, err:''};
+
+// The Media Rankings live in their own database (kansasmediarankings.com). Only published weeks are read, and
+// the points are tallied the way that site does: 10 for a first-place vote down to 1 for tenth (5 in 6-Man).
+const RANK_FIREBASE = {apiKey:'AIzaSyBTiNraruWtESR_ioYAEM4QaxkqBYY3ZAg', authDomain:'ks-football-poll.firebaseapp.com', projectId:'ks-football-poll',
+  appId:'1:359451879003:web:36df8102763cfab727817e'};
+const RANK_CLASS = {'6A':'6A', '5A':'5A', '4A':'4A', '3A':'3A', '2A':'2A', '1A':'1A', '8M-I':'8-Man I', '8M-II':'8-Man II', '6M':'6-Man'};
+async function loadRankings(classes){
+  const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
+  const [appM, fsM] = await Promise.all([import(base + 'app.js'), import(base + 'firestore.js')]);
+  const app = appM.getApps().find(a => a.name === 'rankings') || appM.initializeApp(RANK_FIREBASE, 'rankings');
+  const db = fsM.getFirestore(app);
+  const settings = await fsM.getDoc(fsM.doc(db, 'meta', 'settings'));
+  const weeks = (settings.exists() && settings.data().weeks) || [];
+  let week = null;
+  for (let i = weeks.length - 1; i >= 0; i--){
+    const r = await fsM.getDoc(fsM.doc(db, 'releases', weeks[i]));
+    if (r.exists() && r.data().released){ week = weeks[i]; break; }
+  }
+  const out = {week, byClass:{}};
+  if (!week) return out;
+  await Promise.all([...new Set(classes)].filter(Boolean).map(async cls => {
+    const snap = await fsM.getDocs(fsM.collection(db, 'polls', `${week}__${cls}`, 'entries'));
+    const count = cls === '6-Man' ? 5 : 10, points = {}, first = {};
+    snap.forEach(d => (d.data().rankings || []).forEach((school, i) => {
+      if (!school) return;
+      points[school] = (points[school] || 0) + (count - i);
+      if (i === 0) first[school] = (first[school] || 0) + 1;
+    }));
+    const rows = Object.keys(points).map(school => ({school, pts:points[school], fpv:first[school] || 0}))
+      .sort((a, b) => b.pts - a.pts || b.fpv - a.fpv || a.school.localeCompare(b.school));
+    let rank = 0;
+    rows.forEach((r, i) => { if (!i || r.pts !== rows[i - 1].pts || r.fpv !== rows[i - 1].fpv) rank = i + 1; r.rank = rank; });
+    out.byClass[cls] = {rows, ballots:snap.size, top:count};
+  }));
+  return out;
+}
+// A school's place in its class: {rank, pts, top} (ranked) or {votes, pts} (receiving votes), or null.
+function rankOf(name){
+  const info = schoolInfo(name), cls = info && RANK_CLASS[info[0]];
+  const c = cls && pre.rank && pre.rank.byClass[cls]; if (!c) return null;
+  const k = canonSchool(name), row = c.rows.find(r => canonSchool(r.school) === k);
+  if (!row) return null;
+  return row.rank <= c.top ? {rank:row.rank, pts:row.pts, cls} : {votes:true, pts:row.pts, cls};
+}
+
+/* ---------- the numbers behind the page ---------- */
+function teamSeason(name){
+  const r = {gp:0, w:0, l:0, t:0, pf:0, pa:0, last:[]};
+  schoolRows(name).forEach(row => {
+    const f = finalOf(row.x); if (!f.fin) return;
+    const us = f.score[row.side], them = f.score[row.opp];
+    r.gp++; r.pf += us; r.pa += them; r[us > them ? 'w' : us < them ? 'l' : 't']++;
+    r.last.push({row, us, them});
+  });
+  r.last = r.last.sort((a, b) => gameDay(b.row.x) - gameDay(a.row.x)).slice(0, 5);
+  return r;
+}
+const CLASS_STEP = {'6A':6, '5A':5, '4A':4, '3A':3, '2A':2, '1A':1, '8M-I':0, '8M-II':-.5, '6M':-1};
+// The predictor, in points: who's better and by how much, from what the site knows. Each part is spelled out on
+// the page. Past meetings join it once the earlier seasons are loaded.
+function predict(A, H){
+  const side = n => {
+    const s = teamSeason(n), g = s.w + s.l + s.t;
+    const wp = (s.w + s.t / 2 + 1) / (g + 2);                  // a record, pulled toward .500 while it's short
+    const margin = s.gp ? (s.pf - s.pa) / s.gp : 0;
+    const info = schoolInfo(n), rk = rankOf(n);
+    return {s, wp, margin, cls:info ? CLASS_STEP[info[0]] : null, bonus:rk ? (rk.rank ? (11 - rk.rank) * 1.2 : 1) : 0, rk};
+  };
+  const a = side(A), h = side(H);
+  const parts = [
+    ['Scoring margin', .5 * (h.margin - a.margin)],
+    ['Record', 14 * (h.wp - a.wp)],
+    ['Class', a.cls != null && h.cls != null ? 3.5 * (h.cls - a.cls) : 0],
+    ['Media Rankings', h.bonus - a.bonus],
+    ['Home field', 2.5]];
+  const pts = parts.reduce((t, p) => t + p[1], 0);
+  const home = Math.min(.97, Math.max(.03, 1 / (1 + Math.exp(-pts / 8))));
+  return {home, away:1 - home, pts, parts, a, h};
+}
+// Season leaders from the stats file: the most passing, rushing and receiving yards on each team.
+function seasonLeaders(name){
+  const k = canonSchool(name), pl = {};
+  (pre.stats || []).forEach(g => ['A', 'H'].forEach(s => {
+    const T = g.numbers[s]; if (!T || canonSchool(T.name) !== k) return;
+    (T.pl || []).forEach(p => { const o = pl[p.name] || (pl[p.name] = {name:p.name}); C_KEYS.forEach(c => { if (p[c]) o[c] = (o[c] || 0) + p[c]; }); });
+  }));
+  const best = key => Object.values(pl).filter(p => p[key] > 0).sort((a, b) => b[key] - a[key])[0] || null;
+  return {pass:best('py'), rush:best('ry'), rec:best('rey')};
+}
+
+const shortPlayer = n => { const w = playerName(n).split(/\s+/); return w.length > 1 ? `${w[0][0]}. ${w.slice(1).join(' ')}` : w[0]; };
+
+/* ---------- the page ---------- */
+async function startPreview(id){
+  ui.viewer = true; ui.preview = true; document.body.classList.add('viewer', 'bpage');
+  $('#board').hidden = false;
+  loadLogos(); renderPreview();
+  fetch('/stats.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).then(d => { pre.stats = (d && d.games) || []; renderPreview(); })
+    .catch(() => { pre.stats = []; renderPreview(); });
+  try {
+    const api = await viewerApi();
+    scoresReady({fsM:api.fsM, fsdb:api.fsdb});   // the scores strip, every shared game and the records
+  } catch (e) { pre.err = 'Can’t reach the games. Check your connection and reload.'; renderPreview(); }
+  // The rankings wait for the game (they need its schools' classes).
+  const wait = setInterval(() => {
+    const x = previewGame(); if (!x) return;
+    clearInterval(wait);
+    const classes = ['A', 'H'].map(s => { const i = schoolInfo(x.teams[s].name); return i && RANK_CLASS[i[0]]; });
+    loadRankings(classes).then(r => { pre.rank = r; renderPreview(); }).catch(() => { pre.rank = {week:null, byClass:{}}; renderPreview(); });
+  }, 300);
+}
+function previewGame(){
+  const x = (allGames.list || []).find(g => g.id === PREVIEW_ID) || (scores.docs && scores.docs[PREVIEW_ID]);
+  return x && x.teams && x.teams.A && x.teams.H ? x : null;
+}
+function renderPreview(){
+  if (!ui.preview) return;
+  $('#board').innerHTML = previewHtml();
+}
+function previewHtml(){
+  const x = previewGame();
+  if (!x) return `<section class="bcard"><p class="bempty">${esc(pre.err || (allGames.list ? 'That game isn’t on the site.' : 'Loading the game…'))}</p></section>`;
+  const T = x.teams, A = T.A.name, H = T.H.name;
+  document.title = `${A} at ${H} · Preview · Kansas Media Stats`;
+  const P = predict(A, H), day = gameDay(x);
+  const when = `${day.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'})}`;
+  const time = '7:00 PM';   // every Kansas game kicks off at 7 p.m.; a listing that says otherwise is ignored
+  // A game someone has started keeping stats on: send people to it.
+  const live = Object.values(scores.docs || {}).find(g => g.kind !== 'score' && g.plays && g.plays.length && gameWeek(g) === gameWeek(x)
+    && [g.teams.A.name, g.teams.H.name].map(canonSchool).sort().join('|') === [A, H].map(canonSchool).sort().join('|'));
+  const recLine = n => { const r = shownRecord(n), info = schoolInfo(n); return [r && r.rec, info && info[1]].filter(Boolean).join(' · '); };
+  const rankTag = n => { const r = rankOf(n); return r && r.rank ? `<span class="pg-rank">${r.rank}</span>` : ''; };
+  const head = `<section class="bcard pg-head">
+      <div class="pg-team">${markFor(T.A, 64)}<div><div class="pg-name">${rankTag(A)}<a class="tlink" href="?team=${encodeURIComponent(A)}">${esc(A)}</a></div><div class="pg-sub">${esc(recLine(A))}</div></div></div>
+      <div class="pg-when"><b>${esc(when)}</b><span>${esc(time)}</span><span class="pg-at">at ${esc(H)}</span></div>
+      <div class="pg-team h"><div><div class="pg-name">${rankTag(H)}<a class="tlink" href="?team=${encodeURIComponent(H)}">${esc(H)}</a></div><div class="pg-sub">${esc(recLine(H))}</div></div>${markFor(T.H, 64)}</div>
+    </section>
+    ${live ? `<section class="bcard pg-live"><b>This game has started.</b> <a class="bbtn" href="?game=${encodeURIComponent(live.id)}">Watch the gamecast</a></section>` : ''}`;
+
+  // Matchup predictor: a ring split between the two schools.
+  const pctA = Math.round(P.away * 1000) / 10, pctH = Math.round(P.home * 1000) / 10;
+  const R = 70, C = 2 * Math.PI * R, fav = P.pts >= 0 ? H : A;
+  const colorA = T.A.color && T.A.color !== '#4A4B4D' ? T.A.color : '#2B2C2D', colorH = T.H.color && T.H.color !== '#4A4B4D' ? T.H.color : '#A5A6A7';
+  const ring = `<svg class="pg-ring" viewBox="0 0 180 180" role="img" aria-label="${esc(A)} ${pctA} percent, ${esc(H)} ${pctH} percent">
+      <circle cx="90" cy="90" r="${R}" fill="none" stroke="${esc(colorH)}" stroke-width="16"/>
+      <circle cx="90" cy="90" r="${R}" fill="none" stroke="${esc(colorA)}" stroke-width="16" stroke-dasharray="${(P.away * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 90 90) scale(1 -1) translate(0 -180)"/>
+    </svg>`;
+  const partRows = P.parts.map(([k, v]) => `<tr><td>${k}</td><td class="num">${Math.abs(v) < .05 ? 'even' : `${esc(v > 0 ? H : A)} +${Math.abs(v).toFixed(1)}`}</td></tr>`).join('');
+  const predictor = `<section class="bcard pg-card"><h2 class="pg-h">Matchup predictor</h2>
+      <div class="pg-pred"><div class="pg-pct"><b>${pctA}%</b><span>${esc(T.A.abbr || shortName(A))}</span></div>
+        <div class="pg-ringwrap">${ring}<div class="pg-marks">${markFor(T.A, 34)}${markFor(T.H, 34)}</div></div>
+        <div class="pg-pct r"><b>${pctH}%</b><span>${esc(T.H.abbr || shortName(H))}</span></div></div>
+      <p class="pg-proj">Projected: <b>${esc(fav)} by ${Math.max(1, Math.round(Math.abs(P.pts)))}</b></p>
+      <details class="pg-how"><summary>How it’s figured</summary>
+        <table class="pg-parts">${partRows}</table>
+        <p class="hint">Scoring margin and records from the finals on this site, class from KPreps, and the ${pre.rank && pre.rank.week ? esc(pre.rank.week) + ' ' : ''}Media Rankings. Past meetings will count once earlier seasons are loaded.</p></details>
+    </section>`;
+
+  const info = n => { const i = schoolInfo(n); return i ? `Class ${i[0].replace('8M-', '8-Man ').replace('6M', '6-Man')} · ${i[1]}` : ''; };
+  const gameInfo = `<section class="bcard pg-card"><h2 class="pg-h">Game information</h2>
+      <div class="pg-info"><b>${esc(time)}, ${esc(day.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}))}</b><span>At ${esc(H)}</span></div>
+      ${[A, H].map(n => info(n) ? `<div class="pg-info"><b>${esc(n)}</b><span>${esc(info(n))}</span></div>` : '').join('')}
+    </section>`;
+
+  // The line: Massey Ratings, when the admin has brought this week's in; the site's own win chances otherwise.
+  const ML = masseyLine(x);
+  const oddsRow = (s, n, p) => {
+    const m = ML && ML[s], spread = !ML ? '&#8212;' : !ML.spread ? 'PK' : m.fav ? `&#8722;${ML.spread}` : `+${ML.spread}`;
+    const total = ML && ML.total != null ? `${s === 'A' ? 'o' : 'u'}${ML.total}` : '&#8212;';
+    return `<tr><td><div class="pg-oteam">${markFor(T[s], 22)}<b>${esc(T[s].abbr || shortName(n))}</b></div></td>
+      <td class="num">${spread}</td><td class="num">${total}</td></tr>`;
+  };
+  const odds = `<section class="bcard pg-card"><h2 class="pg-h">Game line${ML ? '<a class="pg-by" href="https://masseyratings.com/hsf/ks/games" target="_blank" rel="noopener">Massey Ratings</a>' : ''}</h2>
+      <div class="pg-tbl"><table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th></tr></thead><tbody>
+        ${oddsRow('A', A, P.away)}${oddsRow('H', H, P.home)}</tbody></table></div>
+      ${ML ? `<p class="pg-proj">Massey’s pick: <b>${esc(ML.A.pred >= ML.H.pred ? A : H)} ${Math.max(ML.A.pred, ML.H.pred)}, ${esc(ML.A.pred >= ML.H.pred ? H : A)} ${Math.min(ML.A.pred, ML.H.pred)}</b></p>
+        <p class="hint">Lines from Massey Ratings${massey.updated ? `, brought in ${esc(new Date(massey.updated).toLocaleDateString('en-US', {month:'short', day:'numeric'}))}` : ''}. For fun only: there’s no betting here.</p>`
+        : `<p class="hint">No Massey Ratings line for this game yet. For fun only: there’s no betting here.</p>`}
+    </section>`;
+
+  // Season leaders, the two teams side by side.
+  const LA = seasonLeaders(A), LH = seasonLeaders(H);
+  const line = (p, k) => !p ? '' : k === 'pass' ? `${p.pc || 0}/${p.pa || 0}, ${p.ptd || 0} TD${p.pint ? `, ${p.pint} INT` : ''}` : k === 'rush' ? `${p.ru || 0} CAR, ${p.rtd || 0} TD` : `${p.re || 0} REC, ${p.retd || 0} TD`;
+  const who = (p, key, right) => `<div class="pg-who${right ? ' r' : ''}"><b>${p ? esc(shortPlayer(p.name)) : 'No stats yet'}</b>${p ? `<span>${esc(line(p, key))}</span>` : ''}</div>`;
+  const leadRow = (label, key, stat) => {
+    const a = LA[key], h = LH[key];
+    return `<div class="pg-lrow">${who(a, key)}<b class="num pg-n">${a ? a[stat] : '&#8212;'}</b><span class="pg-l">${label}</span><b class="num pg-n">${h ? h[stat] : '&#8212;'}</b>${who(h, key, true)}</div>`;
+  };
+  const noStats = pre.stats && !LA.pass && !LA.rush && !LA.rec && !LH.pass && !LH.rush && !LH.rec;
+  const leaders = `<section class="bcard pg-card"><h2 class="pg-h">Season leaders</h2>
+      <div class="pg-lhead"><span>${markFor(T.A, 26)}<b>${esc(T.A.abbr || shortName(A))}</b></span><span><b>${esc(T.H.abbr || shortName(H))}</b>${markFor(T.H, 26)}</span></div>
+      <div class="pg-leaders">${!pre.stats ? '<p class="bempty">Loading the stats…</p>' : noStats ? '<p class="bempty">Neither team has stats on the site yet.</p>'
+        : leadRow('Passing yards', 'pass', 'py') + leadRow('Rushing yards', 'rush', 'ry') + leadRow('Receiving yards', 'rec', 'rey')}</div>
+    </section>`;
+
+  // Last five games.
+  const lastFive = n => {
+    const s = teamSeason(n);
+    const rows = s.last.map(({row, us, them}) => { const o = row.x.teams[row.opp], d = gameDay(row.x);
+      return `<tr><td class="num">${d.getMonth() + 1}/${d.getDate()}</td><td><span class="pg-opp">${row.side === 'H' ? 'vs' : '@'} ${markFor(o, 20)}<a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.abbr || shortName(o.name))}</a></span></td>
+        <td class="num"><b class="${us > them ? 'pg-w' : us < them ? 'pg-lo' : ''}">${us > them ? 'W' : us < them ? 'L' : 'T'}</b> ${us}-${them}</td></tr>`; }).join('');
+    return `<div class="pg-five"><div class="pg-fhead">${markFor({name:n, abbr:shortName(n), color:'#4A4B4D'}, 26)}<b>${esc(n)}</b></div>
+      ${rows ? `<div class="pg-tbl"><table class="ctbl"><thead><tr><th>Date</th><th>Opp</th><th class="num">Result</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="bempty">No finals on the site yet.</p>'}</div>`;
+  };
+  const five = `<section class="bcard pg-card"><h2 class="pg-h">Last five games</h2><div class="pg-fives">${lastFive(A)}${lastFive(H)}</div></section>`;
+
+  // Standings: each team's AVCTL division (one table when they share it).
+  const divs = [...new Set([A, H].map(avctlDiv).filter(Boolean))];
+  const standings = divs.length ? `<section class="bcard pg-card"><h2 class="pg-h">${new Date().getFullYear()} standings</h2>
+      ${divs.map(div => `<h3 class="pg-sub-h">AVCTL Division ${div}</h3><div class="pg-tbl"><table class="ctbl pg-st"><thead><tr><th>Team</th><th class="num">League</th><th class="num">Overall</th></tr></thead><tbody>
+        ${standingsRows(div).map(o => `<tr class="${[A, H].some(n => canonSchool(n) === canonSchool(o.name)) ? 'pg-us' : ''}"><td><a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
+          <td class="num">${avRec(o.r.dw, o.r.dl, o.r.dt)}</td><td class="num">${esc((o.rec && o.rec.rec) || avRec(o.r.w, o.r.l, o.r.t))}</td></tr>`).join('')}</tbody></table></div>`).join('')}
+    </section>` : '';
+
+  // Three columns on a computer, the way a gamecast reads: the predictor and the game's details down the left, the
+  // leaders and last games in the middle, the line and standings down the right.
+  return `${head}<div class="pg-grid"><div class="pg-col">${predictor}${gameInfo}</div><div class="pg-col pg-mid">${leaders}${five}</div><div class="pg-col">${odds}${standings}</div></div>`;
+}

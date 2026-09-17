@@ -234,6 +234,7 @@ async function startTeamPage(){
 }
 
 function renderTeamPage(){
+  if (ui.preview) renderPreview();
   if (!ui.teamPage) return;
   const name = PAGE_Q.get('team');
   $('#board').innerHTML = name ? teamPageHtml(name) : teamsIndexHtml();

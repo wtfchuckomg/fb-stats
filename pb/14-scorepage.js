@@ -100,7 +100,7 @@ function boardGame(x){
   };
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
   // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
-  const acts = m.quick || (!x.plays.length && !x.box) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a>`;
+  const acts = m.pre ? `<a class="bbtn" href="?preview=${id}">Preview</a>` : m.quick || (!x.plays.length && !x.box) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a>`;
   // The admin can hide any game from the scoreboards, or bring a hidden one back.
   const off = ui.admin && isHidden(x);
   const hide = ui.admin ? `${off ? '<span class="b-hidtag">Hidden</span>' : ''}<button type="button" class="bhide" data-hide="${esc(x.id)}"${x.opp ? ' data-opp="1"' : ''}>${off ? 'Show' : 'Hide'}</button>` : '';
@@ -113,6 +113,7 @@ function boardGame(x){
 
 /* ---------- the page ---------- */
 function renderScoreboard(){
+  if (ui.preview) renderPreview();   // a game's preview follows the week's live games too
   if (!ui.board) return;
   const box = $('#board'), key = ui.week;
   watchWeek(key);
