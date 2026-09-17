@@ -258,6 +258,8 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .av-st .nm a:hover{color:var(--blue)}
 .av-st td.gsep,.av-st thead tr:last-child th.gsep{border-left:1px solid var(--line)}
 .av-st .nm + .num{padding-left:18px}
+/* the Roster button jumps here, so leave room for the bars that sit over the top of the page */
+#roster{scroll-margin-top:90px}
 /* a school's roster: numbers down the left, names beside them, in as many columns as fit */
 .tp-roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:0 24px}
 .tp-p{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line-2);font:400 15px/1.3 var(--sans)}

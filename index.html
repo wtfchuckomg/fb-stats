@@ -258,6 +258,8 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .av-st .nm a:hover{color:var(--blue)}
 .av-st td.gsep,.av-st thead tr:last-child th.gsep{border-left:1px solid var(--line)}
 .av-st .nm + .num{padding-left:18px}
+/* the Roster button jumps here, so leave room for the bars that sit over the top of the page */
+#roster{scroll-margin-top:90px}
 /* a school's roster: numbers down the left, names beside them, in as many columns as fit */
 .tp-roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:0 24px}
 .tp-p{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line-2);font:400 15px/1.3 var(--sans)}
@@ -6636,6 +6638,7 @@ function teamsIndexHtml(){
 
 function teamPageHtml(nameIn){
   const k = canonSchool(nameIn), rows = schoolRows(nameIn), any = rows[0], tm = any ? any.x.teams[any.side] : null;
+  const roster = rosterFor(nameIn) || rosterFromGames(nameIn);
   const lib = (logoLib.list || []).find(t => logoSlug(t.name) === k);
   const name = COUNTY.find(n => canonSchool(n) === k) || (lib && lib.name) || (tm && tm.name) || nameIn;
   tpage.name = name; document.title = `${name} · Kansas Media Stats`;
@@ -6682,10 +6685,12 @@ function teamPageHtml(nameIn){
       <div class="tp-recs">${recBox('rec', 'Overall')}${recBox('home', 'Home')}${recBox('away', 'Away')}</div>
       ${ui.admin && !tpage.edit ? `<button type="button" class="bhide" data-tp-edit>Edit record</button>${teamRecs.map[k] ? '<p class="h-note tp-manual">This record was set by hand, so it doesn’t come from the tally. Edit record to change or clear it.</p>' : ''}` : ''}
       ${form}
-      ${inCounty || rows.some(r => r.stats) ? (() => {
+      ${inCounty || rows.some(r => r.stats) || roster ? (() => {
         // Butler County has its own stats pages; every other school's numbers live on State Stats.
         const p = inCounty ? '?stats' : '?statestats', t = inCounty ? '?stats=team' : '?statestats=team', q = encodeURIComponent(name);
-        return `<div class="tp-links"><a class="h-btn" href="${p}&amp;team=${q}">Player stats</a><a class="h-btn" href="${t}&amp;team=${q}">Team stats</a></div>`;
+        const stats = inCounty || rows.some(r => r.stats)
+          ? `<a class="h-btn" href="${p}&amp;team=${q}">Player stats</a><a class="h-btn" href="${t}&amp;team=${q}">Team stats</a>` : '';
+        return `<div class="tp-links">${stats}${roster ? '<button type="button" class="h-btn" data-tp-roster>Roster</button>' : ''}</div>`;
       })() : ''}
     </section>
     <section class="bcard"><h2 class="tp-h">Schedule &amp; Results</h2>
@@ -6695,14 +6700,23 @@ function teamPageHtml(nameIn){
     </section>
     ${(() => {
       // Whoever has kept a game for this school has shared its roster; anyone setting one up can use it.
-      const r = rosterFor(name); if (!r) return '';
-      const list = Object.entries(r.roster).sort((a, b) => (+a[0] || 0) - (+b[0] || 0))
-        .map(([n, v]) => `<div class="tp-p"><b>${esc(n)}</b><span>${esc(playerName(v))}</span></div>`).join('');
-      return `<section class="bcard"><h2 class="tp-h">Roster</h2><div class="tp-roster">${list}</div>
-        <p class="h-note" style="margin:10px 0 0">${plural2(r.count, 'player')}, from a scorer who has kept a game for ${esc(name)}.
-          Anyone starting a game with them can use it in Setup.</p></section>`;
+      const r = roster; if (!r) return '';
+      const list = r.players.map(p => `<div class="tp-p"><b>${p.num ? esc(p.num) : ''}</b><span>${esc(p.name || '#' + p.num)}</span></div>`).join('');
+      const note = r.fromGames
+        ? `${plural2(r.count, 'player')} from ${esc(name)}’s games on the site — a pasted box score gives names without numbers.
+           Keep a game for them, or save their roster in Setup, and the numbers fill in for everyone.`
+        : `${plural2(r.count, 'player')}, from a scorer who has kept a game for ${esc(name)}.
+           Anyone starting a game with them can use it in Setup.`;
+      return `<section class="bcard" id="roster"><h2 class="tp-h">Roster</h2><div class="tp-roster">${list}</div>
+        <p class="h-note" style="margin:10px 0 0">${note}</p></section>`;
     })()}`;
 }
+
+// The Roster button takes you down to the card (scroll-margin-top keeps it clear of the bars).
+document.addEventListener('click', e => {
+  if (!e.target.closest || !e.target.closest('[data-tp-roster]')) return;
+  const el = $('#roster'); if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+});
 
 // Save a score fixed on a team page: the game's own document, which the admin's account owns (it loaded the schedule).
 async function saveTeamScore(clear){
@@ -7140,8 +7154,37 @@ function rosterFor(name){
     .map(r => ({roster:r.roster, updated:r.updated || 0}));
   const mine = (typeof savedTeams === 'function' ? savedTeams() : []).find(t => canonSchool(t.name) === k && Object.keys(t.roster || {}).length);
   if (mine) all.push({roster:mine.roster, updated:mine.updated || 0});
-  return all.map(r => Object.assign(r, {count:Object.keys(r.roster).length}))
-    .sort((a, b) => b.count - a.count || b.updated - a.updated)[0] || null;
+  const best = all.map(r => Object.assign(r, {count:Object.keys(r.roster).length}))
+    .sort((a, b) => b.count - a.count || b.updated - a.updated)[0];
+  if (!best) return null;
+  return {players:Object.entries(best.roster).map(([num, v]) => ({num:String(num), name:playerName(v)}))
+    .sort((a, b) => (+a.num || 999) - (+b.num || 999)), count:best.count, fromGames:false};
+}
+
+// Failing a shared roster, the players a school's own games know: a pasted box score gives names with no
+// numbers, a tracked game gives numbers and whatever names its roster had.
+function rosterFromGames(name){
+  const k = name && canonSchool(name); if (!k || !allGames.idx) return null;
+  const out = new Map();                                   // key -> {num, name}
+  schoolRows(name).forEach(r => {
+    const x = r.x; if (!(x.kind !== 'score' && ((x.plays && x.plays.length) || x.box))) return;
+    if (x.box){
+      const b = boxData(x); if (!b) return;
+      Object.keys(b.pl[r.side] || {}).forEach(n => { if (n !== 'team' && !out.has(n)) out.set(n, {num:'', name:n}); });
+      return;
+    }
+    let rep; try { rep = replay(x); } catch (e) { return; }
+    const roster = (x.teams[r.side] || {}).roster || {};
+    Object.values(rep.S.pl[r.side] || {}).forEach(p => {
+      if (p.n === 'team') return;
+      const nm = playerName(roster[p.n]) || '';
+      const key = nm || '#' + p.n;
+      if (!out.has(key)) out.set(key, {num:String(p.n), name:nm});
+    });
+  });
+  if (!out.size) return null;
+  const list = [...out.values()].sort((a, b) => (+a.num || 999) - (+b.num || 999) || a.name.localeCompare(b.name));
+  return {players:list, count:list.length, fromGames:true};
 }
 
 // Put a saved roster up for everyone (only when signed in, and only a real school with players on it).

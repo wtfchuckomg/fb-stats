@@ -188,6 +188,7 @@ function teamsIndexHtml(){
 
 function teamPageHtml(nameIn){
   const k = canonSchool(nameIn), rows = schoolRows(nameIn), any = rows[0], tm = any ? any.x.teams[any.side] : null;
+  const roster = rosterFor(nameIn) || rosterFromGames(nameIn);
   const lib = (logoLib.list || []).find(t => logoSlug(t.name) === k);
   const name = COUNTY.find(n => canonSchool(n) === k) || (lib && lib.name) || (tm && tm.name) || nameIn;
   tpage.name = name; document.title = `${name} · Kansas Media Stats`;
@@ -234,10 +235,12 @@ function teamPageHtml(nameIn){
       <div class="tp-recs">${recBox('rec', 'Overall')}${recBox('home', 'Home')}${recBox('away', 'Away')}</div>
       ${ui.admin && !tpage.edit ? `<button type="button" class="bhide" data-tp-edit>Edit record</button>${teamRecs.map[k] ? '<p class="h-note tp-manual">This record was set by hand, so it doesn’t come from the tally. Edit record to change or clear it.</p>' : ''}` : ''}
       ${form}
-      ${inCounty || rows.some(r => r.stats) ? (() => {
+      ${inCounty || rows.some(r => r.stats) || roster ? (() => {
         // Butler County has its own stats pages; every other school's numbers live on State Stats.
         const p = inCounty ? '?stats' : '?statestats', t = inCounty ? '?stats=team' : '?statestats=team', q = encodeURIComponent(name);
-        return `<div class="tp-links"><a class="h-btn" href="${p}&amp;team=${q}">Player stats</a><a class="h-btn" href="${t}&amp;team=${q}">Team stats</a></div>`;
+        const stats = inCounty || rows.some(r => r.stats)
+          ? `<a class="h-btn" href="${p}&amp;team=${q}">Player stats</a><a class="h-btn" href="${t}&amp;team=${q}">Team stats</a>` : '';
+        return `<div class="tp-links">${stats}${roster ? '<button type="button" class="h-btn" data-tp-roster>Roster</button>' : ''}</div>`;
       })() : ''}
     </section>
     <section class="bcard"><h2 class="tp-h">Schedule &amp; Results</h2>
@@ -247,14 +250,23 @@ function teamPageHtml(nameIn){
     </section>
     ${(() => {
       // Whoever has kept a game for this school has shared its roster; anyone setting one up can use it.
-      const r = rosterFor(name); if (!r) return '';
-      const list = Object.entries(r.roster).sort((a, b) => (+a[0] || 0) - (+b[0] || 0))
-        .map(([n, v]) => `<div class="tp-p"><b>${esc(n)}</b><span>${esc(playerName(v))}</span></div>`).join('');
-      return `<section class="bcard"><h2 class="tp-h">Roster</h2><div class="tp-roster">${list}</div>
-        <p class="h-note" style="margin:10px 0 0">${plural2(r.count, 'player')}, from a scorer who has kept a game for ${esc(name)}.
-          Anyone starting a game with them can use it in Setup.</p></section>`;
+      const r = roster; if (!r) return '';
+      const list = r.players.map(p => `<div class="tp-p"><b>${p.num ? esc(p.num) : ''}</b><span>${esc(p.name || '#' + p.num)}</span></div>`).join('');
+      const note = r.fromGames
+        ? `${plural2(r.count, 'player')} from ${esc(name)}’s games on the site — a pasted box score gives names without numbers.
+           Keep a game for them, or save their roster in Setup, and the numbers fill in for everyone.`
+        : `${plural2(r.count, 'player')}, from a scorer who has kept a game for ${esc(name)}.
+           Anyone starting a game with them can use it in Setup.`;
+      return `<section class="bcard" id="roster"><h2 class="tp-h">Roster</h2><div class="tp-roster">${list}</div>
+        <p class="h-note" style="margin:10px 0 0">${note}</p></section>`;
     })()}`;
 }
+
+// The Roster button takes you down to the card (scroll-margin-top keeps it clear of the bars).
+document.addEventListener('click', e => {
+  if (!e.target.closest || !e.target.closest('[data-tp-roster]')) return;
+  const el = $('#roster'); if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+});
 
 // Save a score fixed on a team page: the game's own document, which the admin's account owns (it loaded the schedule).
 async function saveTeamScore(clear){

@@ -34,8 +34,37 @@ function rosterFor(name){
     .map(r => ({roster:r.roster, updated:r.updated || 0}));
   const mine = (typeof savedTeams === 'function' ? savedTeams() : []).find(t => canonSchool(t.name) === k && Object.keys(t.roster || {}).length);
   if (mine) all.push({roster:mine.roster, updated:mine.updated || 0});
-  return all.map(r => Object.assign(r, {count:Object.keys(r.roster).length}))
-    .sort((a, b) => b.count - a.count || b.updated - a.updated)[0] || null;
+  const best = all.map(r => Object.assign(r, {count:Object.keys(r.roster).length}))
+    .sort((a, b) => b.count - a.count || b.updated - a.updated)[0];
+  if (!best) return null;
+  return {players:Object.entries(best.roster).map(([num, v]) => ({num:String(num), name:playerName(v)}))
+    .sort((a, b) => (+a.num || 999) - (+b.num || 999)), count:best.count, fromGames:false};
+}
+
+// Failing a shared roster, the players a school's own games know: a pasted box score gives names with no
+// numbers, a tracked game gives numbers and whatever names its roster had.
+function rosterFromGames(name){
+  const k = name && canonSchool(name); if (!k || !allGames.idx) return null;
+  const out = new Map();                                   // key -> {num, name}
+  schoolRows(name).forEach(r => {
+    const x = r.x; if (!(x.kind !== 'score' && ((x.plays && x.plays.length) || x.box))) return;
+    if (x.box){
+      const b = boxData(x); if (!b) return;
+      Object.keys(b.pl[r.side] || {}).forEach(n => { if (n !== 'team' && !out.has(n)) out.set(n, {num:'', name:n}); });
+      return;
+    }
+    let rep; try { rep = replay(x); } catch (e) { return; }
+    const roster = (x.teams[r.side] || {}).roster || {};
+    Object.values(rep.S.pl[r.side] || {}).forEach(p => {
+      if (p.n === 'team') return;
+      const nm = playerName(roster[p.n]) || '';
+      const key = nm || '#' + p.n;
+      if (!out.has(key)) out.set(key, {num:String(p.n), name:nm});
+    });
+  });
+  if (!out.size) return null;
+  const list = [...out.values()].sort((a, b) => (+a.num || 999) - (+b.num || 999) || a.name.localeCompare(b.name));
+  return {players:list, count:list.length, fromGames:true};
 }
 
 // Put a saved roster up for everyone (only when signed in, and only a real school with players on it).
