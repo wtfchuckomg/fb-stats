@@ -49,10 +49,12 @@ function shortName(name){
   const one = w[0] || '?'; return (one.length <= 4 ? one : one.slice(0, 3)).toUpperCase();
 }
 function pushScore(x){
-  if (!x || !sync.user || !sync.api) return;
-  const {fsM, fsdb} = sync.api;
-  const doc = x.deleted ? {owner:sync.user.uid, updated:x.updated, deleted:true, kind:'score', json:''}
-    : {owner:sync.user.uid, updated:x.updated, public:true, week:gameWeek(x), kind:'score', title:`${x.teams.A.abbr} at ${x.teams.H.abbr}`, json:JSON.stringify(x)};
+  // The tracker signs in through sync; a school's page signs the admin in beside the records. Either will do.
+  const api = sync.api || teamRecs.api, uid = (sync.user && sync.user.uid) || (ui.admin ? ADMIN_UID : null);
+  if (!x || !api || !uid) return;
+  const {fsM, fsdb} = api;
+  const doc = x.deleted ? {owner:uid, updated:x.updated, deleted:true, kind:'score', json:''}
+    : {owner:uid, updated:x.updated, public:true, week:gameWeek(x), kind:'score', title:`${x.teams.A.abbr} at ${x.teams.H.abbr}`, json:JSON.stringify(x)};
   fsM.setDoc(fsM.doc(fsdb, 'pressbox', x.id), doc).catch(e => {
     // A schedule entry another account already put up can't be written from this one; that's expected.
     if (x.sched && /permission/.test(e?.code || '')) return;

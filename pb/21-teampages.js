@@ -292,12 +292,14 @@ document.addEventListener('click', e => {
 
 // Type a roster for a school on its own page. It goes up as a shared roster, so every scorer gets it.
 async function saveTeamRoster(name, text){
-  if (!ui.admin || !sync.api || !sync.user) return toast('Sign in on the Game Tracker first');
+  // A school's page has no sync of its own — it signs the admin in beside the records, so use that handle.
+  const api = sync.api || teamRecs.api, uid = (sync.user && sync.user.uid) || (ui.admin ? ADMIN_UID : null);
+  if (!ui.admin || !api || !uid) return toast('Sign in on the Game Tracker first');
   const roster = parseRosterText(text), n = Object.keys(roster).length;
-  const {fsM, fsdb} = sync.api, id = `roster-${teamKey(name)}-${sync.user.uid}`;
-  const doc = n ? {owner:sync.user.uid, updated:Date.now(), public:true, kind:'roster', title:`${name} roster`,
+  const {fsM, fsdb} = api, id = `roster-${teamKey(name)}-${uid}`;
+  const doc = n ? {owner:uid, updated:Date.now(), public:true, kind:'roster', title:`${name} roster`,
     json:JSON.stringify({name, roster, count:n, updated:Date.now()})}
-    : {owner:sync.user.uid, updated:Date.now(), public:true, kind:'roster', deleted:true, json:''};
+    : {owner:uid, updated:Date.now(), public:true, kind:'roster', deleted:true, json:''};
   try {
     await fsM.setDoc(fsM.doc(fsdb, 'pressbox', id), doc);
     tpage.rosterEdit = null; renderTeamPage();
