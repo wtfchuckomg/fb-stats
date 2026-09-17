@@ -8610,7 +8610,7 @@ document.addEventListener('click', e => {
    game, the page points to the gamecast.
    ================================================================ */
 const PREVIEW_ID = new URLSearchParams(location.search).get('preview');
-const pre = {rank:null, stats:null, err:''};
+const pre = {rank:null, stats:null, err:'', hist:{}};
 
 // The Media Rankings live in their own database (kansasmediarankings.com). Only published weeks are read, and
 // the points are tallied the way that site does: 10 for a first-place vote down to 1 for tenth (5 in 6-Man).
@@ -8656,6 +8656,31 @@ function rankOf(name){
   return row.rank <= c.top ? {rank:row.rank, pts:row.pts, cls} : {votes:true, pts:row.pts, cls};
 }
 
+/* ---------- past seasons, from KPreps by way of history/<school>.json (.github/kphistory.py) ---------- */
+function loadHistory(name){
+  const k = logoSlug(name); if (!k || pre.hist[k] !== undefined) return;
+  pre.hist[k] = null;
+  fetch(`/history/${k}.json`, {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
+    .then(d => { pre.hist[k] = d || false; renderPreview(); }).catch(() => { pre.hist[k] = false; });
+}
+// Every meeting between two schools in the seasons on file, newest first, told from the first school's side.
+function pastMeetings(a, b){
+  const want = canonSchool(b), out = [], seen = new Set();
+  const take = (file, flip) => {
+    if (!file || !file.seasons) return;
+    Object.entries(file.seasons).forEach(([year, s]) => (s.games || []).forEach(g => {
+      if (g.us == null || canonSchool(g.opp) !== (flip ? canonSchool(a) : want)) return;
+      const key = `${year}|${g.date}`; if (seen.has(key)) return; seen.add(key);
+      out.push({year:+year, date:g.date, ot:g.ot,
+        us:flip ? g.them : g.us, them:flip ? g.us : g.them,
+        at:flip ? (g.at === 'home' ? 'away' : g.at === 'away' ? 'home' : g.at) : g.at});
+    }));
+  };
+  take(pre.hist[logoSlug(a)], false);
+  take(pre.hist[logoSlug(b)], true);
+  return out.sort((x, y) => y.year - x.year || (y.date || '').localeCompare(x.date || ''));
+}
+
 /* ---------- the numbers behind the page ---------- */
 function teamSeason(name){
   const r = {gp:0, w:0, l:0, t:0, pf:0, pa:0, last:[]};
@@ -8680,11 +8705,14 @@ function predict(A, H){
     return {s, wp, margin, cls:info ? CLASS_STEP[info[0]] : null, bonus:rk ? (rk.rank ? (11 - rk.rank) * 1.2 : 1) : 0, rk};
   };
   const a = side(A), h = side(H);
+  // Past meetings: the average margin of the games on file, counted lightly and never worth more than a touchdown.
+  const met = pastMeetings(A, H), hh = met.length ? met.reduce((t, m) => t + (m.them - m.us), 0) / met.length : 0;
   const parts = [
     ['Scoring margin', .5 * (h.margin - a.margin)],
     ['Record', 14 * (h.wp - a.wp)],
     ['Class', a.cls != null && h.cls != null ? 3.5 * (h.cls - a.cls) : 0],
     ['Media Rankings', h.bonus - a.bonus],
+    ['Past meetings', Math.max(-7, Math.min(7, .35 * hh))],
     ['Home field', 2.5]];
   const pts = parts.reduce((t, p) => t + p[1], 0);
   const home = Math.min(.97, Math.max(.03, 1 / (1 + Math.exp(-pts / 8))));
@@ -8718,6 +8746,7 @@ async function startPreview(id){
   const wait = setInterval(() => {
     const x = previewGame(); if (!x) return;
     clearInterval(wait);
+    ['A', 'H'].forEach(s => loadHistory(x.teams[s].name));
     const classes = ['A', 'H'].map(s => { const i = schoolInfo(x.teams[s].name); return i && RANK_CLASS[i[0]]; });
     loadRankings(classes).then(r => { pre.rank = r; renderPreview(); }).catch(() => { pre.rank = {week:null, byClass:{}}; renderPreview(); });
   }, 300);
@@ -8817,6 +8846,17 @@ function previewHtml(){
   };
   const five = `<section class="bcard pg-card"><h2 class="pg-h">Last five games</h2><div class="pg-fives">${lastFive(A)}${lastFive(H)}</div></section>`;
 
+  // Past meetings, from the seasons on file for the county's schools.
+  const met = pastMeetings(A, H), waiting = [A, H].some(n => pre.hist[logoSlug(n)] === null);
+  const series = met.reduce((t, m) => { t[m.us > m.them ? 0 : m.us < m.them ? 1 : 2]++; return t; }, [0, 0, 0]);
+  const metRows = met.slice(0, 6).map(m => `<tr><td class="num">${m.year}</td>
+      <td>${m.at === 'away' ? '@' : 'vs'} ${esc(H)}</td>
+      <td class="num"><b class="${m.us > m.them ? 'pg-w' : m.us < m.them ? 'pg-lo' : ''}">${m.us > m.them ? 'W' : m.us < m.them ? 'L' : 'T'}</b> ${m.us}-${m.them}${m.ot ? ' OT' : ''}</td></tr>`).join('');
+  const past = met.length || waiting ? `<section class="bcard pg-card"><h2 class="pg-h">Past meetings<span class="pg-by">${esc(A)}’s side</span></h2>
+      ${waiting && !met.length ? '<p class="bempty">Loading past seasons…</p>' : `<p class="pg-proj" style="text-align:left">${esc(A)} ${series[0]}-${series[1]}${series[2] ? '-' + series[2] : ''} in the last ${met.length === 1 ? 'meeting' : `${met.length} meetings`}</p>
+        <div class="pg-tbl"><table class="ctbl"><thead><tr><th>Year</th><th>Game</th><th class="num">Result</th></tr></thead><tbody>${metRows}</tbody></table></div>`}
+    </section>` : '';
+
   // Standings: each team's AVCTL division (one table when they share it).
   const divs = [...new Set([A, H].map(avctlDiv).filter(Boolean))];
   const standings = divs.length ? `<section class="bcard pg-card"><h2 class="pg-h">${new Date().getFullYear()} standings</h2>
@@ -8827,7 +8867,7 @@ function previewHtml(){
 
   // Three columns on a computer, the way a gamecast reads: the predictor and the game's details down the left, the
   // leaders and last games in the middle, the line and standings down the right.
-  return `${head}<div class="pg-grid"><div class="pg-col">${predictor}${gameInfo}</div><div class="pg-col pg-mid">${leaders}${five}</div><div class="pg-col">${odds}${standings}</div></div>`;
+  return `${head}<div class="pg-grid"><div class="pg-col">${predictor}${gameInfo}</div><div class="pg-col pg-mid">${leaders}${five}${past}</div><div class="pg-col">${odds}${standings}</div></div>`;
 }
 /* ================================================================
    Massey Ratings lines, for the pregame page's Game line card. Massey's
