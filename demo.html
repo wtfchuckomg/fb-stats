@@ -263,6 +263,14 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .pg-info b{color:var(--ink-2);font-weight:600}
 .pg-odds td,.pg-odds th{padding:8px 6px}
 .pg-odds td:first-child{display:flex;align-items:center;gap:8px}
+.pg-odds td:first-child div{display:grid;gap:1px}
+.pg-odds td:first-child span{font:400 11px/1 var(--sans);color:var(--muted)}
+.pg-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.pg-by{font:500 12px/1 var(--sans);text-transform:none;color:var(--blue);text-decoration:none}
+.mas-list{margin:6px 0 0;padding-left:18px;font:400 13px/1.5 var(--sans);color:var(--ink)}
+.mas-tbl{max-height:320px;overflow:auto}
+.mas-tbl td,.mas-tbl th{padding:6px;font-size:13px}
+.mas-tbl td:first-child,.mas-tbl th:first-child{text-align:left}
 .pg-lhead{display:flex;justify-content:space-between;align-items:center;padding:4px 0 10px;border-bottom:1px solid var(--line-2)}
 .pg-lhead span{display:flex;align-items:center;gap:8px;font:700 14px/1 var(--sans)}
 .pg-who .tlogo,.pg-who .tmono{display:none}
@@ -1160,6 +1168,7 @@ try { if (new URLSearchParams(location.search).has('embed')) document.documentEl
         <button class="abtn" data-open="teams">Teams</button>
         <button class="abtn" data-open="others" id="othersbtn" hidden>Others</button>
         <button class="abtn" data-open="schools" id="schoolsbtn" hidden>Schools</button>
+        <button class="abtn" data-open="massey" id="masseybtn" hidden>Massey</button>
         <button class="abtn" data-open="setup">Setup</button>
         <button class="abtn" data-open="lines">Line score</button>
       </div>
@@ -3000,7 +3009,7 @@ const framed = (() => { try { return window.self !== window.top; } catch (e) { r
 const dlgHead = t => `<div class="dlg-hd"><h2>${t}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>`;
 function openDialog(kind){
   ui.dlg = kind; ui.confirm = null;
-  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : kind === 'others' ? dlgOthers() : kind === 'lines' ? dlgLines() : kind === 'teams' ? dlgTeams() : kind === 'schools' ? dlgSchools() : dlgSetup(kind === 'new');
+  dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : kind === 'others' ? dlgOthers() : kind === 'lines' ? dlgLines() : kind === 'teams' ? dlgTeams() : kind === 'schools' ? dlgSchools() : kind === 'massey' ? dlgMassey() : dlgSetup(kind === 'new');
   if (!dlg().hasAttribute('open')) showDialog();
   if ($('#s-A-roster')) ['A', 'H'].forEach(fillSetupRoster);
 }
@@ -4081,7 +4090,7 @@ function listen(){
       const id = ch.doc.id, d = ch.doc.data(), local = db.games[id];
       if (id === teamsDocId()) return mergeTeams(d.json);        // the saved-teams library, not a game
       if (id === mySchoolsDocId() || d.kind === 'my-schools') return mergeMySchools(d.json);   // schools this scorer added, not a game
-      if (id === HIDE_DOC || id === RECS_DOC || d.kind === 'roster') return;   // hidden games, team records, shared rosters: not games
+      if (id === HIDE_DOC || id === RECS_DOC || d.kind === 'roster' || d.kind === 'massey') return;   // hidden games, team records, shared rosters: not games
       if (d.kind === 'score') return mergeScore(id, d);           // a quick score, not a game
       const lu = local ? local.updated || 0 : -1, ru = d.updated || 0;
       if (ru > lu){
@@ -4215,6 +4224,7 @@ function renderSync(){
   const admin = !!(sync.user && sync.user.uid === ADMIN_UID);
   const ob = $('#othersbtn'); if (ob) ob.hidden = !admin;
   const sb = $('#schoolsbtn'); if (sb) sb.hidden = !admin;
+  const mb = $('#masseybtn'); if (mb) mb.hidden = !admin;
   if (ui.dlg === 'others' && dlg().open) dlg().innerHTML = dlgOthers();
   if (ui.dlg === 'games' && dlg().open){ const a = $('#acct'); if (a) a.outerHTML = syncBlock(); }
   if (ui.dlg === 'share' && dlg().open) dlg().innerHTML = dlgShare();
@@ -4659,7 +4669,7 @@ function deleteScore(id){
 
 /* ---------- shared games for the week, live from Firestore ---------- */
 const scores = {api:null, key:null, unsub:null, docs:{}, seen:null};
-function scoresReady(api){ scores.api = api; scores.key = null; watchHidden(api); watchTeamRecs(api); watchAllGames(api); watchSchools(api); renderScores(); }
+function scoresReady(api){ scores.api = api; scores.key = null; watchHidden(api); watchTeamRecs(api); watchAllGames(api); watchSchools(api); if (ui.preview || !ui.viewer) watchMassey(api); renderScores(); }
 
 /* ---------- games the admin has hidden from the scoreboards ---------- */
 // One shared list, in a document only the admin's account can change (the rules let only a document's owner write
@@ -8751,12 +8761,20 @@ function previewHtml(){
       ${[A, H].map(n => info(n) ? `<div class="pg-info"><b>${esc(n)}</b><span>${esc(info(n))}</span></div>` : '').join('')}
     </section>`;
 
-  // The line: Massey Ratings, once it's brought in. Until then, what it will show and the site's own projection.
-  const odds = `<section class="bcard pg-card"><h2 class="pg-h">Game line</h2>
+  // The line: Massey Ratings, when the admin has brought this week's in; the site's own win chances otherwise.
+  const ML = masseyLine(x);
+  const oddsRow = (s, n, p) => {
+    const m = ML && ML[s], spread = !ML ? '&#8212;' : !ML.spread ? 'PK' : m.fav ? `&#8722;${ML.spread}` : `+${ML.spread}`;
+    const total = ML && ML.total != null ? `${s === 'A' ? 'o' : 'u'}${ML.total}` : '&#8212;';
+    return `<tr><td>${markFor(T[s], 22)}<div><b>${esc(T[s].abbr || shortName(n))}</b>${m && m.rank ? `<span>#${m.rank} Massey</span>` : ''}</div></td>
+      <td class="num">${spread}</td><td class="num">${total}</td><td class="num">${m && m.pwin != null ? `${Math.round(m.pwin)}%` : `${Math.round(p * 100)}%`}</td></tr>`;
+  };
+  const odds = `<section class="bcard pg-card"><h2 class="pg-h">Game line${ML ? '<a class="pg-by" href="https://masseyratings.com/hsf/ks/games" target="_blank" rel="noopener">Massey Ratings</a>' : ''}</h2>
       <table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th><th class="num">Win</th></tr></thead><tbody>
-        ${[['A', A, P.away], ['H', H, P.home]].map(([s, n, p]) => `<tr><td>${markFor(T[s], 22)}<b>${esc(T[s].abbr || shortName(n))}</b></td>
-          <td class="num">&#8212;</td><td class="num">&#8212;</td><td class="num">${Math.round(p * 100)}%</td></tr>`).join('')}</tbody></table>
-      <p class="hint">Spreads and totals from Massey Ratings go here. Win chances are this site’s predictor. For fun only: there’s no betting here.</p>
+        ${oddsRow('A', A, P.away)}${oddsRow('H', H, P.home)}</tbody></table>
+      ${ML ? `<p class="pg-proj">Massey’s pick: <b>${esc(ML.A.pred >= ML.H.pred ? A : H)} ${Math.max(ML.A.pred, ML.H.pred)}, ${esc(ML.A.pred >= ML.H.pred ? H : A)} ${Math.min(ML.A.pred, ML.H.pred)}</b></p>
+        <p class="hint">Lines from Massey Ratings${massey.updated ? `, brought in ${esc(new Date(massey.updated).toLocaleDateString('en-US', {month:'short', day:'numeric'}))}` : ''}.${ML.flipped ? ` Massey lists this game as ${esc(ML.massey)}.` : ''} For fun only: there’s no betting here.</p>`
+        : `<p class="hint">No Massey Ratings line for this game yet. Win chances are this site’s predictor. For fun only: there’s no betting here.</p>`}
     </section>`;
 
   // Season leaders, the two teams side by side.
@@ -8795,6 +8813,146 @@ function previewHtml(){
 
   return `${head}<div class="pg-grid"><div class="pg-col">${predictor}${gameInfo}</div><div class="pg-col pg-mid">${leaders}${five}</div><div class="pg-col">${odds}${standings}</div></div>`;
 }
+/* ================================================================
+   Massey Ratings lines, for the pregame page's Game line card. Massey's
+   site won't let another site read it, so once a week the admin saves
+   masseyratings.com/hsf/ks/games from the browser (File > Save Page As)
+   and opens that file here. Each game in it is matched to the game on
+   this site with the same schools that week, and the lines go up in one
+   public document everyone reads. For fun: nothing here is a bet.
+   ================================================================ */
+const MASSEY_DOC = 'massey-lines';
+const massey = {lines:null, updated:0, api:null, file:null};
+
+// One game from the saved page. Massey lists the visitor first and the home team as "@ Home" ("vs" at a neutral site).
+function parseMassey(html){
+  const docm = new DOMParser().parseFromString(html, 'text/html');
+  const title = (docm.querySelector('#title0') || {}).textContent || '';
+  const year = +((title.match(/(20\d\d)/) || [])[1]) || new Date().getFullYear();
+  const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+  const two = td => { if (!td) return ['', '']; const inner = td.querySelector('div'); const b = txt(inner); return [txt(td).slice(0, txt(td).length - b.length).trim(), b]; };
+  const out = [];
+  docm.querySelectorAll('tr.bodyrow').forEach(tr => {
+    const td = [...tr.children];
+    const dateA = td[0] && td[0].querySelector('a'), m = dateA && txt(dateA).match(/(\d\d)\.(\d\d)/);
+    const teamA = td[1] && td[1].querySelectorAll('a');
+    if (!m || !teamA || teamA.length < 2) return;
+    const away = txt(teamA[0]), homeRaw = txt(teamA[1]), neutral = /^vs\b/i.test(homeRaw), home = homeRaw.replace(/^(@|vs\.?)\s*/i, '');
+    const [rankA, rankH] = two(td[2]).map(s => { const r = s.match(/#\s*(\d+)/), rec = s.match(/\(([\d-]+)\)/); return {rank:r ? +r[1] : null, rec:rec ? rec[1] : ''}; });
+    const [scA, scH] = two(td[3]).map(Number), [pA, pH] = two(td[4]).map(Number), [wA, wH] = two(td[5]).map(s => parseFloat(s));
+    // The spread cell has a line for each team; the favorite's is the one that isn't hidden.
+    const sp = td[6] ? [...td[6].querySelectorAll('div')] : [], spread = sp.map(d => d.classList.contains('visHidden') ? null : parseFloat(txt(d)));
+    const total = td[7] ? parseFloat(txt(td[7])) : NaN;
+    const status = tr.classList.contains('rcFinal') ? 'final' : tr.classList.contains('rcInProgress') ? 'live' : 'scheduled';
+    out.push({date:`${year}-${m[1]}-${m[2]}`, time:txt(td[0].querySelector('.detail')).replace(/\./g, ' ').replace(/\s*LT$/, '').trim(),
+      away, home, neutral, status, rank:{away:rankA, home:rankH}, pred:{away:pA, home:pH}, pwin:{away:wA, home:wH}, score:{away:scA, home:scH},
+      fav:spread[0] != null && !Number.isNaN(spread[0]) ? 'away' : spread[1] != null && !Number.isNaN(spread[1]) ? 'home' : null,
+      spread:Math.abs(spread.find(v => v != null && !Number.isNaN(v)) || 0), total:Number.isNaN(total) ? null : total});
+  });
+  return out;
+}
+
+// Match Massey's games to this site's. Massey shortens names ("Shawnee Mis W", "Andover Cent", "Salina-South"),
+// so a game matches on its week and both schools together, the closest pair winning.
+const masseyKey = (wk, a, b) => `${wk}|${[a, b].map(canonSchool).sort().join('|')}`;
+function matchMassey(rows){
+  const games = new Map();
+  [...(allGames.list || []), ...Object.values(scores.docs || {})].forEach(x => {
+    if (!x || !x.teams || !x.teams.A || !x.teams.H) return;
+    const k = masseyKey(gameWeek(x), x.teams.A.name, x.teams.H.name);
+    if (!games.has(k) || (x.kind === 'score' && games.get(k).kind !== 'score')) games.set(k, x);
+  });
+  const like = (m, ours) => canonSchool(m) === canonSchool(ours) ? 1 : schoolLikeness(m, ours);
+  const byWeek = {};
+  games.forEach(x => (byWeek[gameWeek(x)] = byWeek[gameWeek(x)] || []).push(x));
+  return rows.map(r => {
+    const wk = weekKey(fromYmd(r.date).getTime());
+    let best = null;
+    (byWeek[wk] || []).forEach(x => {
+      const A = x.teams.A.name, H = x.teams.H.name;
+      [[like(r.away, A), like(r.home, H), false], [like(r.away, H), like(r.home, A), true]].forEach(([a, h, flipped]) => {
+        if (a < .7 || h < .7) return;
+        const s = a + h + (flipped ? 0 : .01) + (ymd(gameDay(x)) === r.date ? .02 : 0);
+        if (!best || s > best.s) best = {s, x, flipped};
+      });
+    });
+    return best ? {...r, game:best.x, flipped:best.flipped && !r.neutral} : {...r, game:null};
+  });
+}
+
+/* ---------- storing and reading ---------- */
+function watchMassey(api){
+  if (massey.api || !api) return;
+  massey.api = api;
+  const {fsM, fsdb} = api;
+  fsM.onSnapshot(fsM.doc(fsdb, 'pressbox', MASSEY_DOC), snap => {
+    const d = snap.exists() ? snap.data() : null;
+    let j = null; if (d && d.owner === ADMIN_UID && !d.deleted){ try { j = JSON.parse(d.json); } catch (e) {} }
+    massey.lines = (j && j.lines) || {}; massey.updated = (j && j.updated) || 0;
+    if (typeof renderPreview === 'function') renderPreview();
+  }, () => { massey.lines = {}; });
+}
+// The line for a game on this site, told from each school's side: {spread, fav, total, pred, pwin, rank} by name.
+function masseyLine(x){
+  if (!massey.lines || !x || !x.teams) return null;
+  return massey.lines[masseyKey(gameWeek(x), x.teams.A.name, x.teams.H.name)] || null;
+}
+async function saveMassey(){
+  const api = sync.api; if (!ui.admin || !api || !massey.file) return toast('Sign in as the admin first');
+  const lines = {...(massey.lines || {})}, cutoff = Date.now() - 21 * 864e5;
+  Object.keys(lines).forEach(k => { if ((lines[k].at || 0) < cutoff) delete lines[k]; });   // three weeks is plenty
+  let n = 0;
+  massey.file.rows.forEach(r => {
+    if (!r.game) return;
+    const T = r.game.teams, side = s => r.flipped ? (s === 'A' ? 'home' : 'away') : (s === 'A' ? 'away' : 'home');
+    const per = s => ({name:T[s].name, rank:r.rank[side(s)].rank, rec:r.rank[side(s)].rec, pred:r.pred[side(s)], pwin:r.pwin[side(s)], fav:r.fav === side(s)});
+    lines[masseyKey(gameWeek(r.game), T.A.name, T.H.name)] = {at:Date.now(), date:r.date, time:r.time, spread:r.spread, total:r.total, status:r.status,
+      flipped:r.flipped, massey:`${r.away} ${r.neutral ? 'vs' : 'at'} ${r.home}`, A:per('A'), H:per('H')};
+    n++;
+  });
+  const {fsM, fsdb} = api;
+  try {
+    await fsM.setDoc(fsM.doc(fsdb, 'pressbox', MASSEY_DOC), {owner:ADMIN_UID, updated:Date.now(), public:true, kind:'massey', title:'Massey Ratings lines',
+      json:JSON.stringify({updated:Date.now(), lines})});
+    massey.lines = lines; massey.updated = Date.now();
+    closeDialog(); toast(`Massey lines saved for ${n} game${n === 1 ? '' : 's'}`);
+  } catch (e) { toast('Couldn’t save the lines. Sign in on the Game Tracker, then try again.'); }
+}
+
+/* ---------- the admin's window ---------- */
+function dlgMassey(){
+  const f = massey.file;
+  const intro = `<p class="hint">Once a week: open <b>masseyratings.com/hsf/ks/games</b>, save the page (File &gt; Save Page As, “Webpage, Complete” or “HTML only”), then choose that file here. Each game is matched to this site’s game with the same two schools that week.</p>
+    <div class="fld"><label class="btn small primary" style="align-self:flex-start">Choose the saved Massey page<input type="file" id="massey-file" accept=".html,.htm,text/html" hidden></label></div>`;
+  if (!f) return `${dlgHead('Massey lines')}<div class="dlg-bd">${intro}${massey.updated ? `<p class="hint">Last saved ${esc(new Date(massey.updated).toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}))}.</p>` : ''}</div>
+    <div class="dlg-ft"><button type="button" class="btn" data-close>Close</button></div>`;
+  const ours = f.rows.filter(r => r.game), flipped = ours.filter(r => r.flipped), missing = f.rows.filter(r => !r.game);
+  const row = r => { const T = r.game.teams, fav = r.fav ? T[(r.fav === 'away') !== r.flipped ? 'A' : 'H'].name : '';
+    return `<tr><td>${esc(T.A.name)} at ${esc(T.H.name)}</td><td class="num">${fav ? `${esc(fav)} −${r.spread}` : 'Even'}</td><td class="num">${r.total ?? '—'}</td></tr>`; };
+  return `${dlgHead('Massey lines')}<div class="dlg-bd">
+      <p class="hint"><b>${esc(f.name)}</b>: ${f.rows.length} games. <b>${ours.length}</b> match games on this site${missing.length ? `; ${missing.length} aren’t on the site, and are left out` : ''}.</p>
+      ${flipped.length ? `<div class="grp"><h3>Home and away don’t agree (${flipped.length})</h3><p class="hint">Massey has the other team at home. The lines still go on the right teams; check KPreps for which is right.</p>
+        <ul class="mas-list">${flipped.map(r => `<li>Massey: ${esc(r.away)} at ${esc(r.home)} · Here: ${esc(r.game.teams.A.name)} at ${esc(r.game.teams.H.name)}</li>`).join('')}</ul></div>` : ''}
+      <div class="grp"><h3>Matched (${ours.length})</h3><div class="tbl-wrap mas-tbl"><table class="ctbl"><thead><tr><th>Game</th><th class="num">Line</th><th class="num">Total</th></tr></thead><tbody>${ours.map(row).join('')}</tbody></table></div></div>
+      ${missing.length ? `<details class="grp"><summary>Not on this site (${missing.length})</summary><ul class="mas-list">${missing.map(r => `<li>${esc(r.away)} ${r.neutral ? 'vs' : 'at'} ${esc(r.home)} · ${esc(r.date.slice(5).replace('-', '/'))}</li>`).join('')}</ul></details>` : ''}
+    </div>
+    <div class="dlg-ft"><button type="button" class="btn" data-massey-again>Choose another file</button><button type="button" class="btn primary" data-massey-save ${ours.length ? '' : 'disabled'}>Save ${ours.length} lines</button></div>`;
+}
+document.addEventListener('change', e => {
+  if (e.target.id !== 'massey-file' || !e.target.files[0]) return;
+  const file = e.target.files[0];
+  file.text().then(html => {
+    const rows = parseMassey(html);
+    if (!rows.length) return toast('No games in that file. Save masseyratings.com/hsf/ks/games and choose it again.');
+    massey.file = {name:file.name, rows:matchMassey(rows)};
+    dlg().innerHTML = dlgMassey();
+  });
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('button'); if (!b) return;
+  if ('masseySave' in b.dataset) return saveMassey();
+  if ('masseyAgain' in b.dataset){ massey.file = null; dlg().innerHTML = dlgMassey(); }
+});
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
