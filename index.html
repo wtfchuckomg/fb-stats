@@ -1090,7 +1090,6 @@ try { if (new URLSearchParams(location.search).has('embed')) document.documentEl
         <button class="abtn" data-open="schools" id="schoolsbtn" hidden>Schools</button>
         <button class="abtn" data-open="setup">Setup</button>
         <button class="abtn" data-open="lines">Line score</button>
-        <button class="abtn" data-open="export">Export</button>
       </div>
     </div>
   </div>
@@ -3004,7 +3003,7 @@ function dlgGames(){
       <div class="acts">${x.id !== g.id ? `<button class="btn small" data-open-game="${x.id}">Open</button>` : ''}<button class="btn small danger" data-del-game="${x.id}">${ui.confirm === 'g:' + x.id ? 'Tap again' : 'Delete'}</button></div></div>`; }).join('');
   return `${dlgHead('Games')}<div class="dlg-bd">${syncBlock()}<div class="grp"><h3>Games</h3><div class="glist">${items}</div></div>
     <p class="hint">Every game is saved in this browser${sync.user ? ' and to your Google account' : ''}. Export makes a backup you can keep anywhere.</p></div>
-    <div class="dlg-ft"><button class="btn" data-box-new>Paste a box score</button><button class="btn primary" data-open="new">New game</button></div>`;
+    <div class="dlg-ft"><button class="btn" data-open="export" style="margin-right:auto">Export</button><button class="btn" data-box-new>Paste a box score</button><button class="btn primary" data-open="new">New game</button></div>`;
 }
 // The live look-in: a link anyone can open to watch this game, read-only.
 function dlgShare(){
@@ -6436,7 +6435,7 @@ function scorerBar(){
   document.querySelector('.navtools .abtns').innerHTML = `<a class="abtn${live ? ' live' : ''}" href="${go('share')}">${live ? '<i></i>Live' : 'Private'}</a>`
     + `<a class="abtn" href="${go('games')}">Games</a>`
     + (localStorage.getItem('pressbox.admin') === '1' ? `<a class="abtn" href="${go('others')}">Others</a>` : '')   // the admin's devices only
-    + `<a class="abtn" href="${go('setup')}">Setup</a><a class="abtn" href="${go('export')}">Export</a>`;
+    + `<a class="abtn" href="${go('setup')}">Setup</a>`;
 }
 if (!TRACKER_PAGE) scorerBar();
 

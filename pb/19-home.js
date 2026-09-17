@@ -31,7 +31,7 @@ function scorerBar(){
   document.querySelector('.navtools .abtns').innerHTML = `<a class="abtn${live ? ' live' : ''}" href="${go('share')}">${live ? '<i></i>Live' : 'Private'}</a>`
     + `<a class="abtn" href="${go('games')}">Games</a>`
     + (localStorage.getItem('pressbox.admin') === '1' ? `<a class="abtn" href="${go('others')}">Others</a>` : '')   // the admin's devices only
-    + `<a class="abtn" href="${go('setup')}">Setup</a><a class="abtn" href="${go('export')}">Export</a>`;
+    + `<a class="abtn" href="${go('setup')}">Setup</a>`;
 }
 if (!TRACKER_PAGE) scorerBar();
 
