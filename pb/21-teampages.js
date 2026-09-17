@@ -236,14 +236,14 @@ function teamPageHtml(nameIn){
   return `<section class="bcard tp-head">
       <div class="tp-id">${markFor(mark, 72)}<div><h1>${esc(name)}</h1>${(s => s ? `<p class="tp-sub">${esc(s)}</p>` : '')(schoolLine(name))}</div></div>
       <div class="tp-recs">${recBox('rec', 'Overall')}${recBox('home', 'Home')}${recBox('away', 'Away')}</div>
-      ${ui.admin && !tpage.edit ? `<button type="button" class="bhide" data-tp-edit>Edit record</button>${teamRecs.map[k] ? '<p class="h-note tp-manual">This record was set by hand, so it doesn’t come from the tally. Edit record to change or clear it.</p>' : ''}` : ''}
+      ${ui.admin && !tpage.edit ? `<button type="button" class="bhide" data-tp-add-game>Add a game</button><button type="button" class="bhide" data-tp-edit>Edit record</button>${teamRecs.map[k] ? '<p class="h-note tp-manual">This record was set by hand, so it doesn’t come from the tally. Edit record to change or clear it.</p>' : ''}` : ''}
       ${form}
-      ${inCounty || rows.some(r => r.stats) || roster ? (() => {
+      ${inCounty || rows.some(r => r.stats) || roster || ui.admin ? (() => {
         // Butler County has its own stats pages; every other school's numbers live on State Stats.
         const p = inCounty ? '?stats' : '?statestats', t = inCounty ? '?stats=team' : '?statestats=team', q = encodeURIComponent(name);
         const stats = inCounty || rows.some(r => r.stats)
           ? `<a class="h-btn" href="${p}&amp;team=${q}">Player stats</a><a class="h-btn" href="${t}&amp;team=${q}">Team stats</a>` : '';
-        return `<div class="tp-links">${stats}${roster ? '<button type="button" class="h-btn" data-tp-roster>Roster</button>' : ''}</div>`;
+        return `<div class="tp-links">${stats}${roster || ui.admin ? '<button type="button" class="h-btn" data-tp-roster>Roster</button>' : ''}</div>`;
       })() : ''}
     </section>
     <section class="bcard"><h2 class="tp-h">Schedule &amp; Results</h2>
@@ -253,7 +253,20 @@ function teamPageHtml(nameIn){
     </section>
     ${(() => {
       // Whoever has kept a game for this school has shared its roster; anyone setting one up can use it.
-      const r = roster; if (!r) return '';
+      // The admin can type one here for a school nobody has tracked.
+      const r = roster;
+      if (tpage.rosterEdit === k && ui.admin){
+        const text = r ? r.players.map(p => `${p.num || ''} ${p.name}`.trim()).join('\n') : '';
+        return `<section class="bcard" id="roster"><h2 class="tp-h">Roster</h2>
+          <div class="fld"><label class="eyebrow" for="tp-roster">One player per line: number then name</label>
+            <textarea class="inp" id="tp-roster" rows="12" spellcheck="false" placeholder="7 Cole Brandt&#10;28 Isaiah Ford">${esc(text)}</textarea></div>
+          <p class="h-note">A line with no number in front is left out. Saving shares it with every scorer, the same as a roster saved in Setup.</p>
+          <div class="line"><button type="button" class="btn primary" data-tp-roster-save>Save roster</button>
+            <button type="button" class="btn" data-tp-roster-cancel>Cancel</button></div></section>`;
+      }
+      if (!r) return ui.admin ? `<section class="bcard" id="roster"><h2 class="tp-h">Roster</h2>
+        <p class="bempty">No roster for ${esc(name)} yet.</p>
+        <div class="line"><button type="button" class="btn" data-tp-roster-edit>Add a roster</button></div></section>` : '';
       const list = r.players.map(p => `<div class="tp-p"><b>${p.num ? esc(p.num) : ''}</b><span>${esc(p.name || '#' + p.num)}</span></div>`).join('');
       const note = r.fromGames
         ? `${plural2(r.count, 'player')} from ${esc(name)}’s games on the site — a pasted box score gives names without numbers.
@@ -261,15 +274,36 @@ function teamPageHtml(nameIn){
         : `${plural2(r.count, 'player')}, from a scorer who has kept a game for ${esc(name)}.
            Anyone starting a game with them can use it in Setup.`;
       return `<section class="bcard" id="roster"><h2 class="tp-h">Roster</h2><div class="tp-roster">${list}</div>
-        <p class="h-note" style="margin:10px 0 0">${note}</p></section>`;
+        <p class="h-note" style="margin:10px 0 0">${note}</p>
+        ${ui.admin ? '<div class="line" style="margin-top:10px"><button type="button" class="btn" data-tp-roster-edit>Edit roster</button></div>' : ''}</section>`;
     })()}`;
 }
 
 // The Roster button takes you down to the card (scroll-margin-top keeps it clear of the bars).
 document.addEventListener('click', e => {
-  if (!e.target.closest || !e.target.closest('[data-tp-roster]')) return;
-  const el = $('#roster'); if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  const c = s => e.target.closest && e.target.closest(s);
+  if (c('[data-tp-roster]')){ const el = $('#roster'); if (el) el.scrollIntoView({behavior:'smooth', block:'start'}); return; }
+  if (c('[data-tp-roster-edit]')){ tpage.rosterEdit = canonSchool(tpage.name); renderTeamPage(); const t = $('#tp-roster'); if (t) t.focus(); return; }
+  if (c('[data-tp-roster-cancel]')){ tpage.rosterEdit = null; renderTeamPage(); return; }
+  if (c('[data-tp-roster-save]')) return saveTeamRoster(tpage.name, ($('#tp-roster') || {}).value || '');
+  // A game the schedule doesn't have: the score window, with this school already in it.
+  if (c('[data-tp-add-game]')){ ui.qsId = null; ui.qsPrefill = {name:tpage.name, side:'H'}; return openDialog('score'); }
 });
+
+// Type a roster for a school on its own page. It goes up as a shared roster, so every scorer gets it.
+async function saveTeamRoster(name, text){
+  if (!ui.admin || !sync.api || !sync.user) return toast('Sign in on the Game Tracker first');
+  const roster = parseRosterText(text), n = Object.keys(roster).length;
+  const {fsM, fsdb} = sync.api, id = `roster-${teamKey(name)}-${sync.user.uid}`;
+  const doc = n ? {owner:sync.user.uid, updated:Date.now(), public:true, kind:'roster', title:`${name} roster`,
+    json:JSON.stringify({name, roster, count:n, updated:Date.now()})}
+    : {owner:sync.user.uid, updated:Date.now(), public:true, kind:'roster', deleted:true, json:''};
+  try {
+    await fsM.setDoc(fsM.doc(fsdb, 'pressbox', id), doc);
+    tpage.rosterEdit = null; renderTeamPage();
+    toast(n ? `Roster saved — ${plural2(n, 'player')}` : 'Roster cleared');
+  } catch (e) { toast('Couldn’t save that roster. Sign in on the Game Tracker, then try again.'); }
+}
 
 // Save a score fixed on a team page: the game's own document, which the admin's account owns (it loaded the schedule).
 async function saveTeamScore(clear){

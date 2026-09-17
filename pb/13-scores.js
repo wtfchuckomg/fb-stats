@@ -75,11 +75,14 @@ function scoreDefaultDate(){
   const f = fromYmd(k); f.setDate(f.getDate() + 3); return ymd(f);
 }
 function dlgScore(id){
-  const x = id && qsLib()[id] && !qsLib()[id].deleted ? qsLib()[id] : null, per = x ? String(x.per) : '1';
+  const x = id && qsLib()[id] && !qsLib()[id].deleted ? qsLib()[id] : null;
+  // Opened from a school's page: that school is in it already, as a game still to come.
+  const pre = !x && ui.qsPrefill ? ui.qsPrefill : null;
+  const per = x ? String(x.per) : pre ? 'pre' : '1';
   const date = x ? ymd(gameDay(x)) : scoreDefaultDate();
   // Saved teams and every school with a logo, so a typed name finds its logo.
   const side = (s, label) => `<div class="qs-side"><div class="fld"><label class="eyebrow" for="qs-${s}-name">${label}</label>
-      ${schoolPicker(`qs-${s}-name`, x ? x.teams[s].name : '', s === 'A' ? 'Visiting school' : 'Home school')}</div>
+      ${schoolPicker(`qs-${s}-name`, x ? x.teams[s].name : (pre && pre.side === s ? pre.name : ''), s === 'A' ? 'Visiting school' : 'Home school')}</div>
     <div class="fld qs-pts"><label class="eyebrow" for="qs-${s}-pts">Score</label>
       <input class="inp" id="qs-${s}-pts" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" value="${x ? +x[s] || 0 : ''}" placeholder="0"></div></div>
     <div class="row qs-rec">${recFields('qs', s, x && x.teams[s])}</div>`;
@@ -120,7 +123,8 @@ function saveScore(id){
   const x = Object.assign(old || {id:'s' + Date.now().toString(36), kind:'score', created:Date.now()}, {
     teams:{A:team('A', A, old && old.teams.A), H:team('H', H, old && old.teams.H)}, A:a, H:h,
     per, clk:inQuarter(per) && c != null ? mmss(c) : '', date, updated:Date.now()});
-  lib[x.id] = x; persist(); pushScore(x); closeDialog();
+  lib[x.id] = x; persist(); pushScore(x); ui.qsPrefill = null; closeDialog();
+  renderTeamPage();   // a school's page shows the new game straight away
   // Show the week it went into, in case that isn't the week on screen.
   const wk = gameWeek(x); if (wk !== shownWeek()) ui.week = wk;
   renderScores(); toast(`Score saved to ${weekLabel(wk)}`);
@@ -440,7 +444,7 @@ document.addEventListener('click', e => {
     // Quick scores: open, pick the status, save, delete.
     const q = t.closest('[data-qs]');
     if (q){ e.preventDefault(); ui.qsId = q.dataset.qs; return openDialog('score'); }
-    if (t.closest('[data-qs-new]')){ ui.qsId = null; return openDialog('score'); }
+    if (t.closest('[data-qs-new]')){ ui.qsId = null; ui.qsPrefill = null; return openDialog('score'); }
     // Start a stat game from a scheduled game or quick score: Setup opens with its schools and date.
     const ks = t.closest('[data-qs-stats]');
     if (ks){ ui.fromSched = ks.dataset.qsStats; return openDialog('new'); }
