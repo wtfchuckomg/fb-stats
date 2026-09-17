@@ -281,17 +281,15 @@ function previewHtml(){
       ${[A, H].map(n => info(n) ? `<div class="pg-info"><b>${esc(n)}</b><span>${esc(info(n))}</span></div>` : '').join('')}
     </section>`;
 
-  // The line: Massey Ratings, when the admin has brought this week's in; the site's own win chances otherwise.
-  const ML = masseyLine(x), OL = ourLine(A, H);
+  // The line: the site's own, from every Kansas result since 2021.
+  const OL = ourLine(A, H);
   const oddsRow = (s, n) => {
-    const m = ML && ML[s];
     const ourSpread = !OL ? '&#8212;' : OL.spread === 0 ? 'PK' : (s === 'H') === (OL.spread > 0) ? `&#8722;${Math.abs(OL.spread)}` : `+${Math.abs(OL.spread)}`;
-    const mSpread = !ML ? '' : !ML.spread ? 'PK' : m.fav ? `&#8722;${ML.spread}` : `+${ML.spread}`;
     return `<tr><td><div class="pg-oteam">${markFor(T[s], 22)}<b>${esc(T[s].abbr || shortName(n))}</b></div></td>
-      <td class="num">${ourSpread}</td><td class="num">${OL ? `${s === 'A' ? 'o' : 'u'}${OL.total}` : '&#8212;'}</td>${ML ? `<td class="num pg-mass">${mSpread}</td>` : ''}</tr>`;
+      <td class="num">${ourSpread}</td><td class="num">${OL ? `${s === 'A' ? 'o' : 'u'}${OL.total}` : '&#8212;'}</td></tr>`;
   };
   const odds = `<section class="bcard pg-card"><h2 class="pg-h">Game line</h2>
-      <div class="pg-tbl"><table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th>${ML ? '<th class="num pg-mass">Massey</th>' : ''}</tr></thead><tbody>
+      <div class="pg-tbl"><table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th></tr></thead><tbody>
         ${oddsRow('A', A)}${oddsRow('H', H)}</tbody></table></div>
       ${OL ? `<p class="hint">${OL.thin ? 'One of these teams has few games on file, so treat this lightly. ' : ''}For fun only: there's no betting here.</p>`
         : `<p class="hint">No line for this game yet: the ratings don't have both schools.</p>`}

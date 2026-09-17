@@ -63,7 +63,6 @@ PARTS_JS = [
     '28-schools.js',     # admin: the school list, short names, removals
     '29-embed.js',
     '30-pregame.js',     # ?preview=<id>: a game before kickoff
-    '31-massey.js',      # Massey Ratings lines, from a saved copy of their page       # ?embed=1: running inside another site's page
     '7-sample.js',       # the sample game, then boot. Always last.
 ]
 
