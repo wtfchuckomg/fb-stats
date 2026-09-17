@@ -8773,7 +8773,7 @@ function previewHtml(){
       <table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th><th class="num">Win</th></tr></thead><tbody>
         ${oddsRow('A', A, P.away)}${oddsRow('H', H, P.home)}</tbody></table>
       ${ML ? `<p class="pg-proj">Massey’s pick: <b>${esc(ML.A.pred >= ML.H.pred ? A : H)} ${Math.max(ML.A.pred, ML.H.pred)}, ${esc(ML.A.pred >= ML.H.pred ? H : A)} ${Math.min(ML.A.pred, ML.H.pred)}</b></p>
-        <p class="hint">Lines from Massey Ratings${massey.updated ? `, brought in ${esc(new Date(massey.updated).toLocaleDateString('en-US', {month:'short', day:'numeric'}))}` : ''}.${ML.flipped ? ` Massey lists this game as ${esc(ML.massey)}.` : ''} For fun only: there’s no betting here.</p>`
+        <p class="hint">Lines from Massey Ratings${massey.updated ? `, brought in ${esc(new Date(massey.updated).toLocaleDateString('en-US', {month:'short', day:'numeric'}))}` : ''}. For fun only: there’s no betting here.</p>`
         : `<p class="hint">No Massey Ratings line for this game yet. Win chances are this site’s predictor. For fun only: there’s no betting here.</p>`}
     </section>`;
 
@@ -8853,7 +8853,8 @@ function parseMassey(html){
 }
 
 // Match Massey's games to this site's. Massey shortens names ("Shawnee Mis W", "Andover Cent", "Salina-South"),
-// so a game matches on its week and both schools together, the closest pair winning.
+// so a game matches on its week and both schools together, the closest pair winning. Massey's home and away are
+// often the wrong way round; this site's schedule is the one that's right, and the lines follow the teams, not the sides.
 const masseyKey = (wk, a, b) => `${wk}|${[a, b].map(canonSchool).sort().join('|')}`;
 function matchMassey(rows){
   const games = new Map();
@@ -8926,13 +8927,11 @@ function dlgMassey(){
     <div class="fld"><label class="btn small primary" style="align-self:flex-start">Choose the saved Massey page<input type="file" id="massey-file" accept=".html,.htm,text/html" hidden></label></div>`;
   if (!f) return `${dlgHead('Massey lines')}<div class="dlg-bd">${intro}${massey.updated ? `<p class="hint">Last saved ${esc(new Date(massey.updated).toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'}))}.</p>` : ''}</div>
     <div class="dlg-ft"><button type="button" class="btn" data-close>Close</button></div>`;
-  const ours = f.rows.filter(r => r.game), flipped = ours.filter(r => r.flipped), missing = f.rows.filter(r => !r.game);
+  const ours = f.rows.filter(r => r.game), missing = f.rows.filter(r => !r.game);
   const row = r => { const T = r.game.teams, fav = r.fav ? T[(r.fav === 'away') !== r.flipped ? 'A' : 'H'].name : '';
     return `<tr><td>${esc(T.A.name)} at ${esc(T.H.name)}</td><td class="num">${fav ? `${esc(fav)} −${r.spread}` : 'Even'}</td><td class="num">${r.total ?? '—'}</td></tr>`; };
   return `${dlgHead('Massey lines')}<div class="dlg-bd">
       <p class="hint"><b>${esc(f.name)}</b>: ${f.rows.length} games. <b>${ours.length}</b> match games on this site${missing.length ? `; ${missing.length} aren’t on the site, and are left out` : ''}.</p>
-      ${flipped.length ? `<div class="grp"><h3>Home and away don’t agree (${flipped.length})</h3><p class="hint">Massey has the other team at home. The lines still go on the right teams; check KPreps for which is right.</p>
-        <ul class="mas-list">${flipped.map(r => `<li>Massey: ${esc(r.away)} at ${esc(r.home)} · Here: ${esc(r.game.teams.A.name)} at ${esc(r.game.teams.H.name)}</li>`).join('')}</ul></div>` : ''}
       <div class="grp"><h3>Matched (${ours.length})</h3><div class="tbl-wrap mas-tbl"><table class="ctbl"><thead><tr><th>Game</th><th class="num">Line</th><th class="num">Total</th></tr></thead><tbody>${ours.map(row).join('')}</tbody></table></div></div>
       ${missing.length ? `<details class="grp"><summary>Not on this site (${missing.length})</summary><ul class="mas-list">${missing.map(r => `<li>${esc(r.away)} ${r.neutral ? 'vs' : 'at'} ${esc(r.home)} · ${esc(r.date.slice(5).replace('-', '/'))}</li>`).join('')}</ul></details>` : ''}
     </div>
