@@ -8890,6 +8890,9 @@ function watchMassey(api){
     const d = snap.exists() ? snap.data() : null;
     let j = null; if (d && d.owner === ADMIN_UID && !d.deleted){ try { j = JSON.parse(d.json); } catch (e) {} }
     massey.lines = (j && j.lines) || {}; massey.updated = (j && j.updated) || 0;
+    // The demo page (demo.html), before anyone has saved a week: the lines from the file Chuck saved on Sep 17.
+    if (!j && location.pathname.endsWith('/demo.html')) fetch('/massey-demo.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
+      .then(d => { if (d && !massey.updated){ massey.lines = d.lines || {}; massey.updated = d.updated || 0; renderPreview(); } }).catch(() => {});
     if (typeof renderPreview === 'function') renderPreview();
   }, () => { massey.lines = {}; });
 }
