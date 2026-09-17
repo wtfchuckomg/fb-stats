@@ -268,7 +268,7 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .pg-tbl .ctbl tr:last-child td{border-bottom:0}
 .pg-odds{table-layout:fixed}
 .pg-odds td,.pg-odds th{padding:9px 8px}
-.pg-odds th:first-child,.pg-odds td:first-child{width:40%;text-align:left}
+.pg-odds th:first-child,.pg-odds td:first-child{width:50%;text-align:left}
 .pg-odds th:last-child,.pg-odds td:last-child{padding-right:12px}
 .pg-oteam{display:flex;align-items:center;gap:8px;min-width:0}
 .pg-oteam div{display:grid;gap:1px;min-width:0}
@@ -8777,14 +8777,14 @@ function previewHtml(){
     const m = ML && ML[s], spread = !ML ? '&#8212;' : !ML.spread ? 'PK' : m.fav ? `&#8722;${ML.spread}` : `+${ML.spread}`;
     const total = ML && ML.total != null ? `${s === 'A' ? 'o' : 'u'}${ML.total}` : '&#8212;';
     return `<tr><td><div class="pg-oteam">${markFor(T[s], 22)}<div><b>${esc(T[s].abbr || shortName(n))}</b>${m && m.rank ? `<span>#${m.rank} Massey</span>` : ''}</div></div></td>
-      <td class="num">${spread}</td><td class="num">${total}</td><td class="num">${m && m.pwin != null ? `${Math.round(m.pwin)}%` : `${Math.round(p * 100)}%`}</td></tr>`;
+      <td class="num">${spread}</td><td class="num">${total}</td></tr>`;
   };
   const odds = `<section class="bcard pg-card"><h2 class="pg-h">Game line${ML ? '<a class="pg-by" href="https://masseyratings.com/hsf/ks/games" target="_blank" rel="noopener">Massey Ratings</a>' : ''}</h2>
-      <div class="pg-tbl"><table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th><th class="num">Win</th></tr></thead><tbody>
+      <div class="pg-tbl"><table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th></tr></thead><tbody>
         ${oddsRow('A', A, P.away)}${oddsRow('H', H, P.home)}</tbody></table></div>
       ${ML ? `<p class="pg-proj">Massey’s pick: <b>${esc(ML.A.pred >= ML.H.pred ? A : H)} ${Math.max(ML.A.pred, ML.H.pred)}, ${esc(ML.A.pred >= ML.H.pred ? H : A)} ${Math.min(ML.A.pred, ML.H.pred)}</b></p>
         <p class="hint">Lines from Massey Ratings${massey.updated ? `, brought in ${esc(new Date(massey.updated).toLocaleDateString('en-US', {month:'short', day:'numeric'}))}` : ''}. For fun only: there’s no betting here.</p>`
-        : `<p class="hint">No Massey Ratings line for this game yet. Win chances are this site’s predictor. For fun only: there’s no betting here.</p>`}
+        : `<p class="hint">No Massey Ratings line for this game yet. For fun only: there’s no betting here.</p>`}
     </section>`;
 
   // Season leaders, the two teams side by side.
