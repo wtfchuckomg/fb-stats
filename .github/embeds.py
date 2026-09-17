@@ -24,6 +24,7 @@ PAGES = [  # slug, title, the page's address, starting height
     ('avctl-stats', 'AVCTL Player Stats', '?avstats', 1000),
     ('avctl-team-stats', 'AVCTL Team Stats', '?avstats=team', 1000),
     ('state-scoreboard', 'State Scoreboard', '?state', 900),
+    ('state-stats', 'State Stats', '?statestats', 1000),
 ]
 
 REPO = Path(__file__).resolve().parent.parent
