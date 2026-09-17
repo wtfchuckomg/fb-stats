@@ -88,7 +88,9 @@ function dlgScore(id){
     <div class="fld qs-pts"><label class="eyebrow" for="qs-${s}-pts">Score</label>
       <input class="inp" id="qs-${s}-pts" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" value="${x ? +x[s] || 0 : ''}" placeholder="0"></div></div>
     <div class="row qs-rec">${recFields('qs', s, x && x.teams[s])}</div>`;
-  const note = sync.user ? 'Shows on everyone’s scoreboard as soon as you save.'
+  // On a school's page the admin is signed in beside the records, not through the tracker's sync.
+  const upThere = !!sync.user || (ui.admin && !!teamRecs.api);
+  const note = upThere ? 'Shows on everyone’s scoreboard as soon as you save.'
     : sync.state === 'unavailable' ? 'Saved on this device. From your own site, signed in, scores go on everyone’s scoreboard.'
     : `Saved on this device. Sign in to put it on everyone’s scoreboard.${sync.api ? ' <button type="button" class="linkbtn" data-signin>Sign in</button>' : ''}`;
   // The bigger jobs first, where they're seen: a box score or keeping stats; then the plain score.
