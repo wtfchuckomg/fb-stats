@@ -184,9 +184,15 @@ function previewHtml(){
   const P = predict(A, H), day = gameDay(x);
   const when = `${day.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'})}`;
   const time = '7:00 PM';   // every Kansas game kicks off at 7 p.m.; a listing that says otherwise is ignored
-  // A game someone has started keeping stats on: send people to it.
-  const live = Object.values(scores.docs || {}).find(g => g.kind !== 'score' && g.plays && g.plays.length && gameWeek(g) === gameWeek(x)
-    && [g.teams.A.name, g.teams.H.name].map(canonSchool).sort().join('|') === [A, H].map(canonSchool).sort().join('|'));
+  // A game someone is keeping stats on. Once the first play is in, a shared preview link becomes the gamecast
+  // on its own — nobody has to send the link again.
+  const pair = [A, H].map(canonSchool).sort().join('|');
+  const tracked = [...Object.values(scores.docs || {}), ...(allGames.list || [])]
+    .filter(g => g && g.teams && g.kind !== 'score' && g.id !== x.id && gameWeek(g) === gameWeek(x)
+      && [g.teams.A.name, g.teams.H.name].map(canonSchool).sort().join('|') === pair);
+  const live = tracked.find(g => (g.plays && g.plays.length) || g.box || g.stats);
+  if (live && !pre.went){ pre.went = true; location.replace(`?game=${encodeURIComponent(live.id)}`); }
+  const soon = !live && tracked[0];
   const recLine = n => { const r = shownRecord(n), info = schoolInfo(n); return [r && r.rec, info && info[1]].filter(Boolean).join(' · '); };
   const rankTag = n => { const r = rankOf(n); return r && r.rank ? `<span class="pg-rank">${r.rank}</span>` : ''; };
   const head = `<section class="bcard pg-head">
@@ -194,7 +200,8 @@ function previewHtml(){
       <div class="pg-when"><b>${esc(when)}</b><span>${esc(time)}</span><span class="pg-at">at ${esc(H)}</span></div>
       <div class="pg-team h"><div><div class="pg-name">${rankTag(H)}<a class="tlink" href="?team=${encodeURIComponent(H)}">${esc(H)}</a></div><div class="pg-sub">${esc(recLine(H))}</div></div>${markFor(T.H, 64)}</div>
     </section>
-    ${live ? `<section class="bcard pg-live"><b>This game has started.</b> <a class="bbtn" href="?game=${encodeURIComponent(live.id)}">Watch the gamecast</a></section>` : ''}`;
+    ${live ? `<section class="bcard pg-live"><b>This game has started.</b> <a class="bbtn" href="?game=${encodeURIComponent(live.id)}">Watch the gamecast</a></section>`
+      : soon ? `<section class="bcard pg-live"><b>Someone is set to keep stats on this game.</b> This page turns into the gamecast on the first play.</section>` : ''}`;
 
   // Matchup predictor: a ring split between the two schools.
   const pctA = Math.round(P.away * 1000) / 10, pctH = Math.round(P.home * 1000) / 10;
