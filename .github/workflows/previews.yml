@@ -21,6 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install Pillow, for the score cards
+        run: python3 -m pip install --quiet Pillow
       - name: Build the game preview pages
         run: python3 .github/previews.py
       - name: Save and publish any changes

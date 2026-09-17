@@ -9,7 +9,10 @@ A game's title and status come from the "card" the site saves with it, like "Ind
 "Final · Fri, Sep 11". Games saved before cards existed use .github/cards-seed.json, or failing that, the two
 schools' names.
 """
-import html, json, os, re, shutil, urllib.request
+import html, json, os, re, shutil, sys, urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import cards   # draws g/<id>/card.png
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'g')
@@ -54,14 +57,14 @@ def page(doc_id, title, sub):
 <meta property="og:title" content="{t}">
 <meta property="og:description" content="{d}">
 <meta property="og:url" content="{here}">
-<meta property="og:image" content="{SITE}/page.png">
+<meta property="og:image" content="{SITE}/g/{doc_id}/card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Kansas Media Stats: a Kansas football helmet beside the Kansas Media Stats wordmark">
+<meta property="og:image:alt" content="{t}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{t}">
 <meta name="twitter:description" content="{d}">
-<meta name="twitter:image" content="{SITE}/page.png">
+<meta name="twitter:image" content="{SITE}/g/{doc_id}/card.png">
 <link rel="canonical" href="{here}">
 <meta http-equiv="refresh" content="0; url={go}">
 <script>location.replace('{go}' + (location.search ? '&' + location.search.slice(1) : ''));</script>
@@ -82,6 +85,9 @@ def main():
         title, sub = card_of(doc_id, f, seed)
         if not title: continue
         keep.add(doc_id)
+        # The score card. A game whose card can't be read keeps whatever picture it already had.
+        try: cards.draw_card(title, sub, os.path.join(OUT, doc_id, 'card.png'))
+        except Exception as e: print(f'{doc_id}: no card ({e})')
         path = os.path.join(OUT, doc_id, 'index.html')
         new = page(doc_id, title, sub)
         if not os.path.exists(path) or open(path, encoding='utf-8').read() != new:
