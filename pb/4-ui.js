@@ -37,7 +37,7 @@ function renderBoard(){
     const has = !st.final && st.poss === s && st.phase !== 'kick';
     return `<div class="st-side ${s === 'H' ? 'home' : 'away'}${won && won !== s ? ' lose' : ''}" style="--tc:${esc(T[s].color)}">
       <div class="st-logo">${teamMark(s, 64)}</div>
-      <div class="st-id"><div class="st-name">${esc(fullName(T[s]))}</div><div class="st-rec">${esc(recordText(T[s], s, !st.final) || (s === 'A' ? 'Away' : 'Home'))}</div></div>
+      <div class="st-id"><div class="st-name">${esc(fullName(T[s]))}</div><div class="st-rec">${esc(recordText(T[s], s, !st.final, gameWeek(g)) || (s === 'A' ? 'Away' : 'Home'))}</div></div>
       <div class="st-scorebox"><div class="st-score"><span>${st.score[s]}</span>${has ? '<span class="st-poss" title="Has the ball"></span>' : ''}${won === s ? '<i class="st-win" title="Won"></i>' : ''}</div>
         ${st.final ? '' : `<div class="st-tos" title="${st.to[s]} timeout${st.to[s] === 1 ? '' : 's'} left">${dots(s)}</div>`}</div></div>`;
   };

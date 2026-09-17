@@ -72,17 +72,20 @@ const fmtRec = ([w, l, t]) => `${w}-${l}${t ? '-' + t : ''}`;
 // The record as shown: what the admin saved, plus every final on the site since. Saving notes the finals already on
 // the site (those are in what was typed); after that a final counts if it's dated on or after the day it was saved.
 const recCache = new Map();
-function shownRecord(name){
-  const k = name && canonSchool(name); if (!k) return null;
+function shownRecord(name, thru){
+  const k0 = name && canonSchool(name); if (!k0) return null;
+  const k = thru ? `${k0}|${thru}` : k0;
   if (recCache.has(k)) return recCache.get(k);
-  const base = teamRecs.map[k]; let out = null;
+  // A game already played shows the record as it stood that week, so a Week 1 final doesn't read Week 3's record.
+  const upTo = r => !thru || r.wk <= thru;
+  const base = teamRecs.map[k0]; let out = null;
   if (base){
     out = {rec:base.rec || '', home:base.home || '', away:base.away || ''};
     if (allGames.idx){
       const seen = new Set(base.seen || []), from = new Date(base.asOf || base.updated || 0); from.setHours(0, 0, 0, 0);
       const P = {rec:parseRec(base.rec), home:parseRec(base.home), away:parseRec(base.away)};
       schoolRows(name).forEach(r => {
-        if (seen.has(r.key) || gameDay(r.x) < from) return;
+        if (seen.has(r.key) || gameDay(r.x) < from || !upTo(r)) return;
         const f = finalOf(r.x); if (!f.fin) return;
         const a = f.score[r.side], b = f.score[r.opp], i = a > b ? 0 : a < b ? 1 : 2;
         [P.rec, r.side === 'H' ? P.home : P.away].forEach(p => { if (p) p[i]++; });
@@ -95,7 +98,7 @@ function shownRecord(name){
     // the site knows, and its page says so.
     const T = {rec:[0, 0, 0], home:[0, 0, 0], away:[0, 0, 0]}; let n = 0;
     schoolRows(name).forEach(r => {
-      const f = finalOf(r.x); if (!f.fin) return;
+      const f = finalOf(r.x); if (!f.fin || !upTo(r)) return;
       const a = f.score[r.side], b = f.score[r.opp], i = a > b ? 0 : a < b ? 1 : 2;
       T.rec[i]++; (r.side === 'H' ? T.home : T.away)[i]++; n++;
     });

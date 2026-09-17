@@ -1768,7 +1768,7 @@ function renderBoard(){
     const has = !st.final && st.poss === s && st.phase !== 'kick';
     return `<div class="st-side ${s === 'H' ? 'home' : 'away'}${won && won !== s ? ' lose' : ''}" style="--tc:${esc(T[s].color)}">
       <div class="st-logo">${teamMark(s, 64)}</div>
-      <div class="st-id"><div class="st-name">${esc(fullName(T[s]))}</div><div class="st-rec">${esc(recordText(T[s], s, !st.final) || (s === 'A' ? 'Away' : 'Home'))}</div></div>
+      <div class="st-id"><div class="st-name">${esc(fullName(T[s]))}</div><div class="st-rec">${esc(recordText(T[s], s, !st.final, gameWeek(g)) || (s === 'A' ? 'Away' : 'Home'))}</div></div>
       <div class="st-scorebox"><div class="st-score"><span>${st.score[s]}</span>${has ? '<span class="st-poss" title="Has the ball"></span>' : ''}${won === s ? '<i class="st-win" title="Won"></i>' : ''}</div>
         ${st.final ? '' : `<div class="st-tos" title="${st.to[s]} timeout${st.to[s] === 1 ? '' : 's'} left">${dots(s)}</div>`}</div></div>`;
   };
@@ -4515,9 +4515,11 @@ function weekOptions(cur){
 /* ---------- team records, typed in by the scorer ---------- */
 // ESPN style, "1-2, 0-1 Away": the season record, then the road or home record. Empty until one is entered.
 // A game still to come (current) with no record typed in shows the team's record from its team page.
-function recordText(t, s, current){
+function recordText(t, s, current, thru){
   let rec = t && t.rec, hrec = t && t.hrec;
-  if (current && t && !rec && !hrec){ const r = shownRecord(t.name); if (r){ rec = r.rec || ''; hrec = (s === 'A' ? r.away : r.home) || ''; } }
+  // Nothing typed into the game itself: fall back to the tally — as it stands for a game to come, as it stood
+  // that week for one already played.
+  if (t && !rec && !hrec){ const r = shownRecord(t.name, current ? null : thru); if (r){ rec = r.rec || ''; hrec = (s === 'A' ? r.away : r.home) || ''; } }
   const where = s === 'A' ? 'Away' : 'Home', ha = hrec ? `${hrec} ${where}` : '';
   return rec || ha ? [rec, ha].filter(Boolean).join(', ') : '';
 }
@@ -4866,7 +4868,7 @@ function boardGame(x){
   const team = s => {
     const cls = m.fin && lead ? (lead === s ? ' won' : ' lose') : '';
     // The record as entered, ESPN style "(1-2, 0-1 Away)"; until then the mascot and Away or Home.
-    const rec = recordText(T[s], s, !m.fin), sub = rec ? `(${rec})` : [T[s].mascot, s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
+    const rec = recordText(T[s], s, !m.fin, gameWeek(x)), sub = rec ? `(${rec})` : [T[s].mascot, s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
     return `<div class="bt${cls}"><div class="bt-team">${markFor(T[s], 29)}<div class="bt-id">
         <div class="bt-name"><span><a class="tlink" href="?team=${encodeURIComponent(T[s].name)}">${esc(T[s].name)}</a></span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub${rec ? ' rec' : ''}">${esc(sub)}</div></div></div>
       <div class="bt-q">${cells((i, n) => m.lines[s][i] == null ? 'X' : m.typed ? m.lines[s][i] : (i < 4 && m.fin && i >= (m.qPlayed || 0)) ? 'X' : n < played ? m.lines[s][i] : '')}</div><div class="bt-t">${m.pre ? '' : m.score[s]}</div><i class="sc-win"></i></div>`;
@@ -6522,17 +6524,20 @@ const fmtRec = ([w, l, t]) => `${w}-${l}${t ? '-' + t : ''}`;
 // The record as shown: what the admin saved, plus every final on the site since. Saving notes the finals already on
 // the site (those are in what was typed); after that a final counts if it's dated on or after the day it was saved.
 const recCache = new Map();
-function shownRecord(name){
-  const k = name && canonSchool(name); if (!k) return null;
+function shownRecord(name, thru){
+  const k0 = name && canonSchool(name); if (!k0) return null;
+  const k = thru ? `${k0}|${thru}` : k0;
   if (recCache.has(k)) return recCache.get(k);
-  const base = teamRecs.map[k]; let out = null;
+  // A game already played shows the record as it stood that week, so a Week 1 final doesn't read Week 3's record.
+  const upTo = r => !thru || r.wk <= thru;
+  const base = teamRecs.map[k0]; let out = null;
   if (base){
     out = {rec:base.rec || '', home:base.home || '', away:base.away || ''};
     if (allGames.idx){
       const seen = new Set(base.seen || []), from = new Date(base.asOf || base.updated || 0); from.setHours(0, 0, 0, 0);
       const P = {rec:parseRec(base.rec), home:parseRec(base.home), away:parseRec(base.away)};
       schoolRows(name).forEach(r => {
-        if (seen.has(r.key) || gameDay(r.x) < from) return;
+        if (seen.has(r.key) || gameDay(r.x) < from || !upTo(r)) return;
         const f = finalOf(r.x); if (!f.fin) return;
         const a = f.score[r.side], b = f.score[r.opp], i = a > b ? 0 : a < b ? 1 : 2;
         [P.rec, r.side === 'H' ? P.home : P.away].forEach(p => { if (p) p[i]++; });
@@ -6545,7 +6550,7 @@ function shownRecord(name){
     // the site knows, and its page says so.
     const T = {rec:[0, 0, 0], home:[0, 0, 0], away:[0, 0, 0]}; let n = 0;
     schoolRows(name).forEach(r => {
-      const f = finalOf(r.x); if (!f.fin) return;
+      const f = finalOf(r.x); if (!f.fin || !upTo(r)) return;
       const a = f.score[r.side], b = f.score[r.opp], i = a > b ? 0 : a < b ? 1 : 2;
       T.rec[i]++; (r.side === 'H' ? T.home : T.away)[i]++; n++;
     });
