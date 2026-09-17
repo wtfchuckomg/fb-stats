@@ -7558,6 +7558,25 @@ function schoolLine(name){
   return v[1] ? `${cls} | ${v[1].toUpperCase()}` : cls;
 }
 
+/* The classes the Media Rankings poll uses, as that site lists them (kansasmediarankings.com). A school not in
+   SCHOOL_INFO still needs its class for the rankings and the pregame predictor. */
+const RANK_CLASSES = {
+  '6A':['Wichita East', 'Derby', 'Wichita Southeast', 'Garden City', 'Wichita North', 'Dodge City', 'Manhattan', 'KC Wyandotte', 'Olathe Northwest', 'Washburn Rural', 'Olathe North', 'Wichita South', 'Wichita Heights', 'Olathe South', 'Gardner-Edgerton', 'Junction City', 'Shawnee Mission East', 'Olathe East', 'Campus', 'Topeka High', 'BV Northwest', 'BV West', 'Shawnee Mission Northwest', 'Lawrence Free State', 'Lawrence', 'Shawnee Mission South', 'Shawnee Mission West', 'Olathe West', 'Maize', 'Wichita Northwest', 'Shawnee Mission North', 'Mill Valley'],
+  '5A':['Blue Valley', 'Liberal', 'Blue Valley North', 'Wichita West', 'KC Washington', 'JC Harmon', 'Bishop Carroll', 'Leavenworth', 'Hutchinson', 'Emporia', 'Topeka West', 'Blue Valley Southwest', 'Spring Hill', 'Seaman', 'Maize South', 'KC Turner', 'Hays', 'Shawnee Heights', 'Valley Center', 'Salina South', 'St. James Academy', 'KC Piper', 'Andover', 'De Soto', 'Salina Central', 'Pittsburg', 'Goddard', 'Eisenhower', 'Newton', 'Kapaun Mt. Carmel', 'Basehor-Linwood', 'Andover Central'],
+  '4A':['Arkansas City', 'Lansing', 'KC Sumner Academy', 'Great Bend', 'Highland Park', 'St. Thomas Aquinas', 'KC Schlagle', 'Bonner Springs', 'Bishop Miege', 'Ottawa', 'Buhler', 'McPherson', 'Circle', 'Paola', 'Tonganoxie', 'Winfield', 'Eudora', 'Louisburg', 'Mulvane', 'Independence', 'Fort Scott', 'Augusta', 'Field Kindley', 'Rose Hill', 'Chanute', 'Wamego', 'El Dorado', 'Abilene', 'Wellington', 'Labette County', 'Rock Creek', 'Ulysses'],
+  '3A':['Baldwin', 'Andale', 'Parsons', 'Atchison', 'Concordia', 'Clearwater', 'Chapman', 'Hayden', 'Perry-Lecompton/Bishop Seabury', 'Pratt', 'Clay Center', 'Santa Fe Trail', 'Hugoton', 'Hesston', 'Holton', 'Frontenac', 'Iola', 'Girard', 'Scott City', 'Osawatomie', 'Colby', 'Jefferson West', 'Anderson County', 'KC Bishop Ward', 'Columbus', 'Holcomb', 'Nemaha Central', 'Prairie View', 'Goodland', 'Wichita Collegiate', 'Hoisington', 'Burlington', 'Hiawatha', 'Larned', 'Wichita Trinity Academy', 'Smoky Valley', 'Wellsville', 'Lyons', 'Nickerson', 'Cheney'],
+  '2A':['Marysville', 'Baxter Springs', 'Halstead', 'Council Grove', 'Neodesha', 'Beloit', 'Haven', 'Silver Lake', 'Riley County', 'Royal Valley', 'Caney Valley', 'Galena', 'Sabetha', 'Southeast of Saline', 'Maranatha Academy', 'Russell', 'Chaparral', 'Cherryvale', 'Minneapolis', 'Fredonia', 'Ellsworth', 'Kingman', 'Osage City', 'Riverside', 'Riverton', 'Lakin', 'Pleasant Ridge', 'Norton', 'Garden Plain', 'West Franklin', 'Central Heights', 'Phillipsburg', 'Southwestern Heights', 'Cimarron', 'Oskaloosa', 'Douglass', 'Marion', 'Horton', 'Jayhawk Linn', 'Humboldt'],
+  '1A':['Hillsboro', 'Remington', 'Sterling', 'Medicine Lodge', 'Syracuse', 'St. Marys', 'Atchison County', 'Plainville/Natoma', 'Northeast-Arma', 'Bluestem', 'Rossville', 'Thomas More Prep-Marian', 'Eureka', 'Sedgwick', 'Belle Plaine', 'Moundridge', 'McLouth', 'Maur Hill-Mount Academy', 'Ellinwood', 'Mission Valley', 'Jackson Heights', 'Jefferson County North', 'Conway Springs', 'St. Mary\'s Colgan', 'Republic County', 'Doniphan West', 'Smith Center', 'Hutch Trinity', 'Inman', 'Uniontown', 'Sacred Heart', 'Valley Falls', 'Wabaunsee', 'Valley Heights', 'Centralia', 'Olpe', 'Onaga'],
+  '8-Man I':['Oswego', 'Oakley', 'Southeast Cherokee', 'Herington', 'Lyndon', 'Ell-Saline', 'South Sumner County', 'Cair Paravel', 'West Elk/Elk Valley', 'Bennington', 'Chase County', 'Solomon', 'Elkhart/Rolla', 'WaKeeney-Trego', 'Washington County', 'Stanton County', 'Yates Center', 'Cedar Vale/Dexter', 'Udall', 'South Central', 'Oxford', 'Hoxie', 'Erie', 'Sublette', 'Canton-Galva', 'Clifton-Clyde', 'Rawlins County', 'Spearville', 'Wichita County', 'Central Plains', 'Northern Heights', 'Hill City', 'Central Burden', 'Lincoln', 'Kiowa County', 'Oberlin-Decatur', 'South Gray', 'Rock Hills', 'Pleasanton', 'St. John-Hudson'],
+  '8-Man II':['Goessel', 'Little River', 'Sedan', 'Sylvan-Lucas Unified', 'Flinthills', 'La Crosse', 'Pretty Prairie', 'Kinsley', 'St. Francis', 'Meade', 'Ellis', 'Quinter', 'Norwich', 'Attica/Argonia', 'Rural Vista', 'Lakeside Downs', 'Pratt Skyline', 'Madison/Hamilton', 'Greeley County', 'Troy', 'Frankfort', 'Macksville', 'Osborne', 'St. John\'s/Tipton Catholic', 'Wichita Independent', 'Stockton', 'Burlingame', 'BV Randolph', 'Hodgeman County', 'Marmaton Valley', 'Fairfield', 'Hutch Central Christian', 'Lebo', 'Ness City', 'Colony Crest', 'Cunningham', 'Stafford', 'Minneola', 'Victoria', 'St. Paul', 'Wakefield', 'Linn', 'Pike Valley', 'Hanover', 'Hartford', 'Dighton', 'Waverly', 'Thunder Ridge', 'Wallace County', 'Axtell'],
+  '6-Man':['Ingalls', 'South Barber', 'Deerfield', 'Golden Plains', 'Peabody-Burns', 'Satanta', 'Ashland', 'Centre', 'Wheatland-Grinnell', 'Tescott', 'Pawnee Heights', 'Bucklin', 'Altoona-Midway', 'Elyria Christian', 'Cheylin', 'Moscow', 'Southern Coffey County', 'Western Plains', 'Marais des Cygnes Valley', 'Northern Valley', 'Chase', 'Logan', 'Chetopa', 'Palco', 'Otis-Bison', 'Weskan', 'Brewster', 'Winona-Triplains']
+};
+let rankClassIdx = null;
+function rankClassOf(name){
+  if (!rankClassIdx){ rankClassIdx = new Map();
+    Object.entries(RANK_CLASSES).forEach(([cls, list]) => list.forEach(n => rankClassIdx.set(canonSchool(n), cls))); }
+  return name ? rankClassIdx.get(canonSchool(name)) || null : null;
+}
 /* ================================================================
    Shared rosters. When a signed-in scorer saves a team's roster (in a
    game's Setup, or in Saved teams), a copy goes up for everyone:
@@ -8649,7 +8668,8 @@ async function loadRankings(classes){
 }
 // A school's place in its class: {rank, pts, top} (ranked) or {votes, pts} (receiving votes), or null.
 function rankOf(name){
-  const info = schoolInfo(name), cls = info && RANK_CLASS[info[0]];
+  // The poll's own class list first: a school this site doesn't carry a class for still gets its ranking.
+  const info = schoolInfo(name), cls = rankClassOf(name) || (info && RANK_CLASS[info[0]]);
   const c = cls && pre.rank && pre.rank.byClass[cls]; if (!c) return null;
   const k = canonSchool(name), row = c.rows.find(r => canonSchool(r.school) === k);
   if (!row) return null;
@@ -8702,7 +8722,8 @@ function predict(A, H){
     const wp = (s.w + s.t / 2 + 1) / (g + 2);                  // a record, pulled toward .500 while it's short
     const margin = s.gp ? (s.pf - s.pa) / s.gp : 0;
     const info = schoolInfo(n), rk = rankOf(n);
-    return {s, wp, margin, cls:info ? CLASS_STEP[info[0]] : null, bonus:rk ? (rk.rank ? (11 - rk.rank) * 1.2 : 1) : 0, rk};
+    const cls = info ? CLASS_STEP[info[0]] : CLASS_STEP[({'8-Man I':'8M-I', '8-Man II':'8M-II', '6-Man':'6M'}[rankClassOf(n)]) || rankClassOf(n)];
+    return {s, wp, margin, cls:cls == null ? null : cls, bonus:rk ? (rk.rank ? (11 - rk.rank) * 1.2 : 1) : 0, rk};
   };
   const a = side(A), h = side(H);
   // Past meetings: the average margin of the games on file, counted lightly and never worth more than a touchdown.
@@ -8747,7 +8768,7 @@ async function startPreview(id){
     const x = previewGame(); if (!x) return;
     clearInterval(wait);
     ['A', 'H'].forEach(s => loadHistory(x.teams[s].name));
-    const classes = ['A', 'H'].map(s => { const i = schoolInfo(x.teams[s].name); return i && RANK_CLASS[i[0]]; });
+    const classes = ['A', 'H'].map(s => { const n = x.teams[s].name, i = schoolInfo(n); return rankClassOf(n) || (i && RANK_CLASS[i[0]]); });
     loadRankings(classes).then(r => { pre.rank = r; renderPreview(); }).catch(() => { pre.rank = {week:null, byClass:{}}; renderPreview(); });
   }, 300);
 }

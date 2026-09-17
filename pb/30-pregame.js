@@ -45,7 +45,8 @@ async function loadRankings(classes){
 }
 // A school's place in its class: {rank, pts, top} (ranked) or {votes, pts} (receiving votes), or null.
 function rankOf(name){
-  const info = schoolInfo(name), cls = info && RANK_CLASS[info[0]];
+  // The poll's own class list first: a school this site doesn't carry a class for still gets its ranking.
+  const info = schoolInfo(name), cls = rankClassOf(name) || (info && RANK_CLASS[info[0]]);
   const c = cls && pre.rank && pre.rank.byClass[cls]; if (!c) return null;
   const k = canonSchool(name), row = c.rows.find(r => canonSchool(r.school) === k);
   if (!row) return null;
@@ -98,7 +99,8 @@ function predict(A, H){
     const wp = (s.w + s.t / 2 + 1) / (g + 2);                  // a record, pulled toward .500 while it's short
     const margin = s.gp ? (s.pf - s.pa) / s.gp : 0;
     const info = schoolInfo(n), rk = rankOf(n);
-    return {s, wp, margin, cls:info ? CLASS_STEP[info[0]] : null, bonus:rk ? (rk.rank ? (11 - rk.rank) * 1.2 : 1) : 0, rk};
+    const cls = info ? CLASS_STEP[info[0]] : CLASS_STEP[({'8-Man I':'8M-I', '8-Man II':'8M-II', '6-Man':'6M'}[rankClassOf(n)]) || rankClassOf(n)];
+    return {s, wp, margin, cls:cls == null ? null : cls, bonus:rk ? (rk.rank ? (11 - rk.rank) * 1.2 : 1) : 0, rk};
   };
   const a = side(A), h = side(H);
   // Past meetings: the average margin of the games on file, counted lightly and never worth more than a touchdown.
@@ -143,7 +145,7 @@ async function startPreview(id){
     const x = previewGame(); if (!x) return;
     clearInterval(wait);
     ['A', 'H'].forEach(s => loadHistory(x.teams[s].name));
-    const classes = ['A', 'H'].map(s => { const i = schoolInfo(x.teams[s].name); return i && RANK_CLASS[i[0]]; });
+    const classes = ['A', 'H'].map(s => { const n = x.teams[s].name, i = schoolInfo(n); return rankClassOf(n) || (i && RANK_CLASS[i[0]]); });
     loadRankings(classes).then(r => { pre.rank = r; renderPreview(); }).catch(() => { pre.rank = {week:null, byClass:{}}; renderPreview(); });
   }, 300);
 }
