@@ -8886,15 +8886,18 @@ function watchMassey(api){
   if (massey.api || !api) return;
   massey.api = api;
   const {fsM, fsdb} = api;
+  // The demo page (demo.html), before anyone has saved a week: the lines from the file Chuck saved on Sep 17.
+  const demo = () => { if (!location.pathname.endsWith('/demo.html')) return;
+    fetch('/massey-demo.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
+      .then(d => { if (d && !massey.updated){ massey.lines = d.lines || {}; massey.updated = d.updated || 0; renderPreview(); } }).catch(() => {}); };
+  // Until the admin saves the first week there's no document, and reading one that isn't there is refused.
   fsM.onSnapshot(fsM.doc(fsdb, 'pressbox', MASSEY_DOC), snap => {
     const d = snap.exists() ? snap.data() : null;
     let j = null; if (d && d.owner === ADMIN_UID && !d.deleted){ try { j = JSON.parse(d.json); } catch (e) {} }
     massey.lines = (j && j.lines) || {}; massey.updated = (j && j.updated) || 0;
-    // The demo page (demo.html), before anyone has saved a week: the lines from the file Chuck saved on Sep 17.
-    if (!j && location.pathname.endsWith('/demo.html')) fetch('/massey-demo.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
-      .then(d => { if (d && !massey.updated){ massey.lines = d.lines || {}; massey.updated = d.updated || 0; renderPreview(); } }).catch(() => {});
-    if (typeof renderPreview === 'function') renderPreview();
-  }, () => { massey.lines = {}; });
+    if (!j) demo();
+    renderPreview();
+  }, () => { massey.lines = massey.lines || {}; demo(); });
 }
 // The line for a game on this site, told from each school's side: {spread, fav, total, pred, pwin, rank} by name.
 function masseyLine(x){
