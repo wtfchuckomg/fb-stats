@@ -8802,12 +8802,13 @@ function pastMeetings(a, b){
 
 /* ---------- the numbers behind the page ---------- */
 function teamSeason(name){
-  const r = {gp:0, w:0, l:0, t:0, pf:0, pa:0, last:[]};
+  const r = {gp:0, w:0, l:0, t:0, pf:0, pa:0, last:[], opps:[]};
   schoolRows(name).forEach(row => {
     const f = finalOf(row.x); if (!f.fin) return;
     const us = f.score[row.side], them = f.score[row.opp];
     r.gp++; r.pf += us; r.pa += them; r[us > them ? 'w' : us < them ? 'l' : 't']++;
     r.last.push({row, us, them});
+    r.opps.push(row.x.teams[row.opp].name);
   });
   r.last = r.last.sort((a, b) => gameDay(b.row.x) - gameDay(a.row.x)).slice(0, 5);
   return r;
@@ -8826,13 +8827,21 @@ function predict(A, H){
     const info = schoolInfo(n), rk = rankOf(n);
     const cls = info ? CLASS_STEP[info[0]] : CLASS_STEP[({'8-Man I':'8M-I', '8-Man II':'8M-II', '6-Man':'6M'}[rankClassOf(n)]) || rankClassOf(n)];
     const five = fiveYear(n), fwp = five ? (five.w + five.t / 2 + 2) / (five.gp + 4) : null;
-    return {s, wp, margin, five, fwp, cls:cls == null ? null : cls, bonus:rk ? (rk.rank ? (11 - rk.rank) * 1.2 : 1) : 0, rk};
+    // Who they've played: the average rating of the schools on the schedule so far. Beating a team that
+    // hasn't won in two years isn't the same as beating a good one, and this is where that shows up.
+    const seen = s.opps.map(o => ratingOf(o)).filter(Boolean).map(o => o.rating);
+    const sos = seen.length ? seen.reduce((t, v) => t + v, 0) / seen.length : null;
+    return {s, wp, margin, sos, five, fwp, cls:cls == null ? null : cls, bonus:rk ? (rk.rank ? (11 - rk.rank) * 1.2 : 1) : 0, rk};
   };
   const a = side(A), h = side(H);
   // Past meetings: the average margin of the games on file, counted lightly and never worth more than a touchdown.
   const met = pastMeetings(A, H), hh = met.length ? met.reduce((t, m) => t + (m.them - m.us), 0) / met.length : 0;
   const parts = [
-    ['Scoring margin', .5 * (h.margin - a.margin)],
+    ['Scoring margin', Math.max(-12, Math.min(12, .4 * (h.margin - a.margin)))],
+    // Who they beat, not just by how much: the two rows together are the margin with the schedule taken out.
+    // Early in the year two games say little about a schedule, so it counts for less until more are played.
+    ['Schedule faced', a.sos != null && h.sos != null
+      ? Math.max(-8, Math.min(8, .4 * (h.sos - a.sos) * (g5 => g5 / (g5 + 2))(Math.min(a.s.gp, h.s.gp)))) : 0],
     ['Record', 14 * (h.wp - a.wp)],
     ['Media Rankings', h.bonus - a.bonus],
     ['Class', a.cls != null && h.cls != null && !bumpSchool(A) && !bumpSchool(H) ? 3.5 * (h.cls - a.cls) : 0],
