@@ -374,7 +374,9 @@ function menuHere(){
 function renderScores(){
   const box = $('#scores'); if (!box) return;
   const key = shownWeek(); watchWeek(key);
-  const games = weekGames(key);
+  // On the AVCTL's pages the strip is the league's games too, non-league opponents included.
+  const league = AV_BOARD || AV_STAND || AV_STATS;
+  const games = league ? weekGames(key, false, true).filter(inAvctl) : weekGames(key);
   // The scorer always gets the strip, for its Add a score button; fans only when there's something to show.
   const any = !ui.viewer || games.length > 0;
   box.hidden = !any;
@@ -385,7 +387,7 @@ function renderScores(){
     <div class="sc-wrap"><div class="sc-list">${games.length ? games.map(scoreCard).join('') : `<div class="sc-empty">No games for ${esc(weekLabel(key))} yet.</div>`}</div>
       <button type="button" class="sc-arrow l" data-scroll="-1" aria-label="Earlier games" hidden>${chev('M9 1L1 9l8 8')}</button>
       <button type="button" class="sc-arrow r" data-scroll="1" aria-label="More games" hidden>${chev('M1 1l8 8-8 8')}</button></div>
-    <a class="sc-full" href="?scores=${key}">Full Scoreboard »</a>
+    <a class="sc-full" href="?${league ? 'avctl' : 'scores'}=${key}">Full Scoreboard »</a>
     ${ui.viewer ? '' : `<button type="button" class="sc-add" data-qs-new aria-label="Add a score from another game"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 2v14M2 9h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>Score</span></button>`}</div>`;
   const sel = box.querySelector('#scweek');
   fitSelect(sel); sel.addEventListener('change', () => fitSelect(sel));
