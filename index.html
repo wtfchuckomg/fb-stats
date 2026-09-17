@@ -3498,8 +3498,9 @@ function cmpRows(full){
     ['3rd Down', s => frac(S[s].d3m, S[s].d3a), s => conv(S[s].d3m, S[s].d3a)],
     ['4th Down', s => frac(S[s].d4m, S[s].d4a), s => conv(S[s].d4m, S[s].d4a)]];
   if (S.A.top || S.H.top) rows.push(['Possession', s => S[s].top, s => mmss(S[s].top)]);
-  // A box score only has yardage, so a box-score game shows just those rows.
-  const keep = R.box ? rows.filter(r => ['Total Yards', 'Passing Yards', 'Rushing Yards'].includes(r[0]))
+  // A box score carries whatever the paper printed: show the rows it filled in, and nothing it left out.
+  const any = r => ['A', 'H'].some(s => { const v = r[1](s); return typeof v === 'number' ? v > 0 : !!v; });
+  const keep = R.box ? rows.filter(any)
     : full ? rows : rows.filter(r => ['Total Yards', '1st Downs', 'Turnovers', 'Penalties', '3rd Down', 'Possession'].includes(r[0]));
   const T = g.teams;
   return keep.map(([label, v, show]) => {
@@ -5114,7 +5115,7 @@ function parseBox(txt){
   const rows = String(txt || '').replace(/\r/g, '').split('\n').map(l => l.replace(/[ \t]+/g, ' ').trim()).filter(Boolean);
   // "RUSHING: Andover — …", "RUSHING – Winfield: …", "RUSHING—Winfield, …", "PASSING (cmp-att-yds-td-int): …",
   // "Passing: (cmp-att-yds-td-int): Douglass – …"
-  const SEC = /^(RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|MISSED FIELD GOALS|MISSED FGS?|FIELD GOAL ATTEMPTS|BLOCKED KICKS|INTERCEPTIONS|TACKLES|DEFENSE|DEFENSIVE|PUNTING|PUNT RETURNS|KICKOFF RETURNS|KICK RETURNS|FUMBLES|SACKS|TEAM STATS)\b\s*[:—–-]?\s*(\([^)]*\))?\s*[:—–-]?\s*(.*)$/i;
+  const SEC = /^(RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|MISSED FIELD GOALS|MISSED FGS?|FIELD GOAL ATTEMPTS|BLOCKED KICKS|INTERCEPTIONS|TACKLES|DEFENSE|DEFENSIVE|PUNTING|PUNT RETURNS|KICKOFF RETURNS|KICK RETURNS|FUMBLES|SACKS|TEAM STATS|TEAM STATISTICS)\b\s*[:—–-]?\s*(\([^)]*\))?\s*[:—–-]?\s*(.*)$/i;
   const QTR = /^(?:(first|second|third|fourth|1st|2nd|3rd|4th)\s+(?:quarter|qtr)|(ot|overtime))\b/i;
   const QN = {first:1, '1st':1, second:2, '2nd':2, third:3, '3rd':3, fourth:4, '4th':4};
   // Which team a label like "And", "Hutch" or "Andover" means.
@@ -5211,7 +5212,8 @@ function parseBox(txt){
   const splitTeams = body => {
     // One-letter labels ("W", "C") mark scoring plays but are too short to split a stat line on.
     const alts = [...new Set([...out.names, ...out.scoring.map(e => e.label)])].filter(a => a && a.length > 1).sort((a, b) => b.length - a.length);
-    const re = new RegExp(`(?:^|[.;:)]\\s*)(${alts.map(escRe).join('|')})\\s*(?:[—–:,]|\\s-)\\s*`, 'gi'), hits = [...body.matchAll(re)];
+    // A heading on its own line leaves the body starting with a space, so the first team's name sits at ^\s*.
+    const re = new RegExp(`(?:^\\s*|[.;:)]\\s*)(${alts.map(escRe).join('|')})\\s*(?:[—–:,]|\\s-)\\s*`, 'gi'), hits = [...body.matchAll(re)];
     return hits.map((h, i) => [sideOf(h[1]), body.slice(h.index + h[0].length, i + 1 < hits.length ? hits[i + 1].index : undefined)]).filter(x => x[0]);
   };
   const kicked = new Set(), missed = new Set();   // kickers a section has already counted
@@ -5226,8 +5228,37 @@ function parseBox(txt){
     // "Mulvane — 333 total yards, 62 plays, 243 rushing, 90 passing, 17 first downs, 2-10 penalties"
     if (kind === 'team'){
       for (const [s, part] of splitTeams(sc.body)){
+        // The full block a game book prints, one phrase to a semicolon:
+        // "First downs 14, rushing 6, passing 6, penalty 2; third downs 4-11; rushing 34-141; passing 15-29-1;
+        //  sacks-yards lost 3-14; punts 4-27.5; penalties 9-73; time of possession 25:03."
+        const T = out.team[s], put = (k, v) => { if (v != null && !Number.isNaN(v)) T[k] = v; };
+        part.split(/;/).map(x => x.trim()).filter(Boolean).forEach(chunk => {
+          const n = re => { const m = chunk.match(re); return m ? m.slice(1).map(v => v == null ? null : +v) : null; };
+          let m;
+          if ((m = n(/first downs?\s+(\d+)/i))){
+            put('fd', m[0]);
+            const sub2 = (re, k) => { const x = chunk.match(re); if (x) put(k, +x[1]); };
+            sub2(/rushing\s+(\d+)/i, 'fdR'); sub2(/passing\s+(\d+)/i, 'fdP'); sub2(/penalt(?:y|ies)\s+(\d+)/i, 'fdX');
+            return;
+          }
+          if ((m = n(/third downs?\D+(\d+)\D+(\d+)/i))){ put('d3m', m[0]); put('d3a', m[1]); return; }
+          if ((m = n(/fourth downs?\D+(\d+)\D+(\d+)/i))){ put('d4m', m[0]); put('d4a', m[1]); return; }
+          if ((m = n(/rushing\s+(\d+)\s*-\s*(-?\d+)/i))){ put('rushN', m[0]); put('rushY', m[1]); return; }
+          if ((m = n(/passing\s+(\d+)\s*-\s*(\d+)\s*-\s*(\d+)/i))){ put('passC', m[0]); put('passA', m[1]); put('passInt', m[2]); return; }
+          if ((m = n(/passing\s+(-?\d+)\s*$/i))){ put('passY', m[0]); return; }
+          if ((m = n(/sacks?\b[^\d]*(\d+)\s*-\s*(\d+)/i))){ put('sk', m[0]); put('skY', m[1]); return; }
+          if ((m = n(/interception returns?\s+(\d+)\s*-\s*(-?\d+)/i))){ put('intN', m[0]); put('intY', m[1]); return; }
+          if ((m = n(/fumbles?\s*-\s*lost\s+(\d+)\s*-\s*(\d+)/i))){ put('fum', m[0]); put('fumL', m[1]); return; }
+          if ((m = n(/kickoffs?\b[^\d]*(\d+)\s*-\s*(\d+)/i)) && !/return/i.test(chunk)){ put('koN', m[0]); put('koTB', m[1]); return; }
+          if ((m = n(/kickoff returns?\s+(\d+)\s*-\s*(-?\d+)/i))){ put('krN', m[0]); put('krY', m[1]); return; }
+          if ((m = n(/punt returns?\s+(\d+)\s*-\s*(-?\d+)/i))){ put('prN', m[0]); put('prY', m[1]); return; }
+          if ((m = chunk.match(/punts\s+(\d+)\s*-\s*([\d.]+)/i))){ put('pnt', +m[1]); put('pntY', Math.round(+m[1] * +m[2])); return; }
+          if ((m = n(/penalt(?:ies|y)\s+(\d+)\s*-\s*(\d+)/i))){ put('pen', m[0]); put('penY', m[1]); return; }
+          if ((m = chunk.match(/time of possession\D*(\d{1,2}):(\d{2})/i))){ put('top', +m[1] * 60 + +m[2]); return; }
+          if ((m = n(/(\d+)\s*(?:total\s*)?plays\b/i))) put('plays', m[0]);
+        });
         const one = re => { const m = part.match(re); return m ? +m[1] : null; };
-        const set = (k, v) => { if (v != null) out.team[s][k] = v; };
+        const set = (k, v) => { if (v != null && T[k] == null) out.team[s][k] = v; };
         set('plays', one(/(\d+)\s*(?:total\s*)?plays\b/i));
         set('rushY', one(/(\d+)\s*(?:yards\s*)?rushing\b/i) ?? one(/rushing[^\d]{0,12}(\d+)/i));
         set('passY', one(/(\d+)\s*(?:yards\s*)?passing\b/i) ?? one(/passing[^\d]{0,12}(\d+)/i));
@@ -5344,7 +5375,9 @@ function parseBox(txt){
   ['A', 'H'].forEach(s => {
     const t = out.team[s], ps = Object.values(out.pl[s]), sum = k => ps.reduce((a, p) => a + (p[k] || 0), 0);
     if (t.rushN == null){ t.rushN = sum('ru'); t.rushY = sum('ry'); }
-    Object.assign(t, {passC:sum('pc'), passA:sum('pa'), passY:sum('py'), passTD:sum('ptd'), passInt:sum('pint')});
+    // Only where the paste's own team block didn't say: a game book's totals beat adding the players up.
+    [['passC', 'pc'], ['passA', 'pa'], ['passY', 'py'], ['passTD', 'ptd'], ['passInt', 'pint']]
+      .forEach(([k, pk]) => { if (t[k] == null) t[k] = sum(pk); });
   });
   // Quarters for the scoring plays, when the summary has no quarter headings: each team's running score
   // against its line score, quarter by quarter.

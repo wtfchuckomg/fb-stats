@@ -183,8 +183,9 @@ function cmpRows(full){
     ['3rd Down', s => frac(S[s].d3m, S[s].d3a), s => conv(S[s].d3m, S[s].d3a)],
     ['4th Down', s => frac(S[s].d4m, S[s].d4a), s => conv(S[s].d4m, S[s].d4a)]];
   if (S.A.top || S.H.top) rows.push(['Possession', s => S[s].top, s => mmss(S[s].top)]);
-  // A box score only has yardage, so a box-score game shows just those rows.
-  const keep = R.box ? rows.filter(r => ['Total Yards', 'Passing Yards', 'Rushing Yards'].includes(r[0]))
+  // A box score carries whatever the paper printed: show the rows it filled in, and nothing it left out.
+  const any = r => ['A', 'H'].some(s => { const v = r[1](s); return typeof v === 'number' ? v > 0 : !!v; });
+  const keep = R.box ? rows.filter(any)
     : full ? rows : rows.filter(r => ['Total Yards', '1st Downs', 'Turnovers', 'Penalties', '3rd Down', 'Possession'].includes(r[0]));
   const T = g.teams;
   return keep.map(([label, v, show]) => {
