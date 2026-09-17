@@ -193,7 +193,6 @@ function renderSync(){
   const admin = !!(sync.user && sync.user.uid === ADMIN_UID);
   const ob = $('#othersbtn'); if (ob) ob.hidden = !admin;
   const sb = $('#schoolsbtn'); if (sb) sb.hidden = !admin;
-  const mb = $('#masseybtn'); if (mb) mb.hidden = !admin;
   if (ui.dlg === 'others' && dlg().open) dlg().innerHTML = dlgOthers();
   if (ui.dlg === 'games' && dlg().open){ const a = $('#acct'); if (a) a.outerHTML = syncBlock(); }
   if (ui.dlg === 'share' && dlg().open) dlg().innerHTML = dlgShare();

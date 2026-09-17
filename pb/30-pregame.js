@@ -149,14 +149,19 @@ function teamSeason(name){
 }
 // The predictor, in points: who's better and by how much, from what the site knows. Each part is spelled out on
 // the page. Past meetings join it once the earlier seasons are loaded.
+// Class sizes, for the one line of the predictor that uses them. A school on the bump list is never
+// punished for playing up: in those games the class line reads even, whichever way it falls.
+const CLASS_STEP = {'6A':6, '5A':5, '4A':4, '3A':3, '2A':2, '1A':1, '8M-I':0, '8M-II':-.5, '6M':-1};
+const bumpSchool = n => { const r = ratingOf(n); return !!(r && r.bump); };
 function predict(A, H){
   const side = n => {
     const s = teamSeason(n), g = s.w + s.l + s.t;
     const wp = (s.w + s.t / 2 + 1) / (g + 2);                  // a record, pulled toward .500 while it's short
     const margin = s.gp ? (s.pf - s.pa) / s.gp : 0;
     const info = schoolInfo(n), rk = rankOf(n);
+    const cls = info ? CLASS_STEP[info[0]] : CLASS_STEP[({'8-Man I':'8M-I', '8-Man II':'8M-II', '6-Man':'6M'}[rankClassOf(n)]) || rankClassOf(n)];
     const five = fiveYear(n), fwp = five ? (five.w + five.t / 2 + 2) / (five.gp + 4) : null;
-    return {s, wp, margin, five, fwp, bonus:rk ? (rk.rank ? (11 - rk.rank) * 1.2 : 1) : 0, rk};
+    return {s, wp, margin, five, fwp, cls:cls == null ? null : cls, bonus:rk ? (rk.rank ? (11 - rk.rank) * 1.2 : 1) : 0, rk};
   };
   const a = side(A), h = side(H);
   // Past meetings: the average margin of the games on file, counted lightly and never worth more than a touchdown.
@@ -165,6 +170,7 @@ function predict(A, H){
     ['Scoring margin', .5 * (h.margin - a.margin)],
     ['Record', 14 * (h.wp - a.wp)],
     ['Media Rankings', h.bonus - a.bonus],
+    ['Class', a.cls != null && h.cls != null && !bumpSchool(A) && !bumpSchool(H) ? 3.5 * (h.cls - a.cls) : 0],
     ['Past meetings', Math.max(-7, Math.min(7, .35 * hh))],
     // The last five seasons, when both schools have them on file: how good these programs have been, counted lightly.
     ['Last 5 seasons', a.fwp != null && h.fwp != null ? Math.max(-6, Math.min(6, 12 * (h.fwp - a.fwp))) : 0],
@@ -256,7 +262,6 @@ function previewHtml(){
       <div class="pg-pred"><div class="pg-pct"><b>${pctA}%</b><span>${esc(T.A.abbr || shortName(A))}</span></div>
         <div class="pg-ringwrap">${ring}<div class="pg-marks">${markFor(T.A, 34)}${markFor(T.H, 34)}</div></div>
         <div class="pg-pct r"><b>${pctH}%</b><span>${esc(T.H.abbr || shortName(H))}</span></div></div>
-      <p class="pg-proj">Projected: <b>${esc(fav)} by ${Math.max(1, Math.round(Math.abs(P.pts)))}</b></p>
       <details class="pg-how"><summary>How it’s figured</summary>
         <table class="pg-parts">${partRows}</table></details>
     </section>`;
@@ -299,10 +304,14 @@ function previewHtml(){
     </section>`;
 
   // Last five games.
+  // Short tags for this table: a name like "Wellington" is squeezed to WELL so the row can't run past the card.
+  const tag = x => { const t = String(x || '').trim(); if (t.length <= 5) return t;
+    const w = t.replace(/[^A-Za-z ]+/g, ' ').trim().split(/\s+/).filter(Boolean);
+    return (w.length > 1 ? w.map(y => y[0]).join('').slice(0, 4) : w[0].slice(0, 4)).toUpperCase(); };
   const lastFive = n => {
     const s = teamSeason(n);
     const out = s.last.map(({row, us, them}) => { const o = row.x.teams[row.opp], d = gameDay(row.x);
-      return {when:`${d.getMonth() + 1}/${d.getDate()}`, at:row.side, opp:o.name, abbr:o.abbr || shortName(o.name), mark:markFor(o, 20), us, them};
+      return {when:`${d.getMonth() + 1}/${d.getDate()}`, at:row.side, opp:o.name, abbr:tag(o.abbr || shortName(o.name)), mark:markFor(o, 20), us, them};
     });
     // Fewer than five this season: keep going back through the seasons on file.
     const H = pre.hist[logoSlug(n)];
@@ -313,7 +322,7 @@ function previewHtml(){
           const same = out.some(o => canonSchool(o.opp) === canonSchool(g.opp) && o.when === g.date);
           if (same) return;
           const opp = schoolName(g.opp) || g.opp;
-          out.push({when:`${g.date}/${year.slice(2)}`, at:g.at === 'away' ? 'A' : 'H', opp, abbr:listAbbr(opp) || shortName(opp),
+          out.push({when:`${g.date}/${year.slice(2)}`, at:g.at === 'away' ? 'A' : 'H', opp, abbr:tag(listAbbr(opp) || shortName(opp)),
             mark:markFor({name:opp, abbr:shortName(opp), color:'#4A4B4D'}, 20), us:g.us, them:g.them, old:true});
         });
       });
@@ -337,10 +346,7 @@ function previewHtml(){
       <td class="num">${first}, ${second}${m.ot ? ' (OT)' : ''}</td></tr>`;
   }).join('');
   const past = met.length || waiting ? `<section class="bcard pg-card"><h2 class="pg-h">Past meetings</h2>
-      ${waiting && !met.length ? '<p class="bempty">Loading past seasons…</p>' : `${(() => {
-        const fa = fiveYear(A), fh = fiveYear(H);
-        return fa && fh ? `<p class="pg-proj" style="text-align:left">Last ${Math.max(fa.years, fh.years)} seasons: ${esc(A)} ${fa.w}-${fa.l}${fa.t ? '-' + fa.t : ''}, ${esc(H)} ${fh.w}-${fh.l}${fh.t ? '-' + fh.t : ''}</p>` : ''; })()}
-        <div class="pg-tbl"><table class="ctbl"><thead><tr><th>Year</th><th>Where</th><th class="num">Final</th></tr></thead><tbody>${metRows}</tbody></table></div>`}
+      ${waiting && !met.length ? '<p class="bempty">Loading past seasons…</p>' : `<div class="pg-tbl"><table class="ctbl"><thead><tr><th>Year</th><th>Where</th><th class="num">Final</th></tr></thead><tbody>${metRows}</tbody></table></div>`}
     </section>` : '';
 
   // Standings: each team's AVCTL division (one table when they share it).
