@@ -39,15 +39,47 @@ async function startCounty(){
     const [appM, fsM] = await Promise.all([import(base + 'app.js'), import(base + 'firestore.js')]);
     const fsdb = fsM.getFirestore(appM.initializeApp(firebaseConfig));
     scoresReady({fsM, fsdb});   // the week's scores strip, above the menu bar
-    fsM.onSnapshot(fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true)), snap => {
-      const games = [];
-      snap.forEach(d => {
-        const v = d.data(); if (v.deleted || v.kind === 'score' || !v.json) return;
-        try { const x = JSON.parse(v.json); if (x.teams && ((x.plays && x.plays.length) || x.box)) games.push(Object.assign(x, {id:d.id})); } catch (e) {}
-      });
-      county.games = games; county.err = ''; renderCounty();
-    }, () => { county.err = 'Can’t load the stats right now. Reload to try again.'; renderCounty(); });
+    loadStats({fsM, fsdb});
   } catch (e) { county.err = 'Can’t reach the stats. Check your connection and reload.'; renderCounty(); }
+}
+
+// A game as the stats file carries it: the numbers already added up, and just enough around them to be
+// filtered by week and team.
+const statsGame = e => ({id:e.id, date:e.date || '', wk:e.wk, updated:e.updated || 0, opp:e.opp,
+  teams:{A:{name:e.numbers.A.name}, H:{name:e.numbers.H.name}}, numbers:e.numbers});
+
+// The season's numbers come from stats.json — worked out once instead of in every visitor's browser — and
+// anything saved since that file was written comes live on top, so a box score pasted a minute ago is in.
+async function loadStats(api){
+  const {fsM, fsdb} = api;
+  let built = 0;
+  try {
+    const r = await fetch('/stats.json', {cache:'no-cache'});
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    if (!d || !Array.isArray(d.games) || !d.games.length) throw new Error('empty');
+    county.games = d.games.map(statsGame); built = d.built || 0; county.err = ''; renderCounty();
+  } catch (e) { built = 0; }      // no file: ask for every game, the way this used to work
+  const col = fsM.collection(fsdb, 'pressbox'), pub = fsM.where('public', '==', true);
+  listenStats(fsM, built ? fsM.query(col, pub, fsM.where('updated', '>', built)) : fsM.query(col, pub), () => {
+    // Refused (the public + updated index isn't there yet): read every game instead, so nothing is stale.
+    console.warn('Kansas Media Stats: catch-up query refused, reading every game instead.');
+    listenStats(fsM, fsM.query(col, pub), null);
+  });
+}
+function listenStats(fsM, q, onRefused){
+  fsM.onSnapshot(q, snap => {
+    const by = new Map((county.games || []).map(x => [x.id, x]));
+    snap.forEach(d => {
+      const v = d.data(); if (!v || v.public !== true) return;
+      if (v.deleted || v.kind === 'score' || !v.json){ by.delete(d.id); return; }
+      try { const x = JSON.parse(v.json); if (x.teams && ((x.plays && x.plays.length) || x.box)) by.set(d.id, Object.assign(x, {id:d.id})); } catch (e) {}
+    });
+    county.games = [...by.values()]; county.err = ''; renderCounty();
+  }, e => {
+    if (onRefused) return onRefused(e);
+    if (!county.games){ county.err = 'Can’t load the stats right now. Reload to try again.'; renderCounty(); }
+  });
 }
 
 /* ---------- the numbers ---------- */
@@ -68,6 +100,28 @@ function countyGames(){
   return Object.values(pick);
 }
 const T_KEYS = ['rushN', 'rushY', 'passC', 'passA', 'passY', 'passTD', 'passInt'];
+// What the stats pages need from one game: the score, the quarters, each team's totals and each player's line.
+// A game read from the site's own stats file arrives in this shape already (x.numbers); anything else is worked
+// out from its plays or its box score, once.
+function gameNumbers(x){
+  if (x.numbers) return x.numbers;
+  let r; try { r = replay(x); } catch (e) { return null; }
+  const st = r.st;
+  const side = s => ({
+    name:x.teams[s].name, score:st.score[s], lines:st.lines[s],
+    team:Object.fromEntries(T_KEYS.map(k => [k, +r.S.team[s][k] || 0])),
+    pl:Object.values(r.S.pl[s]).filter(p => p.n !== 'team').map(p => {
+      // A statted game keys players by number (named from its roster); a box score keys them by name.
+      const name = /^\d+$/.test(p.n) ? (x.teams[s].roster || {})[p.n] || `#${p.n}` : p.n;
+      // Return touchdowns: a box score's own count, or a statted game's touchdowns that weren't runs or catches.
+      const ret = (+p.rettd || 0) + Math.max(0, (+p.tds || 0) - (+p.rtd || 0) - (+p.retd || 0));
+      const row = {name};
+      C_KEYS.forEach(k => { const v = k === 'ret' ? ret : k === 'two' ? +p.two || 0 : +p[k] || 0; if (v) row[k] = v; });
+      return row;
+    }).filter(row => C_KEYS.some(k => row[k]))
+  });
+  return {fin:!!st.final, q:st.q, A:side('A'), H:side('H')};
+}
 const C_KEYS = ['pc', 'pa', 'py', 'ptd', 'pint', 'ru', 'ry', 'rtd', 're', 'rey', 'retd', 'ret', 'two', 'fgm', 'fga', 'xpm', 'xpa'];
 function countyStats(games){
   // Each team's own offense and, from the other side of the same games, what opponents did against it ('o' keys).
@@ -78,28 +132,24 @@ function countyStats(games){
   // each however its name was typed (the first spelling seen names the row).
   const names = {}, sideOf = n => STATE_STATS ? (names[canonSchool(n)] || (names[canonSchool(n)] = n)) : groupOf(n);
   for (const x of games){
-    const r = replay(x), st = r.st;
+    const g = gameNumbers(x); if (!g) continue;
     ['A', 'H'].forEach(s => {
-      const c = sideOf(x.teams[s].name); if (!c) return;
-      const o = other(s), T = teams[c] || (teams[c] = blank(c)), S = r.S.team[s], O = r.S.team[o];
-      T.gp++; T.pf += st.score[s]; T.pa += st.score[o];
+      const c = sideOf(g[s].name); if (!c) return;
+      const o = other(s), T = teams[c] || (teams[c] = blank(c)), S = g[s].team, O = g[o].team;
+      T.gp++; T.pf += g[s].score; T.pa += g[o].score;
       T_KEYS.forEach(k => { T[k] += +S[k] || 0; T['o' + k] += +O[k] || 0; });
       // Four quarters of their own; every overtime a game went to adds into the one OT column.
-      for (let i = 0; i < Math.max(5, st.lines[s].length); i++){
+      const mine = g[s].lines || [], theirs = g[o].lines || [];
+      for (let i = 0; i < Math.max(5, mine.length); i++){
         const j = Math.min(i, 4);
-        T.qf[j] += +st.lines[s][i] || 0; T.qa[j] += +st.lines[o][i] || 0;
+        T.qf[j] += +mine[i] || 0; T.qa[j] += +theirs[i] || 0;
       }
-      if (st.q > 4 || st.lines[s][4] || st.lines[o][4]) T.ot = true;
-      if (st.final) T[st.score[s] > st.score[o] ? 'w' : st.score[s] < st.score[o] ? 'l' : 't']++;
-      Object.values(r.S.pl[s]).forEach(p => {
-        if (p.n === 'team') return;
-        // A statted game keys players by number (named from its roster); a box score keys them by name.
-        const name = /^\d+$/.test(p.n) ? (x.teams[s].roster || {})[p.n] || `#${p.n}` : p.n;
-        // Return touchdowns: a box score's own count, or a statted game's touchdowns that weren't runs or catches.
-        const row = Object.assign({}, p, {ret:(+p.rettd || 0) + Math.max(0, (+p.tds || 0) - (+p.rtd || 0) - (+p.retd || 0)), two:+p.two || 0});
+      if (g.q > 4 || mine[4] || theirs[4]) T.ot = true;
+      if (g.fin) T[g[s].score > g[o].score ? 'w' : g[s].score < g[o].score ? 'l' : 't']++;
+      g[s].pl.forEach(row => {
         if (!C_KEYS.some(k => +row[k])) return;
-        const key = `${c}|${name.toLowerCase()}`;
-        const P = players[key] || (players[key] = Object.assign({name, team:c, gp:0}, zeros(C_KEYS)));
+        const key = `${c}|${row.name.toLowerCase()}`;
+        const P = players[key] || (players[key] = Object.assign({name:row.name, team:c, gp:0}, zeros(C_KEYS)));
         P.gp++; C_KEYS.forEach(k => { P[k] += +row[k] || 0; });
       });
     });

@@ -64,8 +64,13 @@ function watchSince(api, built){
         changed = true;
       });
       if (changed){ indexGames(); recordsChanged(); }
-    }, () => {});
-  } catch (e) { /* no listener, no harm: the file still stands */ }
+    }, e => {
+      // The query needs a composite index (public + updated). Until it exists, read every game the way this used
+      // to: dearer, but a box score pasted for an old week still shows the moment it's saved.
+      console.warn('Kansas Media Stats: catch-up query refused, reading every game instead.', e && e.code);
+      allGames.since = null; allGames.unsub = null; watchAllGamesLive(api);
+    });
+  } catch (e) { allGames.unsub = null; watchAllGamesLive(api); }
 }
 
 function watchAllGamesLive(api){
