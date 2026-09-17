@@ -412,6 +412,21 @@ function periodHtml(st){
   return `<div class="period">${body}</div>`;
 }
 
+// Before the first play, right where the kickoff gets recorded: the coin toss. The winner defers or receives, and
+// that decides who kicks off (a winner who receives has the other team kick; one who defers kicks). The engine gives
+// the other team the 2nd-half kickoff. Setup's "Opening kickoff by" stays as the plain way to set it.
+const tossKicker = t => t && t.win && t.choice ? (t.choice === 'receive' ? other(t.win) : t.win) : null;
+function openKickHtml(){
+  if (g.plays.length || ui.editing != null || g.sample) return '';
+  const t = g.set.toss || {}, k = g.set.firstKick || 'H', name = s => esc(g.teams[s].name || ab(s));
+  const say = t.win && t.choice ? `${name(t.win)} ${t.choice === 'defer' ? 'deferred' : 'will receive'}: <b>${name(k)} kicks off</b>, and ${name(other(k))} kicks off the 2nd half.`
+    : t.win ? `What did ${name(t.win)} choose?` : `Until the toss is in, ${name(k)} kicks off.`;
+  return `<div class="openkick">
+    <div class="ok-row"><span class="eyebrow">Coin toss winner</span><div class="seg">${['A', 'H'].map(s => `<button type="button" data-toss-win="${s}" aria-pressed="${t.win === s}">${name(s)}</button>`).join('')}</div></div>
+    <div class="ok-row"><span class="eyebrow">Their choice</span><div class="seg">${[['defer', 'Defer'], ['receive', 'Receive']].map(([v, l]) => `<button type="button" data-toss-choice="${v}" aria-pressed="${t.choice === v}">${l}</button>`).join('')}</div></div>
+    <p class="hint ok-say">${say}</p></div>`;
+}
+
 function renderPad(){
   if (ui.viewer) return;              // the live look-in is read-only
   if (g.box){ $('#pad').innerHTML = boxPad(); return; }   // entered from a box score: nothing to record
@@ -427,7 +442,7 @@ function renderPad(){
   const editing0 = ui.editing != null;
   if (editing0 ? ui.qedit : ui.mode === 'quick'){
     pad.innerHTML = `${editing0 ? `<div class="editing-bar"><span>Editing play ${ui.editing + 1}. Everything after it updates.</span><button class="linkbtn" data-cancel-edit>Cancel</button></div>` : ''}
-      <div class="pad-hd"><span class="eyebrow">${editing0 ? 'Situation before this play' : 'Next play'}</span><span class="sit">${esc(ctx.sit)}</span></div>
+      ${openKickHtml()}<div class="pad-hd"><span class="eyebrow">${editing0 ? 'Situation before this play' : 'Next play'}</span><span class="sit">${esc(ctx.sit)}</span></div>
       ${quickHtml()}${editing0 ? '' : '<button class="linkbtn" data-mode="form">Use the full form instead</button>'}${periodHtml(st)}`;
     return quickPreview();
   }
@@ -438,6 +453,7 @@ function renderPad(){
   const noRecord = ui.type === 'to';
   pad.innerHTML = `
     ${editing ? `<div class="editing-bar"><span>Editing play ${ui.editing + 1}. Everything after it updates.</span><button class="linkbtn" data-cancel-edit>Cancel</button></div>` : ''}
+    ${openKickHtml()}
     <div class="pad-hd"><span class="eyebrow">${editing ? 'Situation before this play' : 'Next play'}</span><span class="sit">${esc(ctx.sit)}</span></div>
     <div class="types" role="group" aria-label="Play type">${types.map(t => `<button type="button" class="type" data-type="${t}" aria-pressed="${t === ui.type}" ${editing && t !== ui.type ? 'disabled' : ''}>${label(t)}</button>`).join('')}</div>
     <div class="form">${formHtml()}${editing ? row(fN('clkTxt', 'Clock at the snap', '')) : ''}</div>

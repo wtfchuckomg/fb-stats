@@ -26,6 +26,29 @@ function rostersFor(name){
   return (sharedRosters.list || []).filter(r => canonSchool(r.name) === k && Object.keys(r.roster).length && !(sync.user && r.owner === sync.user.uid))
     .sort((a, b) => (b.updated || 0) - (a.updated || 0));
 }
+// The roster a new game starts with: the fullest copy there is — this device's saved team, a roster saved on the
+// school's page, or another scorer's — newest on a tie. Your own shared copies count too (a page's roster is yours).
+function bestRoster(name){
+  const k = name && canonSchool(name); if (!k) return null;
+  const all = (sharedRosters.list || []).filter(r => canonSchool(r.name) === k && Object.keys(r.roster || {}).length)
+    .map(r => ({roster:r.roster, updated:r.updated || 0, from:'shared'}));
+  const mine = (typeof savedTeams === 'function' ? savedTeams() : []).find(t => canonSchool(t.name) === k && Object.keys(t.roster || {}).length);
+  if (mine) all.push({roster:mine.roster, updated:mine.updated || 0, from:'saved'});
+  return all.sort((a, b) => Object.keys(b.roster).length - Object.keys(a.roster).length || b.updated - a.updated)[0] || null;
+}
+// Fill an empty roster box in Setup from bestRoster; a roster already typed or pasted is never replaced.
+function fillSetupRoster(s){
+  const nm = $(`#s-${s}-name`), box = $(`#s-${s}-roster`), hint = $(`#s-${s}-lib`);
+  if (!nm || !box) return;
+  // A box still holding what was filled in for another school follows the school; anything typed stays.
+  const auto = !!box.dataset.auto && box.value === box.dataset.auto;
+  if (box.value.trim() && !auto) return;
+  const b = nm.value.trim() && bestRoster(nm.value.trim());
+  if (!b){ if (auto){ box.value = ''; box.dataset.auto = ''; if (hint) hint.textContent = ''; } return; }
+  const text = rosterToText(b.roster); if (auto && text === box.value) return;
+  box.value = text; box.dataset.auto = text;
+  if (hint) hint.textContent = `Roster filled in from ${b.from === 'saved' ? 'your saved teams' : 'the one saved for this school'}: ${plural2(Object.keys(b.roster).length, 'player')}.`;
+}
 // The best copy of a school's roster for showing on its page: the fullest, then the newest, counting this
 // device's saved team as well as everyone else's shared copies.
 function rosterFor(name){
@@ -88,7 +111,7 @@ function sharedHint(s, name){
     <button type="button" class="linkbtn" data-use-shared="${esc(r.id)}" data-side="${s}">Use it</button>`).join('<br>');
 }
 function refreshRosterHints(){
-  ['A', 'H'].forEach(s => { const el = $(`#s-${s}-shared`), nm = $(`#s-${s}-name`); if (el && nm) el.innerHTML = sharedHint(s, nm.value.trim()); });
+  ['A', 'H'].forEach(s => { const el = $(`#s-${s}-shared`), nm = $(`#s-${s}-name`); if (el && nm) el.innerHTML = sharedHint(s, nm.value.trim()); fillSetupRoster(s); });
   renderTeamPage();   // a school's page lists its roster too
 }
 document.addEventListener('input', e => { if (e.target.id && /^s-[AH]-name$/.test(e.target.id)) refreshRosterHints(); });

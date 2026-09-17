@@ -67,6 +67,7 @@ function openDialog(kind){
   ui.dlg = kind; ui.confirm = null;
   dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : kind === 'others' ? dlgOthers() : kind === 'lines' ? dlgLines() : kind === 'teams' ? dlgTeams() : kind === 'schools' ? dlgSchools() : dlgSetup(kind === 'new');
   if (!dlg().hasAttribute('open')) showDialog();
+  if ($('#s-A-roster')) ['A', 'H'].forEach(fillSetupRoster);
 }
 // Phones without the pop-up window feature (iPhones before iOS 15.4, among others) get the same box, opened plainly.
 function showDialog(){
@@ -129,6 +130,7 @@ function saveSetup(isNew){
   // Only the format is saved; its kickoff, touchback, safety and overtime spots come from FORMATS.
   const menBtn = $('#s-men [aria-pressed="true"]'), men = menBtn ? +menBtn.dataset.men : 11;
   const set = {qtr:clamp(parseInt(v('s-qtr')) || 12, 1, 20), men, firstKick:kick ? kick.dataset.kick : 'H'};
+  if (!isNew && g.set.toss && tossKicker(g.set.toss) === set.firstKick) set.toss = g.set.toss;   // changed by hand: the toss no longer says
   const teams = {A:team('A', 'Visitors'), H:team('H', 'Home')};
   const keptA = rememberTeam(teams.A), keptH = rememberTeam(teams.H);
   shareRoster(teams.A); shareRoster(teams.H);   // up for everyone to use, when signed in
@@ -373,6 +375,14 @@ document.addEventListener('click', e => {
   }
   if (d.side){ ui.side = d.side; return renderView(); }
   if (d.kick){ t.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === t))); return; }
+  if (d.tossWin || d.tossChoice){
+    if (g.plays.length) return;
+    const toss = Object.assign({}, g.set.toss, d.tossWin ? {win:d.tossWin} : {choice:d.tossChoice});
+    g.set.toss = toss;
+    const k = tossKicker(toss); if (k) g.set.firstKick = k;
+    save(); refresh();
+    return k ? toast(`${g.teams[k].name || ab(k)} kicks off`) : undefined;
+  }
   if (d.saveSetup) return saveSetup(d.saveSetup === '1');
   if ('linesSave' in d) return saveLines();
   if ('linesClear' in d) return clearLines();

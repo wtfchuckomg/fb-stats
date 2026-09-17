@@ -832,6 +832,10 @@ dialog::backdrop{background:rgba(8,10,12,.55)}
 dialog:not([open]){display:none}
 dialog.fallback[open]{display:block;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;margin:0;
   max-height:calc(100% - 32px);overflow:auto;box-shadow:0 0 0 100vmax rgba(8,10,12,.55),0 10px 40px rgba(0,0,0,.35)}
+.openkick{display:grid;gap:8px;padding:10px 12px;margin:0 0 12px;border-radius:10px;background:var(--flag-wash)}
+.openkick .ok-row{display:flex;align-items:center;justify-content:space-between;gap:6px 12px;flex-wrap:wrap}
+.openkick .eyebrow{color:var(--flag-ink)}
+.openkick .ok-say{margin:0}
 .dlg-hd{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
 .dlg-hd h2{margin:0;font:700 19px/1 var(--cond);text-transform:uppercase;color:var(--ink-2)}
 .dlg-bd{padding:14px 16px;display:flex;flex-direction:column;gap:14px}
@@ -2192,6 +2196,21 @@ function periodHtml(st){
   return `<div class="period">${body}</div>`;
 }
 
+// Before the first play, right where the kickoff gets recorded: the coin toss. The winner defers or receives, and
+// that decides who kicks off (a winner who receives has the other team kick; one who defers kicks). The engine gives
+// the other team the 2nd-half kickoff. Setup's "Opening kickoff by" stays as the plain way to set it.
+const tossKicker = t => t && t.win && t.choice ? (t.choice === 'receive' ? other(t.win) : t.win) : null;
+function openKickHtml(){
+  if (g.plays.length || ui.editing != null || g.sample) return '';
+  const t = g.set.toss || {}, k = g.set.firstKick || 'H', name = s => esc(g.teams[s].name || ab(s));
+  const say = t.win && t.choice ? `${name(t.win)} ${t.choice === 'defer' ? 'deferred' : 'will receive'}: <b>${name(k)} kicks off</b>, and ${name(other(k))} kicks off the 2nd half.`
+    : t.win ? `What did ${name(t.win)} choose?` : `Until the toss is in, ${name(k)} kicks off.`;
+  return `<div class="openkick">
+    <div class="ok-row"><span class="eyebrow">Coin toss winner</span><div class="seg">${['A', 'H'].map(s => `<button type="button" data-toss-win="${s}" aria-pressed="${t.win === s}">${name(s)}</button>`).join('')}</div></div>
+    <div class="ok-row"><span class="eyebrow">Their choice</span><div class="seg">${[['defer', 'Defer'], ['receive', 'Receive']].map(([v, l]) => `<button type="button" data-toss-choice="${v}" aria-pressed="${t.choice === v}">${l}</button>`).join('')}</div></div>
+    <p class="hint ok-say">${say}</p></div>`;
+}
+
 function renderPad(){
   if (ui.viewer) return;              // the live look-in is read-only
   if (g.box){ $('#pad').innerHTML = boxPad(); return; }   // entered from a box score: nothing to record
@@ -2207,7 +2226,7 @@ function renderPad(){
   const editing0 = ui.editing != null;
   if (editing0 ? ui.qedit : ui.mode === 'quick'){
     pad.innerHTML = `${editing0 ? `<div class="editing-bar"><span>Editing play ${ui.editing + 1}. Everything after it updates.</span><button class="linkbtn" data-cancel-edit>Cancel</button></div>` : ''}
-      <div class="pad-hd"><span class="eyebrow">${editing0 ? 'Situation before this play' : 'Next play'}</span><span class="sit">${esc(ctx.sit)}</span></div>
+      ${openKickHtml()}<div class="pad-hd"><span class="eyebrow">${editing0 ? 'Situation before this play' : 'Next play'}</span><span class="sit">${esc(ctx.sit)}</span></div>
       ${quickHtml()}${editing0 ? '' : '<button class="linkbtn" data-mode="form">Use the full form instead</button>'}${periodHtml(st)}`;
     return quickPreview();
   }
@@ -2218,6 +2237,7 @@ function renderPad(){
   const noRecord = ui.type === 'to';
   pad.innerHTML = `
     ${editing ? `<div class="editing-bar"><span>Editing play ${ui.editing + 1}. Everything after it updates.</span><button class="linkbtn" data-cancel-edit>Cancel</button></div>` : ''}
+    ${openKickHtml()}
     <div class="pad-hd"><span class="eyebrow">${editing ? 'Situation before this play' : 'Next play'}</span><span class="sit">${esc(ctx.sit)}</span></div>
     <div class="types" role="group" aria-label="Play type">${types.map(t => `<button type="button" class="type" data-type="${t}" aria-pressed="${t === ui.type}" ${editing && t !== ui.type ? 'disabled' : ''}>${label(t)}</button>`).join('')}</div>
     <div class="form">${formHtml()}${editing ? row(fN('clkTxt', 'Clock at the snap', '')) : ''}</div>
@@ -2914,6 +2934,7 @@ function openDialog(kind){
   ui.dlg = kind; ui.confirm = null;
   dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : kind === 'others' ? dlgOthers() : kind === 'lines' ? dlgLines() : kind === 'teams' ? dlgTeams() : kind === 'schools' ? dlgSchools() : dlgSetup(kind === 'new');
   if (!dlg().hasAttribute('open')) showDialog();
+  if ($('#s-A-roster')) ['A', 'H'].forEach(fillSetupRoster);
 }
 // Phones without the pop-up window feature (iPhones before iOS 15.4, among others) get the same box, opened plainly.
 function showDialog(){
@@ -2976,6 +2997,7 @@ function saveSetup(isNew){
   // Only the format is saved; its kickoff, touchback, safety and overtime spots come from FORMATS.
   const menBtn = $('#s-men [aria-pressed="true"]'), men = menBtn ? +menBtn.dataset.men : 11;
   const set = {qtr:clamp(parseInt(v('s-qtr')) || 12, 1, 20), men, firstKick:kick ? kick.dataset.kick : 'H'};
+  if (!isNew && g.set.toss && tossKicker(g.set.toss) === set.firstKick) set.toss = g.set.toss;   // changed by hand: the toss no longer says
   const teams = {A:team('A', 'Visitors'), H:team('H', 'Home')};
   const keptA = rememberTeam(teams.A), keptH = rememberTeam(teams.H);
   shareRoster(teams.A); shareRoster(teams.H);   // up for everyone to use, when signed in
@@ -3220,6 +3242,14 @@ document.addEventListener('click', e => {
   }
   if (d.side){ ui.side = d.side; return renderView(); }
   if (d.kick){ t.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === t))); return; }
+  if (d.tossWin || d.tossChoice){
+    if (g.plays.length) return;
+    const toss = Object.assign({}, g.set.toss, d.tossWin ? {win:d.tossWin} : {choice:d.tossChoice});
+    g.set.toss = toss;
+    const k = tossKicker(toss); if (k) g.set.firstKick = k;
+    save(); refresh();
+    return k ? toast(`${g.teams[k].name || ab(k)} kicks off`) : undefined;
+  }
   if (d.saveSetup) return saveSetup(d.saveSetup === '1');
   if ('linesSave' in d) return saveLines();
   if ('linesClear' in d) return clearLines();
@@ -4402,7 +4432,7 @@ document.addEventListener('input', e => {
   $(`#s-${s}-color`).value = t.color || '#1F4E9C';
   const box = $(`#s-${s}-roster`), n = Object.keys(t.roster || {}).length;
   if (!n) hint.textContent = 'Filled from your saved teams.';
-  else if (!box.value.trim()){ box.value = rosterToText(t.roster); hint.textContent = `Filled from your saved teams: ${plural2(n, 'player')}.`; }
+  else if (!box.value.trim() || box.value === box.dataset.auto){ box.value = box.dataset.auto = rosterToText(t.roster); hint.textContent = `Filled from your saved teams: ${plural2(n, 'player')}.`; }
   else hint.innerHTML = `Saved roster has ${plural2(n, 'player')}. <button type="button" class="linkbtn" data-useroster="${s}">Use it</button>`;
 });
 /* ================================================================
@@ -7462,6 +7492,29 @@ function rostersFor(name){
   return (sharedRosters.list || []).filter(r => canonSchool(r.name) === k && Object.keys(r.roster).length && !(sync.user && r.owner === sync.user.uid))
     .sort((a, b) => (b.updated || 0) - (a.updated || 0));
 }
+// The roster a new game starts with: the fullest copy there is — this device's saved team, a roster saved on the
+// school's page, or another scorer's — newest on a tie. Your own shared copies count too (a page's roster is yours).
+function bestRoster(name){
+  const k = name && canonSchool(name); if (!k) return null;
+  const all = (sharedRosters.list || []).filter(r => canonSchool(r.name) === k && Object.keys(r.roster || {}).length)
+    .map(r => ({roster:r.roster, updated:r.updated || 0, from:'shared'}));
+  const mine = (typeof savedTeams === 'function' ? savedTeams() : []).find(t => canonSchool(t.name) === k && Object.keys(t.roster || {}).length);
+  if (mine) all.push({roster:mine.roster, updated:mine.updated || 0, from:'saved'});
+  return all.sort((a, b) => Object.keys(b.roster).length - Object.keys(a.roster).length || b.updated - a.updated)[0] || null;
+}
+// Fill an empty roster box in Setup from bestRoster; a roster already typed or pasted is never replaced.
+function fillSetupRoster(s){
+  const nm = $(`#s-${s}-name`), box = $(`#s-${s}-roster`), hint = $(`#s-${s}-lib`);
+  if (!nm || !box) return;
+  // A box still holding what was filled in for another school follows the school; anything typed stays.
+  const auto = !!box.dataset.auto && box.value === box.dataset.auto;
+  if (box.value.trim() && !auto) return;
+  const b = nm.value.trim() && bestRoster(nm.value.trim());
+  if (!b){ if (auto){ box.value = ''; box.dataset.auto = ''; if (hint) hint.textContent = ''; } return; }
+  const text = rosterToText(b.roster); if (auto && text === box.value) return;
+  box.value = text; box.dataset.auto = text;
+  if (hint) hint.textContent = `Roster filled in from ${b.from === 'saved' ? 'your saved teams' : 'the one saved for this school'}: ${plural2(Object.keys(b.roster).length, 'player')}.`;
+}
 // The best copy of a school's roster for showing on its page: the fullest, then the newest, counting this
 // device's saved team as well as everyone else's shared copies.
 function rosterFor(name){
@@ -7524,7 +7577,7 @@ function sharedHint(s, name){
     <button type="button" class="linkbtn" data-use-shared="${esc(r.id)}" data-side="${s}">Use it</button>`).join('<br>');
 }
 function refreshRosterHints(){
-  ['A', 'H'].forEach(s => { const el = $(`#s-${s}-shared`), nm = $(`#s-${s}-name`); if (el && nm) el.innerHTML = sharedHint(s, nm.value.trim()); });
+  ['A', 'H'].forEach(s => { const el = $(`#s-${s}-shared`), nm = $(`#s-${s}-name`); if (el && nm) el.innerHTML = sharedHint(s, nm.value.trim()); fillSetupRoster(s); });
   renderTeamPage();   // a school's page lists its roster too
 }
 document.addEventListener('input', e => { if (e.target.id && /^s-[AH]-name$/.test(e.target.id)) refreshRosterHints(); });

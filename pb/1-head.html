@@ -832,6 +832,10 @@ dialog::backdrop{background:rgba(8,10,12,.55)}
 dialog:not([open]){display:none}
 dialog.fallback[open]{display:block;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;margin:0;
   max-height:calc(100% - 32px);overflow:auto;box-shadow:0 0 0 100vmax rgba(8,10,12,.55),0 10px 40px rgba(0,0,0,.35)}
+.openkick{display:grid;gap:8px;padding:10px 12px;margin:0 0 12px;border-radius:10px;background:var(--flag-wash)}
+.openkick .ok-row{display:flex;align-items:center;justify-content:space-between;gap:6px 12px;flex-wrap:wrap}
+.openkick .eyebrow{color:var(--flag-ink)}
+.openkick .ok-say{margin:0}
 .dlg-hd{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
 .dlg-hd h2{margin:0;font:700 19px/1 var(--cond);text-transform:uppercase;color:var(--ink-2)}
 .dlg-bd{padding:14px 16px;display:flex;flex-direction:column;gap:14px}

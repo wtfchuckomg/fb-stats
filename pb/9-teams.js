@@ -137,6 +137,6 @@ document.addEventListener('input', e => {
   $(`#s-${s}-color`).value = t.color || '#1F4E9C';
   const box = $(`#s-${s}-roster`), n = Object.keys(t.roster || {}).length;
   if (!n) hint.textContent = 'Filled from your saved teams.';
-  else if (!box.value.trim()){ box.value = rosterToText(t.roster); hint.textContent = `Filled from your saved teams: ${plural2(n, 'player')}.`; }
+  else if (!box.value.trim() || box.value === box.dataset.auto){ box.value = box.dataset.auto = rosterToText(t.roster); hint.textContent = `Filled from your saved teams: ${plural2(n, 'player')}.`; }
   else hint.innerHTML = `Saved roster has ${plural2(n, 'player')}. <button type="button" class="linkbtn" data-useroster="${s}">Use it</button>`;
 });
