@@ -374,9 +374,9 @@ function menuHere(){
 function renderScores(){
   const box = $('#scores'); if (!box) return;
   const key = shownWeek(); watchWeek(key);
-  // On the AVCTL's pages the strip is the league's games too, non-league opponents included.
-  const league = AV_BOARD || AV_STAND || AV_STATS;
-  const games = league ? weekGames(key, false, true).filter(inAvctl) : weekGames(key);
+  // On the AVCTL's pages the strip is the league's games, and on BUCO's the county's (their opponents included).
+  const league = AV_BOARD || AV_STAND || AV_STATS, buco = (BOARD && !STATE_BOARD && !AV_BOARD) || (COUNTY_PAGE && !STATE_STATS && !AV_STATS);
+  const games = league ? weekGames(key, false, true).filter(inAvctl) : buco ? weekGames(key).filter(inBuco) : weekGames(key);
   // The scorer always gets the strip, for its Add a score button; fans only when there's something to show.
   const any = !ui.viewer || games.length > 0;
   box.hidden = !any;

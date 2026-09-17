@@ -11,6 +11,8 @@ const STATE_BOARD = new URLSearchParams(location.search).has('state');
 const BOARD = new URLSearchParams(location.search).has('scores') || STATE_BOARD || AV_BOARD;
 const boardParam = () => ui.av ? 'avctl' : ui.state ? 'state' : 'scores';
 // What each board is called, and which games it keeps.
+// A Butler County game: at least one of the county's schools is playing.
+const inBuco = x => !!x && !!x.teams && ['A', 'H'].some(s => x.teams[s] && COUNTY.some(n => canonSchool(n) === canonSchool(x.teams[s].name)));
 const boardName = () => ui.av ? 'AVCTL' : ui.state ? 'State' : 'BUCO';
 const fullyTracked = x => x.kind !== 'score' && ((x.plays && x.plays.length) || !!x.box);
 // A game still to come: a schedule entry or score not yet started, or a game set up for stats with no plays yet.
@@ -120,7 +122,7 @@ function renderScoreboard(){
     <b>${esc(weekLabel(k).toUpperCase())}</b><span>${weekRange(k)}</span></button>`).join('');
   // The State Scoreboard: games with stats kept on them, and games still to come. The admin also sees hidden games, faded.
   // The league board draws on the same pool as the State board, then keeps its own schools' games.
-  const games = weekGames(key, ui.admin, ui.state || ui.av).filter(x => (!ui.state && !ui.av) || (onStateBoard(x) && (!ui.av || inAvctl(x)))), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
+  const games = weekGames(key, ui.admin, ui.state || ui.av).filter(x => (!ui.state && !ui.av) ? inBuco(x) : (onStateBoard(x) && (!ui.av || inAvctl(x)))), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (board.err) body = note(board.err);
   else if (scores.ready !== key) body = note('Loading scores…');
