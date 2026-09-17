@@ -311,6 +311,7 @@ function teamPageHtml(nameIn){
     const form = open ? `<tr class="tp-edit-row"><td colspan="5"><div class="tp-score-form">
         <label>${esc(x.teams[side].name)}<input class="inp" id="tp-s-mine" inputmode="numeric" maxlength="3" autocomplete="off" value="${val('mine', a)}"></label>
         <label>${esc(o.name)}<input class="inp" id="tp-s-opp" inputmode="numeric" maxlength="3" autocomplete="off" value="${val('opp', b)}"></label>
+        <a class="btn" href="?tracker&amp;box=${encodeURIComponent(x.id)}">Paste box score</a>
         <button type="button" class="btn primary" data-tp-score-save>Save final</button>
         ${m.fin ? '<button type="button" class="btn" data-tp-score-clear>Not played yet</button>' : ''}
         <button type="button" class="btn" data-tp-score-cancel>Cancel</button></div></td></tr>` : '';

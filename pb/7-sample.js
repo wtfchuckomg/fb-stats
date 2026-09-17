@@ -49,6 +49,9 @@ else {
   // ?tracker&open=games (or setup, export, share): from the scorer's buttons on the other pages.
   const OPEN = new URLSearchParams(location.search).get('open');
   if (['games', 'setup', 'export', 'share', 'others'].includes(OPEN)){ history.replaceState(null, '', `${location.pathname}?tracker`); openDialog(OPEN); }
+  // ?tracker&box=<game>: Paste box score, from a school's schedule or the scoreboard.
+  const BOX_FROM = new URLSearchParams(location.search).get('box');
+  if (BOX_FROM != null){ ui.boxFrom = BOX_FROM || null; ui.boxGame = null; history.replaceState(null, '', `${location.pathname}?tracker`); openDialog('box'); }
   startSync();
 }
 
