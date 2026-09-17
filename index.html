@@ -276,7 +276,8 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .pg-tbl .ctbl tr:last-child td{border-bottom:0}
 .pg-odds{table-layout:fixed}
 .pg-odds td{font-variant-numeric:tabular-nums}
-.pg-odds th:first-child,.pg-odds td:first-child{width:50%;text-align:left}
+.pg-odds th:first-child,.pg-odds td:first-child{width:36%;text-align:left}
+.pg-mass{color:var(--muted)}
 .pg-odds th:last-child,.pg-odds td:last-child{padding-right:12px}
 .pg-oteam{display:flex;align-items:center;gap:8px;min-width:0}
 .pg-oteam b{font-weight:600}
@@ -8672,7 +8673,7 @@ document.addEventListener('click', e => {
    game, the page points to the gamecast.
    ================================================================ */
 const PREVIEW_ID = new URLSearchParams(location.search).get('preview');
-const pre = {rank:null, stats:null, err:'', hist:{}};
+const pre = {rank:null, stats:null, err:'', hist:{}, rat:null, ratIdx:{}};
 
 // The Media Rankings live in their own database (kansasmediarankings.com). Only published weeks are read, and
 // the points are tallied the way that site does: 10 for a first-place vote down to 1 for tenth (5 in 6-Man).
@@ -8717,6 +8718,40 @@ function rankOf(name){
   const k = canonSchool(name), row = c.rows.find(r => canonSchool(r.school) === k);
   if (!row) return null;
   return row.rank <= c.top ? {rank:row.rank, pts:row.pts, cls} : {votes:true, pts:row.pts, cls};
+}
+
+/* ---------- this site's own line, from ratings.json (.github/kp/ratings.py) ----------
+   Every Kansas result since 2021 is fitted at once: each school's offense and defense in points, plus home
+   field. A game's line is simply what the two are expected to score. Nothing here is a bet. */
+function loadRatings(){
+  if (pre.rat !== null) return;
+  pre.rat = false;
+  fetch('/ratings.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
+    .then(d => { if (d && d.teams){ pre.rat = d; renderPreview(); } }).catch(() => {});
+}
+// The ratings are keyed the way KPreps writes a school ("towanda-circle"); match ours to them once each.
+function ratingOf(name){
+  const k = canonSchool(name); if (!k || !pre.rat) return null;
+  if (pre.ratIdx[k] !== undefined) return pre.ratIdx[k];
+  let hit = pre.rat.teams[k] ? k : null;
+  if (!hit){
+    let best = 0;
+    Object.keys(pre.rat.teams).forEach(s => {
+      const score = schoolLikeness(name, s.replace(/-/g, ' '));
+      if (score > best && score >= .7){ best = score; hit = s; }
+    });
+  }
+  pre.ratIdx[k] = hit ? Object.assign({slug:hit}, pre.rat.teams[hit]) : null;
+  return pre.ratIdx[k];
+}
+// What each side is expected to score, home team first.
+function ourLine(A, H){
+  const a = ratingOf(A), h = ratingOf(H);
+  if (!a || !h || a.group !== h.group) return null;
+  const g = pre.rat.groups[h.group] || {mu:26, hfa:1.5};
+  const hp = g.mu + h.off + a.def + g.hfa / 2, ap = g.mu + a.off + h.def - g.hfa / 2;
+  const round1 = v => Math.round(v * 2) / 2;
+  return {home:hp, away:ap, spread:round1(hp - ap), total:round1(hp + ap), hs:Math.round(hp), as:Math.round(ap), thin:Math.min(a.gp, h.gp) < 6};
 }
 
 /* ---------- past seasons, from KPreps by way of history/<school>.json (.github/kphistory.py) ---------- */
@@ -8819,7 +8854,7 @@ const shortPlayer = n => { const w = playerName(n).split(/\s+/); return w.length
 async function startPreview(id){
   ui.viewer = true; ui.preview = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
-  loadLogos(); renderPreview();
+  loadLogos(); loadRatings(); renderPreview();
   try {
     const api = await viewerApi();
     scoresReady({fsM:api.fsM, fsdb:api.fsdb});   // the scores strip, every shared game and the records
@@ -8895,19 +8930,20 @@ function previewHtml(){
     </section>`;
 
   // The line: Massey Ratings, when the admin has brought this week's in; the site's own win chances otherwise.
-  const ML = masseyLine(x);
-  const oddsRow = (s, n, p) => {
-    const m = ML && ML[s], spread = !ML ? '&#8212;' : !ML.spread ? 'PK' : m.fav ? `&#8722;${ML.spread}` : `+${ML.spread}`;
-    const total = ML && ML.total != null ? `${s === 'A' ? 'o' : 'u'}${ML.total}` : '&#8212;';
+  const ML = masseyLine(x), OL = ourLine(A, H);
+  const oddsRow = (s, n) => {
+    const m = ML && ML[s], us = OL && (s === 'A' ? OL.as : OL.hs);
+    const ourSpread = !OL ? '&#8212;' : OL.spread === 0 ? 'PK' : (s === 'H') === (OL.spread > 0) ? `&#8722;${Math.abs(OL.spread)}` : `+${Math.abs(OL.spread)}`;
+    const mSpread = !ML ? '' : !ML.spread ? 'PK' : m.fav ? `&#8722;${ML.spread}` : `+${ML.spread}`;
     return `<tr><td><div class="pg-oteam">${markFor(T[s], 22)}<b>${esc(T[s].abbr || shortName(n))}</b></div></td>
-      <td class="num">${spread}</td><td class="num">${total}</td></tr>`;
+      <td class="num">${ourSpread}</td><td class="num">${OL ? `${s === 'A' ? 'o' : 'u'}${OL.total}` : '&#8212;'}</td>
+      <td class="num">${us != null ? us : '&#8212;'}</td>${ML ? `<td class="num pg-mass">${mSpread}</td>` : ''}</tr>`;
   };
-  const odds = `<section class="bcard pg-card"><h2 class="pg-h">Game line${ML ? '<a class="pg-by" href="https://masseyratings.com/hsf/ks/games" target="_blank" rel="noopener">Massey Ratings</a>' : ''}</h2>
-      <div class="pg-tbl"><table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th></tr></thead><tbody>
-        ${oddsRow('A', A, P.away)}${oddsRow('H', H, P.home)}</tbody></table></div>
-      ${ML ? `<p class="pg-proj">Massey’s pick: <b>${esc(ML.A.pred >= ML.H.pred ? A : H)} ${Math.max(ML.A.pred, ML.H.pred)}, ${esc(ML.A.pred >= ML.H.pred ? H : A)} ${Math.min(ML.A.pred, ML.H.pred)}</b></p>
-        <p class="hint">Lines from Massey Ratings${massey.updated ? `, brought in ${esc(new Date(massey.updated).toLocaleDateString('en-US', {month:'short', day:'numeric'}))}` : ''}. For fun only: there’s no betting here.</p>`
-        : `<p class="hint">No Massey Ratings line for this game yet. For fun only: there’s no betting here.</p>`}
+  const odds = `<section class="bcard pg-card"><h2 class="pg-h">Game line</h2>
+      <div class="pg-tbl"><table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th><th class="num">Score</th>${ML ? '<th class="num pg-mass">Massey</th>' : ''}</tr></thead><tbody>
+        ${oddsRow('A', A)}${oddsRow('H', H)}</tbody></table></div>
+      ${OL ? `<p class="hint">This site's own line, from every Kansas result since 2021${OL.thin ? ' (one of these teams has few games on file, so treat it lightly)' : ''}. For fun only: there's no betting here.</p>`
+        : `<p class="hint">No line for this game yet: the ratings don't have both schools.</p>`}
     </section>`;
 
   // Season leaders, the two teams side by side.
