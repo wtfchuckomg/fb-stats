@@ -315,7 +315,7 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
   const here = q.has('tracker') || q.has('edit') ? 'tracker'
     : q.has('avctl') ? 'avscores' : q.has('standings') ? 'standings' : q.has('avstats') ? 'avstats'
     : q.has('scores') ? 'scores' : q.has('state') ? 'state' : q.has('statestats') ? 'sstats'
-    : q.has('stats') ? 'stats' : q.has('team') || q.has('teams') ? 'teams' : q.has('game') || q.has('live') ? '' : 'home';
+    : q.has('stats') ? 'stats' : q.has('team') || q.has('teams') ? 'teams' : q.has('game') || q.has('live') || q.has('gamecast') ? '' : 'home';
   // Each menu's pages sit under its own name: Butler County, AVCTL, State.
   const UNDER = {scores:'buco', stats:'buco', teams:'buco', avscores:'avctl', standings:'avctl', avstats:'avctl', state:'state', sstats:'state'};
   const top = UNDER[here] || here;

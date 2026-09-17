@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "type": "rich",
+  "provider_name": "Kansas Media Stats",
+  "provider_url": "https://stats.kansasmediarankings.com",
+  "title": "BV Randolph Gamecast",
+  "width": 700,
+  "height": 1000,
+  "cache_age": 86400,
+  "html": "<iframe src=\"https://stats.kansasmediarankings.com/?gamecast=bv-randolph&amp;embed=1\" width=\"700\" height=\"1000\" frameborder=\"0\" scrolling=\"yes\" title=\"BV Randolph Gamecast - Kansas Media Stats\"></iframe>"
+}

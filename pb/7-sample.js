@@ -28,6 +28,7 @@ else if (BOARD) startScoreboard();      // ?scores: the week's scoreboard, read-
 else if (COUNTY_PAGE) startCounty();    // ?stats: the county's season stats, read-only
 else if (TEAM_PAGE) startTeamPage();    // ?teams, ?team=<name>: the schools, and each one's record and schedule
 // ?edit=<id> is the scorer coming back to their own game, and wins over ?game= — the preview page forwards both.
+else if (SCHOOL_CAST) startSchoolCast(SCHOOL_CAST);   // ?gamecast=<school>: that school's current game, for embedding
 else if (LIVE_ID && !new URLSearchParams(location.search).has('edit')) startViewer(LIVE_ID); // a shared link: watch that game, read-only
 else {
   load();

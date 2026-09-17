@@ -7,7 +7,8 @@ type="application/json+oembed">). Each page here is that link: WordPress reads
 oembed.json and frames the real page with ?embed=1. A person who opens the
 link is sent on to the page itself.
 
-    python3 .github/embeds.py      (from the repo root) writes embed/
+    python3 .github/embeds.py      writes embed/ — run again after season.json is rebuilt,
+                                   so new games get their own link too
 """
 import html
 import json
@@ -25,8 +26,20 @@ PAGES = [  # slug, title, the page's address, starting height
     ('state-scoreboard', 'State Scoreboard', '?state', 900),
 ]
 
-root = Path(__file__).resolve().parent.parent / 'embed'
-for slug, title, q, height in PAGES:
+REPO = Path(__file__).resolve().parent.parent
+root = REPO / 'embed'
+pages = [(slug, title, q, height) for slug, title, q, height in PAGES]
+
+# Every school's gamecast: whatever game it's playing that week, live once someone keeps stats on it.
+for t in json.loads((REPO / 'logos' / 'teams.json').read_text()):
+    if t.get('name') and t.get('slug'):
+        pages.append((f"gamecast/{t['slug']}", f"{t['name']} Gamecast", f"?gamecast={t['slug']}", 1000))
+# And each game already on the site with a gamecast (stats kept, or a box score pasted).
+for x in json.loads((REPO / 'season.json').read_text()).get('games', []):
+    if x.get('id') and (x.get('stats') or x.get('box')):
+        pages.append((f"game/{x['id']}", f"{x['a']['name']} at {x['h']['name']}", f"?game={x['id']}", 1000))
+
+for slug, title, q, height in pages:
     d = root / slug
     d.mkdir(parents=True, exist_ok=True)
     page, frame, oembed = f'{SITE}/{q}', f'{SITE}/{q}&embed=1', f'{SITE}/embed/{slug}/oembed.json'
@@ -44,4 +57,4 @@ for slug, title, q, height in PAGES:
 <meta http-equiv="refresh" content="0;url={html.escape(page)}">
 </head><body><p><a href="{html.escape(page)}">{html.escape(title)} at Kansas Media Stats</a></p></body></html>
 ''')
-    print('embed/' + slug)
+print(f'{len(pages)} embed links in embed/')

@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "type": "rich",
+  "provider_name": "Kansas Media Stats",
+  "provider_url": "https://stats.kansasmediarankings.com",
+  "title": "Arkansas City at Winfield",
+  "width": 700,
+  "height": 1000,
+  "cache_age": 86400,
+  "html": "<iframe src=\"https://stats.kansasmediarankings.com/?game=gmu4t3v6r&amp;embed=1\" width=\"700\" height=\"1000\" frameborder=\"0\" scrolling=\"yes\" title=\"Arkansas City at Winfield - Kansas Media Stats\"></iframe>"
+}

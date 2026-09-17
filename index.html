@@ -4111,27 +4111,22 @@ async function startViewer(id){
   const tab0 = new URLSearchParams(location.search).get('tab');
   if (['gamecast', 'box', 'pbp', 'team'].includes(tab0)) ui.tab = tab0;
   $('#sample').hidden = true;
-  $('#view').innerHTML = '<div class="panel"><div class="empty">Loading the live game…</div></div>';
-  let fsM, fsdb, asAdmin = false, noted = false;
-  try {
-    const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
-    // The admin's devices sign in here too, so an unshared game opened from All Games can be read.
-    let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
-    const [appM, fs, authM] = await Promise.all(['app', 'firestore', ...(admin ? ['auth'] : [])].map(m => import(base + m + '.js')));
-    const app = appM.initializeApp(firebaseConfig);
-    fsM = fs; fsdb = fs.getFirestore(app);
-    if (authM) asAdmin = await new Promise(res => { const off = authM.onAuthStateChanged(authM.getAuth(app), u => { off(); res(!!u && u.uid === ADMIN_UID); }); });
-  } catch (e) { return viewerMessage('Can’t reach the live game. Check your connection and reload.'); }
+  if (!g) $('#view').innerHTML = '<div class="panel"><div class="empty">Loading the live game…</div></div>';
+  let api; try { api = await viewerApi(); } catch (e) { viewerApiP = null; return viewerMessage('Can’t reach the live game. Check your connection and reload.'); }
+  const {fsM, fsdb, asAdmin} = api;
+  let noted = false;
   const gone = () => viewerMessage('This game isn’t being shared right now.');
-  scoresReady({fsM, fsdb});
-  fsM.onSnapshot(fsM.doc(fsdb, 'pressbox', id), snap => {
+  // Once per page: a school's gamecast calls this again each time that school's game changes.
+  if (!startViewer.ready){ startViewer.ready = true; scoresReady({fsM, fsdb}); setInterval(renderLive, 5000); }
+  if (startViewer.unsub) startViewer.unsub();
+  startViewer.unsub = fsM.onSnapshot(fsM.doc(fsdb, 'pressbox', id), snap => {
     const d = snap.exists() ? snap.data() : null;
     if (!d || d.deleted || (!d.public && !asAdmin)) return gone();
     if (!d.public && !noted){ noted = true; toast('Private game: only you, as the admin, can see it'); }
     // On the site itself the address becomes the game's preview link (/g/<id>/), so copying it and posting it shows
     // this game on social media. Only once that page exists: a brand-new game's link stays ?game=, which previews
     // as the site. The base keeps the page's own links pointing at the site.
-    if (d.public && location.hostname === 'stats.kansasmediarankings.com' && !location.pathname.startsWith('/g/') && !startViewer.checked){
+    if (d.public && !SCHOOL_CAST && location.hostname === 'stats.kansasmediarankings.com' && !location.pathname.startsWith('/g/') && !startViewer.checked){
       startViewer.checked = true;
       fetch(`/g/${encodeURIComponent(id)}/`, {method:'HEAD'}).then(r => {
         if (!r.ok || location.pathname.startsWith('/g/')) return;
@@ -4147,7 +4142,66 @@ async function startViewer(id){
     const [hi, lo] = R.st.score.H > R.st.score.A ? ['H', 'A'] : ['A', 'H'];   // the higher score first, like the link's preview
     document.title = `${g.teams[hi].name} ${R.st.score[hi]}, ${g.teams[lo].name} ${R.st.score[lo]} · Kansas Media Stats`;
   }, gone);
-  setInterval(renderLive, 5000);
+}
+// Firebase for a watcher's page, set up once and shared (a school's gamecast moves from game to game).
+let viewerApiP = null;
+function viewerApi(){
+  if (viewerApiP) return viewerApiP;
+  return viewerApiP = (async () => {
+    const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
+    // The admin's devices sign in here too, so an unshared game opened from All Games can be read.
+    let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
+    const [appM, fs, authM] = await Promise.all(['app', 'firestore', ...(admin ? ['auth'] : [])].map(m => import(base + m + '.js')));
+    const app = appM.initializeApp(firebaseConfig), fsdb = fs.getFirestore(app);
+    let asAdmin = false;
+    if (authM) asAdmin = await new Promise(res => { const off = authM.onAuthStateChanged(authM.getAuth(app), u => { off(); res(!!u && u.uid === ADMIN_UID); }); });
+    return {fsM:fs, fsdb, asAdmin};
+  })();
+}
+
+/* ---------- a school's gamecast: ?gamecast=<school> shows whatever game that school is playing ----------
+   For a newspaper that wants Friday's game in an article before anyone has started keeping stats on it (a game only
+   gets its own address once a scorer starts it). It watches this week's shared games and last week's: the school's
+   game in progress, else this week's tracked game, else a note about the game coming up, else last week's game. */
+const SCHOOL_CAST = new URLSearchParams(location.search).get('gamecast');
+async function startSchoolCast(school){
+  ui.viewer = true; document.body.classList.add('viewer');
+  $('#sample').hidden = true;
+  $('#view').innerHTML = '<div class="panel"><div class="empty">Finding the game…</div></div>';
+  let api; try { api = await viewerApi(); } catch (e) { viewerApiP = null; return viewerMessage('Can’t reach the live game. Check your connection and reload.'); }
+  const {fsM, fsdb} = api;
+  loadLogos();   // a school's other names ("Haysville Campus") only match once the school list is here
+  const now = weekKey(Date.now()), prev = weekKey(fromYmd(now).getTime() - 3 * 864e5);
+  const weeks = {[now]:null, [prev]:null};
+  let showing = null;
+  const pick = () => {
+    if (Object.values(weeks).some(v => v === null)) return;
+    const want = canonSchool(String(school).replace(/[-_]+/g, ' '));
+    const mine = [...Object.values(weeks[now]), ...Object.values(weeks[prev])]
+      .filter(x => x.teams && x.teams.A && x.teams.H && ['A', 'H'].some(s => canonSchool(x.teams[s].name) === want));
+    const newest = (a, b) => (b.updated || 0) - (a.updated || 0);
+    const tracked = mine.filter(x => x.kind !== 'score' && (Array.isArray(x.plays) || x.box));
+    const inProgress = x => { if (x.box || !x.plays.length) return false; try { return !replay(x).st.final; } catch (e) { return false; } };
+    const live = tracked.filter(inProgress).sort(newest)[0];
+    const thisWeek = tracked.filter(x => x._wk === now).sort(newest)[0];
+    const coming = mine.filter(x => x.kind === 'score' && x._wk === now && x.per !== 'final').sort((a, b) => gameDay(a) - gameDay(b))[0];
+    const game = live || thisWeek || (coming ? null : tracked.filter(x => x._wk === prev).sort(newest)[0]);
+    if (game){ if (showing !== game.id){ showing = game.id; startViewer(game.id); } return; }
+    if (showing){ if (startViewer.unsub) startViewer.unsub(); startViewer.unsub = null; showing = null; }
+    const q = coming || mine.filter(x => x.kind === 'score').sort(newest)[0];
+    const name = schoolName(String(school).replace(/[-_]+/g, ' '));
+    if (!q) return viewerMessage(`No game this week for ${name} yet. The gamecast shows up here as soon as there is one.`);
+    const T = q.teams;
+    viewerMessage(q.per === 'final'
+      ? `Final: ${T.A.name} ${+q.A || 0}, ${T.H.name} ${+q.H || 0}. Nobody kept stats on this game, so there’s no gamecast.`
+      : `${T.A.name} at ${T.H.name}, ${dayShort(gameDay(q))}${q.time ? ' at ' + q.time : ''}. The gamecast starts here once someone keeps stats on the game.`);
+  };
+  [now, prev].forEach(k => fsM.onSnapshot(fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true), fsM.where('week', '==', k)), snap => {
+    const docs = {};
+    snap.forEach(d => { const v = d.data(); if (v.deleted || !v.json) return; try { const x = JSON.parse(v.json); if (x && x.teams) docs[d.id] = Object.assign(x, {id:d.id, _wk:k}); } catch (e) {} });
+    weeks[k] = docs; pick();
+  }, () => { weeks[k] = {}; pick(); }));
+  setInterval(pick, 60000);   // the school list arriving, or the day turning over
 }
 // On a game's own page: Edit, only for its scorer, signed in on the device where the game is kept. Everyone else
 // just watches (the address bar has the link).
@@ -4638,7 +4692,7 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
   const here = q.has('tracker') || q.has('edit') ? 'tracker'
     : q.has('avctl') ? 'avscores' : q.has('standings') ? 'standings' : q.has('avstats') ? 'avstats'
     : q.has('scores') ? 'scores' : q.has('state') ? 'state' : q.has('statestats') ? 'sstats'
-    : q.has('stats') ? 'stats' : q.has('team') || q.has('teams') ? 'teams' : q.has('game') || q.has('live') ? '' : 'home';
+    : q.has('stats') ? 'stats' : q.has('team') || q.has('teams') ? 'teams' : q.has('game') || q.has('live') || q.has('gamecast') ? '' : 'home';
   // Each menu's pages sit under its own name: Butler County, AVCTL, State.
   const UNDER = {scores:'buco', stats:'buco', teams:'buco', avscores:'avctl', standings:'avctl', avstats:'avctl', state:'state', sstats:'state'};
   const top = UNDER[here] || here;
@@ -6354,7 +6408,7 @@ const LOGO_MAP = {
 // The front door: the site's plain address opens here. The Game Tracker has its own, ?tracker (and ?edit=<id>).
 const PAGE_Q = new URLSearchParams(location.search);
 const TRACKER_PAGE = PAGE_Q.has('tracker') || PAGE_Q.has('edit');
-const HOME_PAGE = PAGE_Q.has('home') || (!TRACKER_PAGE && !['scores', 'state', 'stats', 'statestats', 'avctl', 'avstats', 'standings', 'game', 'live', 'team', 'teams'].some(k => PAGE_Q.has(k)));
+const HOME_PAGE = PAGE_Q.has('home') || (!TRACKER_PAGE && !['scores', 'state', 'stats', 'statestats', 'avctl', 'avstats', 'standings', 'game', 'live', 'gamecast', 'team', 'teams'].some(k => PAGE_Q.has(k)));
 
 // On a scorer's device (signed in on the Game Tracker), the menu bar's scorer buttons show on every page too. Away
 // from the tracker they open it, with that window up: ?tracker&open=games, setup, export or share.
@@ -8337,6 +8391,7 @@ else if (BOARD) startScoreboard();      // ?scores: the week's scoreboard, read-
 else if (COUNTY_PAGE) startCounty();    // ?stats: the county's season stats, read-only
 else if (TEAM_PAGE) startTeamPage();    // ?teams, ?team=<name>: the schools, and each one's record and schedule
 // ?edit=<id> is the scorer coming back to their own game, and wins over ?game= — the preview page forwards both.
+else if (SCHOOL_CAST) startSchoolCast(SCHOOL_CAST);   // ?gamecast=<school>: that school's current game, for embedding
 else if (LIVE_ID && !new URLSearchParams(location.search).has('edit')) startViewer(LIVE_ID); // a shared link: watch that game, read-only
 else {
   load();
