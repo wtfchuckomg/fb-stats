@@ -262,13 +262,16 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .pg-info:first-of-type{border-top:0;padding-top:0}
 .pg-info b{color:var(--ink-2);font-weight:600}
 .pg-tbl{min-width:0}
-.pg-tbl .ctbl th,.pg-tbl .ctbl td{padding:9px 6px;background:transparent}
+.pg-tbl .ctbl th{padding:4px 6px 10px;background:transparent;font:600 12px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid rgba(60,60,67,.12)}
+.pg-tbl .ctbl td{padding:13px 6px;background:transparent;font:400 15px/1.3 var(--sans);color:var(--ink-2);border-bottom:1px solid rgba(60,60,67,.12)}
+.pg-tbl .ctbl tr:last-child td{border-bottom:0}
+.pg-st td:first-child,.pg-five td:nth-child(2){font-weight:600}
 .pg-tbl .ctbl tbody tr:nth-child(even) td{background:transparent}
 .pg-tbl .ctbl th:last-child,.pg-tbl .ctbl td:last-child{padding-right:2px}
 .pg-tbl .ctbl th:first-child,.pg-tbl .ctbl td:first-child{padding-left:2px}
 .pg-tbl .ctbl tr:last-child td{border-bottom:0}
 .pg-odds{table-layout:fixed}
-.pg-odds td,.pg-odds th{padding:9px 8px}
+.pg-odds td{font-variant-numeric:tabular-nums}
 .pg-odds th:first-child,.pg-odds td:first-child{width:50%;text-align:left}
 .pg-odds th:last-child,.pg-odds td:last-child{padding-right:12px}
 .pg-oteam{display:flex;align-items:center;gap:8px;min-width:0}
@@ -292,12 +295,11 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .pg-l{font:600 12px/1.2 var(--sans);text-align:center;color:var(--ink)}
 .pg-fives{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 36px}
 .pg-fhead{display:flex;align-items:center;gap:8px;margin-bottom:6px;font:700 14px/1 var(--sans)}
-.pg-five .ctbl th,.pg-five .ctbl td{padding:7px 4px;font-size:13px}
+
 .pg-opp{display:inline-flex;align-items:center;gap:5px;color:var(--muted)}
 .pg-opp .tlink{color:var(--ink-2);font-weight:600}
 .pg-w{color:var(--good)} .pg-lo{color:var(--bad)}
 .pg-st td:first-child,.pg-st th:first-child,.pg-five td:nth-child(2),.pg-five th:nth-child(2){text-align:left}
-.pg-st td,.pg-st th{padding:7px 6px;font-size:13.5px}
 .pg-st tr.pg-us td{font-weight:700}
 @media (max-width:1180px){.pg-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .pg-mid{grid-column:1 / -1;order:-1}}
 @media (max-width:700px){
