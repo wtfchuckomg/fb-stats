@@ -252,8 +252,7 @@ function previewHtml(){
         <div class="pg-pct r"><b>${pctH}%</b><span>${esc(T.H.abbr || shortName(H))}</span></div></div>
       <p class="pg-proj">Projected: <b>${esc(fav)} by ${Math.max(1, Math.round(Math.abs(P.pts)))}</b></p>
       <details class="pg-how"><summary>How it’s figured</summary>
-        <table class="pg-parts">${partRows}</table>
-        <p class="hint">Scoring margin and records from the finals on this site, class from KPreps, and the ${pre.rank && pre.rank.week ? esc(pre.rank.week) + ' ' : ''}Media Rankings. Past meetings will count once earlier seasons are loaded.</p></details>
+        <table class="pg-parts">${partRows}</table></details>
     </section>`;
 
   const info = n => { const i = schoolInfo(n); return i ? `Class ${i[0].replace('8M-', '8-Man ').replace('6M', '6-Man')} · ${i[1]}` : ''; };
@@ -275,7 +274,7 @@ function previewHtml(){
   const odds = `<section class="bcard pg-card"><h2 class="pg-h">Game line</h2>
       <div class="pg-tbl"><table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th><th class="num">Score</th>${ML ? '<th class="num pg-mass">Massey</th>' : ''}</tr></thead><tbody>
         ${oddsRow('A', A)}${oddsRow('H', H)}</tbody></table></div>
-      ${OL ? `<p class="hint">This site's own line, from every Kansas result since 2021${OL.thin ? ' (one of these teams has few games on file, so treat it lightly)' : ''}. For fun only: there's no betting here.</p>`
+      ${OL ? `<p class="hint">${OL.thin ? 'One of these teams has few games on file, so treat this lightly. ' : ''}For fun only: there's no betting here.</p>`
         : `<p class="hint">No line for this game yet: the ratings don't have both schools.</p>`}
     </section>`;
 
@@ -307,7 +306,6 @@ function previewHtml(){
 
   // Past meetings, from the seasons on file for the county's schools.
   const met = pastMeetings(A, H), waiting = [A, H].some(n => pre.hist[logoSlug(n)] === null);
-  const series = met.reduce((t, m) => { t[m.us > m.them ? 0 : m.us < m.them ? 1 : 2]++; return t; }, [0, 0, 0]);
   // "2025 · at Augusta · AUG 47, CIR 6": where it was played, then the score with the winner first.
   const ab2 = {A:T.A.abbr || shortName(A), H:T.H.abbr || shortName(H)};
   const metRows = met.slice(0, 6).map(m => {
@@ -321,7 +319,6 @@ function previewHtml(){
       ${waiting && !met.length ? '<p class="bempty">Loading past seasons…</p>' : `${(() => {
         const fa = fiveYear(A), fh = fiveYear(H);
         return fa && fh ? `<p class="pg-proj" style="text-align:left">Last ${Math.max(fa.years, fh.years)} seasons: ${esc(A)} ${fa.w}-${fa.l}${fa.t ? '-' + fa.t : ''}, ${esc(H)} ${fh.w}-${fh.l}${fh.t ? '-' + fh.t : ''}</p>` : ''; })()}
-        <p class="pg-proj" style="text-align:left">${esc(A)} is ${series[0]}-${series[1]}${series[2] ? '-' + series[2] : ''} against ${esc(H)} in the last ${met.length === 1 ? 'meeting' : `${met.length} meetings`}</p>
         <div class="pg-tbl"><table class="ctbl"><thead><tr><th>Year</th><th>Where</th><th class="num">Final</th></tr></thead><tbody>${metRows}</tbody></table></div>`}
     </section>` : '';
 
