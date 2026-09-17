@@ -85,8 +85,11 @@ def rows_from_database():
         if title: yield doc_id, title, sub
 
 
-def build(rows):
-    """Write g/<id>/ (page and score card) for each (id, title, sub); drop the pages of games no longer listed."""
+def build(rows, keep_only=True):
+    """Write g/<id>/ (page and score card) for each (id, title, sub).
+
+    keep_only=True also drops the pages of games no longer listed — right for a full pass, wrong for the
+    quarter-hourly run, which only ever sees the games saved since it last looked."""
     keep = set()
     for doc_id, title, sub in rows:
         if not re.fullmatch(r'[A-Za-z0-9_-]+', doc_id) or not title: continue
@@ -100,7 +103,7 @@ def build(rows):
             os.makedirs(os.path.dirname(path), exist_ok=True)
             open(path, 'w', encoding='utf-8').write(new)
     # Games no longer shared lose their page, but never all at once: an empty answer is more likely a hiccup.
-    if keep and os.path.isdir(OUT):
+    if keep_only and keep and os.path.isdir(OUT):
         for name in os.listdir(OUT):
             if name not in keep: shutil.rmtree(os.path.join(OUT, name), ignore_errors=True)
     print(f'{len(keep)} game previews')

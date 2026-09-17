@@ -1,0 +1,37 @@
+# A game's link card, as soon as it goes final. Every quarter hour through Kansas evenings; the nightly
+# rebuild (nightly.yml) still does the full pass. See .github/cards-now.py.
+name: Score cards
+
+on:
+  schedule:
+    # 6 p.m. to 1 a.m. in Kansas, which is 23:00-06:00 UTC in summer and an hour later in winter.
+    - cron: '*/15 23,0,1,2,3,4,5,6 * * 4,5,6'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: score-cards
+  cancel-in-progress: false
+
+jobs:
+  cards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Playwright and Pillow
+        run: python3 -m pip install --quiet playwright Pillow
+      - name: Draw cards for games finished since the last run
+        run: python3 .github/cards-now.py
+      - name: Save and publish any changes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git add -A g .github/cards-state.json
+          if git diff --cached --quiet; then echo "No new cards"; exit 0; fi
+          git -c user.name="Score cards" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "Score cards for games just finished"
+          git pull -q --rebase && git push -q
+          curl -s -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pages/builds" > /dev/null || true
