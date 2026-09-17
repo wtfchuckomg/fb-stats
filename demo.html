@@ -261,10 +261,11 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .pg-info{display:grid;gap:2px;padding:10px 0;border-top:1px solid var(--line-2);font:400 14px/1.35 var(--sans);color:var(--muted)}
 .pg-info:first-of-type{border-top:0;padding-top:0}
 .pg-info b{color:var(--ink-2);font-weight:600}
-.pg-tbl{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
-.pg-tbl .ctbl th,.pg-tbl .ctbl td{border-bottom:1px solid var(--line-2);padding:8px 8px}
-.pg-tbl .ctbl th:last-child,.pg-tbl .ctbl td:last-child{padding-right:12px}
-.pg-tbl .ctbl th:first-child,.pg-tbl .ctbl td:first-child{padding-left:12px}
+.pg-tbl{min-width:0}
+.pg-tbl .ctbl th,.pg-tbl .ctbl td{padding:9px 6px;background:transparent}
+.pg-tbl .ctbl tbody tr:nth-child(even) td{background:transparent}
+.pg-tbl .ctbl th:last-child,.pg-tbl .ctbl td:last-child{padding-right:2px}
+.pg-tbl .ctbl th:first-child,.pg-tbl .ctbl td:first-child{padding-left:2px}
 .pg-tbl .ctbl tr:last-child td{border-bottom:0}
 .pg-odds{table-layout:fixed}
 .pg-odds td,.pg-odds th{padding:9px 8px}
@@ -289,7 +290,7 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .pg-who b{max-width:100%;font:600 15px/1.2 var(--sans);color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pg-n{font:700 22px/1 var(--sans);text-align:center;color:var(--ink-2)}
 .pg-l{font:600 12px/1.2 var(--sans);text-align:center;color:var(--ink)}
-.pg-fives{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.pg-fives{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 36px}
 .pg-fhead{display:flex;align-items:center;gap:8px;margin-bottom:6px;font:700 14px/1 var(--sans)}
 .pg-five .ctbl th,.pg-five .ctbl td{padding:7px 4px;font-size:13px}
 .pg-opp{display:inline-flex;align-items:center;gap:5px;color:var(--muted)}
@@ -297,7 +298,7 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .pg-w{color:var(--good)} .pg-lo{color:var(--bad)}
 .pg-st td:first-child,.pg-st th:first-child,.pg-five td:nth-child(2),.pg-five th:nth-child(2){text-align:left}
 .pg-st td,.pg-st th{padding:7px 6px;font-size:13.5px}
-.pg-st tr.pg-us td{font-weight:700;background:var(--surface)}
+.pg-st tr.pg-us td{font-weight:700}
 @media (max-width:1180px){.pg-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .pg-mid{grid-column:1 / -1;order:-1}}
 @media (max-width:700px){
   .pg-head{grid-template-columns:1fr 1fr;padding:16px}
@@ -1087,9 +1088,12 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .bt-t,.st-score{font-weight:600;letter-spacing:-.02em}
 .st-name{font-weight:600;letter-spacing:-.02em}
 .ctbl th{color:var(--muted);font-weight:600;letter-spacing:.02em}
-.ctbl{background:var(--card)}
-.ctbl td{border-bottom-color:#E2E3E6}
-.ctbl tbody tr:nth-child(even) td{background:#F2F3F5}
+.ctbl{background:transparent}
+.ctbl th{background:transparent;border-bottom-color:rgba(60,60,67,.18)}
+.ctbl td{background:transparent;border-bottom-color:rgba(60,60,67,.12)}
+.ctbl tbody tr:nth-child(even) td{background:rgba(255,255,255,.34)}
+.ctbl th.on,.ctbl td.on,.ctbl tbody tr:nth-child(even) td.on{background:rgba(226,239,253,.55)}
+.ctbl tr.hi td,.ctbl tr.hi td.on{background:rgba(232,242,255,.5)}
 .ctbl th.on,.ctbl td.on,.ctbl tbody tr:nth-child(even) td.on{background:#EEF5FD}
 .ctbl tr.hi td,.ctbl tr.hi td.on{background:#F2F7FE}
 /* the standings are the one table that reads as a panel rather than a spreadsheet, so its rows sit on the
