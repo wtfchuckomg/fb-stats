@@ -215,9 +215,11 @@ const cMark = name => markFor({name, abbr:shortName(name), color:'#4A4B4D'}, 26)
 // "Will Quinn" -> "W. Quinn"; one-word names and numbers ("#12") stay as they are.
 const plShort = n => { const p = String(n).trim().split(/\s+/); return p.length < 2 || p[0].startsWith('#') ? n : `${p[0][0]}. ${p.slice(1).join(' ')}`; };
 // Statewide: every school in the season's games, once each, by the first spelling seen (as countyStats names them).
+// One entry per school, under the name this site uses, however the games spell it.
+const sameTeamName = (a, b) => !!a && !!b && canonSchool(a) === canonSchool(b);
 function stateTeamList(games){
   const seen = {};
-  games.forEach(x => ['A', 'H'].forEach(s => { const k = canonSchool(x.teams[s].name); if (!seen[k]) seen[k] = x.teams[s].name; }));
+  games.forEach(x => ['A', 'H'].forEach(s => { const k = canonSchool(x.teams[s].name); if (!seen[k]) seen[k] = schoolName(x.teams[s].name); }));
   return Object.values(seen).sort((a, b) => a.localeCompare(b));
 }
 function renderCounty(){
@@ -240,7 +242,7 @@ function renderCounty(){
   else {
     const {teams, players} = y25 ? countyStats2025() : countyStats(games);
     if (v === 'team'){
-      const o = {first:'TEAM', name:t => `${cMark(t.name)}<b>${esc(t.name)}</b>`, hi:t => t.name === county.team};
+      const o = {first:'TEAM', name:t => `${cMark(t.name)}<b>${esc(t.name)}</b>`, hi:t => sameTeamName(t.name, county.team)};
       const card = (title, id, cols, def, asc) => `<section class="bcard ccard"><div class="ccard-hd"><h2>${title}</h2></div>${statTable(id, STATE_STATS ? teams.filter(t => t.gp) : teams, cols, def, {...o, asc})}</section>`;
       if (y25){
         const cols = yardCols('').filter(c => !c[0].endsWith('/G'));
@@ -253,7 +255,7 @@ function renderCounty(){
       }
     } else if (y25 && v === 'kicking') body = note('The 2025 leaderboard has no kicking stats.');
     else {
-      const V = y25 && v === 'scoring' ? SCORING_25 : P_VIEWS[v], rows = players.filter(p => V.keep(p) && (county.team === 'all' || p.team === county.team));
+      const V = y25 && v === 'scoring' ? SCORING_25 : P_VIEWS[v], rows = players.filter(p => V.keep(p) && (county.team === 'all' || sameTeamName(p.team, county.team)));
       // Phones show the short form, like ESPN's ("W. Quinn").
       const name = p => `${cMark(p.team)}<span class="c-pl"><b><span class="pl-full">${esc(p.name)}</span><span class="pl-short">${esc(plShort(p.name))}</span></b><small>${esc(shortName(p.team))}${p.yr ? `<span class="pl-yr"> · ${esc(p.yr)}</span>` : ''}</small></span>`;
       // 2025's tables keep their own sort (its Scoring has fewer columns than this season's).

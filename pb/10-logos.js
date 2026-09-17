@@ -27,6 +27,11 @@ function loadLogos(){
    leaves a game with no logo, no roster and its own row in the stats). The list is fetched at runtime, so when
    it hasn't arrived — a cold load on a bad connection — fall back to the schools saved on this device plus
    whatever the game already says, rather than showing an empty list nobody can get past. */
+// What this site calls a school, whatever a paste or a paper called it: "Haysville Campus" is Campus.
+const schoolName = n => {
+  const k = canonSchool(n), t = (logoLib.list || []).find(v => logoSlug(v.name) === k);
+  return t ? t.name : n;
+};
 function schoolList(...keep){
   // This site's own list (logos/teams.json) as the admin keeps it — not the Pick 'Em library, which carries
   // schools that don't belong in these pickers.

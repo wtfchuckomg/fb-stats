@@ -151,9 +151,8 @@ function teamsIndexHtml(){
   const county = new Set(COUNTY.map(canonSchool));
   // Everyone else the site covers: the county's opponents, the AVCTL, and any school that turns up in a game
   // someone has kept — a school joins this list the moment its first game does.
-  const pretty = n => { const k = canonSchool(n), t = (logoLib.list || []).find(v => logoSlug(v.name) === k); return t ? t.name : n; };
   const named = new Map();
-  const add = n => { const k = n && canonSchool(n); if (!k || county.has(k) || named.has(k)) return; named.set(k, pretty(n)); };
+  const add = n => { const k = n && canonSchool(n); if (!k || county.has(k) || named.has(k)) return; named.set(k, schoolName(n)); };
   Object.keys(SCHOOL_INFO).forEach(add);
   AVCTL.forEach(add);
   (allGames.list || []).forEach(x => ['A', 'H'].forEach(sd => add(x.teams[sd] && x.teams[sd].name)));
@@ -214,7 +213,11 @@ function teamPageHtml(nameIn){
       <div class="tp-recs">${recBox('rec', 'Overall')}${recBox('home', 'Home')}${recBox('away', 'Away')}</div>
       ${ui.admin && !tpage.edit ? `<button type="button" class="bhide" data-tp-edit>Edit record</button>${teamRecs.map[k] ? '<p class="h-note tp-manual">This record was set by hand, so it doesn’t come from the tally. Edit record to change or clear it.</p>' : ''}` : ''}
       ${form}
-      ${inCounty ? `<div class="tp-links"><a class="h-btn" href="?stats&amp;team=${encodeURIComponent(name)}">Player stats</a><a class="h-btn" href="?stats=team&amp;team=${encodeURIComponent(name)}">Team stats</a></div>` : ''}
+      ${inCounty || rows.some(r => r.stats) ? (() => {
+        // Butler County has its own stats pages; every other school's numbers live on State Stats.
+        const p = inCounty ? '?stats' : '?statestats', t = inCounty ? '?stats=team' : '?statestats=team', q = encodeURIComponent(name);
+        return `<div class="tp-links"><a class="h-btn" href="${p}&amp;team=${q}">Player stats</a><a class="h-btn" href="${t}&amp;team=${q}">Team stats</a></div>`;
+      })() : ''}
     </section>
     <section class="bcard"><h2 class="tp-h">Schedule &amp; Results</h2>
       ${coveredSchool(name) ? '' : `<p class="h-note" style="margin:0 0 10px">Only ${esc(name)}’s games against Butler County schools and their opponents are on the site, so there’s no record here.</p>`}
