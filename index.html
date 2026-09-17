@@ -8241,6 +8241,9 @@ document.addEventListener('keydown', e => {
    signed with a way back to the full site.
    ================================================================ */
 const EMBEDDED = document.documentElement.classList.contains('is-embed');
+// Pasted into WordPress as a plain link (embed/<page>/), WordPress frames the page with "#?secret=…" on the end
+// and sizes the frame when told the height with that secret — the only way in on a site that strips iframes.
+const WP_SECRET = (location.hash.match(/[#?&]secret=([A-Za-z0-9]+)/) || [])[1] || '';
 
 // The host page listens for this and sets the iframe's height, so the embed
 // grows with the week's games instead of scrolling inside a fixed box.
@@ -8249,6 +8252,7 @@ function embedSize(){
   if (!h || h === embedSize.last) return;
   embedSize.last = h;
   try { parent.postMessage({kms:'height', height:h}, '*'); } catch (e) {}
+  if (WP_SECRET) try { parent.postMessage({message:'height', value:h, secret:WP_SECRET}, '*'); } catch (e) {}
 }
 
 // A link inside the embed keeps the reader inside the embed: same page, still
@@ -8264,8 +8268,9 @@ function embedLinks(){
     if (url.origin !== location.origin){ a.target = '_blank'; a.rel = 'noopener'; return; }
     if (a.hasAttribute('download') || a.target === '_blank') return;
     if (url.pathname === location.pathname && url.search === location.search && url.hash) return;  // same page
-    if (url.searchParams.has('embed')) return;
+    if (url.searchParams.has('embed') && (!WP_SECRET || url.hash)) return;
     url.searchParams.set('embed', '1');
+    if (WP_SECRET) url.hash = '?secret=' + WP_SECRET;   // the next page keeps telling WordPress its height
     a.href = url.toString();   // not preventDefault: the click follows the new address
   });
 }
@@ -8275,13 +8280,19 @@ function embedFoot(){
   // Drop embed from the address without rewriting the rest of it: ?state stays
   // ?state, not ?state=.
   const url = new URL(location.href);
-  url.search = url.search.replace(/([?&])embed(=[^&]*)?(?=&|$)/, '$1').replace(/[?&]$/, '');
-  const what = BOARD ? 'scoreboard' : COUNTY_PAGE ? 'stats page' : TEAM_PAGE ? 'page' : 'game';
+  url.search = url.search.replace(/([?&])embed(=[^&]*)?(?=&|$)/, '$1').replace(/[?&]$/, '').replace(/&&+/g, '&');
+  url.hash = '';
+  const what = BOARD ? 'scoreboard' : COUNTY_PAGE ? 'stats page' : AV_STAND ? 'standings' : TEAM_PAGE ? 'page' : 'game';
   const el = document.createElement('div');
   el.className = 'emb-foot';
   el.innerHTML = `<a href="${esc(url.toString())}" target="_blank" rel="noopener">`
     + `Open this ${what} at Kansas Media Stats &#8599;</a>`;
   document.body.appendChild(el);
+  // WordPress locks its frames against new tabs; it opens a link on our site in the reader's own tab when asked.
+  if (WP_SECRET) el.querySelector('a').addEventListener('click', e => {
+    e.preventDefault();
+    try { parent.postMessage({message:'link', value:url.toString(), secret:WP_SECRET}, '*'); } catch (err) {}
+  });
 }
 
 function startEmbed(){
