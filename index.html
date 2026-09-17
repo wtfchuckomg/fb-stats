@@ -8849,12 +8849,18 @@ function previewHtml(){
   // Past meetings, from the seasons on file for the county's schools.
   const met = pastMeetings(A, H), waiting = [A, H].some(n => pre.hist[logoSlug(n)] === null);
   const series = met.reduce((t, m) => { t[m.us > m.them ? 0 : m.us < m.them ? 1 : 2]++; return t; }, [0, 0, 0]);
-  const metRows = met.slice(0, 6).map(m => `<tr><td class="num">${m.year}</td>
-      <td>${m.at === 'away' ? '@' : 'vs'} ${esc(H)}</td>
-      <td class="num"><b class="${m.us > m.them ? 'pg-w' : m.us < m.them ? 'pg-lo' : ''}">${m.us > m.them ? 'W' : m.us < m.them ? 'L' : 'T'}</b> ${m.us}-${m.them}${m.ot ? ' OT' : ''}</td></tr>`).join('');
+  // "2025 · at Augusta · AUG 47, CIR 6": where it was played, then the score with the winner first.
+  const ab2 = {A:T.A.abbr || shortName(A), H:T.H.abbr || shortName(H)};
+  const metRows = met.slice(0, 6).map(m => {
+    const host = m.at === 'home' ? A : m.at === 'away' ? H : '';
+    const side = s => `${esc(ab2[s])} ${s === 'A' ? m.us : m.them}`;
+    const first = m.them > m.us ? side('H') : side('A'), second = m.them > m.us ? side('A') : side('H');
+    return `<tr><td class="num">${m.year}</td><td>${host ? `at ${esc(host)}` : 'neutral site'}</td>
+      <td class="num">${first}, ${second}${m.ot ? ' (OT)' : ''}</td></tr>`;
+  }).join('');
   const past = met.length || waiting ? `<section class="bcard pg-card"><h2 class="pg-h">Past meetings</h2>
       ${waiting && !met.length ? '<p class="bempty">Loading past seasons…</p>' : `<p class="pg-proj" style="text-align:left">${esc(A)} is ${series[0]}-${series[1]}${series[2] ? '-' + series[2] : ''} against ${esc(H)} in the last ${met.length === 1 ? 'meeting' : `${met.length} meetings`}</p>
-        <div class="pg-tbl"><table class="ctbl"><thead><tr><th>Year</th><th>Game</th><th class="num">${esc(T.A.abbr || shortName(A))} result</th></tr></thead><tbody>${metRows}</tbody></table></div>`}
+        <div class="pg-tbl"><table class="ctbl"><thead><tr><th>Year</th><th>Where</th><th class="num">Final</th></tr></thead><tbody>${metRows}</tbody></table></div>`}
     </section>` : '';
 
   // Standings: each team's AVCTL division (one table when they share it).
