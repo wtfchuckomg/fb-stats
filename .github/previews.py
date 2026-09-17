@@ -72,18 +72,24 @@ def page(doc_id, title, sub):
 '''
 
 
-def main():
+def rows_from_database():
+    """(id, title, sub) for each shared game, read over the database's web address."""
     seed_path = os.path.join(ROOT, '.github', 'cards-seed.json')
     seed = json.load(open(seed_path, encoding='utf-8')) if os.path.exists(seed_path) else {}
-    keep = set()
     for row in fetch():
         d = row.get('document')
         if not d: continue
         doc_id, f = d['name'].rsplit('/', 1)[-1], d.get('fields', {})
-        if not re.fullmatch(r'[A-Za-z0-9_-]+', doc_id): continue
         if f.get('deleted', {}).get('booleanValue') or f.get('kind', {}).get('stringValue') in NOT_GAMES or 'json' not in f: continue
         title, sub = card_of(doc_id, f, seed)
-        if not title: continue
+        if title: yield doc_id, title, sub
+
+
+def build(rows):
+    """Write g/<id>/ (page and score card) for each (id, title, sub); drop the pages of games no longer listed."""
+    keep = set()
+    for doc_id, title, sub in rows:
+        if not re.fullmatch(r'[A-Za-z0-9_-]+', doc_id) or not title: continue
         keep.add(doc_id)
         # The score card. A game whose card can't be read keeps whatever picture it already had.
         try: cards.draw_card(title, sub, os.path.join(OUT, doc_id, 'card.png'))
@@ -100,4 +106,5 @@ def main():
     print(f'{len(keep)} game previews')
 
 
-main()
+if __name__ == '__main__':
+    build(rows_from_database())

@@ -1,0 +1,48 @@
+# Every night at 3 a.m. Kansas time: rebuild season.json, stats.json, the game preview pages and the embed links
+# from the live site. See .github/nightly.py.
+name: Nightly rebuild
+
+on:
+  schedule:
+    # GitHub's clock is UTC, and 3 a.m. in Kansas is 08:00 UTC in summer (CDT) and 09:00 in winter (CST).
+    # Both are listed; the first step lets through only the one that is 3 a.m. in Kansas that day.
+    - cron: '0 8 * * *'
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: nightly-rebuild
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Is it 3 a.m. in Kansas?
+        id: when
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ] || [ "$(TZ=America/Chicago date +%H)" = "03" ]; then echo "go=1" >> "$GITHUB_OUTPUT"; else echo "Not 3 a.m. in Kansas; the other run has it."; fi
+      - uses: actions/checkout@v4
+        if: steps.when.outputs.go == '1'
+      - name: Install Playwright and Pillow
+        if: steps.when.outputs.go == '1'
+        run: python3 -m pip install --quiet playwright Pillow
+      - name: Rebuild from the live site
+        if: steps.when.outputs.go == '1'
+        run: python3 .github/nightly.py
+      - name: Save and publish any changes
+        if: steps.when.outputs.go == '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git add -A season.json stats.json g embed
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          git -c user.name="Nightly rebuild" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "Nightly rebuild: season, stats, previews, embeds"
+          git pull -q --rebase && git push -q
+          # A push by this job doesn't start a Pages build by itself, so ask for one.
+          curl -s -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pages/builds" > /dev/null || true
