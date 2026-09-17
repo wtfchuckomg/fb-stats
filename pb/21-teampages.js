@@ -38,6 +38,7 @@ function indexGames(){
     });
   });
   allGames.idx = idx; recCache.clear();
+  pushLocalScores();   // anything added on this device that never went up
 }
 const schoolRows = name => Object.values((allGames.idx && allGames.idx.get(canonSchool(name))) || {}).sort((a, b) => gameDay(a.x) - gameDay(b.x));
 // Whether a game is final and its score, worked out once per version of the game (a replay isn't free).

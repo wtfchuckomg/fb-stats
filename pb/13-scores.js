@@ -61,6 +61,19 @@ function pushScore(x){
     sync.err = friendlySync(e); sync.state = 'error'; renderSync();
   });
 }
+// A score added where the tracker's sync isn't running can be left sitting on the device. Once the admin is
+// signed in and the shared list has arrived, put up anything of theirs that isn't in it — once per load.
+let caughtUp = false;
+function pushLocalScores(){
+  if (caughtUp || !ui.admin || !teamRecs.api || !allGames.list) return;
+  caughtUp = true;
+  const have = new Set(allGames.list.map(x => x.id));
+  const mine = Object.values(qsLib()).filter(x => x && !x.deleted && x.teams && x.teams.A && x.teams.H && !have.has(x.id));
+  if (!mine.length) return;
+  mine.forEach(x => pushScore(x));
+  toast(`Put ${plural2(mine.length, 'game')} up for everyone`);
+}
+
 // From the account: whichever copy was saved last wins, and a deletion sticks.
 function mergeScore(id, d){
   const lib = qsLib(), a = lib[id], ru = d.updated || 0, lu = a ? a.updated || 0 : -1;
