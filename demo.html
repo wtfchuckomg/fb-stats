@@ -8723,7 +8723,7 @@ function previewHtml(){
   document.title = `${A} at ${H} · Preview · Kansas Media Stats`;
   const P = predict(A, H), day = gameDay(x);
   const when = `${day.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'})}`;
-  const time = x.time || '7:00 PM';
+  const time = '7:00 PM';   // every Kansas game kicks off at 7 p.m.; a listing that says otherwise is ignored
   // A game someone has started keeping stats on: send people to it.
   const live = Object.values(scores.docs || {}).find(g => g.kind !== 'score' && g.plays && g.plays.length && gameWeek(g) === gameWeek(x)
     && [g.teams.A.name, g.teams.H.name].map(canonSchool).sort().join('|') === [A, H].map(canonSchool).sort().join('|'));
@@ -8906,7 +8906,7 @@ async function saveMassey(){
     if (!r.game) return;
     const T = r.game.teams, side = s => r.flipped ? (s === 'A' ? 'home' : 'away') : (s === 'A' ? 'away' : 'home');
     const per = s => ({name:T[s].name, rank:r.rank[side(s)].rank, rec:r.rank[side(s)].rec, pred:r.pred[side(s)], pwin:r.pwin[side(s)], fav:r.fav === side(s)});
-    lines[masseyKey(gameWeek(r.game), T.A.name, T.H.name)] = {at:Date.now(), date:r.date, time:r.time, spread:r.spread, total:r.total, status:r.status,
+    lines[masseyKey(gameWeek(r.game), T.A.name, T.H.name)] = {at:Date.now(), date:r.date, spread:r.spread, total:r.total, status:r.status,
       flipped:r.flipped, massey:`${r.away} ${r.neutral ? 'vs' : 'at'} ${r.home}`, A:per('A'), H:per('H')};
     n++;
   });
