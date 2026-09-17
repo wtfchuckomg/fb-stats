@@ -120,6 +120,24 @@ async function saveTeamRecord(name, rec){
     if (!teamRecs.unsub) watchTeamRecs(teamRecs.api);   // the first save makes the list: follow it from now on
   } catch (e) { toast('Couldn’t save that. Sign in on the Game Tracker, then try again.'); }
 }
+// Wipe the typed records: from then on every school's record is the finals the site has, which is what a
+// pasted box score feeds. Nothing else is touched — the games, their scores and their stats stay as they are.
+async function clearTeamRecords(){
+  if (!ui.admin || !teamRecs.api) return toast('Sign in on the Game Tracker first');
+  const n = Object.keys(teamRecs.map || {}).length;
+  if (!n) return toast('No typed records to clear');
+  if (ui.confirm !== 'recs'){ ui.confirm = 'recs'; if (ui.dlg === 'schools') dlg().innerHTML = dlgSchools(); return toast(`Clear ${n} typed record${n === 1 ? '' : 's'}? Tap again`); }
+  ui.confirm = null;
+  const {fsM, fsdb} = teamRecs.api;
+  try {
+    // Save first, then forget them here: a refused write must not leave the screen saying they are gone.
+    await fsM.setDoc(fsM.doc(fsdb, 'pressbox', RECS_DOC), {owner:ADMIN_UID, updated:Date.now(), public:true, kind:'records',
+      title:'Team records', json:JSON.stringify({teams:{}})});
+    teamRecs.map = {}; recCache.clear(); recordsChanged();
+    toast(`Cleared ${n} typed record${n === 1 ? '' : 's'}`);
+  } catch (e) { toast('Couldn’t clear those. Sign in on the Game Tracker, then try again.'); }
+  if (ui.dlg === 'schools') dlg().innerHTML = dlgSchools();
+}
 const recParts = r => r ? [r.rec, r.home && `${r.home} Home`, r.away && `${r.away} Away`].filter(Boolean) : [];
 
 /* ---------- the pages ---------- */

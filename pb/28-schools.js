@@ -65,7 +65,11 @@ function dlgSchools(){
     <div class="grp"><h3>Add a school</h3><div class="line">
       <input class="inp" id="sch-new" placeholder="School name" autocomplete="off" style="flex:1">
       <button type="button" class="btn small" data-sch-add>Add</button></div>
-      <p class="hint">For a school the logo list doesn’t have yet. It gets a monogram until a logo is added.</p></div></div>
+      <p class="hint">For a school the logo list doesn’t have yet. It gets a monogram until a logo is added.</p></div>
+    <div class="grp"><h3>Typed records</h3><div class="line">
+      <button type="button" class="btn small danger" data-recs-clear>${ui.confirm === 'recs' ? 'Tap again to clear' : `Clear typed records (${Object.keys(teamRecs.map || {}).length})`}</button></div>
+      <p class="hint">A record you type by hand on a team’s page wins over the games. Clear them and every school’s record
+        is worked out from the finals on the site, which is what a pasted box score adds to.</p></div></div>
     <div class="dlg-ft"><button type="button" class="btn" data-close>Done</button><button type="button" class="btn primary" data-sch-save>Save short names</button></div>`;
 }
 async function saveSchools(patch, note){
@@ -102,6 +106,7 @@ function addSchool(){
 }
 
 document.addEventListener('click', e => {
+  if (e.target.closest && e.target.closest('[data-recs-clear]')) return clearTeamRecords();
   const b = e.target.closest && e.target.closest('button'); if (!b) return;
   const d = b.dataset;
   if ('schSave' in d) return saveSchoolAbbrs();
