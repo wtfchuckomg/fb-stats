@@ -42,12 +42,15 @@ jobs:
       - name: Fit the ratings
         if: steps.when.outputs.go == '1'
         run: python3 .github/kp/ratings.py
+      - name: Write each school's seasons for the site
+        if: steps.when.outputs.go == '1'
+        run: python3 .github/kp/history.py
       - name: Save and publish any changes
         if: steps.when.outputs.go == '1'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git add -A season.json stats.json ratings.json g embed .github/kp
+          git add -A season.json stats.json ratings.json g embed history .github/kp
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
           git -c user.name="Nightly rebuild" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "Nightly rebuild: season, stats, previews, embeds"
           git pull -q --rebase && git push -q

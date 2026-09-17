@@ -219,6 +219,7 @@ async function startTeamPage(){
   ui.viewer = true; ui.teamPage = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
   loadLogos();   // the school list: without it "Haysville Campus" and "Campus" are two different schools
+  loadRatings();  // so a school's own KPreps spelling can be found for its past seasons
   renderTeamPage();
   // The admin's own devices sign in here too, for Edit record.
   let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
@@ -238,8 +239,7 @@ function teamHistory(name){
   const k = logoSlug(name); if (!k) return null;
   if (tpage.hist[k] === undefined){
     tpage.hist[k] = null;
-    fetch(`/history/${k}.json`, {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
-      .then(d => { tpage.hist[k] = d || false; renderTeamPage(); }).catch(() => { tpage.hist[k] = false; });
+    fetchHistory(name, d => { tpage.hist[k] = d || false; renderTeamPage(); });
   }
   return tpage.hist[k] || null;
 }

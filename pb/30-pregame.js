@@ -88,11 +88,20 @@ function ourLine(A, H){
 }
 
 /* ---------- past seasons, from KPreps by way of history/<school>.json (.github/kphistory.py) ---------- */
+// The files are named the way KPreps writes a school, so try our spelling first and then theirs.
+function fetchHistory(name, done){
+  const tries = [logoSlug(name)], r = typeof ratingOf === 'function' ? ratingOf(name) : null;
+  if (r && r.slug && !tries.includes(r.slug)) tries.push(r.slug);
+  (function next(i){
+    if (i >= tries.length) return done(false);
+    fetch(`/history/${tries[i]}.json`, {cache:'no-cache'}).then(x => x.ok ? x.json() : null)
+      .then(d => d ? done(d) : next(i + 1)).catch(() => next(i + 1));
+  })(0);
+}
 function loadHistory(name){
   const k = logoSlug(name); if (!k || pre.hist[k] !== undefined) return;
   pre.hist[k] = null;
-  fetch(`/history/${k}.json`, {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
-    .then(d => { pre.hist[k] = d || false; renderPreview(); }).catch(() => { pre.hist[k] = false; });
+  fetchHistory(name, d => { pre.hist[k] = d || false; renderPreview(); });
 }
 // How a school has done over the seasons on file: wins, losses and points, for the predictor's longer view.
 function fiveYear(name){
@@ -264,15 +273,14 @@ function previewHtml(){
   // The line: Massey Ratings, when the admin has brought this week's in; the site's own win chances otherwise.
   const ML = masseyLine(x), OL = ourLine(A, H);
   const oddsRow = (s, n) => {
-    const m = ML && ML[s], us = OL && (s === 'A' ? OL.as : OL.hs);
+    const m = ML && ML[s];
     const ourSpread = !OL ? '&#8212;' : OL.spread === 0 ? 'PK' : (s === 'H') === (OL.spread > 0) ? `&#8722;${Math.abs(OL.spread)}` : `+${Math.abs(OL.spread)}`;
     const mSpread = !ML ? '' : !ML.spread ? 'PK' : m.fav ? `&#8722;${ML.spread}` : `+${ML.spread}`;
     return `<tr><td><div class="pg-oteam">${markFor(T[s], 22)}<b>${esc(T[s].abbr || shortName(n))}</b></div></td>
-      <td class="num">${ourSpread}</td><td class="num">${OL ? `${s === 'A' ? 'o' : 'u'}${OL.total}` : '&#8212;'}</td>
-      <td class="num">${us != null ? us : '&#8212;'}</td>${ML ? `<td class="num pg-mass">${mSpread}</td>` : ''}</tr>`;
+      <td class="num">${ourSpread}</td><td class="num">${OL ? `${s === 'A' ? 'o' : 'u'}${OL.total}` : '&#8212;'}</td>${ML ? `<td class="num pg-mass">${mSpread}</td>` : ''}</tr>`;
   };
   const odds = `<section class="bcard pg-card"><h2 class="pg-h">Game line</h2>
-      <div class="pg-tbl"><table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th><th class="num">Score</th>${ML ? '<th class="num pg-mass">Massey</th>' : ''}</tr></thead><tbody>
+      <div class="pg-tbl"><table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th>${ML ? '<th class="num pg-mass">Massey</th>' : ''}</tr></thead><tbody>
         ${oddsRow('A', A)}${oddsRow('H', H)}</tbody></table></div>
       ${OL ? `<p class="hint">${OL.thin ? 'One of these teams has few games on file, so treat this lightly. ' : ''}For fun only: there's no betting here.</p>`
         : `<p class="hint">No line for this game yet: the ratings don't have both schools.</p>`}
@@ -296,9 +304,25 @@ function previewHtml(){
   // Last five games.
   const lastFive = n => {
     const s = teamSeason(n);
-    const rows = s.last.map(({row, us, them}) => { const o = row.x.teams[row.opp], d = gameDay(row.x);
-      return `<tr><td class="num">${d.getMonth() + 1}/${d.getDate()}</td><td><span class="pg-opp">${row.side === 'H' ? 'vs' : '@'} ${markFor(o, 20)}<a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.abbr || shortName(o.name))}</a></span></td>
-        <td class="num"><b class="${us > them ? 'pg-w' : us < them ? 'pg-lo' : ''}">${us > them ? 'W' : us < them ? 'L' : 'T'}</b> ${us}-${them}</td></tr>`; }).join('');
+    const out = s.last.map(({row, us, them}) => { const o = row.x.teams[row.opp], d = gameDay(row.x);
+      return {when:`${d.getMonth() + 1}/${d.getDate()}`, at:row.side, opp:o.name, abbr:o.abbr || shortName(o.name), mark:markFor(o, 20), us, them};
+    });
+    // Fewer than five this season: keep going back through the seasons on file.
+    const H = pre.hist[logoSlug(n)];
+    if (out.length < 5 && H && H.seasons){
+      Object.keys(H.seasons).sort((a, b) => b - a).forEach(year => {
+        (H.seasons[year].games || []).slice().reverse().forEach(g => {
+          if (out.length >= 5 || g.us == null) return;
+          const same = out.some(o => canonSchool(o.opp) === canonSchool(g.opp) && o.when === g.date);
+          if (same) return;
+          const opp = schoolName(g.opp) || g.opp;
+          out.push({when:`${g.date}/${year.slice(2)}`, at:g.at === 'away' ? 'A' : 'H', opp, abbr:listAbbr(opp) || shortName(opp),
+            mark:markFor({name:opp, abbr:shortName(opp), color:'#4A4B4D'}, 20), us:g.us, them:g.them, old:true});
+        });
+      });
+    }
+    const rows = out.slice(0, 5).map(r => `<tr><td class="num">${esc(r.when)}</td><td><span class="pg-opp">${r.at === 'H' ? 'vs' : '@'} ${r.mark}<a class="tlink" href="?team=${encodeURIComponent(r.opp)}">${esc(r.abbr)}</a></span></td>
+        <td class="num"><b class="${r.us > r.them ? 'pg-w' : r.us < r.them ? 'pg-lo' : ''}">${r.us > r.them ? 'W' : r.us < r.them ? 'L' : 'T'}</b> ${r.us}-${r.them}</td></tr>`).join('');
     return `<div class="pg-five"><div class="pg-fhead">${markFor({name:n, abbr:shortName(n), color:'#4A4B4D'}, 26)}<b>${esc(n)}</b></div>
       ${rows ? `<div class="pg-tbl"><table class="ctbl"><thead><tr><th>Date</th><th>Opp</th><th class="num">Result</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="bempty">No finals on the site yet.</p>'}</div>`;
   };
