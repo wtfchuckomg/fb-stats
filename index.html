@@ -4747,14 +4747,15 @@ document.addEventListener('click', e => {
   const t = e.target; if (!t.closest) return;
   const b = t.closest('[data-scroll]');
   if (b){ const list = $('#scores .sc-list'); if (list) list.scrollBy({left:+b.dataset.scroll * list.clientWidth * .8, behavior:'smooth'}); return; }
-  if (!ui.viewer){
+  // The scorer's own pages, and the admin wherever they are: the score window works the same in both.
+  if (!ui.viewer || ui.admin){
     // Quick scores: open, pick the status, save, delete.
     const q = t.closest('[data-qs]');
     if (q){ e.preventDefault(); ui.qsId = q.dataset.qs; return openDialog('score'); }
     if (t.closest('[data-qs-new]')){ ui.qsId = null; ui.qsPrefill = null; return openDialog('score'); }
     // Start a stat game from a scheduled game or quick score: Setup opens with its schools and date.
     const ks = t.closest('[data-qs-stats]');
-    if (ks){ ui.fromSched = ks.dataset.qsStats; return openDialog('new'); }
+    if (ks && !ui.viewer){ ui.fromSched = ks.dataset.qsStats; return openDialog('new'); }
     const per = t.closest('[data-qs-per]');
     if (per){
       per.parentNode.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === per)));
