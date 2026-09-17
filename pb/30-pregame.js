@@ -248,9 +248,9 @@ function previewHtml(){
   const metRows = met.slice(0, 6).map(m => `<tr><td class="num">${m.year}</td>
       <td>${m.at === 'away' ? '@' : 'vs'} ${esc(H)}</td>
       <td class="num"><b class="${m.us > m.them ? 'pg-w' : m.us < m.them ? 'pg-lo' : ''}">${m.us > m.them ? 'W' : m.us < m.them ? 'L' : 'T'}</b> ${m.us}-${m.them}${m.ot ? ' OT' : ''}</td></tr>`).join('');
-  const past = met.length || waiting ? `<section class="bcard pg-card"><h2 class="pg-h">Past meetings<span class="pg-by">${esc(A)}’s side</span></h2>
-      ${waiting && !met.length ? '<p class="bempty">Loading past seasons…</p>' : `<p class="pg-proj" style="text-align:left">${esc(A)} ${series[0]}-${series[1]}${series[2] ? '-' + series[2] : ''} in the last ${met.length === 1 ? 'meeting' : `${met.length} meetings`}</p>
-        <div class="pg-tbl"><table class="ctbl"><thead><tr><th>Year</th><th>Game</th><th class="num">Result</th></tr></thead><tbody>${metRows}</tbody></table></div>`}
+  const past = met.length || waiting ? `<section class="bcard pg-card"><h2 class="pg-h">Past meetings</h2>
+      ${waiting && !met.length ? '<p class="bempty">Loading past seasons…</p>' : `<p class="pg-proj" style="text-align:left">${esc(A)} is ${series[0]}-${series[1]}${series[2] ? '-' + series[2] : ''} against ${esc(H)} in the last ${met.length === 1 ? 'meeting' : `${met.length} meetings`}</p>
+        <div class="pg-tbl"><table class="ctbl"><thead><tr><th>Year</th><th>Game</th><th class="num">${esc(T.A.abbr || shortName(A))} result</th></tr></thead><tbody>${metRows}</tbody></table></div>`}
     </section>` : '';
 
   // Standings: each team's AVCTL division (one table when they share it).
