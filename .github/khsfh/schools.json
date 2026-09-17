@@ -1,0 +1,2014 @@
+[
+{
+"id": 287,
+"name": "Abilene"
+},
+{
+"id": 505,
+"name": "Ada"
+},
+{
+"id": 427,
+"name": "Agra"
+},
+{
+"id": 507,
+"name": "Alden"
+},
+{
+"id": 438,
+"name": "Alma"
+},
+{
+"id": 439,
+"name": "Alta Vista"
+},
+{
+"id": 440,
+"name": "Alton"
+},
+{
+"id": 48,
+"name": "Altoona-Midway"
+},
+{
+"id": 1,
+"name": "Andale"
+},
+{
+"id": 196,
+"name": "Anderson County"
+},
+{
+"id": 143,
+"name": "Andover"
+},
+{
+"id": 51,
+"name": "Andover Central"
+},
+{
+"id": 508,
+"name": "Anthony"
+},
+{
+"id": 420,
+"name": "Argonia"
+},
+{
+"id": 2,
+"name": "Argonia-Attica"
+},
+{
+"id": 47,
+"name": "Arkansas City"
+},
+{
+"id": 78,
+"name": "Arma"
+},
+{
+"id": 79,
+"name": "Arma Northeast"
+},
+{
+"id": 203,
+"name": "Ashland"
+},
+{
+"id": 400,
+"name": "Assaria"
+},
+{
+"id": 202,
+"name": "Atchison"
+},
+{
+"id": 373,
+"name": "Atchison County"
+},
+{
+"id": 419,
+"name": "Attica"
+},
+{
+"id": 204,
+"name": "Atwood"
+},
+{
+"id": 82,
+"name": "Augusta"
+},
+{
+"id": 197,
+"name": "Axtell"
+},
+{
+"id": 205,
+"name": "Baileyville B&B"
+},
+{
+"id": 367,
+"name": "Baldwin"
+},
+{
+"id": 390,
+"name": "Basehor"
+},
+{
+"id": 116,
+"name": "Basehor Linwood"
+},
+{
+"id": 201,
+"name": "Baxter Springs"
+},
+{
+"id": 509,
+"name": "Bazine"
+},
+{
+"id": 441,
+"name": "Belle Plaine"
+},
+{
+"id": 200,
+"name": "Belleville"
+},
+{
+"id": 3,
+"name": "Beloit"
+},
+{
+"id": 375,
+"name": "Bennington"
+},
+{
+"id": 425,
+"name": "Bern"
+},
+{
+"id": 386,
+"name": "Bird City"
+},
+{
+"id": 141,
+"name": "Bishop Carroll"
+},
+{
+"id": 4,
+"name": "Bishop Miege"
+},
+{
+"id": 96,
+"name": "Bishop Seabury"
+},
+{
+"id": 494,
+"name": "Bison"
+},
+{
+"id": 442,
+"name": "Blue Mound"
+},
+{
+"id": 517,
+"name": "Blue Rapids"
+},
+{
+"id": 6,
+"name": "Blue Valley"
+},
+{
+"id": 10,
+"name": "Blue Valley North"
+},
+{
+"id": 9,
+"name": "Blue Valley Northwest"
+},
+{
+"id": 8,
+"name": "Blue Valley Southwest"
+},
+{
+"id": 7,
+"name": "Blue Valley West"
+},
+{
+"id": 418,
+"name": "Blue Valley-Randolph"
+},
+{
+"id": 322,
+"name": "Bluestem"
+},
+{
+"id": 484,
+"name": "Bogue"
+},
+{
+"id": 67,
+"name": "Bonner Springs"
+},
+{
+"id": 393,
+"name": "Brewster"
+},
+{
+"id": 496,
+"name": "Bronson"
+},
+{
+"id": 366,
+"name": "Bucklin"
+},
+{
+"id": 11,
+"name": "Buhler"
+},
+{
+"id": 371,
+"name": "Burlingame"
+},
+{
+"id": 354,
+"name": "Burlington"
+},
+{
+"id": 443,
+"name": "Burns"
+},
+{
+"id": 374,
+"name": "Burrton"
+},
+{
+"id": 512,
+"name": "Bushton"
+},
+{
+"id": 118,
+"name": "Cair Paravel"
+},
+{
+"id": 372,
+"name": "Caldwell"
+},
+{
+"id": 144,
+"name": "Campus"
+},
+{
+"id": 370,
+"name": "Caney Valley"
+},
+{
+"id": 199,
+"name": "Canton-Galva"
+},
+{
+"id": 503,
+"name": "Cawker City"
+},
+{
+"id": 409,
+"name": "Cedar Vale"
+},
+{
+"id": 53,
+"name": "Cedar Vale-Dexter"
+},
+{
+"id": 198,
+"name": "Central Heights"
+},
+{
+"id": 195,
+"name": "Central Plains"
+},
+{
+"id": 369,
+"name": "Central-Burden"
+},
+{
+"id": 368,
+"name": "Centralia"
+},
+{
+"id": 361,
+"name": "Centre"
+},
+{
+"id": 83,
+"name": "Chanute"
+},
+{
+"id": 365,
+"name": "Chaparral"
+},
+{
+"id": 360,
+"name": "Chapman"
+},
+{
+"id": 358,
+"name": "Chase"
+},
+{
+"id": 359,
+"name": "Chase County"
+},
+{
+"id": 363,
+"name": "Cheney"
+},
+{
+"id": 392,
+"name": "Cherokee"
+},
+{
+"id": 286,
+"name": "Cherryvale"
+},
+{
+"id": 139,
+"name": "Chetopa"
+},
+{
+"id": 357,
+"name": "Cheylin"
+},
+{
+"id": 12,
+"name": "Christ Prep"
+},
+{
+"id": 292,
+"name": "Cimarron"
+},
+{
+"id": 160,
+"name": "Circle-Towanda"
+},
+{
+"id": 356,
+"name": "Claflin"
+},
+{
+"id": 284,
+"name": "Clay Center"
+},
+{
+"id": 351,
+"name": "Clearwater"
+},
+{
+"id": 424,
+"name": "Clifton"
+},
+{
+"id": 13,
+"name": "Clifton-Clyde"
+},
+{
+"id": 401,
+"name": "Clyde"
+},
+{
+"id": 364,
+"name": "Colby"
+},
+{
+"id": 232,
+"name": "Coldwater"
+},
+{
+"id": 193,
+"name": "Colony-Crest"
+},
+{
+"id": 81,
+"name": "Columbus"
+},
+{
+"id": 352,
+"name": "Concordia"
+},
+{
+"id": 165,
+"name": "Conway Springs"
+},
+{
+"id": 471,
+"name": "Copeland"
+},
+{
+"id": 355,
+"name": "Council Grove"
+},
+{
+"id": 498,
+"name": "Courtland"
+},
+{
+"id": 214,
+"name": "Cuba"
+},
+{
+"id": 444,
+"name": "Cunningham"
+},
+{
+"id": 513,
+"name": "Damar"
+},
+{
+"id": 293,
+"name": "Deerfield"
+},
+{
+"id": 402,
+"name": "Denton-Midway"
+},
+{
+"id": 86,
+"name": "Derby"
+},
+{
+"id": 454,
+"name": "DeSoto"
+},
+{
+"id": 410,
+"name": "Dexter"
+},
+{
+"id": 80,
+"name": "Dighton"
+},
+{
+"id": 130,
+"name": "Dodge City"
+},
+{
+"id": 14,
+"name": "Doniphan West"
+},
+{
+"id": 362,
+"name": "Douglass"
+},
+{
+"id": 417,
+"name": "Downs"
+},
+{
+"id": 403,
+"name": "Dwight"
+},
+{
+"id": 389,
+"name": "Eastern Heights"
+},
+{
+"id": 477,
+"name": "Edna"
+},
+{
+"id": 281,
+"name": "El Dorado"
+},
+{
+"id": 294,
+"name": "Elk Valley"
+},
+{
+"id": 455,
+"name": "Elkhart"
+},
+{
+"id": 350,
+"name": "Ellinwood"
+},
+{
+"id": 349,
+"name": "Ellis"
+},
+{
+"id": 119,
+"name": "Ell-Saline"
+},
+{
+"id": 348,
+"name": "Ellsworth"
+},
+{
+"id": 475,
+"name": "Elwood"
+},
+{
+"id": 520,
+"name": "Elyria Christian"
+},
+{
+"id": 188,
+"name": "Emporia"
+},
+{
+"id": 121,
+"name": "Emporia Roosevelt"
+},
+{
+"id": 445,
+"name": "Ensign"
+},
+{
+"id": 191,
+"name": "Erie"
+},
+{
+"id": 457,
+"name": "Eudora"
+},
+{
+"id": 347,
+"name": "Eureka"
+},
+{
+"id": 346,
+"name": "Fairfield"
+},
+{
+"id": 510,
+"name": "Fairview"
+},
+{
+"id": 499,
+"name": "Faith Academy"
+},
+{
+"id": 85,
+"name": "Field Kindley"
+},
+{
+"id": 379,
+"name": "Flint Hills Christian - Manhattan Eagles"
+},
+{
+"id": 345,
+"name": "Flinthills"
+},
+{
+"id": 516,
+"name": "Florence"
+},
+{
+"id": 64,
+"name": "Fort Scott"
+},
+{
+"id": 266,
+"name": "Fowler"
+},
+{
+"id": 267,
+"name": "Frankfort"
+},
+{
+"id": 344,
+"name": "Fredonia"
+},
+{
+"id": 54,
+"name": "Free State"
+},
+{
+"id": 68,
+"name": "Frontenac"
+},
+{
+"id": 190,
+"name": "Galena"
+},
+{
+"id": 15,
+"name": "Garden City"
+},
+{
+"id": 261,
+"name": "Garden Plain"
+},
+{
+"id": 37,
+"name": "Gardner-Edgerton"
+},
+{
+"id": 343,
+"name": "Garnett"
+},
+{
+"id": 87,
+"name": "Girard"
+},
+{
+"id": 257,
+"name": "Goddard"
+},
+{
+"id": 50,
+"name": "Goddard Eisenhower"
+},
+{
+"id": 342,
+"name": "Goessel"
+},
+{
+"id": 458,
+"name": "Golden Plains"
+},
+{
+"id": 16,
+"name": "Goodland"
+},
+{
+"id": 231,
+"name": "Great Bend"
+},
+{
+"id": 158,
+"name": "Greeley County"
+},
+{
+"id": 382,
+"name": "Greensburg"
+},
+{
+"id": 416,
+"name": "Gridley"
+},
+{
+"id": 514,
+"name": "Gypsum"
+},
+{
+"id": 72,
+"name": "Halstead"
+},
+{
+"id": 415,
+"name": "Hamilton"
+},
+{
+"id": 341,
+"name": "Hanover"
+},
+{
+"id": 339,
+"name": "Hanston"
+},
+{
+"id": 338,
+"name": "Hartford"
+},
+{
+"id": 17,
+"name": "Haskell High"
+},
+{
+"id": 340,
+"name": "Haven"
+},
+{
+"id": 381,
+"name": "Haviland"
+},
+{
+"id": 236,
+"name": "Hays"
+},
+{
+"id": 394,
+"name": "Healy"
+},
+{
+"id": 43,
+"name": "Heartland Christian"
+},
+{
+"id": 337,
+"name": "Herington"
+},
+{
+"id": 189,
+"name": "Hesston"
+},
+{
+"id": 336,
+"name": "Hiawatha"
+},
+{
+"id": 446,
+"name": "Highland"
+},
+{
+"id": 122,
+"name": "Highland Park"
+},
+{
+"id": 302,
+"name": "Hill City"
+},
+{
+"id": 213,
+"name": "Hillcrest"
+},
+{
+"id": 215,
+"name": "Hillcrest North Central"
+},
+{
+"id": 335,
+"name": "Hillsboro"
+},
+{
+"id": 84,
+"name": "Hodgeman County"
+},
+{
+"id": 451,
+"name": "Hoisington"
+},
+{
+"id": 187,
+"name": "Holcomb"
+},
+{
+"id": 282,
+"name": "Holton"
+},
+{
+"id": 506,
+"name": "Holyrood"
+},
+{
+"id": 186,
+"name": "Hope"
+},
+{
+"id": 334,
+"name": "Horton"
+},
+{
+"id": 511,
+"name": "Howard"
+},
+{
+"id": 185,
+"name": "Hoxie-Sheridan County"
+},
+{
+"id": 184,
+"name": "Hugoton"
+},
+{
+"id": 333,
+"name": "Humboldt"
+},
+{
+"id": 42,
+"name": "Hutchinson"
+},
+{
+"id": 332,
+"name": "Hutchinson Central Christian"
+},
+{
+"id": 331,
+"name": "Hutchinson St Teresa"
+},
+{
+"id": 330,
+"name": "Hutchinson Trinity"
+},
+{
+"id": 265,
+"name": "Immaculata"
+},
+{
+"id": 90,
+"name": "Independence"
+},
+{
+"id": 502,
+"name": "Independence Homeschool"
+},
+{
+"id": 291,
+"name": "Ingalls"
+},
+{
+"id": 296,
+"name": "Inman"
+},
+{
+"id": 89,
+"name": "Iola"
+},
+{
+"id": 136,
+"name": "Jackson Heights"
+},
+{
+"id": 490,
+"name": "Jarbalo"
+},
+{
+"id": 71,
+"name": "Jayhawk-Linn"
+},
+{
+"id": 326,
+"name": "Jefferson County North"
+},
+{
+"id": 306,
+"name": "Jefferson West"
+},
+{
+"id": 396,
+"name": "Jetmore"
+},
+{
+"id": 376,
+"name": "Jewell"
+},
+{
+"id": 448,
+"name": "Joint Rural"
+},
+{
+"id": 183,
+"name": "Junction City"
+},
+{
+"id": 164,
+"name": "Kansas Deaf"
+},
+{
+"id": 140,
+"name": "Kapaun Mt. Carmel"
+},
+{
+"id": 135,
+"name": "KC Argentine"
+},
+{
+"id": 5,
+"name": "KC Bishop Ward"
+},
+{
+"id": 325,
+"name": "KC East Christian"
+},
+{
+"id": 459,
+"name": "KC Harmon"
+},
+{
+"id": 216,
+"name": "KC Piper"
+},
+{
+"id": 134,
+"name": "KC Rosedale"
+},
+{
+"id": 460,
+"name": "KC Schlagle"
+},
+{
+"id": 182,
+"name": "KC Turner"
+},
+{
+"id": 41,
+"name": "KC Washington"
+},
+{
+"id": 63,
+"name": "KC Wyandotte"
+},
+{
+"id": 479,
+"name": "Kensington"
+},
+{
+"id": 493,
+"name": "Kickapoo Nation"
+},
+{
+"id": 329,
+"name": "Kingman"
+},
+{
+"id": 328,
+"name": "Kinsley"
+},
+{
+"id": 18,
+"name": "Kiowa County"
+},
+{
+"id": 327,
+"name": "La Crosse"
+},
+{
+"id": 44,
+"name": "Labette County"
+},
+{
+"id": 480,
+"name": "LaCygne"
+},
+{
+"id": 100,
+"name": "Lakeside"
+},
+{
+"id": 301,
+"name": "Lakin"
+},
+{
+"id": 181,
+"name": "Lansing"
+},
+{
+"id": 324,
+"name": "Larned"
+},
+{
+"id": 19,
+"name": "Lawrence"
+},
+{
+"id": 408,
+"name": "Leavenworth"
+},
+{
+"id": 323,
+"name": "Lebo"
+},
+{
+"id": 500,
+"name": "Lenora"
+},
+{
+"id": 414,
+"name": "LeRoy"
+},
+{
+"id": 384,
+"name": "Lewis"
+},
+{
+"id": 179,
+"name": "Liberal"
+},
+{
+"id": 207,
+"name": "Life Preparatory Academy"
+},
+{
+"id": 307,
+"name": "Lincoln"
+},
+{
+"id": 413,
+"name": "Lindsborg"
+},
+{
+"id": 321,
+"name": "Linn"
+},
+{
+"id": 478,
+"name": "Linwood"
+},
+{
+"id": 300,
+"name": "Little River"
+},
+{
+"id": 519,
+"name": "Logan"
+},
+{
+"id": 20,
+"name": "Logan-Palco"
+},
+{
+"id": 497,
+"name": "Long Island"
+},
+{
+"id": 320,
+"name": "Louisburg"
+},
+{
+"id": 383,
+"name": "Lucas-Luray"
+},
+{
+"id": 486,
+"name": "Luray"
+},
+{
+"id": 319,
+"name": "Lyndon"
+},
+{
+"id": 463,
+"name": "Lyons"
+},
+{
+"id": 318,
+"name": "Macksville"
+},
+{
+"id": 317,
+"name": "Madison-Hamilton"
+},
+{
+"id": 277,
+"name": "Maize"
+},
+{
+"id": 97,
+"name": "Maize South"
+},
+{
+"id": 178,
+"name": "Manhattan"
+},
+{
+"id": 316,
+"name": "Manhattan Luckey"
+},
+{
+"id": 315,
+"name": "Mankato"
+},
+{
+"id": 314,
+"name": "Marais des Cygnes Valley"
+},
+{
+"id": 98,
+"name": "Maranatha Christian Academy"
+},
+{
+"id": 313,
+"name": "Marion"
+},
+{
+"id": 255,
+"name": "Marmaton Valley"
+},
+{
+"id": 312,
+"name": "Marysville"
+},
+{
+"id": 311,
+"name": "Maur Hill-Mount Academy"
+},
+{
+"id": 473,
+"name": "McCune"
+},
+{
+"id": 310,
+"name": "McLouth"
+},
+{
+"id": 49,
+"name": "McPherson"
+},
+{
+"id": 309,
+"name": "Meade"
+},
+{
+"id": 305,
+"name": "Medicine Lodge"
+},
+{
+"id": 492,
+"name": "Melvern"
+},
+{
+"id": 99,
+"name": "Mill Valley"
+},
+{
+"id": 488,
+"name": "Mineral"
+},
+{
+"id": 304,
+"name": "Minneapolis"
+},
+{
+"id": 299,
+"name": "Minneola"
+},
+{
+"id": 308,
+"name": "Mission Valley"
+},
+{
+"id": 470,
+"name": "Montezuma"
+},
+{
+"id": 177,
+"name": "Moscow"
+},
+{
+"id": 481,
+"name": "Mound City"
+},
+{
+"id": 303,
+"name": "Moundridge"
+},
+{
+"id": 437,
+"name": "Mulberry"
+},
+{
+"id": 380,
+"name": "Mullinville"
+},
+{
+"id": 46,
+"name": "Mulvane"
+},
+{
+"id": 436,
+"name": "Nashville-Zenda"
+},
+{
+"id": 298,
+"name": "Natoma"
+},
+{
+"id": 242,
+"name": "Nemaha Central"
+},
+{
+"id": 133,
+"name": "Nemaha Valley"
+},
+{
+"id": 297,
+"name": "Neodesha"
+},
+{
+"id": 295,
+"name": "Ness City"
+},
+{
+"id": 147,
+"name": "Newton"
+},
+{
+"id": 290,
+"name": "Nickerson"
+},
+{
+"id": 176,
+"name": "North Central"
+},
+{
+"id": 124,
+"name": "Northern Heights"
+},
+{
+"id": 132,
+"name": "Northern Valley"
+},
+{
+"id": 289,
+"name": "Norton"
+},
+{
+"id": 404,
+"name": "Nortonville"
+},
+{
+"id": 206,
+"name": "Norwich"
+},
+{
+"id": 288,
+"name": "Oakley"
+},
+{
+"id": 271,
+"name": "Oberlin-Decatur"
+},
+{
+"id": 21,
+"name": "Olathe"
+},
+{
+"id": 428,
+"name": "Olathe Christian"
+},
+{
+"id": 22,
+"name": "Olathe East"
+},
+{
+"id": 25,
+"name": "Olathe North"
+},
+{
+"id": 24,
+"name": "Olathe Northwest"
+},
+{
+"id": 23,
+"name": "Olathe South"
+},
+{
+"id": 26,
+"name": "Olathe West"
+},
+{
+"id": 233,
+"name": "Olpe"
+},
+{
+"id": 285,
+"name": "Onaga"
+},
+{
+"id": 283,
+"name": "Osage City"
+},
+{
+"id": 279,
+"name": "Osawatomie"
+},
+{
+"id": 278,
+"name": "Osborne"
+},
+{
+"id": 280,
+"name": "Oskaloosa"
+},
+{
+"id": 95,
+"name": "Oswego"
+},
+{
+"id": 435,
+"name": "Otis"
+},
+{
+"id": 175,
+"name": "Otis-Bison"
+},
+{
+"id": 174,
+"name": "Ottawa"
+},
+{
+"id": 276,
+"name": "Oxford"
+},
+{
+"id": 495,
+"name": "Palco"
+},
+{
+"id": 264,
+"name": "Paola"
+},
+{
+"id": 482,
+"name": "Parker"
+},
+{
+"id": 66,
+"name": "Parsons"
+},
+{
+"id": 268,
+"name": "Pawnee Heights"
+},
+{
+"id": 412,
+"name": "Paxico"
+},
+{
+"id": 173,
+"name": "Peabody"
+},
+{
+"id": 172,
+"name": "Peabody-Burns"
+},
+{
+"id": 27,
+"name": "Perry-Lecompton"
+},
+{
+"id": 263,
+"name": "Phillipsburg"
+},
+{
+"id": 113,
+"name": "Pike Valley"
+},
+{
+"id": 45,
+"name": "Pittsburg"
+},
+{
+"id": 109,
+"name": "Pittsburg College High"
+},
+{
+"id": 472,
+"name": "Plains"
+},
+{
+"id": 107,
+"name": "Plainville"
+},
+{
+"id": 243,
+"name": "Pleasant Ridge"
+},
+{
+"id": 275,
+"name": "Pleasanton"
+},
+{
+"id": 407,
+"name": "Pomona"
+},
+{
+"id": 28,
+"name": "Prairie View"
+},
+{
+"id": 217,
+"name": "Pratt"
+},
+{
+"id": 29,
+"name": "Pratt Skyline"
+},
+{
+"id": 244,
+"name": "Pretty Prairie"
+},
+{
+"id": 469,
+"name": "Protection"
+},
+{
+"id": 423,
+"name": "Quenemo"
+},
+{
+"id": 254,
+"name": "Quinter"
+},
+{
+"id": 127,
+"name": "Quivira Heights"
+},
+{
+"id": 433,
+"name": "Ransom"
+},
+{
+"id": 171,
+"name": "Rawlins County"
+},
+{
+"id": 411,
+"name": "Reading"
+},
+{
+"id": 208,
+"name": "Remington-Whitewater"
+},
+{
+"id": 491,
+"name": "Reno County Homeschool"
+},
+{
+"id": 106,
+"name": "Republic County"
+},
+{
+"id": 256,
+"name": "Riley County"
+},
+{
+"id": 105,
+"name": "Riverside"
+},
+{
+"id": 170,
+"name": "Riverton"
+},
+{
+"id": 234,
+"name": "Rock Creek"
+},
+{
+"id": 104,
+"name": "Rock Hills"
+},
+{
+"id": 253,
+"name": "Rolla"
+},
+{
+"id": 88,
+"name": "Rose Hill"
+},
+{
+"id": 30,
+"name": "Rossville"
+},
+{
+"id": 252,
+"name": "Royal Valley"
+},
+{
+"id": 61,
+"name": "Rural Vista"
+},
+{
+"id": 245,
+"name": "Russell"
+},
+{
+"id": 262,
+"name": "Sabetha"
+},
+{
+"id": 73,
+"name": "Salina Central"
+},
+{
+"id": 60,
+"name": "Salina Emmanuel Christian"
+},
+{
+"id": 74,
+"name": "Salina Maroon"
+},
+{
+"id": 76,
+"name": "Salina Sacred Heart"
+},
+{
+"id": 75,
+"name": "Salina South"
+},
+{
+"id": 169,
+"name": "Santa Fe Trail"
+},
+{
+"id": 269,
+"name": "Satanta"
+},
+{
+"id": 391,
+"name": "Scandia"
+},
+{
+"id": 260,
+"name": "Scott City"
+},
+{
+"id": 250,
+"name": "Sedan"
+},
+{
+"id": 235,
+"name": "Sedgwick"
+},
+{
+"id": 434,
+"name": "Seneca"
+},
+{
+"id": 485,
+"name": "Sharon"
+},
+{
+"id": 112,
+"name": "Shawnee Heights"
+},
+{
+"id": 92,
+"name": "Shawnee Mission"
+},
+{
+"id": 111,
+"name": "Shawnee Mission East"
+},
+{
+"id": 93,
+"name": "Shawnee Mission North"
+},
+{
+"id": 94,
+"name": "Shawnee Mission Northwest"
+},
+{
+"id": 102,
+"name": "Shawnee Mission South"
+},
+{
+"id": 110,
+"name": "Shawnee Mission West"
+},
+{
+"id": 125,
+"name": "Silver Lake"
+},
+{
+"id": 230,
+"name": "Smith Center"
+},
+{
+"id": 128,
+"name": "Smoky Valley"
+},
+{
+"id": 259,
+"name": "Solomon"
+},
+{
+"id": 249,
+"name": "South Barber"
+},
+{
+"id": 168,
+"name": "South Central"
+},
+{
+"id": 422,
+"name": "South Elk"
+},
+{
+"id": 248,
+"name": "South Gray"
+},
+{
+"id": 274,
+"name": "South Haven"
+},
+{
+"id": 483,
+"name": "South Sumner County"
+},
+{
+"id": 117,
+"name": "Southeast of Saline"
+},
+{
+"id": 270,
+"name": "Southeast-Cherokee"
+},
+{
+"id": 167,
+"name": "Southern Cloud"
+},
+{
+"id": 101,
+"name": "Southern Coffey County"
+},
+{
+"id": 247,
+"name": "Southwestern Heights"
+},
+{
+"id": 258,
+"name": "Spearville"
+},
+{
+"id": 246,
+"name": "Spring Hill"
+},
+{
+"id": 241,
+"name": "St Francis"
+},
+{
+"id": 421,
+"name": "St George"
+},
+{
+"id": 31,
+"name": "St James Academy"
+},
+{
+"id": 240,
+"name": "St John"
+},
+{
+"id": 251,
+"name": "St Johns Military"
+},
+{
+"id": 353,
+"name": "St Johns-Tipton"
+},
+{
+"id": 131,
+"name": "St Josephs Military Academy"
+},
+{
+"id": 32,
+"name": "St Josephs-Shawnee"
+},
+{
+"id": 115,
+"name": "St Marys"
+},
+{
+"id": 166,
+"name": "St Marys Academy"
+},
+{
+"id": 57,
+"name": "St Marys Cathedral"
+},
+{
+"id": 395,
+"name": "St Marys of the Plains"
+},
+{
+"id": 33,
+"name": "St Marys-Colgan"
+},
+{
+"id": 62,
+"name": "St Patricks"
+},
+{
+"id": 34,
+"name": "St Paul"
+},
+{
+"id": 35,
+"name": "St Thomas Aquinas"
+},
+{
+"id": 126,
+"name": "St Xavier"
+},
+{
+"id": 163,
+"name": "Stafford"
+},
+{
+"id": 432,
+"name": "Stanley"
+},
+{
+"id": 239,
+"name": "Stanton County"
+},
+{
+"id": 138,
+"name": "Sterling"
+},
+{
+"id": 238,
+"name": "Stockton"
+},
+{
+"id": 447,
+"name": "Sts Peter & Paul"
+},
+{
+"id": 237,
+"name": "Sublette"
+},
+{
+"id": 474,
+"name": "Summerfield"
+},
+{
+"id": 65,
+"name": "Sumner Academy"
+},
+{
+"id": 218,
+"name": "Sunrise Christian"
+},
+{
+"id": 36,
+"name": "Sylvan-Lucas"
+},
+{
+"id": 162,
+"name": "Syracuse"
+},
+{
+"id": 161,
+"name": "Tescott"
+},
+{
+"id": 59,
+"name": "Thayer"
+},
+{
+"id": 91,
+"name": "Thomas More Prep"
+},
+{
+"id": 56,
+"name": "Thunder Ridge"
+},
+{
+"id": 377,
+"name": "Tipton"
+},
+{
+"id": 273,
+"name": "Tonganoxie"
+},
+{
+"id": 108,
+"name": "Topeka"
+},
+{
+"id": 476,
+"name": "Topeka Cornerstone Family"
+},
+{
+"id": 70,
+"name": "Topeka Hayden"
+},
+{
+"id": 123,
+"name": "Topeka Seaman"
+},
+{
+"id": 77,
+"name": "Topeka West"
+},
+{
+"id": 399,
+"name": "Triplains"
+},
+{
+"id": 103,
+"name": "Triplains-Brewster"
+},
+{
+"id": 229,
+"name": "Troy"
+},
+{
+"id": 157,
+"name": "Tyro Christian"
+},
+{
+"id": 211,
+"name": "Udall"
+},
+{
+"id": 212,
+"name": "Ulysses"
+},
+{
+"id": 69,
+"name": "Uniontown"
+},
+{
+"id": 398,
+"name": "Utica"
+},
+{
+"id": 159,
+"name": "Valley Center"
+},
+{
+"id": 210,
+"name": "Valley Falls"
+},
+{
+"id": 209,
+"name": "Valley Heights"
+},
+{
+"id": 220,
+"name": "Veritas Christian"
+},
+{
+"id": 504,
+"name": "Vesper"
+},
+{
+"id": 156,
+"name": "Victoria"
+},
+{
+"id": 228,
+"name": "Wabaunsee"
+},
+{
+"id": 378,
+"name": "Waconda East"
+},
+{
+"id": 221,
+"name": "Wakefield"
+},
+{
+"id": 227,
+"name": "WaKenney-Trego"
+},
+{
+"id": 464,
+"name": "Wallace County"
+},
+{
+"id": 224,
+"name": "Wamego"
+},
+{
+"id": 129,
+"name": "Washburn Rural"
+},
+{
+"id": 155,
+"name": "Washington County"
+},
+{
+"id": 518,
+"name": "Waterville"
+},
+{
+"id": 431,
+"name": "Wathena"
+},
+{
+"id": 222,
+"name": "Waverly"
+},
+{
+"id": 397,
+"name": "Weir"
+},
+{
+"id": 223,
+"name": "Wellington"
+},
+{
+"id": 154,
+"name": "Wellsville"
+},
+{
+"id": 226,
+"name": "Weskan"
+},
+{
+"id": 152,
+"name": "West Elk"
+},
+{
+"id": 58,
+"name": "West Franklin"
+},
+{
+"id": 38,
+"name": "Western Plains"
+},
+{
+"id": 430,
+"name": "Westmoreland"
+},
+{
+"id": 180,
+"name": "Wetmore"
+},
+{
+"id": 429,
+"name": "Wheatland"
+},
+{
+"id": 219,
+"name": "Wheatland-Grinnell"
+},
+{
+"id": 388,
+"name": "White City"
+},
+{
+"id": 387,
+"name": "White Rock"
+},
+{
+"id": 137,
+"name": "Wichita Collegiate"
+},
+{
+"id": 449,
+"name": "Wichita County"
+},
+{
+"id": 501,
+"name": "Wichita Defenders"
+},
+{
+"id": 150,
+"name": "Wichita East"
+},
+{
+"id": 149,
+"name": "Wichita Heights"
+},
+{
+"id": 114,
+"name": "Wichita Homeschool"
+},
+{
+"id": 39,
+"name": "Wichita Independent"
+},
+{
+"id": 148,
+"name": "Wichita North"
+},
+{
+"id": 52,
+"name": "Wichita Northwest"
+},
+{
+"id": 55,
+"name": "Wichita Planeview"
+},
+{
+"id": 146,
+"name": "Wichita South"
+},
+{
+"id": 142,
+"name": "Wichita Southeast"
+},
+{
+"id": 40,
+"name": "Wichita Trinity"
+},
+{
+"id": 145,
+"name": "Wichita West"
+},
+{
+"id": 406,
+"name": "Williamsburg"
+},
+{
+"id": 405,
+"name": "Wilsey"
+},
+{
+"id": 225,
+"name": "Wilson"
+},
+{
+"id": 272,
+"name": "Winchester"
+},
+{
+"id": 120,
+"name": "Winfield"
+},
+{
+"id": 515,
+"name": "Woodston"
+},
+{
+"id": 151,
+"name": "Yates Center"
+}
+]
