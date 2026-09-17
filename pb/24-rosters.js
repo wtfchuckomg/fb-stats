@@ -47,7 +47,13 @@ function rosterFromGames(name){
   const k = name && canonSchool(name); if (!k || !allGames.idx) return null;
   const out = new Map();                                   // key -> {num, name}
   schoolRows(name).forEach(r => {
-    const x = r.x; if (!(x.kind !== 'score' && ((x.plays && x.plays.length) || x.box))) return;
+    const x = r.x;
+    // From season.json: the names that game knew, with no numbers.
+    if (x.players){
+      (x.players[r.side === 'A' ? 'a' : 'h'] || []).forEach(n => { if (n && !out.has(n)) out.set(n, {num:'', name:n}); });
+      return;
+    }
+    if (!(x.kind !== 'score' && ((x.plays && x.plays.length) || x.box))) return;
     if (x.box){
       const b = boxData(x); if (!b) return;
       Object.keys(b.pl[r.side] || {}).forEach(n => { if (n !== 'team' && !out.has(n)) out.set(n, {num:'', name:n}); });

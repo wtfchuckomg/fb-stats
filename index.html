@@ -6492,9 +6492,66 @@ const tpage = {edit:false, draft:null, sug:null, name:''};
 
 /* ---------- every shared game, for the schools' schedules and their records ---------- */
 // The home page and BUCO Stats don't need it; the scoreboards, game pages, tracker and team pages do.
-const allGames = {list:null, idx:null, err:'', unsub:null};
+//
+// History comes from season.json, a file the site serves itself: every shared game boiled down to who played,
+// the score and whether it's final. It costs no database reads at all, which matters because this used to ask
+// for every game on every page — 370-odd reads a visit, growing with the season. This week's games arrive live
+// on top of it (watchWeek), so a score still moves the moment it changes.
+const allGames = {list:null, idx:null, err:'', unsub:null, built:0};
 function watchAllGames(api){
   if (allGames.unsub || ui.home || ui.county) return;
+  allGames.unsub = () => {};
+  loadSeason(api);
+}
+// A snapshot game, shaped like the real thing so everything downstream reads it the same way.
+function seasonGame(e){
+  return {id:e.id, teams:{A:e.a, H:e.h}, date:e.date || '', kind:e.kind || '', wk:e.wk,
+    opp:e.opp, sched:e.sched, per:e.per, clk:e.clk, time:e.time, updated:e.updated || 0,
+    box:!!e.box, stats:!!e.stats, players:e.pl || null,
+    snap:{fin:!!e.fin, live:!!e.live, status:e.status || '', q:e.q || 0, score:{A:+e.A || 0, H:+e.H || 0}}};
+}
+async function loadSeason(api){
+  try {
+    const r = await fetch('/season.json', {cache:'no-cache'});
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    if (!d || !Array.isArray(d.games) || !d.games.length) throw new Error('empty');
+    allGames.list = d.games.map(seasonGame); allGames.built = d.built || 0; allGames.err = '';
+    indexGames(); recordsChanged();
+    watchSince(api, allGames.built);   // and whatever has changed since the file was written
+  } catch (e) {
+    // No file, or it can't be read: ask the database for the games, the way this used to work.
+    allGames.unsub = null;
+    watchAllGamesLive(api);
+  }
+}
+// Anything saved since the snapshot was built — a box score pasted for an old week, a score corrected — read
+// live and laid over it. It asks only for documents newer than the file, which on a normal day is a handful.
+function watchSince(api, built){
+  if (!api || !built) return;
+  const {fsM, fsdb} = api;
+  try {
+    const q = fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true), fsM.where('updated', '>', built));
+    allGames.since = fsM.onSnapshot(q, snap => {
+      let changed = false;
+      snap.forEach(d => {
+        const v = d.data();
+        if (!v || v.public !== true) return;
+        const at = allGames.list.findIndex(x => x.id === d.id);
+        if (v.deleted || !v.json){ if (at >= 0){ allGames.list.splice(at, 1); changed = true; } return; }
+        let x; try { x = JSON.parse(v.json); } catch (e) { return; }
+        if (!x.teams || !x.teams.A || !x.teams.H) return;
+        x = Object.assign(x, {id:d.id});
+        if (at >= 0) allGames.list[at] = x; else allGames.list.push(x);
+        changed = true;
+      });
+      if (changed){ indexGames(); recordsChanged(); }
+    }, () => {});
+  } catch (e) { /* no listener, no harm: the file still stands */ }
+}
+
+function watchAllGamesLive(api){
+  if (allGames.unsub || !api) return;
   const {fsM, fsdb} = api;
   allGames.unsub = fsM.onSnapshot(fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true)), snap => {
     const out = [];
@@ -6508,10 +6565,16 @@ function watchAllGames(api){
 // Each school's games, one per week and opponent: the one with stats if there is one, else the newest copy.
 function indexGames(){
   const idx = new Map();
-  (allGames.list || []).forEach(x => {
+  // The week showing is watched live, so its games are the current word on themselves: they replace the
+  // snapshot's copy, which may have been written before tonight's result.
+  const live = Object.entries(scores.docs || {}).map(([id, x]) => Object.assign({}, x, {id}));
+  const byId = new Map();
+  (allGames.list || []).forEach(x => byId.set(x.id, x));
+  live.forEach(x => { if (x && x.teams && x.teams.A && x.teams.H) byId.set(x.id, x); });
+  [...byId.values()].forEach(x => {
     // Only a game the admin hid is left out; the other schools' games count even though they're off the scoreboards.
     if (hideList.ids.has(x.id)) return;
-    const stats = x.kind !== 'score' && ((x.plays && x.plays.length) || !!x.box), wk = gameWeek(x);
+    const stats = x.stats != null ? !!x.stats : (x.kind !== 'score' && ((x.plays && x.plays.length) || !!x.box)), wk = x.wk || gameWeek(x);
     ['A', 'H'].forEach(side => {
       const opp = side === 'A' ? 'H' : 'A', k = canonSchool(x.teams[side].name), key = wk + '|' + canonSchool(x.teams[opp].name);
       let m = idx.get(k); if (!m) idx.set(k, m = {});
@@ -6526,6 +6589,8 @@ const schoolRows = name => Object.values((allGames.idx && allGames.idx.get(canon
 // Whether a game is final and its score, worked out once per version of the game (a replay isn't free).
 const finMemo = new Map();
 function finalOf(x){
+  // A snapshot game carries its result, so nothing is replayed to find it again.
+  if (x.snap) return {fin:x.snap.fin, live:x.snap.live, score:x.snap.score, status:x.snap.status, q:x.snap.q};
   const k = `${x.id}:${x.updated || 0}`;
   let v = finMemo.get(k);
   if (!v){ const m = summary(x); v = {fin:m.fin, live:m.live, score:m.score, status:m.status, q:m.q}; finMemo.set(k, v); }
@@ -7239,7 +7304,13 @@ function rosterFromGames(name){
   const k = name && canonSchool(name); if (!k || !allGames.idx) return null;
   const out = new Map();                                   // key -> {num, name}
   schoolRows(name).forEach(r => {
-    const x = r.x; if (!(x.kind !== 'score' && ((x.plays && x.plays.length) || x.box))) return;
+    const x = r.x;
+    // From season.json: the names that game knew, with no numbers.
+    if (x.players){
+      (x.players[r.side === 'A' ? 'a' : 'h'] || []).forEach(n => { if (n && !out.has(n)) out.set(n, {num:'', name:n}); });
+      return;
+    }
+    if (!(x.kind !== 'score' && ((x.plays && x.plays.length) || x.box))) return;
     if (x.box){
       const b = boxData(x); if (!b) return;
       Object.keys(b.pl[r.side] || {}).forEach(n => { if (n !== 'team' && !out.has(n)) out.set(n, {num:'', name:n}); });
