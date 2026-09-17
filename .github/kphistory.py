@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Past seasons for the Butler County schools, from each team's KPreps archive page.
+"""Past seasons for the Butler County schools (and a few beside them), from each team's KPreps archive page.
 
 KPreps keeps one page per team per year (archive.php?year=YYYY&id=<id>&t=<slug>) with every game's date,
 opponent, home or away and result. This reads five seasons for the county's ten schools and writes one file per
@@ -21,6 +21,9 @@ TEAMS = [
     ('Bluestem', 158, 'leon-bluestem'), ('Circle', 122, 'towanda-circle'), ('Douglass', 140, 'douglass'),
     ('El Dorado', 86, 'el-dorado'), ('Flinthills', 244, 'flinthills'), ('Remington', 191, 'whitewater-remington'),
     ('Rose Hill', 114, 'rose-hill'),
+    # and the schools Chuck asked for beside them
+    ('Mill Valley', 53, 'mill-valley'), ('Shawnee Mission West', 24, 'shawnee-mission-west'),
+    ('Andale', 66, 'andale'), ('Wellington', 125, 'wellington'),
 ]
 # Each row is its own block of the page; take everything up to the next one (the divs inside it are nested).
 slugify = lambda s: re.sub(r'^-+|-+$', '', re.sub(r'[^a-z0-9]+', '-', s.lower().strip()))

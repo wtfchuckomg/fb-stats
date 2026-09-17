@@ -6,7 +6,7 @@
    still to come.
    ================================================================ */
 const TEAM_PAGE = (PAGE_Q.has('team') || PAGE_Q.has('teams')) && !PAGE_Q.has('stats');
-const tpage = {edit:false, draft:null, sug:null, name:''};
+const tpage = {edit:false, draft:null, sug:null, name:'', season:'', hist:{}};
 
 /* ---------- every shared game, for the schools' schedules and their records ---------- */
 // The home page and BUCO Stats don't need it; the scoreboards, game pages, tracker and team pages do.
@@ -233,6 +233,17 @@ async function startTeamPage(){
   } catch (e) { allGames.err = 'Can’t reach the games. Check your connection and reload.'; allGames.list = []; renderTeamPage(); }
 }
 
+// Past seasons for a school, when this site has them on file.
+function teamHistory(name){
+  const k = logoSlug(name); if (!k) return null;
+  if (tpage.hist[k] === undefined){
+    tpage.hist[k] = null;
+    fetch(`/history/${k}.json`, {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
+      .then(d => { tpage.hist[k] = d || false; renderTeamPage(); }).catch(() => { tpage.hist[k] = false; });
+  }
+  return tpage.hist[k] || null;
+}
+
 function renderTeamPage(){
   if (ui.preview) renderPreview();
   if (!ui.teamPage) return;
@@ -305,6 +316,22 @@ function teamPageHtml(nameIn){
     return `<tr><td class="wk">${esc(weekLabel(wk))}</td><td class="opp"><em>${side === 'A' ? 'at' : 'vs'}</em><a href="?team=${encodeURIComponent(o.name)}">${markFor(o, 24)}${esc(o.name)}</a></td>
       <td class="res">${cell}</td><td class="lnk">${go}</td></tr>${form}`;
   }).join('');
+  // Earlier seasons, from KPreps: a year to pick, and that year's games in place of this season's.
+  const H = teamHistory(name), years = H && H.seasons ? Object.keys(H.seasons).sort((a, b) => b - a) : [];
+  if (tpage.season && !years.includes(tpage.season)) tpage.season = '';
+  const seasonPick = years.length ? `<div class="tp-season"><label class="eyebrow" for="tp-season">Season</label>
+      <select class="inp" id="tp-season"><option value=""${tpage.season ? '' : ' selected'}>${new Date().getFullYear()} (this season)</option>
+      ${years.map(y => `<option value="${y}"${tpage.season === y ? ' selected' : ''}>${y}</option>`).join('')}</select></div>` : '';
+  const S = tpage.season && H && H.seasons[tpage.season];
+  const pastRec = S ? S.record : '';
+  const past = S ? (S.games || []).map(g => {
+    const res = g.us != null ? `<b class="${g.us > g.them ? 'w' : g.us < g.them ? 'l' : ''}">${g.us > g.them ? 'W' : g.us < g.them ? 'L' : 'T'}</b> ${g.us}-${g.them}${g.ot ? ' (OT)' : ''}` : '&#8212;';
+    const opp = schoolName(g.opp) || g.opp;
+    return `<tr><td class="wk">${esc(g.date || '')}</td>
+      <td class="opp"><em>${g.at === 'away' ? 'at' : g.at === 'home' ? 'vs' : 'vs'}</em><a href="?team=${encodeURIComponent(opp)}">${markFor({name:opp, abbr:shortName(opp), color:'#4A4B4D'}, 24)}${esc(opp)}</a></td>
+      <td class="res">${res}</td><td class="lnk">${g.note ? `<span class="tp-note">${esc(g.note)}</span>` : ''}</td></tr>`;
+  }).join('') : '';
+
   return `<section class="bcard tp-head">
       <div class="tp-id">${markFor(mark, 72)}<div><h1>${esc(name)}</h1>${(s => s ? `<p class="tp-sub">${esc(s)}</p>` : '')(schoolLine(name))}</div></div>
       <div class="tp-recs">${recBox('rec', 'Overall')}${recBox('home', 'Home')}${recBox('away', 'Away')}</div>
@@ -318,9 +345,11 @@ function teamPageHtml(nameIn){
         return `<div class="tp-links">${stats}${roster || ui.admin ? '<button type="button" class="h-btn" data-tp-roster>Roster</button>' : ''}</div>`;
       })() : ''}
     </section>
-    <section class="bcard"><h2 class="tp-h">Schedule &amp; Results</h2>
+    <section class="bcard"><div class="tp-h-row"><h2 class="tp-h">Schedule &amp; Results</h2>${seasonPick}</div>
       ${coveredSchool(name) || !r ? '' : `<p class="h-note" style="margin:0 0 10px">${esc(name)}’s record here counts the games this site has — a paste or a tracked game adds to it.</p>`}
-      ${allGames.list ? (sched ? `<div class="tbl-x"><table class="tp-sched"><tbody>${sched}</tbody></table></div>` : `<p class="bempty">No games for ${esc(name)} on the site yet.</p>`)
+      ${past ? `<div class="tbl-x"><table class="tp-sched"><tbody>${past}</tbody></table></div>
+          <p class="h-note" style="margin:10px 0 0">${esc(tpage.season)} season${pastRec ? `, ${esc(pastRec)}` : ''} &#183; from KPreps.</p>`
+        : allGames.list ? (sched ? `<div class="tbl-x"><table class="tp-sched"><tbody>${sched}</tbody></table></div>` : `<p class="bempty">No games for ${esc(name)} on the site yet.</p>`)
         : `<p class="bempty">${esc(allGames.err || 'Loading…')}</p>`}
     </section>
     ${(() => {
@@ -352,6 +381,10 @@ function teamPageHtml(nameIn){
 }
 
 // The Roster button takes you down to the card (scroll-margin-top keeps it clear of the bars).
+document.addEventListener('change', e => {
+  if (e.target.id !== 'tp-season') return;
+  tpage.season = e.target.value; renderTeamPage();
+});
 document.addEventListener('click', e => {
   const c = s => e.target.closest && e.target.closest(s);
   if (c('[data-tp-roster]')){ const el = $('#roster'); if (el) el.scrollIntoView({behavior:'smooth', block:'start'}); return; }

@@ -60,6 +60,20 @@ function loadHistory(name){
   fetch(`/history/${k}.json`, {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
     .then(d => { pre.hist[k] = d || false; renderPreview(); }).catch(() => { pre.hist[k] = false; });
 }
+// How a school has done over the seasons on file: wins, losses and points, for the predictor's longer view.
+function fiveYear(name){
+  const f = pre.hist[logoSlug(name)];
+  if (!f || !f.seasons) return null;
+  const r = {w:0, l:0, t:0, pf:0, pa:0, gp:0, years:0};
+  Object.values(f.seasons).forEach(s => {
+    let played = 0;
+    (s.games || []).forEach(g => { if (g.us == null) return; played++;
+      r.gp++; r.pf += g.us; r.pa += g.them; r[g.us > g.them ? 'w' : g.us < g.them ? 'l' : 't']++; });
+    if (played) r.years++;
+  });
+  return r.gp ? r : null;
+}
+
 // Every meeting between two schools in the seasons on file, newest first, told from the first school's side.
 function pastMeetings(a, b){
   const want = canonSchool(b), out = [], seen = new Set();
@@ -100,7 +114,8 @@ function predict(A, H){
     const margin = s.gp ? (s.pf - s.pa) / s.gp : 0;
     const info = schoolInfo(n), rk = rankOf(n);
     const cls = info ? CLASS_STEP[info[0]] : CLASS_STEP[({'8-Man I':'8M-I', '8-Man II':'8M-II', '6-Man':'6M'}[rankClassOf(n)]) || rankClassOf(n)];
-    return {s, wp, margin, cls:cls == null ? null : cls, bonus:rk ? (rk.rank ? (11 - rk.rank) * 1.2 : 1) : 0, rk};
+    const five = fiveYear(n), fwp = five ? (five.w + five.t / 2 + 2) / (five.gp + 4) : null;
+    return {s, wp, margin, five, fwp, cls:cls == null ? null : cls, bonus:rk ? (rk.rank ? (11 - rk.rank) * 1.2 : 1) : 0, rk};
   };
   const a = side(A), h = side(H);
   // Past meetings: the average margin of the games on file, counted lightly and never worth more than a touchdown.
@@ -111,6 +126,8 @@ function predict(A, H){
     ['Class', a.cls != null && h.cls != null ? 3.5 * (h.cls - a.cls) : 0],
     ['Media Rankings', h.bonus - a.bonus],
     ['Past meetings', Math.max(-7, Math.min(7, .35 * hh))],
+    // The last five seasons, when both schools have them on file: how good these programs have been, counted lightly.
+    ['Last 5 seasons', a.fwp != null && h.fwp != null ? Math.max(-6, Math.min(6, 12 * (h.fwp - a.fwp))) : 0],
     ['Home field', 2.5]];
   const pts = parts.reduce((t, p) => t + p[1], 0);
   const home = Math.min(.97, Math.max(.03, 1 / (1 + Math.exp(-pts / 8))));
@@ -257,7 +274,10 @@ function previewHtml(){
       <td class="num">${first}, ${second}${m.ot ? ' (OT)' : ''}</td></tr>`;
   }).join('');
   const past = met.length || waiting ? `<section class="bcard pg-card"><h2 class="pg-h">Past meetings</h2>
-      ${waiting && !met.length ? '<p class="bempty">Loading past seasons…</p>' : `<p class="pg-proj" style="text-align:left">${esc(A)} is ${series[0]}-${series[1]}${series[2] ? '-' + series[2] : ''} against ${esc(H)} in the last ${met.length === 1 ? 'meeting' : `${met.length} meetings`}</p>
+      ${waiting && !met.length ? '<p class="bempty">Loading past seasons…</p>' : `${(() => {
+        const fa = fiveYear(A), fh = fiveYear(H);
+        return fa && fh ? `<p class="pg-proj" style="text-align:left">Last ${Math.max(fa.years, fh.years)} seasons: ${esc(A)} ${fa.w}-${fa.l}${fa.t ? '-' + fa.t : ''}, ${esc(H)} ${fh.w}-${fh.l}${fh.t ? '-' + fh.t : ''}</p>` : ''; })()}
+        <p class="pg-proj" style="text-align:left">${esc(A)} is ${series[0]}-${series[1]}${series[2] ? '-' + series[2] : ''} against ${esc(H)} in the last ${met.length === 1 ? 'meeting' : `${met.length} meetings`}</p>
         <div class="pg-tbl"><table class="ctbl"><thead><tr><th>Year</th><th>Where</th><th class="num">Final</th></tr></thead><tbody>${metRows}</tbody></table></div>`}
     </section>` : '';
 
