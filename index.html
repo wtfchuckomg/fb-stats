@@ -231,7 +231,7 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .tp-h-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .tp-season{display:flex;align-items:center;gap:8px}
 .tp-season .inp{height:36px;width:auto;font:500 14px/1 var(--sans)}
-.tp-note{color:var(--muted);font:400 12.5px/1.3 var(--sans);white-space:normal}
+.tp-run{color:var(--muted);font:500 13.5px/1 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right;padding-right:10px}
 .pg-head{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:16px 24px;padding:22px 28px}
 .pg-team{display:flex;align-items:center;gap:16px;min-width:0}
 .pg-team.h{justify-content:flex-end;text-align:right}
@@ -7081,6 +7081,7 @@ function teamPageHtml(nameIn){
       <div class="tp-acts"><button type="button" class="btn primary" data-tp-save>Save record</button><button type="button" class="btn" data-tp-cancel>Cancel</button>
         ${teamRecs.map[k] ? '<button type="button" class="btn" data-tp-clear>Clear it (use the tally)</button>' : ''}</div>
       <p class="h-note">Records tally themselves from the results on the site. Set one here only to correct it (say, for a game that isn’t on the site); from then on each new final adds to it. It shows on the scoreboards on ${esc(name)}’s games still to come, and a record typed into one game wins for that game.</p></div>` : '';
+  const now = {w:0, l:0, t:0};
   const sched = rows.map(({x, side, opp, wk, stats}) => {
     const m = finalOf(x), o = x.teams[opp], a = m.score[side], b = m.score[opp];
     const res = m.fin ? `<b class="${a > b ? 'w' : a < b ? 'l' : ''}">${a > b ? 'W' : a < b ? 'L' : 'T'}</b> ${a}-${b}${m.q > 4 ? ' (OT)' : ''}`
@@ -7090,14 +7091,16 @@ function teamPageHtml(nameIn){
     const edit = ui.admin && x.kind === 'score', open = edit && tpage.editing && tpage.editing.id === x.id;
     const cell = edit ? `<button type="button" class="tp-res-btn" data-tp-score="${esc(x.id)}" data-side="${side}" title="Edit the score">${res}</button>` : res;
     const d = tpage.sdraft || {}, val = (k, v) => esc(String(d[k] != null ? d[k] : m.fin ? v : ''));
-    const form = open ? `<tr class="tp-edit-row"><td colspan="4"><div class="tp-score-form">
+    const form = open ? `<tr class="tp-edit-row"><td colspan="5"><div class="tp-score-form">
         <label>${esc(x.teams[side].name)}<input class="inp" id="tp-s-mine" inputmode="numeric" maxlength="3" autocomplete="off" value="${val('mine', a)}"></label>
         <label>${esc(o.name)}<input class="inp" id="tp-s-opp" inputmode="numeric" maxlength="3" autocomplete="off" value="${val('opp', b)}"></label>
         <button type="button" class="btn primary" data-tp-score-save>Save final</button>
         ${m.fin ? '<button type="button" class="btn" data-tp-score-clear>Not played yet</button>' : ''}
         <button type="button" class="btn" data-tp-score-cancel>Cancel</button></div></td></tr>` : '';
+    if (m.fin) now[a > b ? 'w' : a < b ? 'l' : 't']++;
+    const runNow = m.fin ? `${now.w}-${now.l}${now.t ? '-' + now.t : ''}` : '';
     return `<tr><td class="wk">${esc(weekLabel(wk))}</td><td class="opp"><em>${side === 'A' ? 'at' : 'vs'}</em><a href="?team=${encodeURIComponent(o.name)}">${markFor(o, 24)}${esc(o.name)}</a></td>
-      <td class="res">${cell}</td><td class="lnk">${go}</td></tr>${form}`;
+      <td class="res">${cell}</td><td class="tp-run">${runNow}</td><td class="lnk">${go}</td></tr>${form}`;
   }).join('');
   // Earlier seasons, from KPreps: a year to pick, and that year's games in place of this season's.
   const H = teamHistory(name), years = H && H.seasons ? Object.keys(H.seasons).sort((a, b) => b - a) : [];
@@ -7107,12 +7110,15 @@ function teamPageHtml(nameIn){
       ${years.map(y => `<option value="${y}"${tpage.season === y ? ' selected' : ''}>${y}</option>`).join('')}</select></div>` : '';
   const S = tpage.season && H && H.seasons[tpage.season];
   const pastRec = S ? S.record : '';
+  const run = {w:0, l:0, t:0};   // the record as it stood after each game
   const past = S ? (S.games || []).map(g => {
-    const res = g.us != null ? `<b class="${g.us > g.them ? 'w' : g.us < g.them ? 'l' : ''}">${g.us > g.them ? 'W' : g.us < g.them ? 'L' : 'T'}</b> ${g.us}-${g.them}${g.ot ? ' (OT)' : ''}` : '&#8212;';
+    const played = g.us != null;
+    if (played) run[g.us > g.them ? 'w' : g.us < g.them ? 'l' : 't']++;
+    const res = played ? `<b class="${g.us > g.them ? 'w' : g.us < g.them ? 'l' : ''}">${g.us > g.them ? 'W' : g.us < g.them ? 'L' : 'T'}</b> ${g.us}-${g.them}${g.ot ? ' (OT)' : ''}` : '&#8212;';
     const opp = schoolName(g.opp) || g.opp;
     return `<tr><td class="wk">${esc(g.date || '')}</td>
-      <td class="opp"><em>${g.at === 'away' ? 'at' : g.at === 'home' ? 'vs' : 'vs'}</em><a href="?team=${encodeURIComponent(opp)}">${markFor({name:opp, abbr:shortName(opp), color:'#4A4B4D'}, 24)}${esc(opp)}</a></td>
-      <td class="res">${res}</td><td class="lnk">${g.note ? `<span class="tp-note">${esc(g.note)}</span>` : ''}</td></tr>`;
+      <td class="opp"><em>${g.at === 'away' ? 'at' : 'vs'}</em><a href="?team=${encodeURIComponent(opp)}">${markFor({name:opp, abbr:shortName(opp), color:'#4A4B4D'}, 24)}${esc(opp)}</a></td>
+      <td class="res">${res}</td><td class="lnk tp-run">${played ? `${run.w}-${run.l}${run.t ? '-' + run.t : ''}` : ''}</td></tr>`;
   }).join('') : '';
 
   return `<section class="bcard tp-head">
@@ -7130,8 +7136,7 @@ function teamPageHtml(nameIn){
     </section>
     <section class="bcard"><div class="tp-h-row"><h2 class="tp-h">Schedule &amp; Results</h2>${seasonPick}</div>
       ${coveredSchool(name) || !r ? '' : `<p class="h-note" style="margin:0 0 10px">${esc(name)}’s record here counts the games this site has — a paste or a tracked game adds to it.</p>`}
-      ${past ? `<div class="tbl-x"><table class="tp-sched"><tbody>${past}</tbody></table></div>
-          <p class="h-note" style="margin:10px 0 0">${esc(tpage.season)} season${pastRec ? `, ${esc(pastRec)}` : ''} &#183; from KPreps.</p>`
+      ${past ? `<div class="tbl-x"><table class="tp-sched"><tbody>${past}</tbody></table></div>`
         : allGames.list ? (sched ? `<div class="tbl-x"><table class="tp-sched"><tbody>${sched}</tbody></table></div>` : `<p class="bempty">No games for ${esc(name)} on the site yet.</p>`)
         : `<p class="bempty">${esc(allGames.err || 'Loading…')}</p>`}
     </section>
