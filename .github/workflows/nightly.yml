@@ -39,6 +39,9 @@ jobs:
         env:
           KP_YEARS: '2026'
         run: python3 .github/kp/crawl.py
+      - name: Write the finals the site reads
+        if: steps.when.outputs.go == '1'
+        run: python3 .github/kp/scores.py
       - name: Fit the ratings
         if: steps.when.outputs.go == '1'
         run: python3 .github/kp/ratings.py
@@ -50,7 +53,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git add -A season.json stats.json ratings.json g embed history .github/kp
+          git add -A season.json stats.json ratings.json kpscores.json g embed history .github/kp
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
           git -c user.name="Nightly rebuild" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "Nightly rebuild: season, stats, previews, embeds"
           git pull -q --rebase && git push -q

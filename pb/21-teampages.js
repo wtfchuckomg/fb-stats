@@ -94,7 +94,7 @@ function indexGames(){
   const byId = new Map();
   (allGames.list || []).forEach(x => byId.set(x.id, x));
   live.forEach(x => { if (x && x.teams && x.teams.A && x.teams.H) byId.set(x.id, x); });
-  [...byId.values()].forEach(x => {
+  [...byId.values()].map(kpFill).forEach(x => {
     // Only a game the admin hid is left out; the other schools' games count even though they're off the scoreboards.
     if (hideList.ids.has(x.id)) return;
     const stats = x.stats != null ? !!x.stats : (x.kind !== 'score' && ((x.plays && x.plays.length) || !!x.box)), wk = x.wk || gameWeek(x);
@@ -321,10 +321,12 @@ function teamPageHtml(nameIn){
       <td class="res">${cell}</td><td class="tp-run">${runNow}</td><td class="lnk">${go}</td></tr>${form}`;
   }).join('');
   // Earlier seasons, from KPreps: a year to pick, and that year's games in place of this season's.
-  const H = teamHistory(name), years = H && H.seasons ? Object.keys(H.seasons).sort((a, b) => b - a) : [];
+  // This season is the site's own games, up top; KPreps' copy of the same year would only repeat it.
+  const H = teamHistory(name), thisYear = String(new Date().getFullYear());
+  const years = H && H.seasons ? Object.keys(H.seasons).filter(y => y !== thisYear).sort((a, b) => b - a) : [];
   if (tpage.season && !years.includes(tpage.season)) tpage.season = '';
   const seasonPick = years.length ? `<div class="tp-season"><label class="eyebrow" for="tp-season">Season</label>
-      <select class="inp" id="tp-season"><option value=""${tpage.season ? '' : ' selected'}>${new Date().getFullYear()} (this season)</option>
+      <select class="inp" id="tp-season"><option value=""${tpage.season ? '' : ' selected'}>${thisYear} (this season)</option>
       ${years.map(y => `<option value="${y}"${tpage.season === y ? ' selected' : ''}>${y}</option>`).join('')}</select></div>` : '';
   const S = tpage.season && H && H.seasons[tpage.season];
   const pastRec = S ? S.record : '';

@@ -4682,7 +4682,7 @@ function deleteScore(id){
 
 /* ---------- shared games for the week, live from Firestore ---------- */
 const scores = {api:null, key:null, unsub:null, docs:{}, seen:null};
-function scoresReady(api){ scores.api = api; scores.key = null; watchHidden(api); watchTeamRecs(api); watchAllGames(api); watchSchools(api); renderScores(); }
+function scoresReady(api){ scores.api = api; loadKpScores(); scores.key = null; watchHidden(api); watchTeamRecs(api); watchAllGames(api); watchSchools(api); renderScores(); }
 
 /* ---------- games the admin has hidden from the scoreboards ---------- */
 // One shared list, in a document only the admin's account can change (the rules let only a document's owner write
@@ -4757,6 +4757,7 @@ function weekGames(key, withHidden, withOpp){
   }
   if (g && !g.sample && gameWeek(g) === key) out[g.id] = g;
   // A game someone is keeping stats on takes the place of its schedule entry or quick score.
+  Object.entries(out).forEach(([id, x]) => { const f = kpFill(x); if (f !== x) out[id] = f; });
   const pair = x => [x.teams.A.name, x.teams.H.name].map(canonSchool).sort().join('|');
   // (A hidden game doesn't take its schedule entry's place.)
   const statted = new Set(Object.values(out).filter(x => x.kind !== 'score' && !isHidden(x)).map(pair));
@@ -5172,7 +5173,8 @@ function boardGame(x){
         <div class="bt-name"><span><a class="tlink" href="?team=${encodeURIComponent(T[s].name)}">${esc(T[s].name)}</a></span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub${rec ? ' rec' : ''}">${esc(sub)}</div></div></div>
       <div class="bt-q">${cells((i, n) => m.lines[s][i] == null ? 'X' : m.typed ? m.lines[s][i] : (i < 4 && m.fin && i >= (m.qPlayed || 0)) ? 'X' : n < played ? m.lines[s][i] : '')}</div><div class="bt-t">${m.pre ? '' : m.score[s]}</div><i class="sc-win"></i></div>`;
   };
-  const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
+  // A score filled in from KPreps says so, so nobody wonders where a game nobody tracked got its final.
+  const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}${x.kp ? ' <span class="sc-8">KPreps</span>' : ''}`;
   // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
   const acts = m.pre ? `<a class="bbtn" href="?preview=${id}">Preview</a>` : m.quick || (!x.plays.length && !x.box) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a>`;
   // The admin can hide any game from the scoreboards, or bring a hidden one back.
@@ -6901,7 +6903,7 @@ function indexGames(){
   const byId = new Map();
   (allGames.list || []).forEach(x => byId.set(x.id, x));
   live.forEach(x => { if (x && x.teams && x.teams.A && x.teams.H) byId.set(x.id, x); });
-  [...byId.values()].forEach(x => {
+  [...byId.values()].map(kpFill).forEach(x => {
     // Only a game the admin hid is left out; the other schools' games count even though they're off the scoreboards.
     if (hideList.ids.has(x.id)) return;
     const stats = x.stats != null ? !!x.stats : (x.kind !== 'score' && ((x.plays && x.plays.length) || !!x.box)), wk = x.wk || gameWeek(x);
@@ -7128,10 +7130,12 @@ function teamPageHtml(nameIn){
       <td class="res">${cell}</td><td class="tp-run">${runNow}</td><td class="lnk">${go}</td></tr>${form}`;
   }).join('');
   // Earlier seasons, from KPreps: a year to pick, and that year's games in place of this season's.
-  const H = teamHistory(name), years = H && H.seasons ? Object.keys(H.seasons).sort((a, b) => b - a) : [];
+  // This season is the site's own games, up top; KPreps' copy of the same year would only repeat it.
+  const H = teamHistory(name), thisYear = String(new Date().getFullYear());
+  const years = H && H.seasons ? Object.keys(H.seasons).filter(y => y !== thisYear).sort((a, b) => b - a) : [];
   if (tpage.season && !years.includes(tpage.season)) tpage.season = '';
   const seasonPick = years.length ? `<div class="tp-season"><label class="eyebrow" for="tp-season">Season</label>
-      <select class="inp" id="tp-season"><option value=""${tpage.season ? '' : ' selected'}>${new Date().getFullYear()} (this season)</option>
+      <select class="inp" id="tp-season"><option value=""${tpage.season ? '' : ' selected'}>${thisYear} (this season)</option>
       ${years.map(y => `<option value="${y}"${tpage.season === y ? ' selected' : ''}>${y}</option>`).join('')}</select></div>` : '';
   const S = tpage.season && H && H.seasons[tpage.season];
   const pastRec = S ? S.record : '';
@@ -8696,7 +8700,7 @@ document.addEventListener('click', e => {
    game, the page points to the gamecast.
    ================================================================ */
 const PREVIEW_ID = new URLSearchParams(location.search).get('preview');
-const pre = {rank:null, stats:null, err:'', hist:{}, rat:null, ratIdx:{}};
+const pre = {meet:{}, rank:null, stats:null, err:'', hist:{}, rat:null, ratIdx:{}};
 
 // The Media Rankings live in their own database (kansasmediarankings.com). Only published weeks are read, and
 // the points are tallied the way that site does: 10 for a first-place vote down to 1 for tenth (5 in 6-Man).
@@ -8788,6 +8792,19 @@ function fetchHistory(name, done){
       .then(d => d ? done(d) : next(i + 1)).catch(() => next(i + 1));
   })(0);
 }
+// Older meetings, from kansashsfootballhistory.com by way of .github/khsfh: one file a school, keyed by
+// our slugs. No dates and no sides in that archive, so these rows carry the year and the score only.
+function loadMeetings(name){
+  const k = logoSlug(name); if (!k || pre.meet[k] !== undefined) return;
+  pre.meet[k] = null;
+  const tries = [k], r = typeof ratingOf === 'function' ? ratingOf(name) : null;
+  if (r && r.slug && !tries.includes(r.slug)) tries.push(r.slug);
+  (function next(i){
+    if (i >= tries.length){ pre.meet[k] = false; return renderPreview(); }
+    fetch(`/meetings/${tries[i]}.json`, {cache:'no-cache'}).then(x => x.ok ? x.json() : null)
+      .then(d => { if (!d) return next(i + 1); pre.meet[k] = d; renderPreview(); }).catch(() => next(i + 1));
+  })(0);
+}
 function loadHistory(name){
   const k = logoSlug(name); if (!k || pre.hist[k] !== undefined) return;
   pre.hist[k] = null;
@@ -8808,6 +8825,7 @@ function fiveYear(name){
 }
 
 // Every meeting between two schools in the seasons on file, newest first, told from the first school's side.
+const ratingSlug = n => { const r = typeof ratingOf === 'function' ? ratingOf(n) : null; return (r && r.slug) || logoSlug(n); };
 function pastMeetings(a, b){
   const want = canonSchool(b), out = [], seen = new Set();
   const take = (file, flip) => {
@@ -8822,6 +8840,18 @@ function pastMeetings(a, b){
   };
   take(pre.hist[logoSlug(a)], false);
   take(pre.hist[logoSlug(b)], true);
+  // Before those seasons: the archive's rows, in whichever school's file they turn up.
+  const older = (file, other, flip) => {
+    const rows = file && file.opp && file.opp[other]; if (!rows) return;
+    rows.forEach(([year, us, them, note]) => {
+      const key = `${year}|old`; if (seen.has(key)) return; seen.add(key);
+      out.push({year:+year, date:'', ot:/ot$/.test(note || ''), old:true,
+        us:flip ? them : us, them:flip ? us : them, at:''});
+    });
+  };
+  const slugA = ratingSlug(a), slugB = ratingSlug(b);
+  if (slugB) older(pre.meet[logoSlug(a)], slugB, false);
+  if (slugA) older(pre.meet[logoSlug(b)], slugA, true);
   return out.sort((x, y) => y.year - x.year || (y.date || '').localeCompare(x.date || ''));
 }
 
@@ -8908,7 +8938,7 @@ async function startPreview(id){
   const wait = setInterval(() => {
     const x = previewGame(); if (!x) return;
     clearInterval(wait);
-    ['A', 'H'].forEach(s => loadHistory(x.teams[s].name));
+    ['A', 'H'].forEach(s => { loadHistory(x.teams[s].name); loadMeetings(x.teams[s].name); });
     const classes = ['A', 'H'].map(s => { const n = x.teams[s].name, i = schoolInfo(n); return rankClassOf(n) || (i && RANK_CLASS[i[0]]); });
     loadRankings(classes).then(r => { pre.rank = r; renderPreview(); }).catch(() => { pre.rank = {week:null, byClass:{}}; renderPreview(); });
   }, 300);
@@ -9032,14 +9062,15 @@ function previewHtml(){
   const five = `<section class="bcard pg-card"><h2 class="pg-h">Last five games</h2><div class="pg-fives">${lastFive(A)}${lastFive(H)}</div></section>`;
 
   // Past meetings, from the seasons on file for the county's schools.
-  const met = pastMeetings(A, H), waiting = [A, H].some(n => pre.hist[logoSlug(n)] === null);
+  const met = pastMeetings(A, H), waiting = [A, H].some(n => pre.hist[logoSlug(n)] === null || pre.meet[logoSlug(n)] === null);
   // "2025 · at Augusta · AUG 47, CIR 6": where it was played, then the score with the winner first.
   const ab2 = {A:T.A.abbr || shortName(A), H:T.H.abbr || shortName(H)};
   const metRows = met.slice(0, 6).map(m => {
     const host = m.at === 'home' ? A : m.at === 'away' ? H : '';
+    // The older archive records the score and the year, not where it was played.
     const side = s => `${esc(ab2[s])} ${s === 'A' ? m.us : m.them}`;
     const first = m.them > m.us ? side('H') : side('A'), second = m.them > m.us ? side('A') : side('H');
-    return `<tr><td class="num">${m.year}</td><td>${host ? `at ${esc(host)}` : 'neutral site'}</td>
+    return `<tr><td class="num">${m.year}</td><td>${host ? `at ${esc(host)}` : m.old ? '&#8212;' : 'neutral site'}</td>
       <td class="num">${first}, ${second}${m.ot ? ' (OT)' : ''}</td></tr>`;
   }).join('');
   const past = met.length || waiting ? `<section class="bcard pg-card"><h2 class="pg-h">Past meetings</h2>
@@ -9057,6 +9088,67 @@ function previewHtml(){
   // Three columns on a computer, the way a gamecast reads: the predictor and the game's details down the left, the
   // leaders and last games in the middle, the line and standings down the right.
   return `${head}<div class="pg-grid"><div class="pg-col">${predictor}${gameInfo}</div><div class="pg-col pg-mid">${leaders}${five}${past}</div><div class="pg-col">${odds}${standings}</div></div>`;
+}
+/* ================================================================
+   Friday night's finals, for the games nobody kept stats on.
+
+   A job reads KPreps after the games end and writes /kpscores.json
+   (.github/kp/scores.py). Here that file fills in the score of any
+   schedule entry still sitting at 0-0, so a Friday score shows up
+   without anyone typing it. A game someone tracked, a quick score
+   already entered, or any game with a box score is left alone.
+   ================================================================ */
+const kps = {rows:null, idx:null, want:false, logos:0};
+// KPreps writes some schools another way round — "Towanda-Circle" for the school this site calls Circle.
+// The logo list carries those aliases, so both names settle on ours.
+const kpAlias = n => {
+  const k = logoSlug(n);
+  const t = (logoLib.list || []).find(v => logoSlug(v.name) === k || v.slug === k || (v.aliases || []).some(a => logoSlug(a) === k));
+  return canonSchool(t ? t.name : n);
+};
+function loadKpScores(){
+  if (kps.want) return;
+  kps.want = true;
+  fetch('/kpscores.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).then(d => {
+    if (!d || !Array.isArray(d.games)) return;
+    kps.rows = d.games; kps.idx = null;
+    renderScores(); renderScoreboard(); renderTeamPage(); renderHome();
+  }).catch(() => {});
+}
+// Keyed by the two schools and the week, under both the name KPreps prints and its own slug, since we
+// write some schools another way round ("Circle" for towanda-circle).
+function kpIndex(){
+  const n = (logoLib.list || []).length;
+  if (kps.idx && kps.logos === n) return kps.idx;
+  kps.logos = n;
+  const idx = new Map();
+  (kps.rows || []).forEach(r => {
+    const wk = r.d ? weekKey(fromYmd(r.d).getTime()) : '';
+    [[r.hn, r.an], [r.h.replace(/-/g, ' '), r.a.replace(/-/g, ' ')]].forEach(([h, a]) => {
+      const k = `${wk}|${[kpAlias(h), kpAlias(a)].sort().join('|')}`;
+      if (!idx.has(k)) idx.set(k, r);
+    });
+  });
+  kps.idx = idx;
+  return idx;
+}
+// The final for this game, if KPreps has one and we don't.
+function kpFinal(x){
+  if (!kps.rows || !x || !x.teams || !x.teams.A || !x.teams.H) return null;
+  if (x.kind !== 'score' || x.box || x.stats || (x.plays && x.plays.length)) return null;
+  if (x.per !== 'pre' || (+x.A || 0) || (+x.H || 0)) return null;    // a score is already in
+  const A = x.teams.A.name, H = x.teams.H.name;
+  const r = kpIndex().get(`${gameWeek(x)}|${[kpAlias(A), kpAlias(H)].sort().join('|')}`);
+  if (!r) return null;
+  // Whoever KPreps has at home may be the other way round from our schedule; go by the school, not the side.
+  const home = kpAlias(r.hn) === kpAlias(H) || kpAlias(r.h.replace(/-/g, ' ')) === kpAlias(H);
+  return {A:home ? r.ap : r.hp, H:home ? r.hp : r.ap};
+}
+// The same game with that score in it. Nothing is written to the database: this is how the page reads it.
+function kpFill(x){
+  const f = kpFinal(x);
+  if (!f) return x;
+  return Object.assign({}, x, {A:f.A, H:f.H, per:'final', kp:true});
 }
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){

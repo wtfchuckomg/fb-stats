@@ -154,7 +154,7 @@ function deleteScore(id){
 
 /* ---------- shared games for the week, live from Firestore ---------- */
 const scores = {api:null, key:null, unsub:null, docs:{}, seen:null};
-function scoresReady(api){ scores.api = api; scores.key = null; watchHidden(api); watchTeamRecs(api); watchAllGames(api); watchSchools(api); renderScores(); }
+function scoresReady(api){ scores.api = api; loadKpScores(); scores.key = null; watchHidden(api); watchTeamRecs(api); watchAllGames(api); watchSchools(api); renderScores(); }
 
 /* ---------- games the admin has hidden from the scoreboards ---------- */
 // One shared list, in a document only the admin's account can change (the rules let only a document's owner write
@@ -229,6 +229,7 @@ function weekGames(key, withHidden, withOpp){
   }
   if (g && !g.sample && gameWeek(g) === key) out[g.id] = g;
   // A game someone is keeping stats on takes the place of its schedule entry or quick score.
+  Object.entries(out).forEach(([id, x]) => { const f = kpFill(x); if (f !== x) out[id] = f; });
   const pair = x => [x.teams.A.name, x.teams.H.name].map(canonSchool).sort().join('|');
   // (A hidden game doesn't take its schedule entry's place.)
   const statted = new Set(Object.values(out).filter(x => x.kind !== 'score' && !isHidden(x)).map(pair));

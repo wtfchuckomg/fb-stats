@@ -6,7 +6,7 @@
    game, the page points to the gamecast.
    ================================================================ */
 const PREVIEW_ID = new URLSearchParams(location.search).get('preview');
-const pre = {rank:null, stats:null, err:'', hist:{}, rat:null, ratIdx:{}};
+const pre = {meet:{}, rank:null, stats:null, err:'', hist:{}, rat:null, ratIdx:{}};
 
 // The Media Rankings live in their own database (kansasmediarankings.com). Only published weeks are read, and
 // the points are tallied the way that site does: 10 for a first-place vote down to 1 for tenth (5 in 6-Man).
@@ -98,6 +98,19 @@ function fetchHistory(name, done){
       .then(d => d ? done(d) : next(i + 1)).catch(() => next(i + 1));
   })(0);
 }
+// Older meetings, from kansashsfootballhistory.com by way of .github/khsfh: one file a school, keyed by
+// our slugs. No dates and no sides in that archive, so these rows carry the year and the score only.
+function loadMeetings(name){
+  const k = logoSlug(name); if (!k || pre.meet[k] !== undefined) return;
+  pre.meet[k] = null;
+  const tries = [k], r = typeof ratingOf === 'function' ? ratingOf(name) : null;
+  if (r && r.slug && !tries.includes(r.slug)) tries.push(r.slug);
+  (function next(i){
+    if (i >= tries.length){ pre.meet[k] = false; return renderPreview(); }
+    fetch(`/meetings/${tries[i]}.json`, {cache:'no-cache'}).then(x => x.ok ? x.json() : null)
+      .then(d => { if (!d) return next(i + 1); pre.meet[k] = d; renderPreview(); }).catch(() => next(i + 1));
+  })(0);
+}
 function loadHistory(name){
   const k = logoSlug(name); if (!k || pre.hist[k] !== undefined) return;
   pre.hist[k] = null;
@@ -118,6 +131,7 @@ function fiveYear(name){
 }
 
 // Every meeting between two schools in the seasons on file, newest first, told from the first school's side.
+const ratingSlug = n => { const r = typeof ratingOf === 'function' ? ratingOf(n) : null; return (r && r.slug) || logoSlug(n); };
 function pastMeetings(a, b){
   const want = canonSchool(b), out = [], seen = new Set();
   const take = (file, flip) => {
@@ -132,6 +146,18 @@ function pastMeetings(a, b){
   };
   take(pre.hist[logoSlug(a)], false);
   take(pre.hist[logoSlug(b)], true);
+  // Before those seasons: the archive's rows, in whichever school's file they turn up.
+  const older = (file, other, flip) => {
+    const rows = file && file.opp && file.opp[other]; if (!rows) return;
+    rows.forEach(([year, us, them, note]) => {
+      const key = `${year}|old`; if (seen.has(key)) return; seen.add(key);
+      out.push({year:+year, date:'', ot:/ot$/.test(note || ''), old:true,
+        us:flip ? them : us, them:flip ? us : them, at:''});
+    });
+  };
+  const slugA = ratingSlug(a), slugB = ratingSlug(b);
+  if (slugB) older(pre.meet[logoSlug(a)], slugB, false);
+  if (slugA) older(pre.meet[logoSlug(b)], slugA, true);
   return out.sort((x, y) => y.year - x.year || (y.date || '').localeCompare(x.date || ''));
 }
 
@@ -218,7 +244,7 @@ async function startPreview(id){
   const wait = setInterval(() => {
     const x = previewGame(); if (!x) return;
     clearInterval(wait);
-    ['A', 'H'].forEach(s => loadHistory(x.teams[s].name));
+    ['A', 'H'].forEach(s => { loadHistory(x.teams[s].name); loadMeetings(x.teams[s].name); });
     const classes = ['A', 'H'].map(s => { const n = x.teams[s].name, i = schoolInfo(n); return rankClassOf(n) || (i && RANK_CLASS[i[0]]); });
     loadRankings(classes).then(r => { pre.rank = r; renderPreview(); }).catch(() => { pre.rank = {week:null, byClass:{}}; renderPreview(); });
   }, 300);
@@ -342,14 +368,15 @@ function previewHtml(){
   const five = `<section class="bcard pg-card"><h2 class="pg-h">Last five games</h2><div class="pg-fives">${lastFive(A)}${lastFive(H)}</div></section>`;
 
   // Past meetings, from the seasons on file for the county's schools.
-  const met = pastMeetings(A, H), waiting = [A, H].some(n => pre.hist[logoSlug(n)] === null);
+  const met = pastMeetings(A, H), waiting = [A, H].some(n => pre.hist[logoSlug(n)] === null || pre.meet[logoSlug(n)] === null);
   // "2025 · at Augusta · AUG 47, CIR 6": where it was played, then the score with the winner first.
   const ab2 = {A:T.A.abbr || shortName(A), H:T.H.abbr || shortName(H)};
   const metRows = met.slice(0, 6).map(m => {
     const host = m.at === 'home' ? A : m.at === 'away' ? H : '';
+    // The older archive records the score and the year, not where it was played.
     const side = s => `${esc(ab2[s])} ${s === 'A' ? m.us : m.them}`;
     const first = m.them > m.us ? side('H') : side('A'), second = m.them > m.us ? side('A') : side('H');
-    return `<tr><td class="num">${m.year}</td><td>${host ? `at ${esc(host)}` : 'neutral site'}</td>
+    return `<tr><td class="num">${m.year}</td><td>${host ? `at ${esc(host)}` : m.old ? '&#8212;' : 'neutral site'}</td>
       <td class="num">${first}, ${second}${m.ot ? ' (OT)' : ''}</td></tr>`;
   }).join('');
   const past = met.length || waiting ? `<section class="bcard pg-card"><h2 class="pg-h">Past meetings</h2>

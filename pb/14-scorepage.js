@@ -119,7 +119,8 @@ function boardGame(x){
         <div class="bt-name"><span><a class="tlink" href="?team=${encodeURIComponent(T[s].name)}">${esc(T[s].name)}</a></span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub${rec ? ' rec' : ''}">${esc(sub)}</div></div></div>
       <div class="bt-q">${cells((i, n) => m.lines[s][i] == null ? 'X' : m.typed ? m.lines[s][i] : (i < 4 && m.fin && i >= (m.qPlayed || 0)) ? 'X' : n < played ? m.lines[s][i] : '')}</div><div class="bt-t">${m.pre ? '' : m.score[s]}</div><i class="sc-win"></i></div>`;
   };
-  const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
+  // A score filled in from KPreps says so, so nobody wonders where a game nobody tracked got its final.
+  const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}${x.kp ? ' <span class="sc-8">KPreps</span>' : ''}`;
   // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
   const acts = m.pre ? `<a class="bbtn" href="?preview=${id}">Preview</a>` : m.quick || (!x.plays.length && !x.box) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a>`;
   // The admin can hide any game from the scoreboards, or bring a hidden one back.
