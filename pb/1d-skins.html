@@ -1,0 +1,141 @@
+<script>
+/* Looks: the site as it is (Original), Liquid Glass, and 8-Bit. A visitor's pick is kept on their own device, and
+   ?skin=liquid / ?skin=tecmo / ?skin=original in a link sets it. It's applied here, before the page paints, so there's
+   no flash of the other look. The Game Tracker and embedded pages always stay on the original: one is a tool that has
+   to be read at a glance, the other lives inside someone else's page. */
+(function(){
+  var q = new URLSearchParams(location.search), want = q.get('skin'), s = null;
+  try {
+    if (want) localStorage.setItem('kms.skin', want);
+    s = localStorage.getItem('kms.skin');
+  } catch (e) { s = want; }
+  window.KMS_SKIN = s === 'liquid' || s === 'tecmo' ? s : 'original';
+  if (q.has('tracker') || q.has('edit') || q.has('embed') || window.KMS_SKIN === 'original') return;
+  document.documentElement.setAttribute('data-skin', window.KMS_SKIN);
+  if (window.KMS_SKIN === 'tecmo'){
+    var l = document.createElement('link'); l.rel = 'stylesheet';
+    l.href = 'https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&display=swap';
+    document.head.appendChild(l);
+  }
+})();
+</script>
+<style>
+/* ======================================================================================
+   LIQUID GLASS — content sits on solid white cards over a soft ground; the glass is kept
+   for the things you touch: the menu bar floats as a glass pill, the score strip is a glass
+   shelf, menus are glass. Solid cards also scroll faster on phones than glass ones.
+   ====================================================================================== */
+html[data-skin="liquid"]{
+  --page:#EEF1F6; --card:#FFFFFF; --ground:#FFFFFF; --surface:#F4F6F9; --surface-2:#E9EDF3;
+  --ink:#1D1D1F; --ink-2:#1D1D1F; --muted:#6E6E73; --line:rgba(60,60,67,.14); --line-2:rgba(60,60,67,.08);
+  --pill:rgba(118,118,128,.12); --seg:rgba(118,118,128,.2); --blue:#007AFF; --accent:#007AFF; --red:#FF3B30;
+  --good:#248A3D; --bad:#D70015;
+  --lg-glass:rgba(255,255,255,.52); --lg-rim-hi:rgba(255,255,255,.95); --lg-rim-lo:rgba(255,255,255,.3);
+  --lg-float:0 12px 34px rgba(24,36,70,.14),0 2px 8px rgba(24,36,70,.07);
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+html[data-skin="liquid"] body{background:var(--page);letter-spacing:-.01em}
+html[data-skin="liquid"] body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(55% 45% at 0% 0%,#C9D6FF 0,transparent 70%),radial-gradient(50% 40% at 100% 10%,#F6D5E3 0,transparent 70%),
+    radial-gradient(60% 50% at 50% 100%,#D8F1EA 0,transparent 72%),var(--page)}
+/* content: solid, rounded, lifted */
+html[data-skin="liquid"] .bcard,html[data-skin="liquid"] .hcard,html[data-skin="liquid"] .card{
+  background:#FFFFFF;border:0;border-radius:22px;-webkit-backdrop-filter:none;backdrop-filter:none;
+  box-shadow:0 1px 2px rgba(24,36,70,.06),0 8px 24px rgba(24,36,70,.07)}
+/* controls: glass */
+html[data-skin="liquid"] .navbar,html[data-skin="liquid"] .scores,html[data-skin="liquid"] .navmenu,html[data-skin="liquid"] .gtabs{
+  background:var(--lg-glass);border:0;-webkit-backdrop-filter:blur(16px) saturate(190%) brightness(1.06);backdrop-filter:blur(16px) saturate(190%) brightness(1.06);
+  box-shadow:inset 0 1px 0 var(--lg-rim-hi),inset 0 -1px 0 var(--lg-rim-lo),inset 0 0 0 .5px var(--lg-rim-lo),var(--lg-float)}
+html[data-skin="liquid"] .navbar{top:8px;margin:10px auto 0;width:min(1180px,calc(100% - 24px));border-radius:999px}
+html[data-skin="liquid"] .navmenu{border-radius:18px}
+html[data-skin="liquid"] .scores{margin:10px auto 0;width:min(1180px,calc(100% - 24px));border-radius:22px;overflow:hidden}
+html[data-skin="liquid"] .gtabs{border-radius:999px;margin-inline:auto}
+html[data-skin="liquid"] .navlink{color:var(--ink);font-weight:500;opacity:.8}
+html[data-skin="liquid"] .navlink.on{opacity:1;font-weight:600;color:var(--accent)}
+html[data-skin="liquid"] .sc-game,html[data-skin="liquid"] .sc-wk{border-right-color:rgba(60,60,67,.1)}
+html[data-skin="liquid"] .sc-game.cur{background:rgba(255,255,255,.7)}
+/* buttons: filled accent capsules and quiet gray ones */
+html[data-skin="liquid"] .bbtn,html[data-skin="liquid"] .btn.primary{background:var(--accent);color:#FFFFFF;border:0;border-radius:999px;box-shadow:0 4px 14px rgba(0,122,255,.3)}
+html[data-skin="liquid"] .btn,html[data-skin="liquid"] .abtn{border-radius:999px}
+html[data-skin="liquid"] .inp,html[data-skin="liquid"] select{border-radius:12px}
+/* tables: hairlines only */
+html[data-skin="liquid"] .ctbl th{background:transparent;border-bottom:1px solid var(--line)}
+html[data-skin="liquid"] .ctbl td{background:transparent;border-bottom:1px solid var(--line-2)}
+html[data-skin="liquid"] .ctbl tbody tr:nth-child(even) td{background:rgba(118,118,128,.04)}
+
+/* ======================================================================================
+   8-BIT — the Tecmo Super Bowl screens: black ground, blue windows in a white frame, the
+   NES palette, headings in Press Start 2P and everything else in a pixel face that still
+   reads at normal sizes.
+   ====================================================================================== */
+html[data-skin="tecmo"]{
+  --page:#000000; --card:#0000BC; --ground:#0000BC; --surface:#0000A8; --surface-2:#000000;
+  --ink:#FCFCFC; --ink-2:#FCFCFC; --muted:#A4E4FC; --line:#0058F8; --line-2:#0058F8;
+  --pill:#000000; --seg:#0058F8; --blue:#F8B800; --blue-ink:#000000; --accent:#F8B800; --accent-ink:#000000; --red:#F83800;
+  --top:#000000; --top-2:#000000; --top-ink:#FCFCFC; --top-muted:#BCBCBC;
+  --good:#58D854; --good-wash:#003000; --bad:#F83800; --bad-wash:#300000; --flag:#F8B800; --flag-wash:#302000; --flag-ink:#F8B800;
+  --fld-a:#00A800; --fld-b:#008800; --fld-line:#FCFCFC; --fld-num:#FCFCFC;
+  --shadow:none; --shadow-sm:none;
+  --pix:"Press Start 2P","Courier New",ui-monospace,monospace;
+  --sans:"Pixelify Sans","Courier New",ui-monospace,monospace; --cond:"Pixelify Sans","Courier New",monospace;
+  color-scheme:dark;
+}
+html[data-skin="tecmo"] body{background:#000000;color:var(--ink);-webkit-font-smoothing:none;font-smooth:never}
+html[data-skin="tecmo"] body::before{display:none}
+html[data-skin="tecmo"] img{image-rendering:pixelated}
+/* the window: white frame, black gap, blue fill, a hard drop shadow */
+html[data-skin="tecmo"] .bcard,html[data-skin="tecmo"] .hcard,html[data-skin="tecmo"] .card{
+  background:#0000BC;border:4px solid #FCFCFC;border-radius:0;-webkit-backdrop-filter:none;backdrop-filter:none;
+  box-shadow:inset 0 0 0 4px #000000,8px 8px 0 0 #1C1C1C}
+html[data-skin="tecmo"] .bcard *,html[data-skin="tecmo"] .card *,html[data-skin="tecmo"] .hcard *{border-radius:0!important}
+/* headings, labels and tabs in the game's own lettering */
+html[data-skin="tecmo"] h1,html[data-skin="tecmo"] h2,html[data-skin="tecmo"] h3,html[data-skin="tecmo"] .card-title,html[data-skin="tecmo"] .pg-h,
+html[data-skin="tecmo"] .eyebrow,html[data-skin="tecmo"] .bl-hd,html[data-skin="tecmo"] .gtab,html[data-skin="tecmo"] .ctbl th,html[data-skin="tecmo"] .b-st,
+html[data-skin="tecmo"] .sc-st,html[data-skin="tecmo"] .navlink,html[data-skin="tecmo"] .sitelink{
+  font-family:var(--pix)!important;font-weight:400!important;text-transform:uppercase;letter-spacing:.02em}
+html[data-skin="tecmo"] .card-title,html[data-skin="tecmo"] .pg-h{font-size:12px!important;color:#F8B800!important}
+html[data-skin="tecmo"] .gtab{font-size:10px!important}
+html[data-skin="tecmo"] h1{font-size:clamp(16px,3vw,24px)!important;line-height:1.35!important;text-shadow:3px 3px 0 #0058F8,6px 6px 0 #A81000}
+html[data-skin="tecmo"] h2{font-size:14px!important;line-height:1.5!important}
+html[data-skin="tecmo"] .eyebrow,html[data-skin="tecmo"] .bl-hd,html[data-skin="tecmo"] .ctbl th,html[data-skin="tecmo"] .b-st,html[data-skin="tecmo"] .sc-st{font-size:8px!important;line-height:1.6!important;color:#A4E4FC!important}
+/* the bars: black, a white rule, a blinking arrow on the page you're on */
+html[data-skin="tecmo"] .sitebar{background:#000000;border-bottom:4px solid #FCFCFC}
+html[data-skin="tecmo"] .sitelink{font-size:9px!important;color:#BCBCBC}
+html[data-skin="tecmo"] .sitelink.active{color:#FCFCFC}
+html[data-skin="tecmo"] .navbar,html[data-skin="tecmo"] .scores,html[data-skin="tecmo"] .gtabs,html[data-skin="tecmo"] .navmenu{
+  background:#000000;border:0;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
+html[data-skin="tecmo"] .navbar{border-bottom:4px solid #FCFCFC}
+html[data-skin="tecmo"] .navmenu{border:4px solid #FCFCFC;box-shadow:inset 0 0 0 4px #000000}
+html[data-skin="tecmo"] .navmenu a{font-family:var(--pix);font-size:9px;text-transform:uppercase;color:#FCFCFC}
+html[data-skin="tecmo"] .navlink{font-size:9px!important;color:#FCFCFC;opacity:1;border-bottom:0}
+html[data-skin="tecmo"] .navlink.on{color:#F8B800}
+html[data-skin="tecmo"] .navlink.on::before{content:"\25B6";margin-right:6px;animation:kms-blink 1s steps(1) infinite}
+@keyframes kms-blink{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){html[data-skin="tecmo"] .navlink.on::before{animation:none}}
+html[data-skin="tecmo"] .abtn,html[data-skin="tecmo"] .navbar .abtn{color:#FCFCFC;font-family:var(--pix);font-size:9px;text-transform:uppercase}
+/* the score strip: black boxes ruled in blue, winners in gold */
+html[data-skin="tecmo"] .sc-game,html[data-skin="tecmo"] .sc-wk{border-right:2px solid #0058F8;background:#000000}
+html[data-skin="tecmo"] .sc-game.cur,html[data-skin="tecmo"] .sc-game:hover{background:#0000A8}
+html[data-skin="tecmo"] .sc-row.won .sc-ab,html[data-skin="tecmo"] .sc-row.won .sc-pts{color:#F8B800}
+html[data-skin="tecmo"] .sc-full{color:#F8B800}
+/* tables: blue rules, no fills */
+html[data-skin="tecmo"] .ctbl,html[data-skin="tecmo"] .ctbl td,html[data-skin="tecmo"] .ctbl th,html[data-skin="tecmo"] .ctbl tbody tr:nth-child(even) td{background:transparent!important;color:var(--ink)}
+html[data-skin="tecmo"] .ctbl td{border-bottom:2px solid #0058F8}
+html[data-skin="tecmo"] .ctbl th{border-bottom:2px solid #FCFCFC}
+html[data-skin="tecmo"] .ctbl th.on,html[data-skin="tecmo"] .ctbl td.on{color:#F8B800!important}
+html[data-skin="tecmo"] .bgame .bt.win .bt-name,html[data-skin="tecmo"] .bgame .bt.win .bt-t{color:#F8B800}
+/* buttons: red with a white frame */
+html[data-skin="tecmo"] .bbtn,html[data-skin="tecmo"] .btn.primary{background:#F83800;color:#FCFCFC;border:4px solid #FCFCFC;border-radius:0;box-shadow:none;
+  font-family:var(--pix);font-size:9px;text-transform:uppercase}
+html[data-skin="tecmo"] .btn,html[data-skin="tecmo"] .bhide{background:#000000;color:#FCFCFC;border:2px solid #FCFCFC;border-radius:0}
+html[data-skin="tecmo"] .inp,html[data-skin="tecmo"] select{background:#000000;color:#FCFCFC;border:2px solid #FCFCFC;border-radius:0}
+html[data-skin="tecmo"] a{color:inherit}
+html[data-skin="tecmo"] .tlink{color:#FCFCFC}
+html[data-skin="tecmo"] .tlink:hover{color:#F8B800}
+
+/* ---------- the Look picker in the menu bar ---------- */
+.skinpick{display:inline-flex;align-items:center;gap:6px;font:500 13px/1 var(--sans);color:var(--muted)}
+.skinpick select{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:8px;padding:5px 8px}
+html[data-skin="tecmo"] .skinpick{font-family:var(--pix);font-size:8px;text-transform:uppercase;color:#A4E4FC}
+html[data-skin="tecmo"] .skinpick select{font-family:var(--pix);font-size:8px;text-transform:uppercase}
+</style>
