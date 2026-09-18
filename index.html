@@ -1139,24 +1139,34 @@ try { if (new URLSearchParams(location.search).has('embed')) document.documentEl
 .emb-foot a:hover{text-decoration:underline}
 </style>
 <script>
-/* Looks: the site as it is (Original), Liquid Glass, and 8-Bit. A visitor's pick is kept on their own device, and
-   ?skin=liquid / ?skin=tecmo / ?skin=original in a link sets it. It's applied here, before the page paints, so there's
-   no flash of the other look. The Game Tracker follows the pick like every other page; embedded pages stay on the
-   original, since they live inside someone else's page. */
+/* Looks: Original, Liquid Glass (light or dark), Android and 8-Bit. A visitor's pick is kept on their own device, and
+   ?skin=… in a link sets it (?skin=auto goes back to matching the device). With no pick, a phone gets its own look:
+   an iPhone Liquid Glass, an Android phone the Android look, each light or dark with the phone's own setting; a
+   computer or tablet gets the original. It's applied here, before the page paints, so there's no flash of another
+   look. Embedded pages always stay on the original, since they live inside someone else's page. */
 (function(){
   var q = new URLSearchParams(location.search), want = q.get('skin'), s = null;
   try {
-    if (want) localStorage.setItem('kms.skin', want);
+    if (want === 'auto') localStorage.removeItem('kms.skin');
+    else if (want) localStorage.setItem('kms.skin', want);
     s = localStorage.getItem('kms.skin');
-  } catch (e) { s = want; }
-  window.KMS_SKIN = s === 'liquid' || s === 'liquid-dark' || s === 'tecmo' ? s : 'original';
+  } catch (e) { s = want && want !== 'auto' ? want : null; }
+  var ok = ['original', 'liquid', 'liquid-dark', 'material', 'tecmo'];
+  window.KMS_SKIN_PICKED = ok.indexOf(s) >= 0;
+  var ua = navigator.userAgent || '', dark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches;
+  var iphone = /iPhone|iPod/.test(ua), android = /Android.*Mobile/i.test(ua);
+  window.KMS_DEVICE = iphone ? 'iphone' : android ? 'android' : 'other';
+  window.KMS_SKIN = window.KMS_SKIN_PICKED ? s
+    : iphone ? (dark ? 'liquid-dark' : 'liquid') : android ? 'material' : 'original';
   if (q.has('embed') || window.KMS_SKIN === 'original') return;
+  var root = document.documentElement;
   // Liquid Glass comes light or dark: one skin, with the dark tokens switched on for the dark one.
-  document.documentElement.setAttribute('data-skin', window.KMS_SKIN === 'liquid-dark' ? 'liquid' : window.KMS_SKIN);
-  if (window.KMS_SKIN === 'liquid-dark') document.documentElement.setAttribute('data-lg', 'dark');
-  if (window.KMS_SKIN === 'tecmo'){
+  root.setAttribute('data-skin', window.KMS_SKIN === 'liquid-dark' ? 'liquid' : window.KMS_SKIN);
+  if (window.KMS_SKIN === 'liquid-dark') root.setAttribute('data-lg', 'dark');
+  var font = window.KMS_SKIN === 'tecmo' ? 'Press+Start+2P' : window.KMS_SKIN === 'material' ? 'Roboto+Flex:opsz,wght@8..144,300..800' : '';
+  if (font){
     var l = document.createElement('link'); l.rel = 'stylesheet';
-    l.href = 'https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap';
+    l.href = 'https://fonts.googleapis.com/css2?family=' + font + '&display=swap';
     document.head.appendChild(l);
   }
 })();
@@ -1268,7 +1278,102 @@ html[data-skin="liquid"][data-lg="dark"] .gtab[aria-selected="true"],html[data-s
 html[data-skin="liquid"][data-lg="dark"] .c-tabs button,html[data-skin="liquid"][data-lg="dark"] .c-pills button,html[data-skin="liquid"][data-lg="dark"] .bw{color:var(--ink)}
 html[data-skin="liquid"][data-lg="dark"] dialog{background:#1C1D22;color:var(--ink)}
 html[data-skin="liquid"][data-lg="dark"] .tp-edit-row td{background:#1F2127}
+html[data-skin="liquid"][data-lg="dark"] .inner{background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+html[data-skin="liquid"][data-lg="dark"] .sc-wk select,html[data-skin="liquid"][data-lg="dark"] .c-sel{background-color:rgba(118,118,128,.24);color:var(--ink);box-shadow:none}
+html[data-skin="liquid"][data-lg="dark"] .navbar .abtn:hover,html[data-skin="liquid"][data-lg="dark"] .navmenu a:hover{background:rgba(255,255,255,.08)}
+html[data-skin="liquid"][data-lg="dark"] .ctbl tr.hi td,html[data-skin="liquid"][data-lg="dark"] .ctbl tr.hi td.on{background:rgba(10,132,255,.18)}
+html[data-skin="liquid"][data-lg="dark"] .av-st tbody tr:nth-child(even) td{background:rgba(255,255,255,.03)}
+html[data-skin="liquid"][data-lg="dark"] .av-st .rk,html[data-skin="liquid"][data-lg="dark"] .av-st .nm,html[data-skin="liquid"][data-lg="dark"] .av-st tbody tr:nth-child(even) .rk,
+html[data-skin="liquid"][data-lg="dark"] .av-st tbody tr:nth-child(even) .nm,html[data-skin="liquid"][data-lg="dark"] .tbl-wrap.pinned .av-st .rk,html[data-skin="liquid"][data-lg="dark"] .tbl-wrap.pinned .av-st .nm{background:var(--card)}
 html[data-skin="liquid"][data-lg="dark"] .btn:not(.primary):not(.danger){background:rgba(118,118,128,.24);color:var(--ink);border-color:transparent}
+
+/* ======================================================================================
+   ANDROID — Material 3, the way Android 16 draws it: color roles from one seed (the Kansas
+   Media blue), surfaces told apart by tone instead of shadow or glass, pill indicators on the
+   page you're on, Roboto Flex. Light or dark with the device.
+   ====================================================================================== */
+html[data-skin="material"]{
+  --md-primary:#4059AD; --md-on-primary:#FFFFFF; --md-primary-c:#DCE1FF; --md-on-primary-c:#00164F;
+  --md-sec-c:#DEE1F9; --md-on-sec-c:#161B2C; --md-surface:#FBF8FF; --md-low:#F5F2FA; --md-c:#EFEDF4; --md-high:#E9E7EF; --md-highest:#E3E1E9;
+  --md-on:#1B1B21; --md-on-var:#45464F; --md-outline:#767680; --md-outline-var:#C6C5D0;
+  --page:var(--md-surface); --card:var(--md-low); --ground:var(--md-low); --surface:var(--md-c); --surface-2:var(--md-high);
+  --ink:var(--md-on); --ink-2:var(--md-on); --muted:var(--md-on-var); --line:var(--md-outline-var); --line-2:var(--md-high);
+  --pill:var(--md-high); --seg:var(--md-outline-var); --blue:var(--md-primary); --blue-ink:var(--md-on-primary); --accent:var(--md-primary); --accent-ink:var(--md-on-primary);
+  --red:#BA1A1A; --good:#1F6E3A; --good-wash:#D6F0DD; --bad:#BA1A1A; --bad-wash:#FFDAD6;
+  --top:#1B1B21; --top-2:#1B1B21; --top-ink:#FFFFFF; --top-muted:#C6C5D0;
+  --fld-a:#2E7D32; --fld-b:#28702C; --fld-line:rgba(255,255,255,.55); --fld-num:#FFFFFF;
+  --shadow:none; --shadow-sm:none;
+  --sans:"Roboto Flex",Roboto,"Segoe UI",system-ui,sans-serif; --cond:"Roboto Flex",Roboto,"Arial Narrow",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  html[data-skin="material"]{
+    --md-primary:#B6C4FF; --md-on-primary:#0B2978; --md-primary-c:#264190; --md-on-primary-c:#DCE1FF;
+    --md-sec-c:#424659; --md-on-sec-c:#DEE1F9; --md-surface:#121318; --md-low:#1B1B21; --md-c:#1F1F25; --md-high:#292A2F; --md-highest:#34343A;
+    --md-on:#E4E1E9; --md-on-var:#C6C5D0; --md-outline:#90909A; --md-outline-var:#45464F;
+    --red:#FFB4AB; --good:#7FDA99; --good-wash:rgba(127,218,153,.16); --bad:#FFB4AB; --bad-wash:rgba(255,180,171,.16);
+    --top:#0D0E13; --top-2:#0D0E13; color-scheme:dark;
+    --flag:#FFD54F; --flag-wash:rgba(255,213,79,.14); --flag-ink:#FFE082;
+  }
+}
+html[data-skin="material"] body{background:var(--page);color:var(--ink);letter-spacing:0}
+html[data-skin="material"] body::before{display:none}
+/* tone, not glass: nothing blurs, nothing floats on a shadow */
+html[data-skin="material"] .navbar,html[data-skin="material"] .scores,html[data-skin="material"] .gtabs,html[data-skin="material"] .navmenu,
+html[data-skin="material"] .bcard,html[data-skin="material"] .hcard,html[data-skin="material"] .card{-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;border:0}
+html[data-skin="material"] .bcard,html[data-skin="material"] .hcard,html[data-skin="material"] .card{background:var(--md-low);color:var(--ink);border-radius:20px}
+html[data-skin="material"] .sitebar{background:var(--top)}
+html[data-skin="material"] .scores{background:var(--md-c)}
+html[data-skin="material"] .sc-game,html[data-skin="material"] .sc-wk{border-right-color:var(--md-outline-var)}
+html[data-skin="material"] .sc-game:hover{background:var(--md-high)}
+html[data-skin="material"] .sc-game.cur{background:var(--md-sec-c);color:var(--md-on-sec-c)}
+html[data-skin="material"] .navbar{background:var(--md-surface);border-bottom:1px solid var(--md-outline-var)}
+html[data-skin="material"] .navlink{color:var(--md-on-var);font-weight:500;opacity:1;border-bottom:0;border-radius:999px;padding-inline:14px}
+html[data-skin="material"] .navlink:hover{background:var(--md-high)}
+html[data-skin="material"] .navlink.on{color:var(--md-on-sec-c);background:var(--md-sec-c);font-weight:600}
+html[data-skin="material"] .navmenu{background:var(--md-c);border-radius:16px}
+html[data-skin="material"] .navbar .abtn{color:var(--md-on-var)}
+html[data-skin="material"] #sync .abtn:not(.syncbtn){background:var(--md-primary);color:var(--md-on-primary);box-shadow:none}
+/* primary tabs: an underline under the section you're on */
+html[data-skin="material"] .gtabs{background:var(--md-surface);border-bottom:1px solid var(--md-outline-var)}
+html[data-skin="material"] .gtab{border-radius:0;padding:14px 16px 11px;color:var(--md-on-var);background:none;box-shadow:none;border-bottom:3px solid transparent}
+html[data-skin="material"] .gtab[aria-selected="true"]{color:var(--md-primary);background:none;box-shadow:none;border-bottom-color:var(--md-primary)}
+/* segmented buttons and chips: the selected one tinted, with the rest outlined */
+html[data-skin="material"] .c-tabs,html[data-skin="material"] .c-pills{background:transparent;border:1px solid var(--md-outline);border-radius:999px;padding:0;gap:0;overflow:hidden}
+html[data-skin="material"] .c-tabs button,html[data-skin="material"] .c-pills button,html[data-skin="material"] .bw{border-radius:0;color:var(--md-on);box-shadow:none}
+html[data-skin="material"] .c-tabs button.on,html[data-skin="material"] .c-pills button.on,html[data-skin="material"] .bw.on{background:var(--md-sec-c);color:var(--md-on-sec-c);box-shadow:none}
+/* buttons: filled for the main action, tonal for the rest */
+html[data-skin="material"] .bbtn,html[data-skin="material"] .btn.primary{background:var(--md-primary);color:var(--md-on-primary);border:0;border-radius:999px;box-shadow:none}
+html[data-skin="material"] .btn:not(.primary):not(.danger){background:var(--md-sec-c);color:var(--md-on-sec-c);border:0;border-radius:999px}
+html[data-skin="material"] .btn.danger{border-radius:999px}
+html[data-skin="material"] .inp,html[data-skin="material"] select:not(#skinsel),html[data-skin="material"] textarea{background:transparent;color:var(--ink);border:1px solid var(--md-outline);border-radius:8px}
+html[data-skin="material"] .qk{background:var(--md-high);color:var(--ink);border:0;border-bottom:2px solid var(--md-primary);border-radius:8px 8px 0 0;box-shadow:none}
+html[data-skin="material"] .qk:focus{background:var(--md-highest);box-shadow:none}
+html[data-skin="material"] dialog{background:var(--md-high);color:var(--ink);border:0;border-radius:28px;box-shadow:none}
+/* tables: hairlines on tone */
+html[data-skin="material"] .ctbl th{background:transparent;border-bottom:1px solid var(--md-outline-var);color:var(--md-on-var)}
+html[data-skin="material"] .ctbl td{background:transparent;border-bottom:1px solid var(--md-outline-var)}
+html[data-skin="material"] .ctbl tbody tr:nth-child(even) td{background:transparent}
+html[data-skin="material"] .tp-edit-row td{background:var(--md-c)}
+/* the pieces the glass layer tints white */
+html[data-skin="material"] .inner{background:var(--md-c);box-shadow:none}
+html[data-skin="material"] .sc-wk select,html[data-skin="material"] .c-sel{background-color:var(--md-high);color:var(--ink);box-shadow:none}
+html[data-skin="material"] .navbar .abtn:hover,html[data-skin="material"] .navmenu a:hover{background:var(--md-high)}
+html[data-skin="material"] .bbtn:hover{background:var(--md-primary);filter:brightness(1.08)}
+html[data-skin="material"] .ctbl tr.hi td,html[data-skin="material"] .ctbl tr.hi td.on{background:var(--md-sec-c)}
+html[data-skin="material"] .av-st tbody tr:nth-child(even) td{background:transparent}
+html[data-skin="material"] .av-st .rk,html[data-skin="material"] .av-st .nm,html[data-skin="material"] .av-st tbody tr:nth-child(even) .rk,
+html[data-skin="material"] .av-st tbody tr:nth-child(even) .nm,html[data-skin="material"] .tbl-wrap.pinned .av-st .rk,html[data-skin="material"] .tbl-wrap.pinned .av-st .nm{background:var(--md-low)}
+/* phone: the navigation bar across the bottom, a pill behind the section you're in */
+@media (max-width:700px){
+  html[data-skin="material"] .lgtabs{position:fixed;z-index:50;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+    padding:12px 4px calc(14px + env(safe-area-inset-bottom,0px));background:var(--md-c)}
+  html[data-skin="material"] .lgtabs a{display:grid;justify-items:center;gap:4px;color:var(--md-on-var);text-decoration:none;font:500 12px/1 var(--sans);letter-spacing:.02em}
+  html[data-skin="material"] .lgtabs svg{width:64px;height:32px;padding:4px 20px;border-radius:999px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  html[data-skin="material"] .lgtabs a[aria-current="page"]{color:var(--md-on);font-weight:600}
+  html[data-skin="material"] .lgtabs a[aria-current="page"] svg{background:var(--md-sec-c);color:var(--md-on-sec-c)}
+  html[data-skin="material"] body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  html[data-skin="material"] h1{font-size:30px!important;font-weight:400!important;letter-spacing:0!important;line-height:1.15!important}
+}
 
 /* ======================================================================================
    8-BIT — the Tecmo Super Bowl screens: black ground, blue windows in a white frame, the
@@ -1388,7 +1493,7 @@ html[data-skin="tecmo"] .skinpick select{font-family:var(--pix);font-size:8px;te
       <a class="sitelink active" href="https://stats.kansasmediarankings.com/" aria-current="page">Media Stats</a>
     </nav>
     <label class="skinpick" id="skinpick" hidden><span>Look</span><select id="skinsel" aria-label="Look of the site">
-      <option value="original">Original</option><option value="liquid">Liquid Glass</option><option value="liquid-dark">Liquid Glass Dark</option><option value="tecmo">8-Bit</option></select></label>
+      <option value="auto">Match my device</option><option value="original">Original</option><option value="liquid">Liquid Glass</option><option value="liquid-dark">Liquid Glass Dark</option><option value="material">Android</option><option value="tecmo">8-Bit</option></select></label>
   </div>
 </div>
 <div class="scores" id="scores" hidden></div>
@@ -3598,9 +3703,9 @@ function editClock(){
   const box = $('#skinpick'), sel = $('#skinsel'); if (!box || !sel) return;
   const q = new URLSearchParams(location.search);
   if (q.has('embed')) return;
-  box.hidden = false; sel.value = window.KMS_SKIN || 'original';
+  box.hidden = false; sel.value = window.KMS_SKIN_PICKED ? window.KMS_SKIN : 'auto';
   sel.addEventListener('change', () => {
-    try { localStorage.setItem('kms.skin', sel.value); } catch (e) {}
+    try { if (sel.value === 'auto') localStorage.removeItem('kms.skin'); else localStorage.setItem('kms.skin', sel.value); } catch (e) {}
     location.reload();
   });
 })();

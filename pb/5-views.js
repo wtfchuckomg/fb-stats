@@ -322,9 +322,9 @@ function editClock(){
   const box = $('#skinpick'), sel = $('#skinsel'); if (!box || !sel) return;
   const q = new URLSearchParams(location.search);
   if (q.has('embed')) return;
-  box.hidden = false; sel.value = window.KMS_SKIN || 'original';
+  box.hidden = false; sel.value = window.KMS_SKIN_PICKED ? window.KMS_SKIN : 'auto';
   sel.addEventListener('change', () => {
-    try { localStorage.setItem('kms.skin', sel.value); } catch (e) {}
+    try { if (sel.value === 'auto') localStorage.removeItem('kms.skin'); else localStorage.setItem('kms.skin', sel.value); } catch (e) {}
     location.reload();
   });
 })();
