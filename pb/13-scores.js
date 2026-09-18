@@ -167,7 +167,8 @@ const HIDE_DOC = 'hidden-games';
 const hideList = {ids:new Set(), shown:new Set(), api:null, unsub:null};
 // Off the scoreboards: a game the admin hid, or a game between two other schools (an opponent's own game) that the
 // admin hasn't shown. Those still count toward records and team schedules; only a game the admin hid doesn't.
-const isHidden = x => !!x && (hideList.ids.has(x.id) || (!!x.opp && !hideList.shown.has(x.id)));
+// Only a game the admin hid with the Hide button is hidden; every other game shows, opponents' games included.
+const isHidden = x => !!x && hideList.ids.has(x.id);
 function watchHidden(api){
   hideList.api = api;
   if (hideList.unsub) return;
@@ -184,13 +185,12 @@ function hiddenChanged(){
   if (allGames.list) indexGames();   // a hidden game no longer counts toward a team's record or schedule
   renderScores(); renderScoreboard(); renderHome(); renderTeamPage(); if (ui.county) renderCounty();
 }
-// Hide a game, or show it again. An opponent's own game starts hidden, so showing it puts it on the shown list.
-async function toggleHide(id, opp){
+// Hide a game, or show it again. Every game starts shown.
+async function toggleHide(id){
   if (!ui.admin || !hideList.api) return;
   const ids = new Set(hideList.ids), shown = new Set(hideList.shown);
-  const hide = !(ids.has(id) || (opp && !shown.has(id)));
-  if (hide){ if (opp) shown.delete(id); else ids.add(id); }
-  else { ids.delete(id); if (opp) shown.add(id); }
+  const hide = !ids.has(id);
+  if (hide) ids.add(id); else ids.delete(id);
   hideList.ids = ids; hideList.shown = shown; hiddenChanged();
   const {fsM, fsdb} = hideList.api;
   try {
@@ -236,7 +236,7 @@ function weekGames(key, withHidden, withOpp){
   const pair = x => [x.teams.A.name, x.teams.H.name].map(canonSchool).sort().join('|');
   // (A hidden game doesn't take its schedule entry's place.)
   const statted = new Set(Object.values(out).filter(x => x.kind !== 'score' && !isHidden(x)).map(pair));
-  Object.values(out).forEach(x => { if ((x.kind === 'score' && statted.has(pair(x))) || (!withHidden && isHidden(x)) || (x.opp && !withOpp)) delete out[x.id]; });
+  Object.values(out).forEach(x => { if ((x.kind === 'score' && statted.has(pair(x))) || (!withHidden && isHidden(x))) delete out[x.id]; });
   return Object.values(out).sort((a, b) => gameDay(a) - gameDay(b) || (a.created || 0) - (b.created || 0));
 }
 // Every week of this season, plus any week this device has a game or score in.
@@ -380,7 +380,21 @@ function menuHere(){
   });
 })();
 
+// Liquid Glass's phone tab bar: mark the section you're in, and point Gamecast at a game worth watching.
+function lgTabs(){
+  const bar = $('#lgtabs'); if (!bar) return;
+  const q = new URLSearchParams(location.search);
+  const here = q.has('tracker') || q.has('edit') ? 'tracker' : q.has('standings') ? 'standings'
+    : q.has('game') || q.has('live') || q.has('gamecast') || q.has('preview') ? 'gamecast'
+    : q.has('state') || q.has('scores') || q.has('avctl') ? 'scores' : '';
+  bar.querySelectorAll('[data-lgtab]').forEach(a => { if (a.dataset.lgtab === here) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  const gc = $('#lgtab-gc'); if (!gc || !scores.docs) return;
+  const games = weekGames(shownWeek(), false, true).filter(x => x.kind !== 'score' && x.plays && x.plays.length);
+  const live = games.find(x => summary(x).live), pick = live || games.sort((a, b) => (b.updated || 0) - (a.updated || 0))[0];
+  gc.href = pick ? `?game=${encodeURIComponent(pick.id)}` : '?home';
+}
 function renderScores(){
+  lgTabs();
   const box = $('#scores'); if (!box) return;
   const key = shownWeek(); watchWeek(key);
   // On the AVCTL's pages the strip is the league's games, and on BUCO's the county's (their opponents included).

@@ -5,9 +5,8 @@
    2026 game with a logo school in it, in this site's own school names.
    A game the site already has — tracked, scored by hand, or entered from
    a county schedule — always wins; anything missing fills in from here
-   as a schedule entry, with its final when KPreps has one. Like the
-   other opponents' games, these stay off the public scoreboards until
-   the admin shows them, and count on team pages and records.
+   as a schedule entry, with its final when KPreps has one. They show
+   on the scoreboards, team pages and records like any other game.
    ================================================================ */
 const sched = {rows:null, stubs:null, byId:null, want:false, logos:-1};
 function loadSchedFile(){

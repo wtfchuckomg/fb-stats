@@ -14,15 +14,8 @@ const boardParam = () => ui.av ? 'avctl' : ui.state ? 'state' : 'scores';
 // A Butler County game: at least one of the county's schools is playing.
 const inBuco = x => !!x && !!x.teams && ['A', 'H'].some(s => x.teams[s] && COUNTY.some(n => canonSchool(n) === canonSchool(x.teams[s].name)));
 const boardName = () => ui.av ? 'AVCTL' : ui.state ? 'State' : 'BUCO';
-const fullyTracked = x => x.kind !== 'score' && ((x.plays && x.plays.length) || !!x.box);
-// A game still to come: a schedule entry or score not yet started, or a game set up for stats with no plays yet.
-// The State Scoreboard lists those too, until their day has passed; after that, only games with stats stay.
-const upcoming = x => {
-  const pre = x.kind === 'score' ? x.per === 'pre' : !(x.plays && x.plays.length) && !x.box;
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  return pre && gameDay(x) >= today;
-};
-const onStateBoard = x => fullyTracked(x) || upcoming(x);
+// Every game goes on the State and AVCTL boards: tracked, scored by hand or from KPreps, played or still to come.
+const onStateBoard = x => !!x;
 const SEASON_WEEKS = 13;   // nine regular-season weeks, then regionals, sectionals, sub-state and state
 const board = {err:'', seen:null};
 const seasonKeys = y => Array.from({length:SEASON_WEEKS}, (_, i) => weekKey(week1(y).getTime() + i * WEEK_MS + 3 * 864e5));
