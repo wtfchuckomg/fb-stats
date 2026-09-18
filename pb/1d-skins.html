@@ -83,6 +83,9 @@ html[data-skin="tecmo"]{
 html[data-skin="tecmo"] body{background:#000000;color:var(--ink);-webkit-font-smoothing:none;font-smooth:never}
 html[data-skin="tecmo"] body::before{display:none}
 html[data-skin="tecmo"] img{image-rendering:pixelated}
+/* every logo gets a white outline that follows its shape, so dark logos still stand out on the blue */
+html[data-skin="tecmo"] .tlogo{filter:drop-shadow(1.5px 0 0 #FCFCFC) drop-shadow(-1.5px 0 0 #FCFCFC) drop-shadow(0 1.5px 0 #FCFCFC) drop-shadow(0 -1.5px 0 #FCFCFC)}
+html[data-skin="tecmo"] .tmono{box-shadow:0 0 0 2px #FCFCFC}
 /* the window: white frame, black gap, blue fill, a hard drop shadow */
 html[data-skin="tecmo"] .bcard,html[data-skin="tecmo"] .hcard,html[data-skin="tecmo"] .card{
   background:#0000BC;border:4px solid #FCFCFC;border-radius:0;-webkit-backdrop-filter:none;backdrop-filter:none;
@@ -133,9 +136,14 @@ html[data-skin="tecmo"] a{color:inherit}
 html[data-skin="tecmo"] .tlink{color:#FCFCFC}
 html[data-skin="tecmo"] .tlink:hover{color:#F8B800}
 
-/* ---------- the Look picker in the menu bar ---------- */
-.skinpick{display:inline-flex;align-items:center;gap:6px;font:500 13px/1 var(--sans);color:var(--muted)}
-.skinpick select{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:8px;padding:5px 8px}
+/* ---------- the Look picker, at the right end of the dark site bar ---------- */
+.skinpick{margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:8px;font:500 12px/1 var(--sans);color:rgba(255,255,255,.7)}
+.skinpick select{appearance:none;-webkit-appearance:none;font:500 13px/1 var(--sans);color:#FFFFFF;cursor:pointer;
+  background:rgba(255,255,255,.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='white' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 10px center/10px 6px;
+  border:1px solid rgba(255,255,255,.28);border-radius:980px;padding:6px 28px 6px 12px}
+.skinpick select:hover{background-color:rgba(255,255,255,.2)}
+.skinpick select option{color:#1D1D1F;background:#FFFFFF}
+@media (max-width:600px){.skinpick span{display:none} .skinpick select{font-size:12px;padding:5px 24px 5px 10px}}
 html[data-skin="tecmo"] .skinpick{font-family:var(--pix);font-size:8px;text-transform:uppercase;color:#A4E4FC}
-html[data-skin="tecmo"] .skinpick select{font-family:var(--pix);font-size:8px;text-transform:uppercase}
+html[data-skin="tecmo"] .skinpick select{font-family:var(--pix);font-size:8px;text-transform:uppercase;border:2px solid #FCFCFC;border-radius:0;background-color:#000000}
 </style>
