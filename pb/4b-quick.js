@@ -464,12 +464,15 @@ function parseQuick(raw, st){
     }
     // "A31" is team A's #31 recovering; a bare "A" is just the team.
     const who = ft.map(spotOf).find(Boolean), fn = ft.filter(isNum);
-    const side = who ? who.side : ft.map(T).find(Boolean), lost = !side || side !== O;
+    // "recovered it himself": the man who dropped it fell on it, so it stays with the offense.
+    const selfRec = ft.some(t => ['himself', 'herself', 'themselves', 'themself', 'itself'].includes(t))
+      || (ft.includes('own') && ft.some(t => ['rec', 'recs', 'recovers', 'recovered', 'recovery'].includes(t)));
+    const side = who ? who.side : ft.map(T).find(Boolean) || (selfRec ? O : null), lost = !side || side !== O;
     const by = who ? String(who.n) : fn[0], adv = who ? fn[0] : fn[1];
     // td anywhere on a lost-fumble line is the defense's score; on a kept fumble it's the offense's.
     const tdLine = ft.includes('td') || toks.includes('td');
     if (lost) toks = toks.filter(t => t !== 'td'); else if (tdLine && !toks.includes('td')) toks.push('td');
-    fum = {lost, by, ry:Math.abs(+(adv || 0)), td:lost && tdLine, endSpot};
+    fum = {lost, by, ry:Math.abs(+(adv || 0)), td:lost && tdLine, endSpot, self:selfRec && by == null};
   }
   const withFum = p => {
     if (!fum) return p;
@@ -490,7 +493,7 @@ function parseQuick(raw, st){
       }
     }
     if (fum.td) ry = at;                     // the recovering team runs it back the whole way
-    p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ry};
+    p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self ? {self:true} : {}), ry};
     return p;
   };
   // "aug 15 …": the runner or passer named with his team, which has to be the team with the ball.
