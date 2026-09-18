@@ -10,7 +10,7 @@ const idleGame = x => !x || !!x.sample || !!x.box || replay(x).st.final;
 // This week's games still to come that nobody is keeping stats on yet; next week's once this week's are played.
 function startSchedule(){
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const pick = k => weekGames(k).filter(x => x.kind === 'score' && x.per !== 'final' && gameDay(x) >= today);
+  const pick = k => weekGames(k).filter(x => x.kind === 'score' && !qsOver(x.per) && gameDay(x) >= today);
   const wk = weekKey(Date.now()), next = weekKey(fromYmd(wk).getTime() + WEEK_MS + 3 * 864e5);
   const now = pick(wk);
   return now.length ? {k:wk, list:now} : {k:next, list:pick(next)};

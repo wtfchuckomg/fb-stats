@@ -34,8 +34,10 @@ const gameWeek = x => weekKey(gameDay(x).getTime());
 /* ---------- quick scores: a game's score and nothing else ---------- */
 // Kept apart from the games (db.scores), synced as their own documents (kind 'score'), always public.
 const qsLib = () => db.scores || (db.scores = {});
-const QS_PER = [['pre', 'Pre'], ['1', '1st'], ['2', '2nd'], ['half', 'Half'], ['3', '3rd'], ['4', '4th'], ['ot', 'OT'], ['final', 'Final'], ['ff', 'Forfeit']];
-const QS_STATUS = {pre:'Pregame', half:'Halftime', ot:'OT', final:'Final', ff:'Forfeit'};
+const QS_PER = [['pre', 'Pre'], ['1', '1st'], ['2', '2nd'], ['half', 'Half'], ['3', '3rd'], ['4', '4th'], ['ot', 'OT'], ['final', 'Final'], ['fot', 'OT/F'], ['ff', 'Forfeit']];
+const QS_STATUS = {pre:'Pregame', half:'Halftime', ot:'OT', final:'Final', fot:'Final/OT', ff:'Forfeit'};
+// Over and done: a final, a final that went to overtime, or a forfeit.
+const qsOver = per => per === 'final' || per === 'fot' || per === 'ff';
 // A forfeit is a 2-0 win, the way KSHSAA records it.
 const FORFEIT = 2;
 const dayShort = d => `${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]} ${d.getMonth() + 1}/${d.getDate()}`;
@@ -271,8 +273,8 @@ const recValue = (pre, s, k) => { const el = $(`#${pre}-${s}-${k}`); return el ?
 function summary(x){
   if (x.kind === 'score'){
     // Before kickoff a scheduled game shows its day ("Fri 9/18") and no score.
-    const fin = x.per === 'final' || x.per === 'ff', pre = x.per === 'pre';
-    return {quick:true, fin, pre, ff:x.per === 'ff', live:!pre && !fin, q:{pre:0, half:2, ot:5, final:4, ff:4}[x.per] ?? +x.per,
+    const fin = qsOver(x.per), pre = x.per === 'pre';
+    return {quick:true, fin, pre, ff:x.per === 'ff', live:!pre && !fin, q:{pre:0, half:2, ot:5, final:4, fot:5, ff:4}[x.per] ?? +x.per,
       status:pre ? x.time || dayShort(gameDay(x)) : QS_STATUS[x.per] || `${x.clk ? x.clk + ' - ' : ''}${ord(+x.per)}`,
       score:{A:+x.A || 0, H:+x.H || 0}, poss:null, lines:null, S:null, men:0};
   }

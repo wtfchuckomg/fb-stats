@@ -280,7 +280,7 @@ async function startSchoolCast(school){
     const inProgress = x => { if (x.box || !x.plays.length) return false; try { return !replay(x).st.final; } catch (e) { return false; } };
     const live = tracked.filter(inProgress).sort(newest)[0];
     const thisWeek = tracked.filter(x => x._wk === now).sort(newest)[0];
-    const coming = mine.filter(x => x.kind === 'score' && x._wk === now && x.per !== 'final').sort((a, b) => gameDay(a) - gameDay(b))[0];
+    const coming = mine.filter(x => x.kind === 'score' && x._wk === now && !qsOver(x.per)).sort((a, b) => gameDay(a) - gameDay(b))[0];
     const game = live || thisWeek || (coming ? null : tracked.filter(x => x._wk === prev).sort(newest)[0]);
     if (game){ if (showing !== game.id){ showing = game.id; startViewer(game.id); } return; }
     if (showing){ if (startViewer.unsub) startViewer.unsub(); startViewer.unsub = null; showing = null; }
@@ -288,8 +288,8 @@ async function startSchoolCast(school){
     const name = schoolName(String(school).replace(/[-_]+/g, ' '));
     if (!q) return viewerMessage(`No game this week for ${name} yet. The gamecast shows up here as soon as there is one.`);
     const T = q.teams;
-    viewerMessage(q.per === 'final'
-      ? `Final: ${T.A.name} ${+q.A || 0}, ${T.H.name} ${+q.H || 0}. Nobody kept stats on this game, so there’s no gamecast.`
+    viewerMessage(qsOver(q.per)
+      ? `${QS_STATUS[q.per]}: ${T.A.name} ${+q.A || 0}, ${T.H.name} ${+q.H || 0}. Nobody kept stats on this game, so there’s no gamecast.`
       : `${T.A.name} at ${T.H.name}, ${dayShort(gameDay(q))}${q.time ? ' at ' + q.time : ''}. The gamecast starts here once someone keeps stats on the game.`);
   };
   [now, prev].forEach(k => fsM.onSnapshot(fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true), fsM.where('week', '==', k)), snap => {

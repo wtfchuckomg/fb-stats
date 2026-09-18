@@ -311,6 +311,7 @@ function teamPageHtml(nameIn){
     const form = open ? `<tr class="tp-edit-row"><td colspan="5"><div class="tp-score-form">
         <label>${esc(x.teams[side].name)}<input class="inp" id="tp-s-mine" inputmode="numeric" maxlength="3" autocomplete="off" value="${val('mine', a)}"></label>
         <label>${esc(o.name)}<input class="inp" id="tp-s-opp" inputmode="numeric" maxlength="3" autocomplete="off" value="${val('opp', b)}"></label>
+        <label class="tp-ot"><input type="checkbox" id="tp-s-ot"${(d.ot != null ? d.ot : x.per === 'fot') ? ' checked' : ''}> OT/F</label>
         <a class="btn" href="?tracker&amp;box=${encodeURIComponent(x.id)}">Paste box score</a>
         <button type="button" class="btn primary" data-tp-score-save>Save final</button>
         ${m.fin ? '<button type="button" class="btn" data-tp-score-clear>Not played yet</button>' : ''}
@@ -428,7 +429,7 @@ async function saveTeamScore(clear){
   if (!clear && (isNaN(mine) || isNaN(theirs))) return toast('Enter both scores');
   const x = JSON.parse(JSON.stringify(x0)), opp = ed.side === 'A' ? 'H' : 'A';
   if (clear) Object.assign(x, {A:0, H:0, per:'pre', clk:''});
-  else Object.assign(x, {[ed.side]:clamp(mine, 0, 199), [opp]:clamp(theirs, 0, 199), per:'final', clk:''});
+  else Object.assign(x, {[ed.side]:clamp(mine, 0, 199), [opp]:clamp(theirs, 0, 199), per:($('#tp-s-ot') || {}).checked ? 'fot' : 'final', clk:''});
   x.updated = Date.now();
   allGames.list = allGames.list.map(y => y.id === x.id ? x : y);
   tpage.editing = null; tpage.sdraft = null; indexGames(); recordsChanged();
@@ -462,6 +463,7 @@ document.addEventListener('input', e => {
   const id = e.target.id || '';
   if (ui.teamPage && /^tp-(rec|home|away)$/.test(id)){ tpage.draft = tpage.draft || {}; tpage.draft[id.slice(3)] = e.target.value; }
   if (ui.teamPage && /^tp-s-(mine|opp)$/.test(id)){ tpage.sdraft = tpage.sdraft || {}; tpage.sdraft[id.slice(5)] = e.target.value; }
+  if (ui.teamPage && id === 'tp-s-ot'){ tpage.sdraft = tpage.sdraft || {}; tpage.sdraft.ot = e.target.checked; }
 });
 /* Generated from the KPreps Kansas football week pages (kpreps.com/kansas/scores/football/?week=N), 2026 regular
    season: every game of the Butler County schools' opponents that doesn't include a county school (the county
