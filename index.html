@@ -1149,9 +1149,11 @@ try { if (new URLSearchParams(location.search).has('embed')) document.documentEl
     if (want) localStorage.setItem('kms.skin', want);
     s = localStorage.getItem('kms.skin');
   } catch (e) { s = want; }
-  window.KMS_SKIN = s === 'liquid' || s === 'tecmo' ? s : 'original';
+  window.KMS_SKIN = s === 'liquid' || s === 'liquid-dark' || s === 'tecmo' ? s : 'original';
   if (q.has('embed') || window.KMS_SKIN === 'original') return;
-  document.documentElement.setAttribute('data-skin', window.KMS_SKIN);
+  // Liquid Glass comes light or dark: one skin, with the dark tokens switched on for the dark one.
+  document.documentElement.setAttribute('data-skin', window.KMS_SKIN === 'liquid-dark' ? 'liquid' : window.KMS_SKIN);
+  if (window.KMS_SKIN === 'liquid-dark') document.documentElement.setAttribute('data-lg', 'dark');
   if (window.KMS_SKIN === 'tecmo'){
     var l = document.createElement('link'); l.rel = 'stylesheet';
     l.href = 'https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&display=swap';
@@ -1172,16 +1174,18 @@ html[data-skin="liquid"]{
   --good:#248A3D; --bad:#D70015;
   --lg-glass:rgba(255,255,255,.52); --lg-rim-hi:rgba(255,255,255,.95); --lg-rim-lo:rgba(255,255,255,.3);
   --lg-float:0 12px 34px rgba(24,36,70,.14),0 2px 8px rgba(24,36,70,.07);
+  --lg-card-shadow:0 1px 2px rgba(24,36,70,.06),0 8px 24px rgba(24,36,70,.07);
+  --lg-wall-a:#C9D6FF; --lg-wall-b:#F6D5E3; --lg-wall-c:#D8F1EA; --lg-cur:rgba(255,255,255,.7); --lg-zebra:rgba(118,118,128,.04);
   --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
 }
 html[data-skin="liquid"] body{background:var(--page);letter-spacing:-.01em}
 html[data-skin="liquid"] body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
-  background:radial-gradient(55% 45% at 0% 0%,#C9D6FF 0,transparent 70%),radial-gradient(50% 40% at 100% 10%,#F6D5E3 0,transparent 70%),
-    radial-gradient(60% 50% at 50% 100%,#D8F1EA 0,transparent 72%),var(--page)}
+  background:radial-gradient(55% 45% at 0% 0%,var(--lg-wall-a) 0,transparent 70%),radial-gradient(50% 40% at 100% 10%,var(--lg-wall-b) 0,transparent 70%),
+    radial-gradient(60% 50% at 50% 100%,var(--lg-wall-c) 0,transparent 72%),var(--page)}
 /* content: solid, rounded, lifted */
 html[data-skin="liquid"] .bcard,html[data-skin="liquid"] .hcard,html[data-skin="liquid"] .card{
-  background:#FFFFFF;border:0;border-radius:22px;-webkit-backdrop-filter:none;backdrop-filter:none;
-  box-shadow:0 1px 2px rgba(24,36,70,.06),0 8px 24px rgba(24,36,70,.07)}
+  background:var(--card);color:var(--ink);border:0;border-radius:22px;-webkit-backdrop-filter:none;backdrop-filter:none;
+  box-shadow:var(--lg-card-shadow)}
 /* controls: glass */
 html[data-skin="liquid"] .navbar,html[data-skin="liquid"] .scores,html[data-skin="liquid"] .navmenu,html[data-skin="liquid"] .gtabs{
   background:var(--lg-glass);border:0;-webkit-backdrop-filter:blur(16px) saturate(190%) brightness(1.06);backdrop-filter:blur(16px) saturate(190%) brightness(1.06);
@@ -1193,7 +1197,7 @@ html[data-skin="liquid"] .gtabs{border-radius:999px;margin-inline:auto}
 html[data-skin="liquid"] .navlink{color:var(--ink);font-weight:500;opacity:.8}
 html[data-skin="liquid"] .navlink.on{opacity:1;font-weight:600;color:var(--accent)}
 html[data-skin="liquid"] .sc-game,html[data-skin="liquid"] .sc-wk{border-right-color:rgba(60,60,67,.1)}
-html[data-skin="liquid"] .sc-game.cur{background:rgba(255,255,255,.7)}
+html[data-skin="liquid"] .sc-game.cur{background:var(--lg-cur)}
 /* buttons: filled accent capsules and quiet gray ones */
 html[data-skin="liquid"] .bbtn,html[data-skin="liquid"] .btn.primary{background:var(--accent);color:#FFFFFF;border:0;border-radius:999px;box-shadow:0 4px 14px rgba(0,122,255,.3)}
 html[data-skin="liquid"] .btn,html[data-skin="liquid"] .abtn{border-radius:999px}
@@ -1201,7 +1205,34 @@ html[data-skin="liquid"] .inp,html[data-skin="liquid"] select{border-radius:12px
 /* tables: hairlines only */
 html[data-skin="liquid"] .ctbl th{background:transparent;border-bottom:1px solid var(--line)}
 html[data-skin="liquid"] .ctbl td{background:transparent;border-bottom:1px solid var(--line-2)}
-html[data-skin="liquid"] .ctbl tbody tr:nth-child(even) td{background:rgba(118,118,128,.04)}
+html[data-skin="liquid"] .ctbl tbody tr:nth-child(even) td{background:var(--lg-zebra)}
+
+/* ---------- Liquid Glass, dark: the demo's own dark palette ---------- */
+html[data-skin="liquid"][data-lg="dark"]{
+  --page:#07080B; --card:#17181D; --ground:#17181D; --surface:#1F2127; --surface-2:#2A2C33;
+  --ink:#F5F5F7; --ink-2:#FFFFFF; --muted:#9A9AA1; --line:rgba(120,120,128,.3); --line-2:rgba(120,120,128,.18);
+  --pill:rgba(118,118,128,.24); --seg:rgba(118,118,128,.32); --blue:#0A84FF; --accent:#0A84FF; --red:#FF453A;
+  --good:#30D158; --good-wash:rgba(48,209,88,.16); --bad:#FF453A; --bad-wash:rgba(255,69,58,.16);
+  --flag:#FFD60A; --flag-wash:rgba(255,214,10,.14); --flag-ink:#FFD60A;
+  --top:#000000; --top-2:#17181D; --top-ink:#FFFFFF; --top-muted:#9A9AA1;
+  --fld-a:#2F7A34; --fld-b:#28692C; --fld-line:rgba(255,255,255,.55); --fld-num:#FFFFFF; --drive:#FFFFFF;
+  --lg-glass:rgba(38,40,48,.46); --lg-rim-hi:rgba(255,255,255,.3); --lg-rim-lo:rgba(255,255,255,.07);
+  --lg-float:0 12px 34px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.45);
+  --lg-card-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 8px 24px rgba(0,0,0,.35);
+  --lg-wall-a:#1B2550; --lg-wall-b:#3A1B2E; --lg-wall-c:#113129; --lg-cur:rgba(255,255,255,.1); --lg-zebra:rgba(255,255,255,.03);
+  color-scheme:dark;
+}
+html[data-skin="liquid"][data-lg="dark"] body{color:var(--ink)}
+html[data-skin="liquid"][data-lg="dark"] .navlink,html[data-skin="liquid"][data-lg="dark"] .navbar .abtn,html[data-skin="liquid"][data-lg="dark"] .gtab{color:var(--ink)}
+html[data-skin="liquid"][data-lg="dark"] .inp,html[data-skin="liquid"][data-lg="dark"] select,html[data-skin="liquid"][data-lg="dark"] .qk,
+html[data-skin="liquid"][data-lg="dark"] textarea{background:rgba(118,118,128,.18);color:var(--ink);border-color:var(--line)}
+html[data-skin="liquid"][data-lg="dark"] .c-tabs button.on,html[data-skin="liquid"][data-lg="dark"] .c-pills button.on,
+html[data-skin="liquid"][data-lg="dark"] .gtab[aria-selected="true"],html[data-skin="liquid"][data-lg="dark"] .bw.on{
+  background:rgba(120,120,128,.42);color:#FFFFFF;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 2px 10px rgba(0,0,0,.35)}
+html[data-skin="liquid"][data-lg="dark"] .c-tabs button,html[data-skin="liquid"][data-lg="dark"] .c-pills button,html[data-skin="liquid"][data-lg="dark"] .bw{color:var(--ink)}
+html[data-skin="liquid"][data-lg="dark"] dialog{background:#1C1D22;color:var(--ink)}
+html[data-skin="liquid"][data-lg="dark"] .tp-edit-row td{background:#1F2127}
+html[data-skin="liquid"][data-lg="dark"] .btn:not(.primary):not(.danger){background:rgba(118,118,128,.24);color:var(--ink);border-color:transparent}
 
 /* ======================================================================================
    8-BIT — the Tecmo Super Bowl screens: black ground, blue windows in a white frame, the
@@ -1310,7 +1341,7 @@ html[data-skin="tecmo"] .skinpick select{font-family:var(--pix);font-size:8px;te
       <a class="sitelink active" href="https://stats.kansasmediarankings.com/" aria-current="page">Media Stats</a>
     </nav>
     <label class="skinpick" id="skinpick" hidden><span>Look</span><select id="skinsel" aria-label="Look of the site">
-      <option value="original">Original</option><option value="liquid">Liquid Glass</option><option value="tecmo">8-Bit</option></select></label>
+      <option value="original">Original</option><option value="liquid">Liquid Glass</option><option value="liquid-dark">Liquid Glass Dark</option><option value="tecmo">8-Bit</option></select></label>
   </div>
 </div>
 <div class="scores" id="scores" hidden></div>
