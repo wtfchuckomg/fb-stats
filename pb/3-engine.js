@@ -387,6 +387,16 @@ function replay(g, upto = g.plays.length){
       if (ry) leg('run', D, FL - at, fin);
       if (ry) txt += `, returned ${plural(ry, 'yard')}`;
       if (fin >= FL) return txt + '.' + touchdown(D, `${p.ib ? nm(D, p.ib) : ab(D)} interception return`, dp);
+      // Fumbled on the way back: to the passing team, or kept by the intercepting team.
+      if (p.fum && fin > 0){
+        const fs = clamp(fin, 1, FL - 1);
+        txt += ` to the ${yl(D, fs)}.`;
+        if (p.fum.lost) return txt + fumbleLost(D, p.ib, fs, p.fum);
+        txt += fumbleKept(D, p.ib, p.fum, fs);
+        const f2 = clamp(fs + (+p.fum.ry || 0), 0, FL);
+        if (f2 >= FL) return txt + touchdown(D, `${p.fum.by ? nm(D, p.fum.by) : ab(D)} fumble return`, pl(D, p.fum.by));
+        newSeries(D, Math.max(f2, 1)); return txt;
+      }
       if (fin <= 0){ newSeries(D, RU.tb); return txt + '. Touchback.'; }
       newSeries(D, fin); return txt + (ry ? ` to the ${yl(D, fin)}.` : '.');
     }

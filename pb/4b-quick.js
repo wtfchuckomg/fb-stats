@@ -472,7 +472,8 @@ function parseQuick(raw, st){
     // td anywhere on a lost-fumble line is the defense's score; on a kept fumble it's the offense's.
     const tdLine = ft.includes('td') || toks.includes('td');
     if (lost) toks = toks.filter(t => t !== 'td'); else if (tdLine && !toks.includes('td')) toks.push('td');
-    fum = {lost, by, ry:Math.abs(+(adv || 0)), td:lost && tdLine, endSpot, self:selfRec && by == null};
+    fum = {lost, by, ry:Math.abs(+(adv || 0)), td:lost && tdLine, endSpot, self:selfRec && by == null,
+           rs:who ? who.side : ft.map(T).find(Boolean) || null, selfRec, tdLine};
   }
   const withFum = p => {
     if (!fum) return p;
@@ -519,7 +520,20 @@ function parseQuick(raw, st){
     if (ez) p.at = FL - st.spot; else if (spots[0]) p.at = posO(spots[0]) - st.spot;
     const endAt = spots[ez ? 0 : 1], caught = st.spot + p.at;
     if (endAt) p.ry = caught - posO(endAt);                        // the defense runs back toward the passer's goal
-    if (td) p.ry = caught;
+    if (td && !fum) p.ry = caught;
+    // A fumble on the return: "lost" now means the intercepting team lost it, back to the passing team.
+    if (fum){
+      const lost = fum.rs ? fum.rs !== D : !fum.selfRec, rec = lost ? O : D;
+      const fin = FL - clamp(caught, 0, FL) + p.ry;                  // where it came loose, in the intercepting team's frame
+      if (fin >= FL) return bad('That return already reached the end zone, so there was no fumble on it. Leave off the fum part.');
+      let ry = fum.ry;
+      if (fum.endSpot){
+        const e = fum.endSpot, endPos = e.side == null ? HALF : e.side === rec ? e.n : FL - e.n;
+        ry = endPos - (lost ? FL - fin : fin);
+      }
+      if (fum.tdLine) ry = lost ? fin : FL - fin;
+      p.fum = {lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self || (fum.selfRec && fum.by == null) ? {self:true} : {}), ry};
+    }
     return flag(p);
   }
   if (has('sack', 'sacked', 'sk')){
@@ -562,6 +576,7 @@ function cheatHtml(a, h){
     ['7-sack-6-90', '#7 sacked for a loss of 6 by #90'],
     [`7-int-24-${h}10 &nbsp;·&nbsp; 7-int-24-${h}10-${h}40`, `#7 intercepted by #24 at the ${h} 10 / and returned to the ${h} 40. Without a yard line the pick is placed at the line of scrimmage.`],
     [`7-int-24-${h}10-12 &nbsp;·&nbsp; 7-int-24-td &nbsp;·&nbsp; 7-int-24-ez`, 'Returned 12 yards / returned for a touchdown / picked off in the end zone (a touchback if not returned)'],
+    [`7-int-24-${h}10-${h}40 fum ${a} rec 22`, `Picked off, returned to the ${h} 40, then fumbled; ${a}'s #22 recovers and the ball goes back to ${a}. Add td if the recovery was run in.`],
     [`5-5-fum-rec-${h}31-1`, `#5 runs for 5 and fumbles; ${h}'s #31 recovers and advances 1. Just fum ${h} rec if you don't know who.`],
     [`5-5-fum-rec-${h}10 ball on ${h}24`, 'Same, with the advance worked out from where the next snap is.'],
     [`10-0 fum ${h} rec td`, `Fumble, ${h} recovers and returns it for a touchdown.`],

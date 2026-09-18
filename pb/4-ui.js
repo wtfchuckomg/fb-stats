@@ -282,7 +282,7 @@ function buildPlay(d){
   if (['run', 'pass', 'punt', 'ko', 'fg'].includes(d.t) && d.penOn) p.pen = cleanPen(d.pen);
   return JSON.parse(JSON.stringify(p));
 }
-const fumbleAllowed = d => d.t === 'run' || (d.t === 'pass' && (d.res === 'c' || d.res === 's')) || ((d.t === 'punt' || d.t === 'ko') && d.res === 'ret');
+const fumbleAllowed = d => d.t === 'run' || (d.t === 'pass' && (d.res === 'c' || d.res === 's' || d.res === 'x')) || ((d.t === 'punt' || d.t === 'ko') && d.res === 'ret');
 const getK = (o, path) => path.split('.').reduce((a, k) => a == null ? a : a[k], o);
 function setK(o, path, v){ const ks = path.split('.'), last = ks.pop(); ks.reduce((a, k) => a[k], o)[last] = v; }
 
@@ -313,7 +313,7 @@ const tog = (k, label, cls = '') => `<button type="button" class="tog ${cls}" da
 const row = (...a) => `<div class="row">${a.join('')}</div>`;
 
 function fumbleFields(){
-  const st = ui.ctx.st, d = ui.draft, carrier = d.t === 'punt' || d.t === 'ko' ? other(st.poss) : st.poss;
+  const st = ui.ctx.st, d = ui.draft, carrier = d.t === 'punt' || d.t === 'ko' || (d.t === 'pass' && d.res === 'x') ? other(st.poss) : st.poss;
   const lost = d.fum.lost === 'lost', recSide = lost ? other(carrier) : carrier;
   return `<div class="sub">${fSeg('fum.lost', 'Fumble', [['lost', `Lost to ${ab(other(carrier))}`], ['kept', `${ab(carrier)} kept it`]])}
     ${row(fJ('fum.by', 'Recovered by', recSide), fJ('fum.ff', 'Forced by', other(carrier)), lost ? fN('fum.ry', 'Return yards', '0') : '')}
