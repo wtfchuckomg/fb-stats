@@ -9,6 +9,15 @@
 // The chart is drawn for the width it actually gets (about 340 px, in the side column or on a phone),
 // so its labels show at their real size: a 300-wide plot with room on the right for 100 / 50 / 100.
 const WP = {sigma:18, hfa:2, cache:{}, W:300, H:170, top:8, vbW:334};
+// Where the chart starts. A game doesn't open even: the site's own line (ratings.json, by way of ourLine)
+// says who should win and by how much, and that expected margin carries the chart until the game itself has
+// said enough to take over. With no line for these two schools, it falls back to the small home edge.
+function wpPrior(x){
+  const OL = typeof ourLine === 'function' && x && x.teams ? ourLine(x.teams.A.name, x.teams.H.name) : null;
+  // Held to four touchdowns: past that the chart would open pinned to the top with nowhere to go, and a high
+  // school game is too loose to claim more before anyone has played a down.
+  return OL ? Math.max(-28, Math.min(28, OL.spread)) : WP.hfa;   // points, positive when the home team is favored
+}
 const wpErf = x => {
   const t = 1 / (1 + 0.3275911 * Math.abs(x));
   const y = 1 - ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
@@ -45,9 +54,10 @@ function wpClock(x, log, qSec, final){
 
 // The visitors' chance after each play, with where that play falls on the game clock.
 function wpSeries(x){
-  const key = `${x.id}|${x.plays.length}|${x.updated || 0}`;
+  const key = `${x.id}|${x.plays.length}|${x.updated || 0}|${typeof pre === 'object' && pre.rat ? 1 : 0}`;
   if (WP.cache[key]) return WP.cache[key];
   const RU = rulesOf(x), FL = RU.len, qSec = (x.set.qtr || 12) * 60, total = 4 * qSec;
+  const prior = wpPrior(x);
   const full = replay(x), log = full.log, pts = [];
   const {est, known} = wpClock(x, log, qSec, full.st.final);
   log.forEach((e, i) => {
@@ -59,10 +69,10 @@ function wpSeries(x){
     if (st.phase === 'try') v = st.poss === 'A' ? 0.95 : -0.95;                       // the extra point to come
     else if (st.phase === 'kick') v = (other(st.poss) === 'A' ? 1 : -1) * wpEP(0.3 * FL, FL, 1);   // the receiving team's drive
     else v = (st.poss === 'A' ? 1 : -1) * wpEP(st.spot, FL, st.down);
-    const wa = st.final ? (m > 0 ? 1 : m < 0 ? 0 : 0.5) : wpPhi((m + v - WP.hfa * t) / (WP.sigma * Math.sqrt(Math.max(t, 0.0025))));
+    const wa = st.final ? (m > 0 ? 1 : m < 0 ? 0 : 0.5) : wpPhi((m + v - prior * t) / (WP.sigma * Math.sqrt(Math.max(t, 0.0025))));
     pts.push({i, x:Math.min(elapsed / total, 1.08), wa, e, clk:known[i] ? x.plays[i].clk : null});
   });
-  const start = {i:-1, x:0, wa:wpPhi(-WP.hfa / WP.sigma), e:null};   // the opening kickoff, before a play
+  const start = {i:-1, x:0, wa:wpPhi(-prior / WP.sigma), e:null};   // the opening kickoff, before a play
   return (WP.cache[key] = [start, ...pts]);
 }
 

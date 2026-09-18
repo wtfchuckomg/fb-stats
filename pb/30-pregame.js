@@ -60,7 +60,7 @@ function loadRatings(){
   if (pre.rat !== null) return;
   pre.rat = false;
   fetch('/ratings.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
-    .then(d => { if (d && d.teams){ pre.rat = d; renderPreview(); } }).catch(() => {});
+    .then(d => { if (d && d.teams){ pre.rat = d; renderPreview(); if (typeof renderRail === 'function') renderRail(); } }).catch(() => {});
 }
 // The ratings are keyed the way KPreps writes a school ("towanda-circle"); match ours to them once each.
 function ratingOf(name){

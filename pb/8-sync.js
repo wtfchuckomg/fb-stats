@@ -213,7 +213,7 @@ async function startViewer(id){
   let noted = false;
   const gone = () => viewerMessage('This game isn’t being shared right now.');
   // Once per page: a school's gamecast calls this again each time that school's game changes.
-  if (!startViewer.ready){ startViewer.ready = true; scoresReady({fsM, fsdb}); setInterval(renderLive, 5000); }
+  if (!startViewer.ready){ startViewer.ready = true; scoresReady({fsM, fsdb}); setInterval(renderLive, 5000); loadRatings(); }
   if (startViewer.unsub) startViewer.unsub();
   startViewer.unsub = fsM.onSnapshot(fsM.doc(fsdb, 'pressbox', id), snap => {
     const d = snap.exists() ? snap.data() : null;
