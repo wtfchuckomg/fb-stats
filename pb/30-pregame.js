@@ -250,7 +250,7 @@ async function startPreview(id){
   }, 300);
 }
 function previewGame(){
-  const x = (allGames.list || []).find(g => g.id === PREVIEW_ID) || (scores.docs && scores.docs[PREVIEW_ID]);
+  const x = (allGames.list || []).find(g => g.id === PREVIEW_ID) || (scores.docs && scores.docs[PREVIEW_ID]) || schedById(PREVIEW_ID);
   return x && x.teams && x.teams.A && x.teams.H ? x : null;
 }
 function renderPreview(){

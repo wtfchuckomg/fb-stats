@@ -36,6 +36,9 @@ jobs:
       - name: Write the finals the site reads
         if: steps.when.outputs.go == '1'
         run: python3 .github/kp/scores.py
+      - name: Write every logo school's schedule
+        if: steps.when.outputs.go == '1'
+        run: python3 .github/kp/schedule.py
       - name: Fit the ratings on tonight's games
         if: steps.when.outputs.go == '1'
         run: python3 .github/kp/ratings.py
@@ -47,7 +50,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git add -A kpscores.json ratings.json history .github/kp
+          git add -A kpscores.json schedule.json ratings.json history .github/kp
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
           git -c user.name="Friday night scores" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "Friday night: KPreps finals, ratings, history"
           git pull -q --rebase && git push -q

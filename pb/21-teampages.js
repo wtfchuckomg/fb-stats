@@ -94,7 +94,8 @@ function indexGames(){
   const byId = new Map();
   (allGames.list || []).forEach(x => byId.set(x.id, x));
   live.forEach(x => { if (x && x.teams && x.teams.A && x.teams.H) byId.set(x.id, x); });
-  [...byId.values()].map(kpFill).forEach(x => {
+  const have = [...byId.values()];
+  [...have, ...schedMissing(have)].map(kpFill).forEach(x => {
     // Only a game the admin hid is left out; the other schools' games count even though they're off the scoreboards.
     if (hideList.ids.has(x.id)) return;
     const stats = x.stats != null ? !!x.stats : (x.kind !== 'score' && ((x.plays && x.plays.length) || !!x.box)), wk = x.wk || gameWeek(x);
@@ -428,9 +429,14 @@ async function saveTeamRoster(name, text){
 // Take a game off the schedules — a duplicate, or one that was never going to be played. The document is marked
 // deleted with its contents kept, so a mistake can be put back from the database; every page skips it either way.
 async function removeTeamGame(){
-  const id = tpage.removing, x0 = id && (allGames.list || []).find(y => y.id === id);
+  const id = tpage.removing, x0 = id && ((allGames.list || []).find(y => y.id === id) || schedById(id));
   if (!x0 || !teamRecs.api) return;
   const title = `${x0.teams.A.name} at ${x0.teams.H.name}`;
+  // A game from the schedule file has no document of its own: it goes on the admin's hidden list instead.
+  if (x0.file && !(allGames.list || []).some(y => y.id === id)){
+    tpage.editing = null; tpage.sdraft = null; tpage.removing = null;
+    return toast(await schedRemove(id) ? `Removed ${title}` : 'Couldn’t remove that game. Sign in on the Game Tracker, then try again.');
+  }
   allGames.list = allGames.list.filter(y => y.id !== id);
   if (scores.docs && scores.docs[id]) delete scores.docs[id];
   tpage.editing = null; tpage.sdraft = null; tpage.removing = null; indexGames(); recordsChanged();
@@ -446,7 +452,7 @@ async function removeTeamGame(){
 }
 // Save a score fixed on a team page: the game's own document, which the admin's account owns (it loaded the schedule).
 async function saveTeamScore(clear){
-  const ed = tpage.editing, x0 = ed && (allGames.list || []).find(y => y.id === ed.id);
+  const ed = tpage.editing, x0 = ed && ((allGames.list || []).find(y => y.id === ed.id) || schedById(ed.id));
   if (!x0 || !teamRecs.api) return;
   const mine = parseInt(($('#tp-s-mine') || {}).value, 10), theirs = parseInt(($('#tp-s-opp') || {}).value, 10);
   if (!clear && (isNaN(mine) || isNaN(theirs))) return toast('Enter both scores');
@@ -454,7 +460,7 @@ async function saveTeamScore(clear){
   if (clear) Object.assign(x, {A:0, H:0, per:'pre', clk:''});
   else Object.assign(x, {[ed.side]:clamp(mine, 0, 199), [opp]:clamp(theirs, 0, 199), per:($('#tp-s-ot') || {}).checked ? 'fot' : 'final', clk:''});
   x.updated = Date.now();
-  allGames.list = allGames.list.map(y => y.id === x.id ? x : y);
+  allGames.list = allGames.list.some(y => y.id === x.id) ? allGames.list.map(y => y.id === x.id ? x : y) : [...allGames.list, x];
   tpage.editing = null; tpage.sdraft = null; indexGames(); recordsChanged();
   const {fsM, fsdb} = teamRecs.api;
   try {

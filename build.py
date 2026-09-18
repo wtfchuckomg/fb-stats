@@ -64,6 +64,7 @@ PARTS_JS = [
     '29-embed.js',
     '30-pregame.js',     # ?preview=<id>: a game before kickoff
     '32-kpscores.js',   # Friday's KPreps finals, for games nobody tracked
+    '33-schedfile.js',  # every logo school's schedule, from KPreps
     '7-sample.js',       # the sample game, then boot. Always last.
 ]
 
