@@ -273,6 +273,9 @@ function replay(g, upto = g.plays.length){
     const off = pen.side === st.poss;
     let y = +pen.y || 0;
     const base = st.phase === 'kick' ? 'kickFrom' : 'spot';
+    // A spot foul: marched off from where the foul happened, or straight to where the ref put the ball.
+    if (st.phase === 'play' && pen.ball != null){ st[base] = clamp(+pen.ball, .5, (FL - .5)); return y; }
+    if (st.phase === 'play' && pen.foul != null) st[base] = clamp(+pen.foul, .5, (FL - .5));
     const room = off ? st[base] : FL - st[base];
     if (y > room / 2) y = room / 2;          // half the distance to the offender's goal
     st[base] += off ? -y : y;
@@ -280,7 +283,12 @@ function replay(g, upto = g.plays.length){
   }
   function penalize(pen, seriesNew){
     const side = pen.side, offFoul = side === st.poss;
-    const from = st.phase === 'kick' ? st.kickFrom : st.spot;
+    // Where it's marched off from: the line of scrimmage, or the foul's own spot on a spot foul. Told the
+    // ball spot instead, the foul is however many yards back the other way.
+    const from = st.phase === 'kick' ? st.kickFrom
+      : pen.foul != null ? clamp(+pen.foul, .5, (FL - .5))
+      : pen.ball != null ? clamp(+pen.ball + (offFoul ? (+pen.y || 0) : -(+pen.y || 0)), .5, (FL - .5))
+      : st.spot;
     const full = +pen.y || 0, y = enforce(pen);
     S.team[side].pen++; S.team[side].penY += y;
     tags.push(['flag', 'Flag']);

@@ -1488,6 +1488,9 @@ function replay(g, upto = g.plays.length){
     const off = pen.side === st.poss;
     let y = +pen.y || 0;
     const base = st.phase === 'kick' ? 'kickFrom' : 'spot';
+    // A spot foul: marched off from where the foul happened, or straight to where the ref put the ball.
+    if (st.phase === 'play' && pen.ball != null){ st[base] = clamp(+pen.ball, .5, (FL - .5)); return y; }
+    if (st.phase === 'play' && pen.foul != null) st[base] = clamp(+pen.foul, .5, (FL - .5));
     const room = off ? st[base] : FL - st[base];
     if (y > room / 2) y = room / 2;          // half the distance to the offender's goal
     st[base] += off ? -y : y;
@@ -1495,7 +1498,12 @@ function replay(g, upto = g.plays.length){
   }
   function penalize(pen, seriesNew){
     const side = pen.side, offFoul = side === st.poss;
-    const from = st.phase === 'kick' ? st.kickFrom : st.spot;
+    // Where it's marched off from: the line of scrimmage, or the foul's own spot on a spot foul. Told the
+    // ball spot instead, the foul is however many yards back the other way.
+    const from = st.phase === 'kick' ? st.kickFrom
+      : pen.foul != null ? clamp(+pen.foul, .5, (FL - .5))
+      : pen.ball != null ? clamp(+pen.ball + (offFoul ? (+pen.y || 0) : -(+pen.y || 0)), .5, (FL - .5))
+      : st.spot;
     const full = +pen.y || 0, y = enforce(pen);
     S.team[side].pen++; S.team[side].penY += y;
     tags.push(['flag', 'Flag']);
@@ -2477,7 +2485,9 @@ function parseQuick(raw, st){
   if (has('undo')) return {undo:true};
 
   /* ---- whose ball, where: "N ball at N35 1-10" ---- */
-  if (has('ball') && !has('punt') && !has('fum', 'fumble', 'fumbled', 'fumbles')){
+  // "pen m 10 ball spot 35" is a spot foul, not a spot: the word comes after the flag, and the flag reads it.
+  const flagAt = toks.findIndex(t => ['pen', 'penalty', 'flag'].includes(t));
+  if (has('ball') && (flagAt < 0 || toks.indexOf('ball') < flagAt) && !has('punt') && !has('fum', 'fumble', 'fumbled', 'fumbles')){
     const bi = toks.indexOf('ball');
     const side = T(toks[bi - 1]) || T(toks[bi + 1]);
     if (!side) return bad(`Start with the team letter, like ${L('A')} ball at ${L('A')}35.`);
@@ -2528,11 +2538,26 @@ function parseQuick(raw, st){
     if (!side) return bad(`Which team? Like pen ${L('A')} 5 or pen ${L('H')} 15.`);
     const code = pt.find(t => PEN_CODES[t]);
     const preset = code && PENALTIES.find(x => x.name === PEN_CODES[code]);
+    // A spot foul: "pen m 10 ball spot 35" is where the ref put the ball, "pen m 10 foul at the 25" is where
+    // it happened. A bare yard line is read as whichever side of the field is nearer the line of scrimmage.
+    const near = n => Math.abs(n - st.spot) <= Math.abs((FL - n) - st.spot) ? n : FL - n;
+    const spotAfter = words => {
+      const at = pt.findIndex(t => words.includes(t)); if (at < 0) return null;
+      const tail = pt.slice(at + 1), s = tail.map(spotOf).find(Boolean);
+      if (s) return {pos:s.side === st.poss ? s.n : FL - s.n, raw:s.n};
+      const n = tail.find(t => isNum(t) && +t >= 0 && +t <= FL);
+      return n == null ? null : {pos:near(+n), raw:+n};
+    };
+    const foulAt = pt.includes('foul') ? spotAfter(['foul']) : null;
+    const ballAt = foulAt ? null : spotAfter(['spot', 'ballspot', 'ball']);
+    const said = foulAt || ballAt;
     const nums = pt.filter(isNum).map(x => Math.abs(+x));
+    if (said){ const k = nums.indexOf(said.raw); if (k >= 0) nums.splice(k, 1); }   // a yard line isn't a jersey
     const y = nums.length ? nums[0] : preset ? preset.y : null;
     if (y == null) return bad('How many yards? Like pen S 15, or add a code like hold.');
     pen = {side, name:preset ? preset.name : 'Penalty', y, a:preset ? preset.a : false, l:preset ? preset.l : false};
     if (nums[1] != null) pen.n = String(nums[1]);
+    if (foulAt) pen.foul = foulAt.pos; else if (ballAt) pen.ball = ballAt.pos;
     if (pt.some(t => ['1st', 'auto', 'af'].includes(t))) pen.a = true;
     if (pt.includes('lod')) pen.l = true;
     const offset = pt.some(t => ['offset', 'offsetting', 'offsets'].includes(t));
@@ -2905,6 +2930,7 @@ function cheatHtml(a, h){
     ['ko-28-at the 8-for 12 &nbsp;·&nbsp; 28 caught the kickoff at the 8 and ran it to the 20', 'Never type how far it was kicked: say where it was caught and how far it came back. Both yard lines are the receiving team’s.'],
     [`pen ${h} 15 pf`, `15 yards on ${h}. Codes: fs off hold pi pf fm uc rtp ig dog and more. Add 1st for an automatic first down.`],
     [`3-12 pen ${a} 10 hold np`, 'Flag wipes out the play (np = no play). Without np, the yards add on to the end of the play.'],
+    [`pen ${h} 10 ball spot 35 &nbsp;·&nbsp; pen ${h} 10 foul at the 25`, 'A spot foul, marched off from where it happened rather than the line of scrimmage. Say where the ref put the ball, or where the foul was.'],
     [`to ${a}`, `${g.teams.A.name} timeout`],
     ['28 is now 35', 'A jersey change. From there on #35 is that player: the play-by-play shows the number he is wearing, the box score keeps one line.'],
     ['eoq', 'End of the quarter (at halftime: eoq S = S kicks off)'],
