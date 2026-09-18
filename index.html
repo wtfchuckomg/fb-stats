@@ -3760,8 +3760,7 @@ function cardCmp(full){
 function cardTeamTable(){
   return `<section class="card"><div class="card-hd"><h2 class="card-title">Stat Details</h2></div><div class="tbl-wrap"><table class="st">
     <thead><tr><th></th><th>${esc(ab('A'))}</th><th>${esc(ab('H'))}</th></tr></thead>
-    <tbody>${teamRows().map(([l, f]) => `<tr><td>${l}</td><td>${f('A')}</td><td>${f('H')}</td></tr>`).join('')}</tbody></table></div>
-    <p class="hint" style="margin-top:10px">Sacks count against rushing, the usual high-school and college stat convention.</p></section>`;
+    <tbody>${teamRows().map(([l, f]) => `<tr><td>${l}</td><td>${f('A')}</td><td>${f('H')}</td></tr>`).join('')}</tbody></table></div></section>`;
 }
 function cardDrives(){
   if (!R.drives.length) return '';
