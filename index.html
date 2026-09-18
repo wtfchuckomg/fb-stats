@@ -1289,13 +1289,16 @@ html[data-skin="tecmo"]{
   color-scheme:dark;
 }
 html[data-skin="tecmo"] body{background:#000000;color:var(--ink);-webkit-font-smoothing:none;font-smooth:never;
-  text-transform:uppercase;letter-spacing:0;font-synthesis:none;font-size-adjust:cap-height .8;line-height:1.6}
+  text-transform:uppercase;letter-spacing:0;font-synthesis:none;line-height:1.6}
+/* The scaling has to be set on every element: most of the site sets its type with the font shorthand, and the
+   shorthand quietly resets font-size-adjust wherever it's used. */
+html[data-skin="tecmo"] body,html[data-skin="tecmo"] body *{font-size-adjust:cap-height .8!important}
 html[data-skin="tecmo"] input,html[data-skin="tecmo"] textarea{text-transform:none}
 /* the pieces below are sized for the font as it comes, so they skip the scaling */
 html[data-skin="tecmo"] h1,html[data-skin="tecmo"] h2,html[data-skin="tecmo"] h3,html[data-skin="tecmo"] .card-title,html[data-skin="tecmo"] .pg-h,
 html[data-skin="tecmo"] .eyebrow,html[data-skin="tecmo"] .bl-hd,html[data-skin="tecmo"] .gtab,html[data-skin="tecmo"] .ctbl th,html[data-skin="tecmo"] .b-st,
 html[data-skin="tecmo"] .sc-st,html[data-skin="tecmo"] .navlink,html[data-skin="tecmo"] .sitelink,html[data-skin="tecmo"] .navmenu a,html[data-skin="tecmo"] .abtn,
-html[data-skin="tecmo"] .bbtn,html[data-skin="tecmo"] .btn.primary,html[data-skin="tecmo"] .qk,html[data-skin="tecmo"] .skinpick,html[data-skin="tecmo"] .skinpick select{font-size-adjust:none}
+html[data-skin="tecmo"] .bbtn,html[data-skin="tecmo"] .btn.primary,html[data-skin="tecmo"] .qk,html[data-skin="tecmo"] .skinpick,html[data-skin="tecmo"] .skinpick select{font-size-adjust:none!important}
 html[data-skin="tecmo"] body::before{display:none}
 html[data-skin="tecmo"] img{image-rendering:pixelated}
 /* every logo gets a white outline that follows its shape, so dark logos still stand out on the blue */
@@ -1311,10 +1314,10 @@ html[data-skin="tecmo"] h1,html[data-skin="tecmo"] h2,html[data-skin="tecmo"] h3
 html[data-skin="tecmo"] .eyebrow,html[data-skin="tecmo"] .bl-hd,html[data-skin="tecmo"] .gtab,html[data-skin="tecmo"] .ctbl th,html[data-skin="tecmo"] .b-st,
 html[data-skin="tecmo"] .sc-st,html[data-skin="tecmo"] .navlink,html[data-skin="tecmo"] .sitelink{
   font-family:var(--pix)!important;font-weight:400!important;text-transform:uppercase;letter-spacing:.02em}
-html[data-skin="tecmo"] .card-title,html[data-skin="tecmo"] .pg-h{font-size:12px!important;color:#F8B800!important}
-html[data-skin="tecmo"] .gtab{font-size:10px!important}
-html[data-skin="tecmo"] h1{font-size:clamp(16px,3vw,24px)!important;line-height:1.35!important;text-shadow:3px 3px 0 #0058F8,6px 6px 0 #A81000}
-html[data-skin="tecmo"] h2{font-size:14px!important;line-height:1.5!important}
+html[data-skin="tecmo"] .card-title,html[data-skin="tecmo"] .pg-h{font-size:11px!important;color:#F8B800!important}
+html[data-skin="tecmo"] .gtab{font-size:9px!important}
+html[data-skin="tecmo"] h1{font-size:clamp(14px,2.6vw,20px)!important;line-height:1.35!important;text-shadow:3px 3px 0 #0058F8,6px 6px 0 #A81000}
+html[data-skin="tecmo"] h2{font-size:12px!important;line-height:1.5!important}
 html[data-skin="tecmo"] .eyebrow,html[data-skin="tecmo"] .bl-hd,html[data-skin="tecmo"] .ctbl th,html[data-skin="tecmo"] .b-st,html[data-skin="tecmo"] .sc-st{font-size:8px!important;line-height:1.6!important;color:#A4E4FC!important}
 /* the bars: black, a white rule, a blinking arrow on the page you're on */
 html[data-skin="tecmo"] .sitebar{background:#000000;border-bottom:4px solid #FCFCFC}
