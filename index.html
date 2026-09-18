@@ -502,6 +502,7 @@ button.h-btn{cursor:pointer}
 .tp-edit-row td{background:#F6F8FB}
 .tp-score-form{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
 .tp-score-form label{display:flex;flex-direction:column;gap:4px;font:600 12.5px/1.2 var(--sans);color:var(--muted)}
+.tp-rm-ask{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font:500 13px/1.3 var(--sans);color:var(--bad)}
 .tp-score-form label.tp-ot{flex-direction:row;align-items:center;gap:6px;padding-bottom:10px;color:var(--ink-2);cursor:pointer}
 .tp-score-form .inp{width:96px}
 .tp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
@@ -7194,7 +7195,11 @@ function teamPageHtml(nameIn){
         <a class="btn" href="?tracker&amp;box=${encodeURIComponent(x.id)}">Paste box score</a>
         <button type="button" class="btn primary" data-tp-score-save>Save final</button>
         ${m.fin ? '<button type="button" class="btn" data-tp-score-clear>Not played yet</button>' : ''}
-        <button type="button" class="btn" data-tp-score-cancel>Cancel</button></div></td></tr>` : '';
+        <button type="button" class="btn" data-tp-score-cancel>Cancel</button>
+        ${tpage.removing === x.id
+          ? `<span class="tp-rm-ask">Take ${esc(x.teams.A.name)} at ${esc(x.teams.H.name)} off every schedule?
+             <button type="button" class="btn danger" data-tp-remove-yes>Remove</button><button type="button" class="linkbtn" data-tp-remove-no>Keep it</button></span>`
+          : '<button type="button" class="btn danger" data-tp-remove>Remove game</button>'}</div></td></tr>` : '';
     if (m.fin) now[a > b ? 'w' : a < b ? 'l' : 't']++;
     const runNow = m.fin ? `${now.w}-${now.l}${now.t ? '-' + now.t : ''}` : '';
     return `<tr><td class="wk">${esc(weekLabel(wk))}</td><td class="opp"><em>${side === 'A' ? 'at' : 'vs'}</em><a href="?team=${encodeURIComponent(o.name)}">${markFor(o, 24)}${esc(o.name)}</a></td>
@@ -7300,6 +7305,25 @@ async function saveTeamRoster(name, text){
   } catch (e) { toast('Couldn’t save that roster. Sign in on the Game Tracker, then try again.'); }
 }
 
+// Take a game off the schedules — a duplicate, or one that was never going to be played. The document is marked
+// deleted with its contents kept, so a mistake can be put back from the database; every page skips it either way.
+async function removeTeamGame(){
+  const id = tpage.removing, x0 = id && (allGames.list || []).find(y => y.id === id);
+  if (!x0 || !teamRecs.api) return;
+  const title = `${x0.teams.A.name} at ${x0.teams.H.name}`;
+  allGames.list = allGames.list.filter(y => y.id !== id);
+  if (scores.docs && scores.docs[id]) delete scores.docs[id];
+  tpage.editing = null; tpage.sdraft = null; tpage.removing = null; indexGames(); recordsChanged();
+  const {fsM, fsdb} = teamRecs.api;
+  try {
+    // Keep what the document held. A game read from the season file is only a summary, so read the real one.
+    let keep = x0.snap ? '' : JSON.stringify(x0);
+    if (!keep){ try { const d = await fsM.getDoc(fsM.doc(fsdb, 'pressbox', id)); keep = (d.exists() && d.data().json) || ''; } catch (e) {} }
+    await fsM.setDoc(fsM.doc(fsdb, 'pressbox', id), {owner:ADMIN_UID, updated:Date.now(), public:true, week:gameWeek(x0), kind:'score',
+      title, deleted:true, json:keep});
+    toast(`Removed ${title}`);
+  } catch (e) { toast('Couldn’t remove that game. Sign in on the Game Tracker, then try again.'); }
+}
 // Save a score fixed on a team page: the game's own document, which the admin's account owns (it loaded the schedule).
 async function saveTeamScore(clear){
   const ed = tpage.editing, x0 = ed && (allGames.list || []).find(y => y.id === ed.id);
@@ -7324,10 +7348,13 @@ document.addEventListener('click', e => {
   if (!ui.teamPage || !e.target.closest) return;
   const t = e.target;
   const sc = t.closest('[data-tp-score]');
-  if (sc){ tpage.editing = {id:sc.dataset.tpScore, side:sc.dataset.side}; tpage.sdraft = null; return renderTeamPage(); }
-  if (t.closest('[data-tp-score-cancel]')){ tpage.editing = null; tpage.sdraft = null; return renderTeamPage(); }
+  if (sc){ tpage.editing = {id:sc.dataset.tpScore, side:sc.dataset.side}; tpage.sdraft = null; tpage.removing = null; return renderTeamPage(); }
+  if (t.closest('[data-tp-score-cancel]')){ tpage.editing = null; tpage.sdraft = null; tpage.removing = null; return renderTeamPage(); }
   if (t.closest('[data-tp-score-save]')) return saveTeamScore(false);
   if (t.closest('[data-tp-score-clear]')) return saveTeamScore(true);
+  if (t.closest('[data-tp-remove]')){ tpage.removing = tpage.editing && tpage.editing.id; return renderTeamPage(); }
+  if (t.closest('[data-tp-remove-no]')){ tpage.removing = null; return renderTeamPage(); }
+  if (t.closest('[data-tp-remove-yes]')) return removeTeamGame();
   if (t.closest('[data-tp-edit]')){ tpage.edit = true; tpage.draft = null; return renderTeamPage(); }
   if (t.closest('[data-tp-cancel]')){ tpage.edit = false; tpage.draft = null; return renderTeamPage(); }
   if (t.closest('[data-tp-clear]')){ tpage.edit = false; tpage.draft = null; return saveTeamRecord(tpage.name, {rec:'', home:'', away:''}); }
