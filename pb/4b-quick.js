@@ -310,6 +310,22 @@ function parseQuick(raw, st){
     if (kicker != null) p.k = kicker;
     const toR = s => s.side === D ? s.n : FL - s.n;              // a yard line as the receiving team sees it
     let rest = toks.slice(i + 1);
+    // Read a punt the way a kickoff is read: "at the 30" is where the receiving team caught it, "for 8" is
+    // the return. Nobody at the game measures the punt itself, and this way nobody has to.
+    const pRaw = rawToks.slice(rawToks.indexOf('punt') + 1);
+    const pAT = ['at', 'to', 'on', 'inside', 'near'], pYD = ['yard', 'yards', 'yd', 'yds'];
+    const pRET = ['return', 'returns', 'returned', 'ret', 'rt', 'brought', 'ran', 'runs'];
+    const bare = [], ydNums = [], retNums = [];
+    pRaw.forEach((t, n) => {
+      if (!isNum(t) || +t < 0 || +t > FL / 2) return;
+      let j = n - 1; while (j >= 0 && pRaw[j] === 'the') j--;
+      if (j >= 0 && pAT.includes(pRaw[j]) && pRaw[n - 1] === 'the') bare.push(+t);   // "at the 30", never "to 30"
+      let k = n - 1; while (k >= 0 && ['the', 'a', 'it'].includes(pRaw[k])) k--;
+      if ((k >= 0 && pRaw[k] === 'for') || pYD.includes(pRaw[n + 1])) ydNums.push(+t);
+      let m = n + 1; while (m < pRaw.length && ['the', 'it'].includes(pRaw[m])) m++;
+      if (pRET.includes(pRaw[m])) retNums.push(+t);
+    });
+    const bareN = bare.length ? bare[0] : null;
     // "… I ball at I35": where the receiving team's drive starts.
     let start = null;
     const bi = rest.indexOf('ball');
@@ -332,17 +348,24 @@ function parseQuick(raw, st){
     const ri = rest.findIndex(t => ['return', 'returned', 'returns', 'ret', 'rt'].includes(t));
     if (ri >= 0){
       const prev = rest[ri - 1], ps = prev != null ? spotOf(prev) : null, ahead = rest.slice(ri + 1);
-      const n = ahead.find(isNum), s = ahead.map(spotOf).find(Boolean);
-      if (s) retEnd = s; else if (n != null) retYds = Math.abs(+n);
+      const n = ahead.find(t => isNum(t) && !bare.includes(+t)), s = ahead.map(spotOf).find(Boolean);
+      if (s) retEnd = s;
+      else if (ydNums.length) retYds = ydNums[0];
+      else if (n != null) retYds = Math.abs(+n);
       // Where the drive starts is given, so the distance comes from that: a number before "return" is a player.
       const kickNamed = start || rest.slice(0, Math.max(0, ri - 1)).some(t => isNum(t) || spotOf(t));
       if (ps && ps.side === D) retNo = String(ps.n);
-      else if (prev != null && isNum(prev) && kickNamed) retNo = prev;
+      else if (prev != null && isNum(prev) && kickNamed && !bare.includes(+prev)) retNo = prev;
       rest = rest.slice(0, retNo != null ? ri - 1 : ri);
     }
     const muffP = muffOf(rest);
-    const after = muffP ? muffP.before : rest.filter(isNum), sp = rest.map(spotOf).find(Boolean);   // "punt to I25" or a distance
+    const skip = bare.concat(ydNums, retNums.length ? [] : []);   // yard lines and return yards aren't the punt
+    const after = (muffP ? muffP.before : rest.filter(isNum)).filter(t => {
+      const k = skip.indexOf(+t); if (k < 0) return true; skip.splice(k, 1); return false;
+    });
+    const sp = rest.map(spotOf).find(Boolean);   // "punt to I25" or a distance
     if (sp) p.d = Math.max(0, (FL - toR(sp)) - st.spot);
+    else if (bareN != null) p.d = Math.max(0, (FL - bareN) - st.spot);   // caught at their 30
     else if (after[0] != null) p.d = Math.abs(+after[0]);
     else if (start && retYds != null){
       // "5 punt 15 return 5 ball at SOU35": the ball was fielded retYds short of where the drive starts,
@@ -352,7 +375,7 @@ function parseQuick(raw, st){
       p.d = d;
     }
     else if (start && retYds == null && !retEnd) p.d = Math.max(0, (FL - toR(start)) - st.spot);   // no return
-    const nx = sp ? after : after.slice(1);                  // the older "19-punt-40-11-6" form
+    const nx = sp || bareN != null ? after : after.slice(1);  // the older "19-punt-40-11-6" form
     const landR = p.d != null ? FL - (st.spot + p.d) : null;  // where the receiving team fielded it
     if (muffP){ p.res = 'muff'; if (muffP.by != null) p.by = muffP.by; if (muffP.ret != null) p.ret = muffP.ret; }
     else if (has('fc')){ p.res = 'fc'; const r = retNo ?? nx[0]; if (r != null) p.ret = r; }
@@ -361,6 +384,9 @@ function parseQuick(raw, st){
     else {
       if (retEnd && landR != null) retYds = toR(retEnd) - landR;
       if (start && landR != null && retYds == null){ const r = toR(start) - landR; if (r > 0) retYds = r; }
+      if (retYds == null && ydNums.length) retYds = ydNums[0];
+      // "caught at the 30 and returned to the 38": both are the receiving team's, so the return is the gap.
+      if (retYds == null && bare.length > 1) retYds = bare[1] - bare[0];
       if (retNo == null && nx[0] != null){ retNo = nx[0]; if (retYds == null && nx[1] != null) retYds = Math.abs(+nx[1]); }
       if (retNo != null || retYds != null || ri >= 0){ p.res = 'ret'; if (retNo != null) p.ret = retNo; if (retYds != null) p.ry = retYds; }
       else p.res = 'spot';
@@ -521,7 +547,7 @@ function cheatHtml(a, h){
     [`10-0 fum ${h} rec td`, `Fumble, ${h} recovers and returns it for a touchdown.`],
     [`${a} punt ${h} ball at ${h}25`, `Punt with no return: ${h}'s drive starts at its 25. Or just ${a} punt, then ${h} ball at ${h}25 on the next line.`],
     [`${a} punt to ${h}25-${h}2 return-10`, `Fielded at the ${h} 25, #2 returns it 10. Leave off the yards and type the drive start next (${h} ball at ${h}35); the return fills in.`],
-    ['19-punt-40-11-6', '#19 punts 40, #11 returns it 6. Also punt-tb, punt-fc, punt-oob, punt-blk.'],
+    ['punt-11-at the 30-for 6 &nbsp;·&nbsp; 19-punt-40-11-6', 'Caught at their 30, back 6 — the punt’s own distance works itself out. Or say it the short way: #19 punts 40, #11 returns it 6. Also punt-tb, punt-fc, punt-oob, punt-blk.'],
     [`19 punt 11 return 5 ball at ${h}35`, `Give the return and where the drive starts and the punt's distance is worked out: #19 punts, #11 returns 5, ${h} ball at its 35.`],
     ['15-fg &nbsp;·&nbsp; 15-fg-no', 'Field goal good / no good (distance fills in)'],
     ['15-xp &nbsp;·&nbsp; 15-xp-no', 'Kick after a touchdown. For 2 points: 3 (run) or 7-88 (pass), add -no if it failed'],
