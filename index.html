@@ -5171,7 +5171,10 @@ function scoreCard(x){
   const m = summary(x), T = x.teams, lead = leadOf(m), cur = !m.quick && !!g && x.id === g.id;
   const row = s => `<div class="sc-row${m.fin && lead ? (lead === s ? ' won' : ' lose') : ''}">${markFor(T[s], 20)}<span class="sc-ab">${esc(T[s].abbr || T[s].name)}</span>`
     + `${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}<span class="sc-pts">${m.pre ? '' : m.score[s]}</span><i class="sc-win"></i></div>`;
-  const inner = `<div class="sc-st">${esc(m.status)}${m.men === 8 ? '<span class="sc-8">8-man</span>' : ''}</div>${row('A')}${row('H')}`;
+  // Friday is game night; a final from any other day says which one: "Final - Thurs."
+  const dayName = ['Sun.', 'Mon.', 'Tues.', 'Wed.', 'Thurs.', 'Fri.', 'Sat.'][gameDay(x).getDay()];
+  const status = m.fin && gameDay(x).getDay() !== 5 ? `${m.status} - ${dayName}` : m.status;
+  const inner = `<div class="sc-st">${esc(status)}${m.men === 8 ? '<span class="sc-8">8-man</span>' : ''}</div>${row('A')}${row('H')}`;
   const cls = `sc-game${m.quick ? ' qs' : ''}${cur ? ' cur' : ''}${m.live ? ' live' : ''}`;
   // A game opens once stats are being kept on it; the scorer can always open their own.
   if (!m.quick){
