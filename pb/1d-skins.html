@@ -1,8 +1,8 @@
 <script>
 /* Looks: the site as it is (Original), Liquid Glass, and 8-Bit. A visitor's pick is kept on their own device, and
    ?skin=liquid / ?skin=tecmo / ?skin=original in a link sets it. It's applied here, before the page paints, so there's
-   no flash of the other look. The Game Tracker and embedded pages always stay on the original: one is a tool that has
-   to be read at a glance, the other lives inside someone else's page. */
+   no flash of the other look. The Game Tracker follows the pick like every other page; embedded pages stay on the
+   original, since they live inside someone else's page. */
 (function(){
   var q = new URLSearchParams(location.search), want = q.get('skin'), s = null;
   try {
@@ -10,7 +10,7 @@
     s = localStorage.getItem('kms.skin');
   } catch (e) { s = want; }
   window.KMS_SKIN = s === 'liquid' || s === 'tecmo' ? s : 'original';
-  if (q.has('tracker') || q.has('edit') || q.has('embed') || window.KMS_SKIN === 'original') return;
+  if (q.has('embed') || window.KMS_SKIN === 'original') return;
   document.documentElement.setAttribute('data-skin', window.KMS_SKIN);
   if (window.KMS_SKIN === 'tecmo'){
     var l = document.createElement('link'); l.rel = 'stylesheet';
@@ -135,6 +135,18 @@ html[data-skin="tecmo"] .inp,html[data-skin="tecmo"] select{background:#000000;c
 html[data-skin="tecmo"] a{color:inherit}
 html[data-skin="tecmo"] .tlink{color:#FCFCFC}
 html[data-skin="tecmo"] .tlink:hover{color:#F8B800}
+
+/* 8-Bit on the Game Tracker: the pieces the glass layer paints white */
+html[data-skin="tecmo"] .c-tabs,html[data-skin="tecmo"] .c-pills{background:#000000;border:2px solid #0058F8;border-radius:0;padding:2px}
+html[data-skin="tecmo"] .c-tabs button,html[data-skin="tecmo"] .c-pills button,html[data-skin="tecmo"] .bw{border-radius:0;color:#FCFCFC}
+html[data-skin="tecmo"] .c-tabs button.on,html[data-skin="tecmo"] .c-pills button.on,html[data-skin="tecmo"] .gtab[aria-selected="true"],html[data-skin="tecmo"] .bw.on{
+  background:#F8B800;color:#000000;box-shadow:none;border-radius:0}
+html[data-skin="tecmo"] .gtab{color:#FCFCFC}
+html[data-skin="tecmo"] .qk{background:#000000;color:#FCFCFC;border:4px solid #FCFCFC;border-radius:0;box-shadow:none;font:400 14px/1 var(--pix)}
+html[data-skin="tecmo"] .qk::placeholder{color:#7C7C7C}
+html[data-skin="tecmo"] .qk:focus{background:#000000;border-color:#F8B800;box-shadow:none}
+html[data-skin="tecmo"] dialog{background:#0000BC;color:#FCFCFC;border:4px solid #FCFCFC;border-radius:0;box-shadow:inset 0 0 0 4px #000000,8px 8px 0 0 #1C1C1C}
+html[data-skin="tecmo"] dialog::backdrop{background:rgba(0,0,0,.7)}
 
 /* ---------- the Look picker, at the right end of the dark site bar ---------- */
 .skinpick{margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:8px;font:500 12px/1 var(--sans);color:rgba(255,255,255,.7)}

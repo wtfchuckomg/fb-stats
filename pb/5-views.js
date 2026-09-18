@@ -317,14 +317,12 @@ function editClock(){
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') finish(true); if (e.key === 'Escape') finish(false); });
 }
 
-// The Look picker, up in the site bar for everyone. On the Game Tracker it's there too, but the tracker itself keeps
-// the original look, so it says so.
+// The Look picker, up in the site bar for everyone, the Game Tracker included.
 (function(){
   const box = $('#skinpick'), sel = $('#skinsel'); if (!box || !sel) return;
   const q = new URLSearchParams(location.search);
   if (q.has('embed')) return;
   box.hidden = false; sel.value = window.KMS_SKIN || 'original';
-  if (q.has('tracker') || q.has('edit')) box.title = 'Changes the scoreboards, gamecasts and stats. The Game Tracker keeps its own look.';
   sel.addEventListener('change', () => {
     try { localStorage.setItem('kms.skin', sel.value); } catch (e) {}
     location.reload();
