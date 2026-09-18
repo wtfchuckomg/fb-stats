@@ -317,7 +317,27 @@ function editClock(){
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') finish(true); if (e.key === 'Escape') finish(false); });
 }
 
+// Press and hold a play to edit it straight away — the phone's long-press. A tap still opens the row with its
+// Edit and Delete buttons. The click that follows a hold is swallowed, so the row doesn't open underneath the edit.
+const hold = {t:0, x:0, y:0, row:null, fired:false};
+document.addEventListener('pointerdown', e => {
+  if (ui.viewer || (e.pointerType === 'mouse' && e.button !== 0)) return;
+  const row = e.target.closest && e.target.closest('.pl[data-row]'); if (!row) return;
+  clearTimeout(hold.t); hold.fired = false; hold.row = row; hold.x = e.clientX; hold.y = e.clientY;
+  hold.t = setTimeout(() => {
+    hold.fired = true;
+    const i = +row.dataset.row, p = g && g.plays[i];
+    if (navigator.vibrate) navigator.vibrate(12);
+    if (p && !['endq', 'final', 'to'].includes(p.t)) startEdit(i);
+    else { ui.open = i; ui.confirm = null; renderView(); }       // nothing to edit on these: show Delete instead
+  }, 480);
+});
+const holdOff = () => { clearTimeout(hold.t); hold.row = null; };
+document.addEventListener('pointermove', e => { if (hold.row && Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > 10) holdOff(); });   // a scroll, not a hold
+['pointerup', 'pointercancel'].forEach(k => document.addEventListener(k, holdOff));
+document.addEventListener('contextmenu', e => { if (!ui.viewer && e.target.closest && e.target.closest('.pl[data-row]')) e.preventDefault(); });
 document.addEventListener('click', e => {
+  if (hold.fired){ hold.fired = false; if (e.target.closest && e.target.closest('.pl[data-row]')){ e.preventDefault(); e.stopPropagation(); return; } }
   if (e.target === dlg()){ closeDialog(); return; }
   const t = e.target.closest('button'); if (!t) return;
   const d = t.dataset;

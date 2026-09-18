@@ -735,6 +735,7 @@ input.st-clock{width:72px;text-align:center;border:1px solid var(--line);border-
 .drivehd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 2px;padding:9px 10px;border-radius:8px;background:var(--surface);font-size:13px;color:var(--muted)}
 .drivehd b{font:700 14px/1 var(--cond);text-transform:uppercase;color:var(--ink-2)}
 .drivehd .res{font-weight:600;color:var(--ink-2)}
+body:not(.viewer) .pl{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}   /* press and hold edits a play: no copy menu */
 .pl{display:grid;grid-template-columns:62px minmax(0,1fr);gap:10px;padding:10px 6px;border:0;border-bottom:1px solid var(--line-2);
   background:none;text-align:left;width:100%;font-size:14px;color:var(--ink)}
 .pl:hover,.pl.open{background:var(--surface)}
@@ -3345,7 +3346,27 @@ function editClock(){
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') finish(true); if (e.key === 'Escape') finish(false); });
 }
 
+// Press and hold a play to edit it straight away — the phone's long-press. A tap still opens the row with its
+// Edit and Delete buttons. The click that follows a hold is swallowed, so the row doesn't open underneath the edit.
+const hold = {t:0, x:0, y:0, row:null, fired:false};
+document.addEventListener('pointerdown', e => {
+  if (ui.viewer || (e.pointerType === 'mouse' && e.button !== 0)) return;
+  const row = e.target.closest && e.target.closest('.pl[data-row]'); if (!row) return;
+  clearTimeout(hold.t); hold.fired = false; hold.row = row; hold.x = e.clientX; hold.y = e.clientY;
+  hold.t = setTimeout(() => {
+    hold.fired = true;
+    const i = +row.dataset.row, p = g && g.plays[i];
+    if (navigator.vibrate) navigator.vibrate(12);
+    if (p && !['endq', 'final', 'to'].includes(p.t)) startEdit(i);
+    else { ui.open = i; ui.confirm = null; renderView(); }       // nothing to edit on these: show Delete instead
+  }, 480);
+});
+const holdOff = () => { clearTimeout(hold.t); hold.row = null; };
+document.addEventListener('pointermove', e => { if (hold.row && Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > 10) holdOff(); });   // a scroll, not a hold
+['pointerup', 'pointercancel'].forEach(k => document.addEventListener(k, holdOff));
+document.addEventListener('contextmenu', e => { if (!ui.viewer && e.target.closest && e.target.closest('.pl[data-row]')) e.preventDefault(); });
 document.addEventListener('click', e => {
+  if (hold.fired){ hold.fired = false; if (e.target.closest && e.target.closest('.pl[data-row]')){ e.preventDefault(); e.stopPropagation(); return; } }
   if (e.target === dlg()){ closeDialog(); return; }
   const t = e.target.closest('button'); if (!t) return;
   const d = t.dataset;
