@@ -16,7 +16,7 @@
   if (window.KMS_SKIN === 'liquid-dark') document.documentElement.setAttribute('data-lg', 'dark');
   if (window.KMS_SKIN === 'tecmo'){
     var l = document.createElement('link'); l.rel = 'stylesheet';
-    l.href = 'https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;600;700&display=swap';
+    l.href = 'https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap';
     document.head.appendChild(l);
   }
 })();
@@ -132,8 +132,9 @@ html[data-skin="liquid"][data-lg="dark"] .btn:not(.primary):not(.danger){backgro
 
 /* ======================================================================================
    8-BIT — the Tecmo Super Bowl screens: black ground, blue windows in a white frame, the
-   NES palette, headings in Press Start 2P and everything else in a pixel face that still
-   reads at normal sizes.
+   NES palette, and the game's lettering everywhere: Press Start 2P, in capitals, the NES
+   font's closest cousin. font-size-adjust scales it so its capitals stand as tall as the
+   regular capitals would, which keeps every page's layout where it was.
    ====================================================================================== */
 html[data-skin="tecmo"]{
   --page:#000000; --card:#0000BC; --ground:#0000BC; --surface:#0000A8; --surface-2:#000000;
@@ -144,10 +145,17 @@ html[data-skin="tecmo"]{
   --fld-a:#00A800; --fld-b:#008800; --fld-line:#FCFCFC; --fld-num:#FCFCFC;
   --shadow:none; --shadow-sm:none;
   --pix:"Press Start 2P","Courier New",ui-monospace,monospace;
-  --sans:"Pixelify Sans","Courier New",ui-monospace,monospace; --cond:"Pixelify Sans","Courier New",monospace;
+  --sans:"Press Start 2P","Courier New",ui-monospace,monospace; --cond:"Press Start 2P","Courier New",ui-monospace,monospace;
   color-scheme:dark;
 }
-html[data-skin="tecmo"] body{background:#000000;color:var(--ink);-webkit-font-smoothing:none;font-smooth:never}
+html[data-skin="tecmo"] body{background:#000000;color:var(--ink);-webkit-font-smoothing:none;font-smooth:never;
+  text-transform:uppercase;letter-spacing:0;font-synthesis:none;font-size-adjust:cap-height .8;line-height:1.6}
+html[data-skin="tecmo"] input,html[data-skin="tecmo"] textarea{text-transform:none}
+/* the pieces below are sized for the font as it comes, so they skip the scaling */
+html[data-skin="tecmo"] h1,html[data-skin="tecmo"] h2,html[data-skin="tecmo"] h3,html[data-skin="tecmo"] .card-title,html[data-skin="tecmo"] .pg-h,
+html[data-skin="tecmo"] .eyebrow,html[data-skin="tecmo"] .bl-hd,html[data-skin="tecmo"] .gtab,html[data-skin="tecmo"] .ctbl th,html[data-skin="tecmo"] .b-st,
+html[data-skin="tecmo"] .sc-st,html[data-skin="tecmo"] .navlink,html[data-skin="tecmo"] .sitelink,html[data-skin="tecmo"] .navmenu a,html[data-skin="tecmo"] .abtn,
+html[data-skin="tecmo"] .bbtn,html[data-skin="tecmo"] .btn.primary,html[data-skin="tecmo"] .qk,html[data-skin="tecmo"] .skinpick,html[data-skin="tecmo"] .skinpick select{font-size-adjust:none}
 html[data-skin="tecmo"] body::before{display:none}
 html[data-skin="tecmo"] img{image-rendering:pixelated}
 /* every logo gets a white outline that follows its shape, so dark logos still stand out on the blue */
