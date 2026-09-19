@@ -256,3 +256,38 @@ const STATS_2025 = [
   {"name":"Zander Ford","team":"Rose Hill","yr":"JR","pc":30,"pa":75,"py":531,"ptd":6,"pint":4,"ru":34,"ry":113,"rtd":2,"re":0,"rey":0,"retd":0},
   {"name":"Elias Hernandez","team":"Rose Hill","yr":"SO","pc":0,"pa":0,"py":0,"ptd":0,"pint":0,"ru":12,"ry":34,"rtd":0,"re":0,"rey":0,"retd":0}
 ];
+
+/* Names for jersey numbers a game's own roster doesn't have. A scorer may start a game with half a roster; the
+   fuller one saved later for the school (on its page or in Setup) names the rest, for display only: nothing is
+   written back to the game. Pages that already watch the shared rosters use them; a viewer's page asks for
+   just that school's copies, and only when a game shows a number with no name. */
+const rosterFill = {};
+function fillName(teamName, n, s){
+  const k = teamName && canonSchool(teamName); if (!k || n == null || n === '' || n === 'team') return '';
+  if (sharedRosters.list){ const b = bestRoster(teamName); return b ? rosterGet(b.roster, n, s) || '' : ''; }
+  if (!ui.viewer) return '';
+  if (!(k in rosterFill)) loadFillRoster(teamName);
+  return rosterFill[k] ? rosterGet(rosterFill[k], n, s) || '' : '';
+}
+async function loadFillRoster(name){
+  const k = canonSchool(name); rosterFill[k] = null;
+  try {
+    const {fsM, fsdb} = await viewerApi();
+    const snap = await fsM.getDocs(fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true),
+      fsM.where('kind', '==', 'roster'), fsM.where('title', '==', `${name} roster`)));
+    let best = null;
+    snap.forEach(d => {
+      const v = d.data(); if (v.deleted || !v.json) return;
+      try { const r = JSON.parse(v.json), c = Object.keys(r.roster || {}).length;
+        if (c && (!best || c > best.c || (c === best.c && (r.updated || 0) > best.u))) best = {roster:r.roster, c, u:r.updated || 0}; } catch (e) {}
+    });
+    if (!best) return;
+    rosterFill[k] = best.roster;
+    clearTimeout(loadFillRoster.t); loadFillRoster.t = setTimeout(rosterFilled, 50);
+  } catch (e) {}
+}
+function rosterFilled(){
+  if (ui.county) return renderCounty();
+  if (g && ui.viewer) refresh();
+  if (ui.board) renderScoreboard();
+}

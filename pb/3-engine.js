@@ -115,7 +115,7 @@ function replay(g, upto = g.plays.length){
   const nm = (s, n) => {
     if (n === '' || n == null) return ab(s);
     if (n === 'team') return 'TEAM';
-    const who = playerName(rosterGet(T[s].roster, n, s)) || playerName(rosterGet(T[s].roster, worn(s, n), s));
+    const who = playerName(rosterGet(T[s].roster, n, s)) || playerName(rosterGet(T[s].roster, worn(s, n), s)) || playerName(fillName(T[s].name, worn(s, n), s));
     return who ? `#${n} ${who.split(' ').slice(-1)[0]}` : `#${n}`;
   };
   const yl = (s, pos) => { pos = clamp(pos, 0, FL); if (pos === HALF) return String(HALF);

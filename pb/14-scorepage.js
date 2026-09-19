@@ -57,7 +57,7 @@ async function startScoreboard(){
 function leaderName(x, s, n){
   if (n === 'team') return 'TEAM';
   // A box score's players are keyed by name and have no number.
-  const num = /^\d+$/.test(n), full = playerName(rosterGet(x.teams[s].roster, n, s) || (num ? '' : n));
+  const num = /^\d+$/.test(n), full = playerName(rosterGet(x.teams[s].roster, n, s) || (num ? fillName(x.teams[s].name, n, s) : n));
   if (!full) return `#${n}`;
   const p = full.split(/\s+/);
   return `${p.length > 1 ? `${p[0][0]}. ${p.slice(1).join(' ')}` : full}${num ? ` #${n}` : ''}`;

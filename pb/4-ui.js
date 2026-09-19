@@ -10,7 +10,7 @@ const ui = {type:null, draft:null, editing:null, ctx:null, tab:'gamecast', pbp:n
   qtext:'', qedit:false, cheat:false};
 
 const ab = s => g.teams[s].abbr || s;
-const rosterName = (s, n) => playerName(rosterGet(g.teams[s].roster, n, s));
+const rosterName = (s, n) => playerName(rosterGet(g.teams[s].roster, n, s)) || playerName(fillName(g.teams[s].name, n, s));
 const mmss = s => { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 const perShort = q => q <= 4 ? ord(q) : `OT${q - 4 > 1 ? q - 4 : ''}`;
 const perLabel = q => q <= 4 ? `${ord(q)} Qtr` : `OT${q - 4 > 1 ? ' ' + (q - 4) : ''}`;
