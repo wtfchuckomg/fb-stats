@@ -931,6 +931,7 @@ dialog.fallback[open]{display:block;position:fixed;top:50%;left:50%;transform:tr
 .dlg-hd h2{margin:0;font:700 19px/1 var(--cond);text-transform:uppercase;color:var(--ink-2)}
 .dlg-bd{padding:14px 16px;display:flex;flex-direction:column;gap:14px}
 .dlg-ft{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--line-2)}
+.dlg-ft.top{border-top:0;border-bottom:1px solid var(--line-2)}
 /* the school picker: type to find a school, or add one */
 .sch-pick{position:relative}
 .inp.sch-in{font:500 16px/1 var(--sans)}
@@ -3619,9 +3620,10 @@ function dlgGames(){
     return `<div class="gitem"><div><b>${esc(x.teams.A.abbr)} ${r.st.score.A} at ${esc(x.teams.H.abbr)} ${r.st.score.H}</b>${x.id === g.id ? '<span class="cur-tag">Open</span>' : ''}${x.sample ? '<span class="cur-tag" style="color:var(--flag-ink)">Sample</span>' : ''}${x.foreign ? '<span class="cur-tag" style="color:var(--flag-ink)">Someone else’s</span>' : ''}
       <div class="meta">${esc(x.teams.A.name)} at ${esc(x.teams.H.name)} · ${rulesOf(x).men === 8 ? '8-man · ' : ''}${gameDay(x).toLocaleDateString()} · ${r.st.final ? 'Final' : perLabel(r.st.q)} · ${x.box ? 'box score' : `${x.plays.length} plays`}</div></div>
       <div class="acts">${x.id !== g.id ? `<button class="btn small" data-open-game="${x.id}">Open</button>` : ''}<button class="btn small danger" data-del-game="${x.id}">${ui.confirm === 'g:' + x.id ? 'Tap again' : 'Delete'}</button></div></div>`; }).join('');
-  return `${dlgHead('Games')}<div class="dlg-bd">${syncBlock()}<div class="grp"><h3>Games</h3><div class="glist">${items}</div></div>
-    <p class="hint">Every game is saved in this browser${sync.user ? ' and to your Google account' : ''}. Export makes a backup you can keep anywhere.</p></div>
-    <div class="dlg-ft"><button class="btn" data-open="export" style="margin-right:auto">Export</button><button class="btn" data-box-new>Paste a box score</button><button class="btn primary" data-open="new">New game</button></div>`;
+  // The buttons sit at the top, under the title, so New game is there without scrolling past every saved game.
+  return `${dlgHead('Games')}<div class="dlg-ft top"><button class="btn" data-open="export" style="margin-right:auto">Export</button><button class="btn" data-box-new>Paste a box score</button><button class="btn primary" data-open="new">New game</button></div>
+    <div class="dlg-bd">${syncBlock()}<div class="grp"><h3>Games</h3><div class="glist">${items}</div></div>
+    <p class="hint">Every game is saved in this browser${sync.user ? ' and to your Google account' : ''}. Export makes a backup you can keep anywhere.</p></div>`;
 }
 // The live look-in: a link anyone can open to watch this game, read-only.
 function dlgShare(){
