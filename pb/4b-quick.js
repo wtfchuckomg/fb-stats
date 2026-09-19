@@ -58,7 +58,7 @@ function plainWords(line){
     .sort((x, y) => y[0].length - x[0].length)
     .forEach(([name, ab]) => { if (name && ab && name !== ab) s = s.replace(new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g'), ` ${ab} `); });
   PEN_PHRASES.forEach(([re, code]) => { s = s.replace(re, ` ${code} `); });
-  const who = '(?:([a-z]+)\\s+)?', num = '(\\d+)';                // an optional team word, then a player number
+  const who = '(?:([a-z]+)\\s*)?', num = '(\\d+)';                // an optional team word ("r0" or "r 0"), then a player number
   const keep = w => w && !team(w) ? w + ' ' : '';                  // a word that wasn't a team stays
   const two = (w1, n1, w2, n2) => `${keep(w1)}@${n1}${n2 ? ` ${keep(w2)}@${n2}` : ''}`;
   s = s
@@ -531,6 +531,8 @@ function parseQuick(raw, st){
   }
   if (has('inc', 'incomplete', 'incomp')) return flag({t:'pass', qb:nums[0], res:'i', ...(nums[1] != null ? {to:nums[1]} : {}), ...(tk[0] ? {pbu:tk[0]} : {})});
   if (has('int', 'pick', 'picked', 'intercepted')){
+    // Two bare numbers after the man who picked it: yard lines or yards? Don't guess.
+    if (nums.length > 3) return bad(`Name the yard lines with a team: ${nums[0]}-int-${nums[1]}-${L(D)}30-${L(D)}45 is picked at the ${L(D)} 30 and returned to the ${L(D)} 45.`);
     const p = {t:'pass', qb:nums[0], res:'x', at:0, ry:nums[2] != null ? Math.abs(+nums[2]) : 0};
     if (nums[1] != null) p.ib = nums[1];
     // "2-int-2-S10": where it was picked off ("ez" = in the end zone); a second yard line is where the return ended.
