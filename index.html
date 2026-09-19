@@ -1664,6 +1664,15 @@ function applyLines(L, st){
   st.typed = true;   // show these numbers as typed, even in a quarter the clock hasn't reached
 }
 
+// No half yards anywhere: a ½ saved in a play (typed "1.5", or worked out from a ½-yard spot before the whole-yard
+// rule) rounds up to the next yard when the game is replayed.
+const upYd = v => v == null || v === '' || !isFinite(+v) || Number.isInteger(+v) ? v : Math.ceil(+v);
+function wholeYards(p){
+  const fix = (o, ks) => { if (!o || !ks.some(k => upYd(o[k]) !== o[k])) return o; const c = {...o}; ks.forEach(k => { c[k] = upYd(c[k]); }); return c; };
+  let q = fix(p, ['y', 'd', 'ry', 'sy', 'at', 'spot']);
+  ['fum', 'lat', 'pen'].forEach(k => { const v = q[k] && fix(q[k], ['y', 'ry', 'foul', 'ball']); if (q[k] && v !== q[k]) q = {...q, [k]:v}; });
+  return q;
+}
 function replay(g, upto = g.plays.length){
   const RU = rulesOf(g), FL = RU.len, HALF = FL / 2;
   const T = g.teams, qSec = (g.set.qtr || 12) * 60, otSpot = FL - RU.ot;
@@ -1846,8 +1855,8 @@ function replay(g, upto = g.plays.length){
     let y = +pen.y || 0;
     const base = st.phase === 'kick' ? 'kickFrom' : 'spot';
     // A spot foul: marched off from where the foul happened, or straight to where the ref put the ball.
-    if (st.phase === 'play' && pen.ball != null){ st[base] = clamp(+pen.ball, .5, (FL - .5)); return y; }
-    if (st.phase === 'play' && pen.foul != null) st[base] = clamp(+pen.foul, .5, (FL - .5));
+    if (st.phase === 'play' && pen.ball != null){ st[base] = clamp(+pen.ball, 1, (FL - 1)); return y; }
+    if (st.phase === 'play' && pen.foul != null) st[base] = clamp(+pen.foul, 1, (FL - 1));
     const room = off ? st[base] : FL - st[base];
     // Half the distance to the offender's goal, in whole yards: a foul on the 9 goes to the 4 (never onto the goal line).
     if (y > room / 2) y = room - (room >= 2 ? Math.max(1, Math.floor(room / 2)) : room);
@@ -1859,8 +1868,8 @@ function replay(g, upto = g.plays.length){
     // Where it's marched off from: the line of scrimmage, or the foul's own spot on a spot foul. Told the
     // ball spot instead, the foul is however many yards back the other way.
     const from = st.phase === 'kick' ? st.kickFrom
-      : pen.foul != null ? clamp(+pen.foul, .5, (FL - .5))
-      : pen.ball != null ? clamp(+pen.ball + (offFoul ? (+pen.y || 0) : -(+pen.y || 0)), .5, (FL - .5))
+      : pen.foul != null ? clamp(+pen.foul, 1, (FL - 1))
+      : pen.ball != null ? clamp(+pen.ball + (offFoul ? (+pen.y || 0) : -(+pen.y || 0)), 1, (FL - 1))
       : st.spot;
     const full = +pen.y || 0, y = enforce(pen);
     S.team[side].pen++; S.team[side].penY += y;
@@ -2179,7 +2188,7 @@ function replay(g, upto = g.plays.length){
       case 'note': tags.push(['info', 'Note']); return p.text || '';
       case 'set': {   // "N ball at N35 1-10": the scorer states the situation outright
         if (st.drive && st.drive.team !== p.poss) closeDrive();
-        st.poss = p.poss; st.spot = clamp(+p.spot, 0.5, (FL - .5)); st.down = clamp(+p.down || 1, 1, 4);
+        st.poss = p.poss; st.spot = clamp(+p.spot, 1, (FL - 1)); st.down = clamp(+p.down || 1, 1, 4);
         st.ltg = p.goal ? FL : Math.min(FL, st.spot + (+p.togo || 10)); st.phase = 'play'; st.fresh = true;
         if (st.ot) st.ot.cur = p.poss;
         tags.push(['info', 'Spot']);
@@ -2217,17 +2226,17 @@ function replay(g, upto = g.plays.length){
   }
 
   for (let i = 0; i < upto && i < g.plays.length; i++){
-    let p = g.plays[i];
+    let p = wholeYards(g.plays[i]);
     // A punt typed without a distance takes it from the spot typed next ("S ball at S10").
     if (p.t === 'punt' && p.d == null && p.res !== 'tb' && p.res !== 'blk' && st.phase === 'play'){
       const nx = g.plays[i + 1];
-      if (nx && nx.t === 'set' && nx.poss === other(st.poss)) p = {...p, d:Math.max(0, FL - nx.spot - st.spot + (+p.ry || 0))};
+      if (nx && nx.t === 'set' && nx.poss === other(st.poss)) p = {...p, d:Math.max(0, FL - upYd(nx.spot) - st.spot + (+p.ry || 0))};
     }
     // "punt to I25" then "I ball at I35": the difference is the return.
     else if (p.t === 'punt' && p.d != null && (p.res === 'spot' || (p.res === 'ret' && p.ry == null)) && st.phase === 'play'){
       const nx = g.plays[i + 1];
       if (nx && nx.t === 'set' && nx.poss === other(st.poss)){
-        const ry = nx.spot - (FL - (st.spot + p.d));
+        const ry = upYd(nx.spot) - (FL - (st.spot + p.d));
         if (ry > 0) p = {...p, res:'ret', ry};
       }
     }
