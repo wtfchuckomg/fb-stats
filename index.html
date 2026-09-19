@@ -5249,9 +5249,20 @@ function weekGames(key, withHidden, withOpp){
   // A game someone is keeping stats on takes the place of its schedule entry or quick score.
   Object.entries(out).forEach(([id, x]) => { const f = kpFill(x); if (f !== x) out[id] = f; });
   const pair = x => [x.teams.A.name, x.teams.H.name].map(canonSchool).sort().join('|');
-  // (A hidden game doesn't take its schedule entry's place.)
-  const statted = new Set(Object.values(out).filter(x => x.kind !== 'score' && !isHidden(x)).map(pair));
-  Object.values(out).forEach(x => { if ((x.kind === 'score' && statted.has(pair(x))) || (!withHidden && isHidden(x))) delete out[x.id]; });
+  // One card per matchup. A gamecast with plays in it wins (two of them: the one with more plays, then the
+  // newer one); a gamecast nobody has entered plays in doesn't hide a typed-in score. A hidden game takes no part.
+  const plays = x => x.kind === 'score' ? -1 : (x.plays && x.plays.length) || (x.box ? 1 : 0);
+  const byPair = new Map();
+  Object.values(out).forEach(x => { if (isHidden(x)) return; const k = pair(x); (byPair.get(k) || byPair.set(k, []).get(k)).push(x); });
+  byPair.forEach(xs => {
+    if (xs.length < 2) return;
+    const best = xs.filter(x => plays(x) > 0).sort((a, b) => plays(b) - plays(a) || (b.updated || 0) - (a.updated || 0))[0];
+    const hasScore = xs.some(x => x.kind === 'score');
+    xs.forEach(x => {
+      if (best ? x !== best : hasScore && x.kind !== 'score') delete out[x.id];
+    });
+  });
+  if (!withHidden) Object.values(out).forEach(x => { if (isHidden(x)) delete out[x.id]; });
   return Object.values(out).sort((a, b) => gameDay(a) - gameDay(b) || (a.created || 0) - (b.created || 0));
 }
 // Every week of this season, plus any week this device has a game or score in.
