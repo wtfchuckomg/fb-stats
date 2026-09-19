@@ -8319,9 +8319,13 @@ function rosterFromGames(name){
 // Put a saved roster up for everyone (only when signed in, and only a real school with players on it).
 function shareRoster(t){
   if (!sync.user || !sync.api || !t || !t.name || DEFAULT_TEAM_NAMES.includes(teamKey(t.name))) return;
-  const n = Object.keys(t.roster || {}).length; if (!n) return;
-  const {fsM, fsdb} = sync.api, r = {name:t.name, roster:t.roster, count:n, updated:Date.now()};
-  fsM.setDoc(fsM.doc(fsdb, 'pressbox', `roster-${teamKey(t.name)}-${sync.user.uid}`),
+  if (!Object.keys(t.roster || {}).length || !sharedRosters.list) return;   // (not before the saved copies are in)
+  // Adds to your copy, never shrinks it: a game set up with half a roster mustn't wipe out the full one saved
+  // for the school (a roster is cut down only on the school's own page).
+  const id = `roster-${teamKey(t.name)}-${sync.user.uid}`, mine = (sharedRosters.list || []).find(r => r.id === id);
+  const roster = Object.assign({}, mine && mine.roster, t.roster), n = Object.keys(roster).length;
+  const {fsM, fsdb} = sync.api, r = {name:t.name, roster, count:n, updated:Date.now()};
+  fsM.setDoc(fsM.doc(fsdb, 'pressbox', id),
     {owner:sync.user.uid, updated:r.updated, public:true, kind:'roster', title:`${t.name} roster`, json:JSON.stringify(r)}).catch(() => {});
 }
 // The line under a roster box in Setup: up to three others' copies, each with Use it.
