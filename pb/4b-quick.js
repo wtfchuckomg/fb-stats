@@ -99,7 +99,8 @@ function plainWords(line){
 function parseQuick(raw, st){
   const line = String(raw || '').trim(); if (!line) return null;
   // "team" (or "tm") stands in for a player number: kneel-downs, snaps over the punter's head.
-  let toks = tokenize(plainWords(line)).map(t => TD_WORDS.includes(t) ? 'td' : t === 'tm' ? 'team' : t);
+  // A sentence's full stop after a number ("returned 5. pen …") isn't part of it.
+  let toks = tokenize(plainWords(line.replace(/(\d)\.(?=\s|$)/g, '$1'))).map(t => TD_WORDS.includes(t) ? 'td' : t === 'tm' ? 'team' : t);
   const {map, key} = quickTeams();
   const T = t => map[t], L = s => key[s].toUpperCase();
   // "N8 runs for 9", "aug8-9": a line that starts with a team stuck to a number is that team's player, not a yard line.
@@ -177,6 +178,8 @@ function parseQuick(raw, st){
   const pi = toks.findIndex(t => ['pen', 'penalty', 'flag'].includes(t));
   if (pi >= 0){
     const pt = toks.slice(pi + 1); toks = toks.slice(0, pi);
+    // "r pen 10": the team can come just before the word too.
+    if (toks.length && T(toks[toks.length - 1])) pt.unshift(toks.pop());
     const side = pt.map(T).find(Boolean);
     if (!side) return bad(`Which team? Like pen ${L('A')} 5 or pen ${L('H')} 15.`);
     const code = pt.find(t => PEN_CODES[t]);
@@ -187,11 +190,13 @@ function parseQuick(raw, st){
     const spotAfter = words => {
       const at = pt.findIndex(t => words.includes(t)); if (at < 0) return null;
       const tail = pt.slice(at + 1), s = tail.map(spotOf).find(Boolean);
-      if (s) return {pos:s.side === st.poss ? s.n : FL - s.n, raw:s.n};
+      if (s) return {pos:s.side === st.poss ? s.n : FL - s.n, raw:s.n, side:s.side};
       const n = tail.find(t => isNum(t) && +t >= 0 && +t <= FL);
       return n == null ? null : {pos:near(+n), raw:+n};
     };
-    const foulAt = pt.includes('foul') ? spotAfter(['foul']) : null;
+    // "pen r 10 at r28" with neither word: a yard line named with a team is where the foul was.
+    const foulAt = pt.includes('foul') ? spotAfter(['foul'])
+      : !pt.some(t => ['spot', 'ballspot', 'ball'].includes(t)) && pt.includes('at') && (spotAfter(['at']) || {}).side ? spotAfter(['at']) : null;
     const ballAt = foulAt ? null : spotAfter(['spot', 'ballspot', 'ball']);
     const said = foulAt || ballAt;
     const nums = pt.filter(isNum).map(x => Math.abs(+x));
@@ -201,16 +206,30 @@ function parseQuick(raw, st){
     pen = {side, name:preset ? preset.name : 'Penalty', y, a:preset ? preset.a : false, l:preset ? preset.l : false};
     if (nums[1] != null) pen.n = String(nums[1]);
     if (foulAt) pen.foul = foulAt.pos; else if (ballAt) pen.ball = ballAt.pos;
+    if (said && said.side) pen.at = {side:said.side, n:said.raw};   // re-read once we know who has the ball after the play
     if (pt.some(t => ['1st', 'auto', 'af'].includes(t))) pen.a = true;
     if (pt.includes('lod')) pen.l = true;
     const offset = pt.some(t => ['offset', 'offsetting', 'offsets'].includes(t));
     const declined = pt.some(t => ['dec', 'declined'].includes(t));
-    if (!toks.length) return ok({t:'pen', pen:{...pen, enf:offset ? 'off' : declined ? 'dec' : 'acc'}});
+    if (!toks.length){ delete pen.at; return ok({t:'pen', pen:{...pen, enf:offset ? 'off' : declined ? 'dec' : 'acc'}}); }
     pen.enf = offset ? 'off' : pt.some(t => ['np', 'noplay', 'nullified', 'replay'].includes(t)) ? 'prev'
       : declined ? 'dec' : 'end';
   }
   let fumErr = null;                       // set when a fumble's "ball on" spot can't be right
-  const flag = p => { if (fumErr) return bad(fumErr); if (pen) p.pen = pen; return ok(p); };
+  const flag = p => {
+    if (fumErr) return bad(fumErr);
+    if (pen){
+      // The flag's yard line counts from whoever has the ball once the play is over: the receiving team after a
+      // kick, the defense after a pick or a lost fumble (and back again if the returner fumbles it away).
+      if (pen.at){
+        const kick = p.t === 'ko' || p.t === 'punt', flips = (kick && p.res !== 'muff') || (p.t === 'pass' && p.res === 'x');
+        const after = flips !== !!(p.fum && p.fum.lost) ? D : O, pos = pen.at.side === after ? pen.at.n : FL - pen.at.n;
+        if (pen.foul != null) pen.foul = pos; else if (pen.ball != null) pen.ball = pos;
+      }
+      delete pen.at; p.pen = pen;
+    }
+    return ok(p);
+  };
   // Drop filler words, but never a team letter: for Augusta, "a" is the team, not the article.
   // A kickoff reads its yard lines off the words "caught at the 8 … to the 20", and those words are filler
   // everywhere else, so keep a copy of the line before they go.
