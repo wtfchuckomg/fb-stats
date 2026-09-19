@@ -132,6 +132,7 @@ function playsList(oldFirst = false){
     if (open){
       const editable = !['endq', 'final', 'to'].includes(e.t);
       h += `<div class="pl-act">${editable ? `<button class="btn small" data-edit="${e.i}">Edit</button>` : ''}
+        <button class="btn small" data-ins="${e.i}">Add a play before</button>
         <button class="btn small danger" data-del="${e.i}">${ui.confirm === e.i ? 'Tap again to delete' : 'Delete'}</button>
         <button class="linkbtn" data-row="${e.i}">Close</button></div>`;
     }

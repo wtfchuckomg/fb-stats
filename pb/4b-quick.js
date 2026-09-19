@@ -608,7 +608,7 @@ function quickHtml(){
       aria-label="Type the play" placeholder="3-10 · 7-88-5 · ${esc(String(g.teams.A.abbr || a).toLowerCase())} 15 runs for 15" value="${esc(ui.qtext || '')}">
     <div class="qkeys">${keys.map(k => `<button type="button" class="qkey" data-qkey="${esc(k)}">${esc(k)}</button>`).join('')}</div>
     <div class="qprev" id="qprev" aria-live="polite"></div>
-    <div class="actions"><button class="btn primary" id="qrec">${editing ? 'Save changes' : 'Record'}</button>
+    <div class="actions"><button class="btn primary" id="qrec">${ui.ins ? 'Add play' : editing ? 'Save changes' : 'Record'}</button>
       ${editing ? '<button class="btn" data-cancel-edit>Cancel</button>' : `<button class="btn" data-undo ${g.plays.length ? '' : 'disabled'}>Undo last</button>`}</div>
     <p class="hint"><b>${a}</b> = ${esc(g.teams.A.name)} · <b>${h}</b> = ${esc(g.teams.H.name)} · Enter records the play</p>
     <details class="cheat" ${ui.cheat ? 'open' : ''}><summary>Shorthand</summary>${cheatHtml(a, h)}</details>
@@ -658,6 +658,11 @@ function recordQuick(){
   ui.qtext = '';
   if (r.undo){ undo(); return focusQuick(); }
   const p = JSON.parse(JSON.stringify(r.play));
+  if (ui.editing != null && ui.ins){
+    if (p.clk == null) p.clk = insClock(ui.editing);
+    g.plays.splice(ui.editing, 0, p); ui.editing = null; ui.ins = false; ui.open = null;
+    save(); refresh(); return toast('Play added');
+  }
   if (ui.editing != null){
     const old = g.plays[ui.editing];
     if (p.clk == null && old.clk != null) p.clk = old.clk;

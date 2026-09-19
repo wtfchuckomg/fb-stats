@@ -2682,7 +2682,7 @@ function renderPad(){
   if (g.box){ $('#pad').innerHTML = boxPad(); return; }   // entered from a box score: nothing to record
   const ctx = ui.ctx, st = ctx.st, pad = $('#pad');
   // While editing, the pad stays on that play's type even if earlier edits changed the situation.
-  const types = ui.editing != null ? [ui.type] : typesFor(st);
+  const types = ui.editing != null && !ui.ins ? [ui.type] : typesFor(st);
   if (!types.length){
     pad.innerHTML = `<div class="final-card"><span class="eyebrow">Final</span><b class="num">${esc(ab('A'))} ${st.score.A} · ${esc(ab('H'))} ${st.score.H}</b>
       <p class="hint">Everything is saved on this device. Export has the box score and play-by-play to copy.</p>
@@ -2690,10 +2690,11 @@ function renderPad(){
     return;
   }
   const editing0 = ui.editing != null;
-  if (editing0 ? ui.qedit : ui.mode === 'quick'){
-    pad.innerHTML = `${editing0 ? `<div class="editing-bar"><span>Editing play ${ui.editing + 1}. Everything after it updates.</span><button class="linkbtn" data-cancel-edit>Cancel</button></div>` : ''}
+  const bar = !editing0 ? '' : `<div class="editing-bar"><span>${ui.ins ? `Adding a missed play before play ${ui.editing + 1}` : `Editing play ${ui.editing + 1}`}. Everything after it updates.</span><button class="linkbtn" data-cancel-edit>Cancel</button></div>`;
+  if (editing0 && !ui.ins ? ui.qedit : ui.mode === 'quick'){
+    pad.innerHTML = `${bar}
       ${openKickHtml()}<div class="pad-hd"><span class="eyebrow">${editing0 ? 'Situation before this play' : 'Next play'}</span><span class="sit">${esc(ctx.sit)}</span></div>
-      ${quickHtml()}${editing0 ? '' : '<button class="linkbtn" data-mode="form">Use the full form instead</button>'}${periodHtml(st)}`;
+      ${quickHtml()}${editing0 && !ui.ins ? '' : '<button class="linkbtn" data-mode="form">Use the full form instead</button>'}${periodHtml(st)}`;
     return quickPreview();
   }
   if (!types.includes(ui.type)) ui.type = types[0];
@@ -2702,15 +2703,15 @@ function renderPad(){
   const editing = ui.editing != null;
   const noRecord = ui.type === 'to';
   pad.innerHTML = `
-    ${editing ? `<div class="editing-bar"><span>Editing play ${ui.editing + 1}. Everything after it updates.</span><button class="linkbtn" data-cancel-edit>Cancel</button></div>` : ''}
+    ${bar}
     ${openKickHtml()}
     <div class="pad-hd"><span class="eyebrow">${editing ? 'Situation before this play' : 'Next play'}</span><span class="sit">${esc(ctx.sit)}</span></div>
-    <div class="types" role="group" aria-label="Play type">${types.map(t => `<button type="button" class="type" data-type="${t}" aria-pressed="${t === ui.type}" ${editing && t !== ui.type ? 'disabled' : ''}>${label(t)}</button>`).join('')}</div>
+    <div class="types" role="group" aria-label="Play type">${types.map(t => `<button type="button" class="type" data-type="${t}" aria-pressed="${t === ui.type}" ${editing && !ui.ins && t !== ui.type ? 'disabled' : ''}>${label(t)}</button>`).join('')}</div>
     <div class="form">${formHtml()}${editing ? row(fN('clkTxt', 'Clock at the snap', '')) : ''}</div>
     ${noRecord ? '' : '<div class="preview" id="preview"></div>'}
-    ${noRecord ? '' : `<div class="actions"><button class="btn primary" id="rec">${editing ? 'Save changes' : 'Record play'}</button>
+    ${noRecord ? '' : `<div class="actions"><button class="btn primary" id="rec">${ui.ins ? 'Add play' : editing ? 'Save changes' : 'Record play'}</button>
       ${editing ? '<button class="btn" data-cancel-edit>Cancel</button>' : `<button class="btn" data-undo ${g.plays.length ? '' : 'disabled'}>Undo last</button>`}</div>`}
-    ${editing ? '' : '<button class="linkbtn" data-mode="quick">Back to quick entry</button>'}
+    ${editing && !ui.ins ? '' : '<button class="linkbtn" data-mode="quick">Back to quick entry</button>'}
     ${periodHtml(st)}`;
   updatePreview();
 }
@@ -3332,7 +3333,7 @@ function quickHtml(){
       aria-label="Type the play" placeholder="3-10 · 7-88-5 · ${esc(String(g.teams.A.abbr || a).toLowerCase())} 15 runs for 15" value="${esc(ui.qtext || '')}">
     <div class="qkeys">${keys.map(k => `<button type="button" class="qkey" data-qkey="${esc(k)}">${esc(k)}</button>`).join('')}</div>
     <div class="qprev" id="qprev" aria-live="polite"></div>
-    <div class="actions"><button class="btn primary" id="qrec">${editing ? 'Save changes' : 'Record'}</button>
+    <div class="actions"><button class="btn primary" id="qrec">${ui.ins ? 'Add play' : editing ? 'Save changes' : 'Record'}</button>
       ${editing ? '<button class="btn" data-cancel-edit>Cancel</button>' : `<button class="btn" data-undo ${g.plays.length ? '' : 'disabled'}>Undo last</button>`}</div>
     <p class="hint"><b>${a}</b> = ${esc(g.teams.A.name)} · <b>${h}</b> = ${esc(g.teams.H.name)} · Enter records the play</p>
     <details class="cheat" ${ui.cheat ? 'open' : ''}><summary>Shorthand</summary>${cheatHtml(a, h)}</details>
@@ -3382,6 +3383,11 @@ function recordQuick(){
   ui.qtext = '';
   if (r.undo){ undo(); return focusQuick(); }
   const p = JSON.parse(JSON.stringify(r.play));
+  if (ui.editing != null && ui.ins){
+    if (p.clk == null) p.clk = insClock(ui.editing);
+    g.plays.splice(ui.editing, 0, p); ui.editing = null; ui.ins = false; ui.open = null;
+    save(); refresh(); return toast('Play added');
+  }
   if (ui.editing != null){
     const old = g.plays[ui.editing];
     if (p.clk == null && old.clk != null) p.clk = old.clk;
@@ -3671,7 +3677,7 @@ function persist(){ try { localStorage.setItem(STORE, JSON.stringify(db)); } cat
 function save(){ if (!g) return; g.updated = Date.now(); db.games[g.id] = g; db.cur = g.id; persist(); syncPush(g); }
 // Opening a game isn't an edit, so it mustn't look newer than another device's copy.
 function setCurrent(){ if (!g) return; db.games[g.id] = g; db.cur = g.id; persist(); }
-function resetUi(){ Object.assign(ui, {type:null, draft:null, editing:null, ctx:null, open:null, confirm:null, ask:null, qtext:'', qedit:false, start:false}); }
+function resetUi(){ Object.assign(ui, {type:null, draft:null, editing:null, ins:false, ctx:null, open:null, confirm:null, ask:null, qtext:'', qedit:false, start:false}); }
 function refresh(){
   R = replay(g);
   // The game just went final (its last play, or End game): on to the start screen for the next one.
@@ -3689,7 +3695,11 @@ function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add
 /* ---------- actions ---------- */
 function record(){
   const p = buildPlay(ui.draft);
-  if (ui.editing != null){
+  if (ui.editing != null && ui.ins){
+    const c = parseClock(ui.draft.clkTxt || '');
+    p.clk = c != null ? c : insClock(ui.editing);
+    g.plays.splice(ui.editing, 0, p); ui.editing = null; ui.ins = false; ui.open = null; toast('Play added');
+  } else if (ui.editing != null){
     const c = parseClock(ui.draft.clkTxt || ''); if (c != null) p.clk = c;
     g.plays[ui.editing] = p; ui.editing = null; ui.open = null; toast('Play updated');
   } else {
@@ -3708,8 +3718,16 @@ function endq(v, src){
   if (q < 4) g.clk = {s:g.set.qtr * 60, run:false, at:0}; else g.clk.run = false;
   save(); refresh(); toast(q === 4 ? 'End of regulation' : `End of the ${ord(q)} quarter`);
 }
+// A missed play, put in ahead of play i: typed against the situation before i, and everything after replays.
+function startInsert(i){
+  Object.assign(ui, {editing:i, ins:true, ctx:replay(g, i), type:null, draft:null, open:null, confirm:null, qedit:false, qtext:''});
+  renderPad(); renderView(); $('#pad').scrollIntoView({behavior:'smooth', block:'start'});
+  if (ui.mode === 'quick') focusQuick();
+}
+// With no time typed, a play put in later takes the clock of the play before it (the clock isn't known).
+const insClock = i => { for (let k = i - 1; k >= 0; k--) if (g.plays[k].clk != null) return g.plays[k].clk; return undefined; };
 function startEdit(i){
-  const p = g.plays[i]; ui.editing = i; ui.ctx = replay(g, i); ui.type = p.t; ui.open = null;
+  const p = g.plays[i]; ui.editing = i; ui.ins = false; ui.ctx = replay(g, i); ui.type = p.t; ui.open = null;
   // A play typed in shorthand is edited by retyping its line; others use the form.
   ui.qedit = !!p.q; ui.qtext = p.q || ''; ui.draft = p.q ? null : toDraft(p, ui.ctx.st);
   renderPad(); renderView(); $('#pad').scrollIntoView({behavior:'smooth', block:'start'});
@@ -3792,7 +3810,7 @@ document.addEventListener('click', e => {
     $('#s-rulehint').textContent = ruleHint(+d.men); return;
   }
   if ('undo' in d) return undo();
-  if ('cancelEdit' in d){ ui.editing = null; ui.draft = null; ui.type = null; ui.qedit = false; ui.qtext = ''; return refresh(); }
+  if ('cancelEdit' in d){ ui.editing = null; ui.ins = false; ui.draft = null; ui.type = null; ui.qedit = false; ui.qtext = ''; return refresh(); }
   if (d.timeout){
     g.plays.push({t:'to', side:d.timeout, ...(R.st.q <= 4 ? {clk:Math.ceil(clockNow())} : {})});
     g.clk = {s:clockNow(), run:false, at:Date.now()}; ui.type = null; ui.draft = null;
@@ -3808,6 +3826,7 @@ document.addEventListener('click', e => {
   if ('final' in d){ g.plays.push({t:'final'}); g.clk.run = false; ui.ask = null; save(); refresh(); return toast('Game ended'); }
   if (d.row){ const i = +d.row; ui.open = ui.open === i ? null : i; ui.confirm = null; return renderView(); }
   if (d.edit) return startEdit(+d.edit);
+  if (d.ins) return startInsert(+d.ins);
   if (d.del){
     const i = +d.del;
     if (ui.confirm !== i){ ui.confirm = i; return renderView(); }
@@ -4104,6 +4123,7 @@ function playsList(oldFirst = false){
     if (open){
       const editable = !['endq', 'final', 'to'].includes(e.t);
       h += `<div class="pl-act">${editable ? `<button class="btn small" data-edit="${e.i}">Edit</button>` : ''}
+        <button class="btn small" data-ins="${e.i}">Add a play before</button>
         <button class="btn small danger" data-del="${e.i}">${ui.confirm === e.i ? 'Tap again to delete' : 'Delete'}</button>
         <button class="linkbtn" data-row="${e.i}">Close</button></div>`;
     }

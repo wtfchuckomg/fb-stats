@@ -263,7 +263,7 @@ function persist(){ try { localStorage.setItem(STORE, JSON.stringify(db)); } cat
 function save(){ if (!g) return; g.updated = Date.now(); db.games[g.id] = g; db.cur = g.id; persist(); syncPush(g); }
 // Opening a game isn't an edit, so it mustn't look newer than another device's copy.
 function setCurrent(){ if (!g) return; db.games[g.id] = g; db.cur = g.id; persist(); }
-function resetUi(){ Object.assign(ui, {type:null, draft:null, editing:null, ctx:null, open:null, confirm:null, ask:null, qtext:'', qedit:false, start:false}); }
+function resetUi(){ Object.assign(ui, {type:null, draft:null, editing:null, ins:false, ctx:null, open:null, confirm:null, ask:null, qtext:'', qedit:false, start:false}); }
 function refresh(){
   R = replay(g);
   // The game just went final (its last play, or End game): on to the start screen for the next one.
@@ -281,7 +281,11 @@ function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add
 /* ---------- actions ---------- */
 function record(){
   const p = buildPlay(ui.draft);
-  if (ui.editing != null){
+  if (ui.editing != null && ui.ins){
+    const c = parseClock(ui.draft.clkTxt || '');
+    p.clk = c != null ? c : insClock(ui.editing);
+    g.plays.splice(ui.editing, 0, p); ui.editing = null; ui.ins = false; ui.open = null; toast('Play added');
+  } else if (ui.editing != null){
     const c = parseClock(ui.draft.clkTxt || ''); if (c != null) p.clk = c;
     g.plays[ui.editing] = p; ui.editing = null; ui.open = null; toast('Play updated');
   } else {
@@ -300,8 +304,16 @@ function endq(v, src){
   if (q < 4) g.clk = {s:g.set.qtr * 60, run:false, at:0}; else g.clk.run = false;
   save(); refresh(); toast(q === 4 ? 'End of regulation' : `End of the ${ord(q)} quarter`);
 }
+// A missed play, put in ahead of play i: typed against the situation before i, and everything after replays.
+function startInsert(i){
+  Object.assign(ui, {editing:i, ins:true, ctx:replay(g, i), type:null, draft:null, open:null, confirm:null, qedit:false, qtext:''});
+  renderPad(); renderView(); $('#pad').scrollIntoView({behavior:'smooth', block:'start'});
+  if (ui.mode === 'quick') focusQuick();
+}
+// With no time typed, a play put in later takes the clock of the play before it (the clock isn't known).
+const insClock = i => { for (let k = i - 1; k >= 0; k--) if (g.plays[k].clk != null) return g.plays[k].clk; return undefined; };
 function startEdit(i){
-  const p = g.plays[i]; ui.editing = i; ui.ctx = replay(g, i); ui.type = p.t; ui.open = null;
+  const p = g.plays[i]; ui.editing = i; ui.ins = false; ui.ctx = replay(g, i); ui.type = p.t; ui.open = null;
   // A play typed in shorthand is edited by retyping its line; others use the form.
   ui.qedit = !!p.q; ui.qtext = p.q || ''; ui.draft = p.q ? null : toDraft(p, ui.ctx.st);
   renderPad(); renderView(); $('#pad').scrollIntoView({behavior:'smooth', block:'start'});
@@ -384,7 +396,7 @@ document.addEventListener('click', e => {
     $('#s-rulehint').textContent = ruleHint(+d.men); return;
   }
   if ('undo' in d) return undo();
-  if ('cancelEdit' in d){ ui.editing = null; ui.draft = null; ui.type = null; ui.qedit = false; ui.qtext = ''; return refresh(); }
+  if ('cancelEdit' in d){ ui.editing = null; ui.ins = false; ui.draft = null; ui.type = null; ui.qedit = false; ui.qtext = ''; return refresh(); }
   if (d.timeout){
     g.plays.push({t:'to', side:d.timeout, ...(R.st.q <= 4 ? {clk:Math.ceil(clockNow())} : {})});
     g.clk = {s:clockNow(), run:false, at:Date.now()}; ui.type = null; ui.draft = null;
@@ -400,6 +412,7 @@ document.addEventListener('click', e => {
   if ('final' in d){ g.plays.push({t:'final'}); g.clk.run = false; ui.ask = null; save(); refresh(); return toast('Game ended'); }
   if (d.row){ const i = +d.row; ui.open = ui.open === i ? null : i; ui.confirm = null; return renderView(); }
   if (d.edit) return startEdit(+d.edit);
+  if (d.ins) return startInsert(+d.ins);
   if (d.del){
     const i = +d.del;
     if (ui.confirm !== i){ ui.confirm = i; return renderView(); }

@@ -432,7 +432,7 @@ function renderPad(){
   if (g.box){ $('#pad').innerHTML = boxPad(); return; }   // entered from a box score: nothing to record
   const ctx = ui.ctx, st = ctx.st, pad = $('#pad');
   // While editing, the pad stays on that play's type even if earlier edits changed the situation.
-  const types = ui.editing != null ? [ui.type] : typesFor(st);
+  const types = ui.editing != null && !ui.ins ? [ui.type] : typesFor(st);
   if (!types.length){
     pad.innerHTML = `<div class="final-card"><span class="eyebrow">Final</span><b class="num">${esc(ab('A'))} ${st.score.A} · ${esc(ab('H'))} ${st.score.H}</b>
       <p class="hint">Everything is saved on this device. Export has the box score and play-by-play to copy.</p>
@@ -440,10 +440,11 @@ function renderPad(){
     return;
   }
   const editing0 = ui.editing != null;
-  if (editing0 ? ui.qedit : ui.mode === 'quick'){
-    pad.innerHTML = `${editing0 ? `<div class="editing-bar"><span>Editing play ${ui.editing + 1}. Everything after it updates.</span><button class="linkbtn" data-cancel-edit>Cancel</button></div>` : ''}
+  const bar = !editing0 ? '' : `<div class="editing-bar"><span>${ui.ins ? `Adding a missed play before play ${ui.editing + 1}` : `Editing play ${ui.editing + 1}`}. Everything after it updates.</span><button class="linkbtn" data-cancel-edit>Cancel</button></div>`;
+  if (editing0 && !ui.ins ? ui.qedit : ui.mode === 'quick'){
+    pad.innerHTML = `${bar}
       ${openKickHtml()}<div class="pad-hd"><span class="eyebrow">${editing0 ? 'Situation before this play' : 'Next play'}</span><span class="sit">${esc(ctx.sit)}</span></div>
-      ${quickHtml()}${editing0 ? '' : '<button class="linkbtn" data-mode="form">Use the full form instead</button>'}${periodHtml(st)}`;
+      ${quickHtml()}${editing0 && !ui.ins ? '' : '<button class="linkbtn" data-mode="form">Use the full form instead</button>'}${periodHtml(st)}`;
     return quickPreview();
   }
   if (!types.includes(ui.type)) ui.type = types[0];
@@ -452,15 +453,15 @@ function renderPad(){
   const editing = ui.editing != null;
   const noRecord = ui.type === 'to';
   pad.innerHTML = `
-    ${editing ? `<div class="editing-bar"><span>Editing play ${ui.editing + 1}. Everything after it updates.</span><button class="linkbtn" data-cancel-edit>Cancel</button></div>` : ''}
+    ${bar}
     ${openKickHtml()}
     <div class="pad-hd"><span class="eyebrow">${editing ? 'Situation before this play' : 'Next play'}</span><span class="sit">${esc(ctx.sit)}</span></div>
-    <div class="types" role="group" aria-label="Play type">${types.map(t => `<button type="button" class="type" data-type="${t}" aria-pressed="${t === ui.type}" ${editing && t !== ui.type ? 'disabled' : ''}>${label(t)}</button>`).join('')}</div>
+    <div class="types" role="group" aria-label="Play type">${types.map(t => `<button type="button" class="type" data-type="${t}" aria-pressed="${t === ui.type}" ${editing && !ui.ins && t !== ui.type ? 'disabled' : ''}>${label(t)}</button>`).join('')}</div>
     <div class="form">${formHtml()}${editing ? row(fN('clkTxt', 'Clock at the snap', '')) : ''}</div>
     ${noRecord ? '' : '<div class="preview" id="preview"></div>'}
-    ${noRecord ? '' : `<div class="actions"><button class="btn primary" id="rec">${editing ? 'Save changes' : 'Record play'}</button>
+    ${noRecord ? '' : `<div class="actions"><button class="btn primary" id="rec">${ui.ins ? 'Add play' : editing ? 'Save changes' : 'Record play'}</button>
       ${editing ? '<button class="btn" data-cancel-edit>Cancel</button>' : `<button class="btn" data-undo ${g.plays.length ? '' : 'disabled'}>Undo last</button>`}</div>`}
-    ${editing ? '' : '<button class="linkbtn" data-mode="quick">Back to quick entry</button>'}
+    ${editing && !ui.ins ? '' : '<button class="linkbtn" data-mode="quick">Back to quick entry</button>'}
     ${periodHtml(st)}`;
   updatePreview();
 }
