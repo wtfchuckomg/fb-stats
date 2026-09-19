@@ -5721,6 +5721,10 @@ function renderScoreboard(){
       let day = days.find(y => y.k === k); if (!day) days.push(day = {k, d, games:[]});
       day.games.push(x);
     });
+    // Live games first, then finals, then games still to come; a day with a game going on moves to the top.
+    const rank = new Map(games.map(x => { const m = summary(x); return [x, m.live ? 0 : m.fin ? 1 : 2]; }));
+    days.forEach(day => { day.games.sort((a, b) => rank.get(a) - rank.get(b)); day.live = rank.get(day.games[0]) === 0; });
+    days.sort((a, b) => (b.live ? 1 : 0) - (a.live ? 1 : 0));
     body = days.map(day => `<section class="bcard"><h2 class="bday">${esc(day.d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'}))}</h2>
       ${day.games.map(boardGame).join('')}</section>`).join('');
   }
