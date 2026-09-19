@@ -1849,7 +1849,8 @@ function replay(g, upto = g.plays.length){
     if (st.phase === 'play' && pen.ball != null){ st[base] = clamp(+pen.ball, .5, (FL - .5)); return y; }
     if (st.phase === 'play' && pen.foul != null) st[base] = clamp(+pen.foul, .5, (FL - .5));
     const room = off ? st[base] : FL - st[base];
-    if (y > room / 2) y = room / 2;          // half the distance to the offender's goal
+    // Half the distance to the offender's goal, in whole yards: a foul on the 9 goes to the 4 (never onto the goal line).
+    if (y > room / 2) y = room - (room >= 2 ? Math.max(1, Math.floor(room / 2)) : room);
     st[base] += off ? -y : y;
     return y;
   }
