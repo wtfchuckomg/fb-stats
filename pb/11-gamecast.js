@@ -104,8 +104,10 @@ function scoringList(){
 function driveHead(d){
   return `<div class="drivehd">${teamMark(d.team, 22)}<b>${esc(ab(d.team))}</b><span class="res">${esc(d.open ? 'Current drive' : d.res)}</span><span>${driveSum(d)} · ${perLabel(d.q)}</span></div>`;
 }
-// Every play, newest first, grouped by quarter with a header where each drive begins.
-function playsList(){
+// Every play, grouped by quarter with a header where each drive begins. Newest first unless `oldFirst`.
+let pbpSortPick = null; try { pbpSortPick = localStorage.getItem('pressbox.pbpSort'); } catch (e) {}
+const pbpOldFirst = () => (pbpSortPick || (ui.viewer ? 'old' : 'new')) === 'old';
+function playsList(oldFirst = false){
   if (!R.log.length) return '<div class="empty">No plays yet. Record the opening kickoff to start the log.</div>';
   const driveOf = [];
   R.drives.forEach(d => {
@@ -114,7 +116,9 @@ function playsList(){
     for (let i = d.i0; i <= end; i++) driveOf[i] = d;
   });
   let h = '', lastQ = null, lastD = null;
-  for (let k = R.log.length - 1; k >= 0; k--){
+  const n = R.log.length;
+  for (let j = 0; j < n; j++){
+    const k = oldFirst ? j : n - 1 - j;
     const e = R.log[k], open = ui.open === e.i, d = driveOf[e.i] || null;
     if (e.q !== lastQ){ h += `<div class="qhd">${qName(e.q)}</div>`; lastQ = e.q; lastD = null; }
     if (d && d !== lastD) h += driveHead(d);
@@ -295,14 +299,16 @@ function renderRail(){
 function renderView(){
   document.querySelectorAll('#tabs .gtab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
   if (!g || !R) return;
-  const pbpCard = () => `<section class="card"><div class="card-hd"><h2 class="card-title">Play-by-Play</h2></div>${playsList()}</section>`;
+  const pbpCard = () => { const old = pbpOldFirst();
+    return `<section class="card"><div class="card-hd"><h2 class="card-title">Play-by-Play</h2>
+      <div class="segctl" role="group" aria-label="Order"><button type="button" data-pbsort="old" aria-pressed="${old}">First to last</button><button type="button" data-pbsort="new" aria-pressed="${!old}">Most recent</button></div></div>${playsList(old)}</section>`; };
   // A game entered from a box score has no plays: Gamecast and Play-by-Play show its scoring summary.
   const scoringCard = () => `<section class="card"><div class="card-hd"><h2 class="card-title">Scoring Summary</h2></div>${scoringList()}</section>`;
   const V = g.box
     ? (ui.printing ? () => cardLinescore() + scoringCard() + viewBoxTab() + cardCmp(true)
       : ({gamecast:() => cardLinescore() + scoringCard() + viewBoxTab(), box:viewBoxTab, pbp:scoringCard, team:() => cardLinescore() + cardCmp(true)})[ui.tab] || (() => ''))
     : ui.printing ? () => cardLinescore() + viewBoxTab() + cardCmp(true) + cardTeamTable() + pbpCard()
-    : ({gamecast:() => cardDrive() + cardLinescore() + cardPbp(), box:viewBoxTab, pbp:() => cardDriveChart() + pbpCard(),
+    : ({gamecast:() => cardDrive() + cardLinescore() + cardPbp(), box:viewBoxTab, pbp:() => pbpCard() + cardDriveChart(),
         team:() => cardLinescore() + cardCmp(true) + cardTeamTable() + cardDrives()})[ui.tab] || (() => '');
   $('#view').innerHTML = V();
   renderField();

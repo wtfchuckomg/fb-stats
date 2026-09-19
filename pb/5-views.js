@@ -352,7 +352,7 @@ document.addEventListener('click', e => {
   if (e.target === dlg()){ closeDialog(); return; }
   const t = e.target.closest('button'); if (!t) return;
   const d = t.dataset;
-  if (ui.viewer && !d.tab && !d.pbp) return;     // viewers can switch tabs and nothing else
+  if (ui.viewer && !d.tab && !d.pbp && !d.pbsort) return;     // viewers can switch tabs and nothing else
   if ('xlsx' in d) return downloadXlsx();
   if (d.share){
     g.share = d.share === 'on'; save(); refresh(); toast(g.share ? 'Live on the scoreboard' : 'Private: off the scoreboard');
@@ -373,6 +373,7 @@ document.addEventListener('click', e => {
   if ('close' in d) return closeDialog();
   if (d.tab){ ui.tab = d.tab; return renderView(); }
   if (d.pbp){ ui.pbp = d.pbp; return renderView(); }
+  if (d.pbsort){ pbpSortPick = d.pbsort; try { localStorage.setItem('pressbox.pbpSort', d.pbsort); } catch (e) {} return renderView(); }
   if (d.type){ ui.type = d.type; ui.draft = null; return renderPad(); }
   if (d.seg){ setK(ui.draft, d.seg, d.v); return renderPad(); }
   if (d.tog){ setK(ui.draft, d.tog, !getK(ui.draft, d.tog)); return renderPad(); }
