@@ -1866,7 +1866,7 @@ function replay(g, upto = g.plays.length){
     st[base] += off ? -y : y;
     return y;
   }
-  function penalize(pen, seriesNew){
+  function penalize(pen, seriesNew, pre){
     const side = pen.side, offFoul = side === st.poss;
     // Where it's marched off from: the line of scrimmage, or the foul's own spot on a spot foul. Told the
     // ball spot instead, the foul is however many yards back the other way.
@@ -1883,6 +1883,7 @@ function replay(g, upto = g.plays.length){
     if (st.phase !== 'play') return txt + '.';
     txt += `, from the ${yl(st.poss, from)}`;
     if (seriesNew){ newSeries(st.poss, st.spot); return txt + '.'; }
+    if (pre){ st.down = pre.down; st.ltg = pre.ltg; }          // the down is played over
     if (!offFoul && (pen.a || st.spot >= st.ltg)){
       S.team[st.poss].fd++; S.team[st.poss].fdX++;
       newSeries(st.poss, st.spot); tags.push(['fd', '1st down']);
@@ -2223,9 +2224,11 @@ function replay(g, upto = g.plays.length){
       return {text:'No play. ' + penalize(pen, false), wiped};
     }
     st.fresh = false;
-    const beforePoss = st.poss;
+    const beforePoss = st.poss, beforeDown = st.down, beforeLtg = st.ltg;
     let text = core(p);
-    if (pen && pen.enf === 'end') text += ' ' + penalize(pen, st.fresh || st.poss !== beforePoss);
+    // An accepted flag replays the down (unless the ball changed hands, or the penalty itself gives a first down
+    // or takes the down away), so the down and the line to gain go back to what they were before the play.
+    if (pen && pen.enf === 'end') text += ' ' + penalize(pen, st.poss !== beforePoss, {down:beforeDown, ltg:beforeLtg});
     else if (pen && pen.enf === 'dec'){ text += ` Penalty ${ab(pen.side)} ${pen.name}, declined.`; tags.push(['flag', 'Declined']); }
     if (st.drive && st.drive.team === st.poss && st.phase === 'play') st.drive.last = st.spot;
     return {text};
