@@ -1829,13 +1829,15 @@ function replay(g, upto = g.plays.length){
   // Carrier side `cs` loses a fumble at `pos` (cs frame).
   function fumbleLost(cs, cn, pos, f){
     const rs = other(cs);
+    // Recovered somewhere else than where it came loose: "fum rec 6 at B6".
+    if (f.at) pos = clamp(f.at.side === cs ? f.at.n : FL - f.at.n, 0, FL);
     bump(pl(cs, cn), 'fum'); S.team[cs].fum++; S.team[cs].fumL++;
     bump(pl(rs, f.by), 'fr'); if (f.ff) bump(pl(rs, f.ff), 'ff');
     tags.push(['to', 'Fumble']);
     let txt = ` FUMBLE${f.ff ? ` forced by ${nm(rs, f.ff)}` : ''}, recovered by ${f.by ? nm(rs, f.by) : ab(rs)} at the ${yl(cs, pos)}`;
     if (st.drive && st.drive.team === cs) closeDrive('Fumble', pos);
     if (st.ot) { otEnd(); return txt + ' (ball dead).'; }
-    const ry = +f.ry || 0, fin = FL - pos + ry;
+    const ry = f.td ? pos : (+f.ry || 0), fin = FL - pos + ry;   // a return that scored: however far it was from the goal
     if (ry) leg('run', rs, FL - pos, fin);
     if (ry) txt += ry > 0 ? `, returned ${plural(ry, 'yard')}` : `, lost ${plural(-ry, 'yard')}`;
     if (fin >= FL) return txt + '.' + touchdown(rs, `${f.by ? nm(rs, f.by) : ab(rs)} fumble return`, pl(rs, f.by));
@@ -2006,10 +2008,13 @@ function replay(g, upto = g.plays.length){
     S.team[R][k1 === 'kr' ? 'krN' : 'prN']++; S.team[R][k1 === 'kr' ? 'krY' : 'prY'] += ry;
     tackles(K, p.tk, 1);
     let txt = `, ${nm(R, p.ret)} returns ${plural(ry, 'yard')}`;
-    if (p.fum && p.fum.lost) return {txt: txt + fumbleLost(R, p.ret, clamp(fin, 1, (FL - 1)), p.fum), fin};
+    if (p.fum && p.fum.lost) return {txt: `${txt} to the ${yl(R, clamp(fin, 1, (FL - 1)))}.` + fumbleLost(R, p.ret, clamp(fin, 1, (FL - 1)), p.fum), fin};
     if (fin >= FL){ bump(ret, k1 + 'td'); return {txt: txt + '.' + touchdown(R, `${nm(R, p.ret)} ${fy(ry)}-yard ${kind === 'kr' ? 'kickoff' : 'punt'} return`, ret), fin}; }
     if (fin <= 0){ newSeries(R, RU.tb); return {txt: txt + ', downed in the end zone. Touchback.', fin:RU.tb}; }
-    if (p.fum) txt += `,${fumbleKept(R, p.ret, p.fum).slice(1, -1)}`;
+    if (p.fum){
+      const kept = fumbleKept(R, p.ret, p.fum, fin), end = clamp(fin + (+p.fum.ry || 0), 0, FL);
+      newSeries(R, end); return {txt: `${txt} to the ${yl(R, fin)}.${kept}`, fin:end};
+    }
     newSeries(R, fin); return {txt: txt + ` to the ${yl(R, fin)}${tackleTxt(K, p.tk)}.`, fin};
   }
 
@@ -2954,6 +2959,12 @@ function parseQuick(raw, st){
   let fumErr = null;                       // set when a fumble's "ball on" spot can't be right
   const flag = p => {
     if (fumErr) return bad(fumErr);
+    // A fumble on a kick return: the returner is the carrier, and "lost" gives the ball back to the kicking team.
+    if (fum && !p.fum && (p.t === 'ko' || p.t === 'punt')){
+      if (p.res !== 'ret') return bad('Say the return first, then the fumble: punt 40 returned 10 fum ' + L(O) + ' rec 31.');
+      p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self ? {self:true} : {}),
+               ...(fum.at ? {at:fum.at} : {}), ...(fum.lost && fum.tdLine ? {td:true} : {}), ry:fum.ry};
+    }
     if (pen){
       // The flag's yard line counts from whoever has the ball once the play is over: the receiving team after a
       // kick, the defense after a pick or a lost fumble (and back again if the returner fumbles it away).
@@ -2969,6 +2980,42 @@ function parseQuick(raw, st){
   // Drop filler words, but never a team letter: for Augusta, "a" is the team, not the article.
   // A kickoff reads its yard lines off the words "caught at the 8 … to the 20", and those words are filler
   // everywhere else, so keep a copy of the line before they go.
+  /* ---- a fumble, read off the end of the line: the rest of it is the play itself ---- */
+  let fum = null;
+  const fi = toks.findIndex(t => ['fum', 'fumble', 'fumbled', 'fumbles'].includes(t));
+  if (fi >= 0){
+    let ft = toks.slice(fi + 1); toks = toks.slice(0, fi);
+    // "… rec at B6": where the ball was recovered, when it isn't where it came loose (a bounce, a scramble).
+    let recAt = null;
+    const ai = ft.indexOf('at');
+    if (ai >= 0){
+      const j = ft.slice(ai + 1).findIndex(t => spotOf(t));
+      if (j >= 0){ const s = spotOf(ft[ai + 1 + j]); recAt = {side:s.side, n:s.n}; ft = ft.slice(0, ai).concat(ft.slice(ai + 2 + j)); }
+    }
+    // "… ball on I24": where the next snap is; the advance is the difference.
+    let endSpot = null;
+    const bi = ft.indexOf('ball');
+    if (bi >= 0){
+      const tail = ft.slice(bi + 1);
+      endSpot = tail.map(spotOf).find(Boolean) || (tail.includes(String(HALF)) ? {side:null, n:HALF} : null);
+      if (!endSpot) return bad(`Say where the ball ended up, like ball on ${L(D)}24.`);
+      ft = ft.slice(0, bi);
+    }
+    // "A31" is team A's #31 recovering; a bare "A" is just the team.
+    const who = ft.map(spotOf).find(Boolean), fn = ft.filter(isNum);
+    // "recovered it himself": the man who dropped it fell on it, so it stays with the offense.
+    const selfRec = ft.some(t => ['himself', 'herself', 'themselves', 'themself', 'itself'].includes(t))
+      || (ft.includes('own') && ft.some(t => ['rec', 'recs', 'recovers', 'recovered', 'recovery'].includes(t)));
+    // Who was carrying it: the offense, or the returner on a kick.
+    const kickLine = has('punt', 'ko', 'kickoff'), carrier = kickLine ? D : O;
+    const side = who ? who.side : ft.map(T).find(Boolean) || (selfRec ? carrier : null), lost = !side || side !== carrier;
+    const by = who ? String(who.n) : fn[0], adv = who ? fn[0] : fn[1];
+    // td anywhere on a lost-fumble line is the defense's score; on a kept fumble it's the offense's.
+    const tdLine = ft.includes('td') || toks.includes('td');
+    if (lost) toks = toks.filter(t => t !== 'td'); else if (tdLine && !toks.includes('td')) toks.push('td');
+    fum = {lost, by, ry:Math.abs(+(adv || 0)), td:lost && tdLine, endSpot, at:recAt, self:selfRec && by == null,
+           rs:who ? who.side : ft.map(T).find(Boolean) || null, selfRec, tdLine};
+  }
   const rawToks = toks.slice();
   if (toks.some(isNum)) toks = toks.filter(t => !FILLER.includes(t) || T(t));
 
@@ -3204,37 +3251,13 @@ function parseQuick(raw, st){
   }
 
   /* ---- runs and passes ---- */
-  let fum = null;
-  const fi = toks.findIndex(t => ['fum', 'fumble', 'fumbled', 'fumbles'].includes(t));
-  if (fi >= 0){
-    let ft = toks.slice(fi + 1); toks = toks.slice(0, fi);
-    // "… ball on I24": where the next snap is; the advance is the difference.
-    let endSpot = null;
-    const bi = ft.indexOf('ball');
-    if (bi >= 0){
-      const tail = ft.slice(bi + 1);
-      endSpot = tail.map(spotOf).find(Boolean) || (tail.includes(String(HALF)) ? {side:null, n:HALF} : null);
-      if (!endSpot) return bad(`Say where the ball ended up, like ball on ${L(D)}24.`);
-      ft = ft.slice(0, bi);
-    }
-    // "A31" is team A's #31 recovering; a bare "A" is just the team.
-    const who = ft.map(spotOf).find(Boolean), fn = ft.filter(isNum);
-    // "recovered it himself": the man who dropped it fell on it, so it stays with the offense.
-    const selfRec = ft.some(t => ['himself', 'herself', 'themselves', 'themself', 'itself'].includes(t))
-      || (ft.includes('own') && ft.some(t => ['rec', 'recs', 'recovers', 'recovered', 'recovery'].includes(t)));
-    const side = who ? who.side : ft.map(T).find(Boolean) || (selfRec ? O : null), lost = !side || side !== O;
-    const by = who ? String(who.n) : fn[0], adv = who ? fn[0] : fn[1];
-    // td anywhere on a lost-fumble line is the defense's score; on a kept fumble it's the offense's.
-    const tdLine = ft.includes('td') || toks.includes('td');
-    if (lost) toks = toks.filter(t => t !== 'td'); else if (tdLine && !toks.includes('td')) toks.push('td');
-    fum = {lost, by, ry:Math.abs(+(adv || 0)), td:lost && tdLine, endSpot, self:selfRec && by == null,
-           rs:who ? who.side : ft.map(T).find(Boolean) || null, selfRec, tdLine};
-  }
   const withFum = p => {
     if (!fum) return p;
     // Where the ball came loose, in the offense's frame.
     const y = p.res === 's' ? -Math.min(p.sy, st.spot) : (+p.y || 0), at = clamp(st.spot + y, 0, FL);
     let ry = fum.ry;
+    // The offense fell on its own fumble somewhere else: the ball moves from where it came loose to there.
+    if (fum.at && !fum.lost) ry = (fum.at.side === O ? fum.at.n : FL - fum.at.n) - at;
     if (fum.endSpot){
       const mine = fum.lost ? D : O, e = fum.endSpot;
       const endPos = e.side == null ? HALF : e.side === mine ? e.n : FL - e.n;   // in the recovering team's frame
@@ -3249,7 +3272,7 @@ function parseQuick(raw, st){
       }
     }
     if (fum.td) ry = at;                     // the recovering team runs it back the whole way
-    p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self ? {self:true} : {}), ry};
+    p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self ? {self:true} : {}), ...(fum.at ? {at:fum.at} : {}), ...(fum.td ? {td:true} : {}), ry};
     return p;
   };
   // "aug 15 …": the runner or passer named with his team, which has to be the team with the ball.
@@ -3337,6 +3360,8 @@ function cheatHtml(a, h){
     [`5-5-fum-rec-${h}31-1`, `#5 runs for 5 and fumbles; ${h}'s #31 recovers and advances 1. Just fum ${h} rec if you don't know who.`],
     [`5-5-fum-rec-${h}10 ball on ${h}24`, 'Same, with the advance worked out from where the next snap is.'],
     [`10-0 fum ${h} rec td`, `Fumble, ${h} recovers and returns it for a touchdown.`],
+    [`1-sack-13 fum rec 6 at ${h}6 td`, `Add at ${h.toUpperCase()}6 when the ball was recovered somewhere else than where it came loose. Works on any fumble.`],
+    [`punt 40 5 return 10 fum ${a} rec 22`, `A fumble on a punt or kickoff return: say the return first, then who recovered.`],
     [`${a} punt ${h} ball at ${h}25`, `Punt with no return: ${h}'s drive starts at its 25. Or just ${a} punt, then ${h} ball at ${h}25 on the next line.`],
     [`${a} punt to ${h}25-${h}2 return-10`, `Fielded at the ${h} 25, #2 returns it 10. Leave off the yards and type the drive start next (${h} ball at ${h}35); the return fills in.`],
     ['punt-11-at the 30-for 6 &nbsp;·&nbsp; 19-punt-40-11-6', 'Caught at their 30, back 6 — the punt’s own distance works itself out. Or say it the short way: #19 punts 40, #11 returns it 6. Also punt-tb, punt-fc, punt-oob, punt-blk.'],

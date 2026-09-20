@@ -256,13 +256,15 @@ function replay(g, upto = g.plays.length){
   // Carrier side `cs` loses a fumble at `pos` (cs frame).
   function fumbleLost(cs, cn, pos, f){
     const rs = other(cs);
+    // Recovered somewhere else than where it came loose: "fum rec 6 at B6".
+    if (f.at) pos = clamp(f.at.side === cs ? f.at.n : FL - f.at.n, 0, FL);
     bump(pl(cs, cn), 'fum'); S.team[cs].fum++; S.team[cs].fumL++;
     bump(pl(rs, f.by), 'fr'); if (f.ff) bump(pl(rs, f.ff), 'ff');
     tags.push(['to', 'Fumble']);
     let txt = ` FUMBLE${f.ff ? ` forced by ${nm(rs, f.ff)}` : ''}, recovered by ${f.by ? nm(rs, f.by) : ab(rs)} at the ${yl(cs, pos)}`;
     if (st.drive && st.drive.team === cs) closeDrive('Fumble', pos);
     if (st.ot) { otEnd(); return txt + ' (ball dead).'; }
-    const ry = +f.ry || 0, fin = FL - pos + ry;
+    const ry = f.td ? pos : (+f.ry || 0), fin = FL - pos + ry;   // a return that scored: however far it was from the goal
     if (ry) leg('run', rs, FL - pos, fin);
     if (ry) txt += ry > 0 ? `, returned ${plural(ry, 'yard')}` : `, lost ${plural(-ry, 'yard')}`;
     if (fin >= FL) return txt + '.' + touchdown(rs, `${f.by ? nm(rs, f.by) : ab(rs)} fumble return`, pl(rs, f.by));
@@ -433,10 +435,13 @@ function replay(g, upto = g.plays.length){
     S.team[R][k1 === 'kr' ? 'krN' : 'prN']++; S.team[R][k1 === 'kr' ? 'krY' : 'prY'] += ry;
     tackles(K, p.tk, 1);
     let txt = `, ${nm(R, p.ret)} returns ${plural(ry, 'yard')}`;
-    if (p.fum && p.fum.lost) return {txt: txt + fumbleLost(R, p.ret, clamp(fin, 1, (FL - 1)), p.fum), fin};
+    if (p.fum && p.fum.lost) return {txt: `${txt} to the ${yl(R, clamp(fin, 1, (FL - 1)))}.` + fumbleLost(R, p.ret, clamp(fin, 1, (FL - 1)), p.fum), fin};
     if (fin >= FL){ bump(ret, k1 + 'td'); return {txt: txt + '.' + touchdown(R, `${nm(R, p.ret)} ${fy(ry)}-yard ${kind === 'kr' ? 'kickoff' : 'punt'} return`, ret), fin}; }
     if (fin <= 0){ newSeries(R, RU.tb); return {txt: txt + ', downed in the end zone. Touchback.', fin:RU.tb}; }
-    if (p.fum) txt += `,${fumbleKept(R, p.ret, p.fum).slice(1, -1)}`;
+    if (p.fum){
+      const kept = fumbleKept(R, p.ret, p.fum, fin), end = clamp(fin + (+p.fum.ry || 0), 0, FL);
+      newSeries(R, end); return {txt: `${txt} to the ${yl(R, fin)}.${kept}`, fin:end};
+    }
     newSeries(R, fin); return {txt: txt + ` to the ${yl(R, fin)}${tackleTxt(K, p.tk)}.`, fin};
   }
 
