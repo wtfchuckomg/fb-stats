@@ -253,6 +253,8 @@ function driveChart(){
     let t0 = d.q <= 4 ? clockIn(prev ? prev.i1 : 0, d.i0, d.q, true) : null;
     if (t0 != null && endAt && endAt.q === d.q && t0 > endAt.t) t0 = endAt.t;
     let t1 = d.open || d.endQ > 4 ? null : clockIn(d.i1, next ? next.i0 : L.length - 1, d.endQ, false);
+    // A clock that hit 0:00 stays there, so a drive whose last play is at 0:00 ends at 0:00 even if the zero was typed earlier.
+    if (t1 == null && !d.open && d.endQ <= 4 && d.i1 != null && P[d.i1] && P[d.i1].clk === 0 && L[d.i1].q === d.endQ) t1 = 0;
     if (t1 != null && t0 != null && d.endQ === d.q && t1 > t0) t1 = null;
     endAt = t1 != null ? {q:d.endQ, t:t1} : null;
     const top = t0 != null && t1 != null ? Math.max(0, (d.endQ - d.q) * qSec + t0 - t1) : null;

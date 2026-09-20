@@ -291,6 +291,7 @@ function record(){
     g.plays[ui.editing] = p; ui.editing = null; ui.open = null; toast('Play updated');
   } else {
     if (R.st.q <= 4) p.clk = Math.ceil(clockNow());
+    stopClockFor(p);
     g.plays.push(p); toast('Recorded');
   }
   if (!['run', 'pass'].includes(ui.type)) ui.type = null;

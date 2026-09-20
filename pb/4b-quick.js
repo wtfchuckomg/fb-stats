@@ -715,6 +715,7 @@ function recordQuick(){
   if (p.clk != null && R.st.q <= 4) g.clk = {s:p.clk, run:g.clk.run, at:Date.now()};
   if (p.clk == null && R.st.q <= 4) p.clk = Math.ceil(clockNow());
   if (p.t === 'to' || p.t === 'final') g.clk = {s:clockNow(), run:false, at:Date.now()};
+  stopClockFor(p);
   g.plays.push(p); save(); refresh(); focusQuick();
   toast(p.t === 'set' ? 'Spot set' : 'Recorded');
 }

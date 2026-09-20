@@ -23,6 +23,9 @@ function parseClock(v){
 // A game that arrived without a clock (an older copy, or one part-way in from another device) reads as stopped
 // at the start of a quarter rather than throwing on every tick.
 function clockNow(){ const c = (g && g.clk) || {s:((g && g.set && g.set.qtr) || 12) * 60, run:false, at:0}; return c.run ? Math.max(0, c.s - (Date.now() - c.at) / 1000) : c.s; }
+// An incomplete pass, or a run or catch that went out of bounds, stops the clock.
+const stopsClock = p => (p.t === 'pass' && p.res === 'i') || ((p.t === 'run' || (p.t === 'pass' && p.res === 'c')) && /\b(oob|out of bounds)\b/i.test(p.q || ''));
+function stopClockFor(p){ if (g.clk.run && stopsClock(p)) g.clk = {s:clockNow(), run:false, at:Date.now()}; }
 function setClock(s, run){ g.clk = {s:Math.max(0, s), run:!!run && s > 0, at:Date.now()}; save(); }
 
 /* ---------- game strip (scoreboard) ---------- */
@@ -37,7 +40,7 @@ function renderBoard(){
     const has = !st.final && st.poss === s && st.phase !== 'kick';
     return `<div class="st-side ${s === 'H' ? 'home' : 'away'}${won && won !== s ? ' lose' : ''}" style="--tc:${esc(T[s].color)}">
       <div class="st-logo">${teamMark(s, 64)}</div>
-      <div class="st-id"><div class="st-name">${esc(fullName(T[s]))}</div><div class="st-rec">${esc(recordText(T[s], s, !st.final, gameWeek(g)) || (s === 'A' ? 'Away' : 'Home'))}</div></div>
+      <div class="st-id"><div class="st-name">${esc(fullName(T[s]))}</div><div class="st-rec">${esc(recordText(T[s], s, !st.final, gameWeek(g), st.score) || (s === 'A' ? 'Away' : 'Home'))}</div></div>
       <div class="st-scorebox"><div class="st-score"><span>${st.score[s]}</span>${has ? '<span class="st-poss" title="Has the ball"></span>' : ''}${won === s ? '<i class="st-win" title="Won"></i>' : ''}</div>
         ${st.final ? '' : `<div class="st-tos" title="${st.to[s]} timeout${st.to[s] === 1 ? '' : 's'} left">${dots(s)}</div>`}</div></div>`;
   };

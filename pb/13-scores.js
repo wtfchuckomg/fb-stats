@@ -264,8 +264,14 @@ function weekOptions(cur){
 /* ---------- team records, typed in by the scorer ---------- */
 // ESPN style, "1-2, 0-1 Away": the season record, then the road or home record. Empty until one is entered.
 // A game still to come (current) with no record typed in shows the team's record from its team page.
-function recordText(t, s, current, thru){
+function recordText(t, s, current, thru, score){
   let rec = t && t.rec, hrec = t && t.hrec;
+  // A record typed into the game is the one going in. Once the game is final it counts this game too.
+  if (!current && score && (rec || hrec)){
+    const a = +score[s], b = +score[s === 'A' ? 'H' : 'A'], i = a > b ? 0 : a < b ? 1 : 2;
+    const bump = v => { const p = parseRec(v); if (!p) return v; p[i]++; return fmtRec(p); };
+    rec = bump(rec); hrec = bump(hrec);
+  }
   // Nothing typed into the game itself: fall back to the tally — as it stands for a game to come, as it stood
   // that week for one already played.
   if (t && !rec && !hrec){ const r = shownRecord(t.name, current ? null : thru); if (r){ rec = r.rec || ''; hrec = (s === 'A' ? r.away : r.home) || ''; } }
