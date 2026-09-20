@@ -115,7 +115,7 @@ function gameNumbers(x){
     team:Object.fromEntries(T_KEYS.map(k => [k, +r.S.team[s][k] || 0])),
     pl:Object.values(r.S.pl[s]).filter(p => p.n !== 'team').map(p => {
       // A statted game keys players by number (named from its roster); a box score keys them by name.
-      const name = /^\d+$/.test(p.n) ? rosterGet(x.teams[s].roster, p.n, s) || playerName(fillName(x.teams[s].name, p.n, s)) || `#${p.n}` : p.n;
+      const name = /^\d+$/.test(p.n) ? playerName(rosterGet(x.teams[s].roster, p.n, s)) || playerName(fillName(x.teams[s].name, p.n, s)) || `#${p.n}` : playerName(p.n);
       // Return touchdowns: a box score's own count, or a statted game's touchdowns that weren't runs or catches.
       const ret = (+p.rettd || 0) + Math.max(0, (+p.tds || 0) - (+p.rtd || 0) - (+p.retd || 0));
       const row = {name};
@@ -152,7 +152,8 @@ function countyStats(games){
       g[s].pl.forEach(row => {
         if (!C_KEYS.some(k => +row[k])) return;
         // A number the game had no name for (baked into the stats file as "#8"): the school's saved roster may know it.
-        const nmr = /^#\d+$/.test(row.name) && playerName(fillName(g[s].name, row.name.slice(1), s)) || row.name;
+        // A class that rode along with the name ("Cole Brandt SR") is dropped here too.
+        const nmr = /^#\d+$/.test(row.name) && playerName(fillName(g[s].name, row.name.slice(1), s)) || playerName(row.name);
         const key = `${c}|${nmr.toLowerCase()}`;
         const P = players[key] || (players[key] = Object.assign({name:nmr, team:c, gp:0}, zeros(C_KEYS)));
         P.gp++; C_KEYS.forEach(k => { P[k] += +row[k] || 0; });
