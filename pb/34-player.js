@@ -54,14 +54,15 @@ const P_SEC = [
     ['2PT', p => p.two], ['PAT', p => p.xpm], ['FG', p => p.fgm], ['PTS', ptsOf]]]];
 
 const pCell = (c, t) => { const v = num(c[1](t)); return v == null ? '—' : c[2] ? v.toFixed(c[2]) : String(Math.round(v * 10) / 10); };
-// One section: a row per season, then the career line.
+// One category: a row per season, then the career line. Season and team on the left, numbers on the right.
 function pSeasonTable(title, cols, bySeason, career){
-  const row = (label, mark, t, cls) => `<tr${cls ? ` class="${cls}"` : ''}><td class="nm"><div class="cn-in">${mark}<b>${esc(label)}</b></div></td>
+  const row = (label, team, t, cls) => `<tr${cls ? ` class="${cls}"` : ''}><td class="nm"><b>${esc(label)}</b></td>
+    <td class="nm">${team ? `<div class="cn-in">${cMark(team)}<span>${esc(shortName(team))}</span></div>` : ''}</td>
     ${cols.map(c => `<td class="num">${esc(pCell(c, t))}</td>`).join('')}</tr>`;
-  return `<section class="bcard ccard"><div class="ccard-hd"><h2>${esc(title)}</h2></div>
-    <div class="tbl-wrap"><table class="ctbl pl-tbl"><thead><tr><th class="nm">SEASON</th>${cols.map(c => `<th class="num">${c[0]}</th>`).join('')}</tr></thead>
-    <tbody>${bySeason.map(([y, t]) => row(String(y), cMark(ppage.team), t)).join('')}
-      ${bySeason.length > 1 ? row('Career', '', career, 'pl-career') : ''}</tbody></table></div></section>`;
+  return `<div class="pl-sec"><h3>${esc(title)}</h3>
+    <div class="tbl-wrap"><table class="ctbl pl-tbl"><thead><tr><th class="nm">SEASON</th><th class="nm">TEAM</th>${cols.map(c => `<th class="num">${c[0]}</th>`).join('')}</tr></thead>
+    <tbody>${bySeason.map(([y, t]) => row(String(y), ppage.team, t)).join('')}
+      ${bySeason.length > 1 ? row('Career', '', career, 'pl-career') : ''}</tbody></table></div></div>`;
 }
 
 // "Fri 9/18", the opponent with its logo, and the result the way a schedule shows it.
@@ -126,7 +127,8 @@ function renderPlayer(){
         ${mine.length ? pLogTable(logSecs.length ? logSecs : secs, mine) : `<p class="bempty" style="padding:4px 20px 10px">No games for ${ppage.season}.</p>`}</section>`;
     } else {
       const bySeason = seasons.slice().sort((a, b) => a - b).map(y => [y, pTot(rows.filter(r => seasonOf(r.x) === y))]);
-      body = secs.map(([title, , cols]) => pSeasonTable(title, cols, bySeason, career)).join('');
+      body = `<section class="bcard ccard pl-stats"><div class="ccard-hd"><h2>Stats</h2></div>
+        ${secs.map(([title, , cols]) => pSeasonTable(title, cols, bySeason, career)).join('')}</section>`;
     }
   }
   box.innerHTML = head + body;

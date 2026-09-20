@@ -361,7 +361,14 @@ a.c-pl:hover b{text-decoration:underline}
 .pl-name{margin:0;font:800 30px/1.05 var(--cond),var(--sans);letter-spacing:-.01em;text-transform:uppercase}
 .pl-sub{margin:5px 0 0;color:var(--muted);font-size:14px}
 .pl-sub a{color:inherit}
+.pl-tbl{width:100%}
 .pl-tbl th.nm,.pl-tbl td.nm{text-align:left;white-space:nowrap}
+/* numbers take only the room they need, so a table with three columns doesn't sprawl and one with a dozen fits */
+.pl-tbl th.num,.pl-tbl td.num{width:1%;white-space:nowrap;padding-left:14px;padding-right:14px}
+.pl-tbl th:first-child,.pl-tbl td:first-child{width:1%}
+.pl-stats .pl-sec + .pl-sec{margin-top:6px;border-top:1px solid var(--line-2);padding-top:14px}
+.pl-sec h3{margin:0;padding:0 20px 8px;font:700 16px/1.2 var(--sans)}
+@media (max-width:640px){.pl-sec h3{padding:0 14px 6px;font-size:15px}.pl-tbl th.num,.pl-tbl td.num{padding-left:10px;padding-right:10px}}
 .pl-tbl tbody tr.pl-career td{font-weight:700;border-top:1px solid var(--line)}
 .pl-opp{display:inline-flex;align-items:center;gap:7px;color:inherit;text-decoration:none}
 .pl-opp:hover b,.pl-opp:hover .pl-res{text-decoration:underline}
@@ -10103,14 +10110,15 @@ const P_SEC = [
     ['2PT', p => p.two], ['PAT', p => p.xpm], ['FG', p => p.fgm], ['PTS', ptsOf]]]];
 
 const pCell = (c, t) => { const v = num(c[1](t)); return v == null ? '—' : c[2] ? v.toFixed(c[2]) : String(Math.round(v * 10) / 10); };
-// One section: a row per season, then the career line.
+// One category: a row per season, then the career line. Season and team on the left, numbers on the right.
 function pSeasonTable(title, cols, bySeason, career){
-  const row = (label, mark, t, cls) => `<tr${cls ? ` class="${cls}"` : ''}><td class="nm"><div class="cn-in">${mark}<b>${esc(label)}</b></div></td>
+  const row = (label, team, t, cls) => `<tr${cls ? ` class="${cls}"` : ''}><td class="nm"><b>${esc(label)}</b></td>
+    <td class="nm">${team ? `<div class="cn-in">${cMark(team)}<span>${esc(shortName(team))}</span></div>` : ''}</td>
     ${cols.map(c => `<td class="num">${esc(pCell(c, t))}</td>`).join('')}</tr>`;
-  return `<section class="bcard ccard"><div class="ccard-hd"><h2>${esc(title)}</h2></div>
-    <div class="tbl-wrap"><table class="ctbl pl-tbl"><thead><tr><th class="nm">SEASON</th>${cols.map(c => `<th class="num">${c[0]}</th>`).join('')}</tr></thead>
-    <tbody>${bySeason.map(([y, t]) => row(String(y), cMark(ppage.team), t)).join('')}
-      ${bySeason.length > 1 ? row('Career', '', career, 'pl-career') : ''}</tbody></table></div></section>`;
+  return `<div class="pl-sec"><h3>${esc(title)}</h3>
+    <div class="tbl-wrap"><table class="ctbl pl-tbl"><thead><tr><th class="nm">SEASON</th><th class="nm">TEAM</th>${cols.map(c => `<th class="num">${c[0]}</th>`).join('')}</tr></thead>
+    <tbody>${bySeason.map(([y, t]) => row(String(y), ppage.team, t)).join('')}
+      ${bySeason.length > 1 ? row('Career', '', career, 'pl-career') : ''}</tbody></table></div></div>`;
 }
 
 // "Fri 9/18", the opponent with its logo, and the result the way a schedule shows it.
@@ -10175,7 +10183,8 @@ function renderPlayer(){
         ${mine.length ? pLogTable(logSecs.length ? logSecs : secs, mine) : `<p class="bempty" style="padding:4px 20px 10px">No games for ${ppage.season}.</p>`}</section>`;
     } else {
       const bySeason = seasons.slice().sort((a, b) => a - b).map(y => [y, pTot(rows.filter(r => seasonOf(r.x) === y))]);
-      body = secs.map(([title, , cols]) => pSeasonTable(title, cols, bySeason, career)).join('');
+      body = `<section class="bcard ccard pl-stats"><div class="ccard-hd"><h2>Stats</h2></div>
+        ${secs.map(([title, , cols]) => pSeasonTable(title, cols, bySeason, career)).join('')}</section>`;
     }
   }
   box.innerHTML = head + body;
