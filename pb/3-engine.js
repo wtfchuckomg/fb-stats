@@ -443,7 +443,7 @@ function replay(g, upto = g.plays.length){
       const kept = fumbleKept(R, p.ret, p.fum, fin), end = clamp(fin + (+p.fum.ry || 0), 0, FL);
       newSeries(R, end); return {txt: `${txt} to the ${yl(R, fin)}.${kept}`, fin:end};
     }
-    newSeries(R, fin); return {txt: txt + ` to the ${yl(R, fin)}${tackleTxt(K, p.tk)}.`, fin};
+    newSeries(R, fin); return {txt: txt + ` to the ${yl(R, fin)}${p.oob ? ', out of bounds' : tackleTxt(K, p.tk)}.`, fin};
   }
 
   function kickoff(p){
