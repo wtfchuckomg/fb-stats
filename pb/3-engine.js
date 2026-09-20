@@ -488,6 +488,15 @@ function replay(g, upto = g.plays.length){
     closeDrive('Punt', st.spot);
     if (p.res === 'blk'){
       t.pntBlk++; bump(pl(R, p.by), 'bk'); tags.push(['to', 'Blocked']);
+      // The punting team fell on it: a first down if it got back to the line to gain, otherwise the ball goes over.
+      if (p.own){
+        const mine = clamp(st.spot - (+p.b || 0), 0, (FL - 1));
+        const txt = `${nm(O, p.k)} punt BLOCKED${p.by ? ` by ${nm(R, p.by)}` : ''}, recovered by ${p.ret ? nm(O, p.ret) : ab(O)} at the ${yl(O, mine)}`;
+        if (mine >= st.ltg){ S.team[O].fd++; newSeries(O, mine); tags.push(['fd', '1st down']); return txt + '. First down.'; }
+        closeDrive('Downs', mine);
+        if (st.ot){ otEnd(); return txt + '.'; }
+        newSeries(R, FL - mine); return txt + '. Turnover on downs.';
+      }
       const at = clamp(FL - (st.spot - (+p.b || 0)), 1, FL), ry = +p.ry || 0, fin = at + ry;
       if (ry) leg('run', R, at, fin);
       let txt = `${nm(O, p.k)} punt BLOCKED${p.by ? ` by ${nm(R, p.by)}` : ''}, recovered by ${p.ret ? nm(R, p.ret) : ab(R)} at the ${yl(R, at)}`;

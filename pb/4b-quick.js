@@ -431,15 +431,21 @@ function parseQuick(raw, st){
     // "… I ball at I35": where the receiving team's drive starts.
     let start = null;
     const bi = rest.indexOf('ball');
+    let saidSide = null;
     if (bi >= 0){
       const tail = rest.slice(bi + 1);
       start = tail.map(spotOf).find(Boolean) || (tail.includes(String(HALF)) ? {side:D, n:HALF} : null);
       if (!start) return bad(`Say where the drive starts, like ${L(D)} ball at ${L(D)}35.`);
+      saidSide = rest.slice(0, bi).map(T).find(Boolean) || null;
       rest = rest.slice(0, bi).filter(t => !T(t));
     }
     if (has('blk', 'blocked')){
       const after = rest.filter(isNum);
       p.res = 'blk'; if (after[0] != null) p.by = after[0]; if (after[1] != null) p.ret = after[1];
+      // The kicking team can fall on its own blocked punt, and "ball at …" says where it was recovered.
+      const who = saidSide || rest.map(T).find(Boolean);
+      if (who === O){ p.own = true; if (after[0] != null && after[1] == null){ p.ret = after[0]; delete p.by; } }
+      if (start) p.b = st.spot - (start.side === O ? start.n : FL - start.n);
       if (has('td')) p.ry = st.spot;          // picked up at the line and returned the whole way
       return flag(p);
     }
@@ -650,6 +656,7 @@ function cheatHtml(a, h){
     [`${a} punt ${h} ball at ${h}25`, `Punt with no return: ${h}'s drive starts at its 25. Or just ${a} punt, then ${h} ball at ${h}25 on the next line.`],
     [`${a} punt to ${h}25-${h}2 return-10`, `Fielded at the ${h} 25, #2 returns it 10. Leave off the yards and type the drive start next (${h} ball at ${h}35); the return fills in.`],
     ['punt-11-at the 30-for 6 &nbsp;·&nbsp; 19-punt-40-11-6', 'Caught at their 30, back 6 — the punt’s own distance works itself out. Or say it the short way: #19 punts 40, #11 returns it 6. Also punt-tb, punt-fc, punt-oob, punt-blk. With a return on the line, oob means the returner ran out of bounds.'],
+    ['13 punt blk 55 22 &nbsp;·&nbsp; 13 punt blk 55 ' + h + ' rec 20 ball at ' + h.toUpperCase() + '43', 'Blocked by #55 and recovered by the other team\u2019s #22 / by the kicking team\u2019s own #20, with where it was recovered. Add td if it was run in.'],
     [`19 punt 11 return 5 ball at ${h}35`, `Give the return and where the drive starts and the punt's distance is worked out: #19 punts, #11 returns 5, ${h} ball at its 35.`],
     ['15-fg &nbsp;·&nbsp; 15-fg-no', 'Field goal good / no good (distance fills in)'],
     ['15-xp &nbsp;·&nbsp; 15-xp-no', 'Kick after a touchdown. For 2 points: 3 (run) or 7-88 (pass), add -no if it failed'],
