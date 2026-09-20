@@ -64,7 +64,8 @@ function tokenize(s){
 /* ---------- plain English: "aug 15 runs for 15 yards tackled by indy 54 3:54" ----------
    A typed-out sentence is rewritten into the shorthand's own words before it's read, so either works,
    and both end up in the same parser. */
-const PEN_PHRASES = [[/\bfalse start\b/g, 'fs'], [/\bpass interference\b/g, 'pi'], [/\bpersonal foul\b/g, 'pf'], [/\bdelay of game\b/g, 'dog'],
+const PEN_PHRASES = [[/\boffsetting(?:\s+penalties|\s+fouls|\s+flags)?\b/g, ' pen offset '], [/\bpenalties\s+offset\b/g, ' pen offset '],
+  [/\bfalse start\b/g, 'fs'], [/\bpass interference\b/g, 'pi'], [/\bpersonal foul\b/g, 'pf'], [/\bdelay of game\b/g, 'dog'],
   [/\bface ?mask\b/g, 'fm'], [/\broughing the passer\b/g, 'rtp'], [/\broughing the kicker\b/g, 'rtk'], [/\bunsportsmanlike(?: conduct)?\b/g, 'uc'],
   [/\boffsides?\b/g, 'off'], [/\bhorse ?collar\b/g, 'hc'], [/\b(?:illegal )?block in the back\b/g, 'ibb'], [/\billegal motion\b/g, 'motion'],
   [/\billegal formation\b/g, 'form'], [/\bintentional grounding\b/g, 'ig'], [/\bunnecessary roughness\b/g, 'ur']];
@@ -195,11 +196,26 @@ function parseQuick(raw, st){
   let pen = null;
   const pi = toks.findIndex(t => ['pen', 'penalty', 'flag'].includes(t));
   if (pi >= 0){
-    const pt = toks.slice(pi + 1); toks = toks.slice(0, pi);
+    let pt = toks.slice(pi + 1); toks = toks.slice(0, pi);
     // "r pen 10": the team can come just before the word too.
     if (toks.length && T(toks[toks.length - 1])) pt.unshift(toks.pop());
+    // Offsetting fouls cancel, so they need neither a team nor a yardage: "pen offset" says it all. A flag on
+    // each team on the same line says it too: "pen C 10 pen R 10".
+    let offset = pt.some(t => ['offset', 'offsetting', 'offsets'].includes(t));
+    const pi2 = pt.findIndex(t => ['pen', 'penalty', 'flag'].includes(t));
+    if (pi2 >= 0){
+      const s1 = pt.slice(0, pi2).map(T).find(Boolean), s2 = pt.slice(pi2 + 1).map(T).find(Boolean);
+      if (s1 && s2 && s1 !== s2) offset = true;
+      else if (!offset) pt = pt.slice(0, pi2);          // the same team twice: the first one is the flag
+    }
     const side = pt.map(T).find(Boolean);
-    if (!side) return bad(`Which team? Like pen ${L('A')} 5 or pen ${L('H')} 15.`);
+    if (!side && !offset) return bad(`Which team? Like pen ${L('A')} 5 or pen ${L('H')} 15.`);
+    if (offset){
+      const both = pt.filter(t => PEN_CODES[t]).map(t => PEN_CODES[t]);
+      pen = {side:side || st.poss, name:both.length ? [...new Set(both)].join(' and ') : '', y:0, enf:'off'};
+      if (!toks.length) return ok({t:'pen', pen});
+    }
+    else {
     const code = pt.find(t => PEN_CODES[t]);
     const preset = code && PENALTIES.find(x => x.name === PEN_CODES[code]);
     // A spot foul: "pen m 10 ball spot 35" is where the ref put the ball, "pen m 10 foul at the 25" is where
@@ -227,11 +243,11 @@ function parseQuick(raw, st){
     if (said && said.side) pen.at = {side:said.side, n:said.raw};   // re-read once we know who has the ball after the play
     if (pt.some(t => ['1st', 'auto', 'af'].includes(t))) pen.a = true;
     if (pt.includes('lod')) pen.l = true;
-    const offset = pt.some(t => ['offset', 'offsetting', 'offsets'].includes(t));
     const declined = pt.some(t => ['dec', 'declined'].includes(t));
-    if (!toks.length){ delete pen.at; return ok({t:'pen', pen:{...pen, enf:offset ? 'off' : declined ? 'dec' : 'acc'}}); }
-    pen.enf = offset ? 'off' : pt.some(t => ['np', 'noplay', 'nullified', 'replay'].includes(t)) ? 'prev'
+    if (!toks.length){ delete pen.at; return ok({t:'pen', pen:{...pen, enf:declined ? 'dec' : 'acc'}}); }
+    pen.enf = pt.some(t => ['np', 'noplay', 'nullified', 'replay'].includes(t)) ? 'prev'
       : declined ? 'dec' : 'end';
+    }
   }
   let fumErr = null;                       // set when a fumble's "ball on" spot can't be right
   const flag = p => {
@@ -664,6 +680,7 @@ function cheatHtml(a, h){
     ['15-ko-tb &nbsp;·&nbsp; 15-ko-55-28-21', 'Kickoff with details: touchback / 55 yards, #28 returns it 21. Also 15-ko-oob, 15-ko-onside-44.'],
     ['ko-28-at the 8-for 12 &nbsp;·&nbsp; 28 caught the kickoff at the 8 and ran it to the 20', 'Never type how far it was kicked: say where it was caught and how far it came back. Both yard lines are the receiving team’s.'],
     [`pen ${h} 15 pf`, `15 yards on ${h}. Codes: fs off hold pi pf fm uc rtp ig dog and more. Add 1st for an automatic first down.`],
+    [`pen ${a} 10 pen ${h} 10 &nbsp;·&nbsp; offsetting pen`, 'Flags on both teams: they cancel and the down is played again. Neither one counts in the totals.'],
     [`3-12 pen ${a} 10 hold np`, 'Flag wipes out the play (np = no play). Without np, the yards add on to the end of the play.'],
     [`pen ${h} 10 ball spot 35 &nbsp;·&nbsp; pen ${h} 10 foul at the 25`, 'A spot foul, marched off from where it happened rather than the line of scrimmage. Say where the ref put the ball, or where the foul was.'],
     [`to ${a}`, `${g.teams.A.name} timeout`],
