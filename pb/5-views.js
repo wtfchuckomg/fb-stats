@@ -67,7 +67,7 @@ function openDialog(kind){
   ui.dlg = kind; ui.confirm = null;
   dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : kind === 'others' ? dlgOthers() : kind === 'lines' ? dlgLines() : kind === 'teams' ? dlgTeams() : kind === 'schools' ? dlgSchools() : dlgSetup(kind === 'new');
   if (!dlg().hasAttribute('open')) showDialog();
-  if ($('#s-A-roster')) ['A', 'H'].forEach(fillSetupRoster);
+  if ($('#s-A-roster')){ ['A', 'H'].forEach(fillSetupRoster); fillSetupFormat(); }
 }
 // Phones without the pop-up window feature (iPhones before iOS 15.4, among others) get the same box, opened plainly.
 function showDialog(){
@@ -86,8 +86,8 @@ const ruleHint = men => men === 8
   ? '8-man: 80-yard field, midfield at the 40. Kickoff from the 30, touchback at the 15, safety kick from the 15, overtime from the 10.'
   : '11-man: 100-yard field. Kickoff from the 40, touchback at the 20, safety kick from the 20, overtime from the 10.';
 function dlgSetup(isNew){
-  // A new game starts in the same format as the one open now, since most weeks are all 8-man or all 11-man.
-  const src = isNew ? {teams:{A:{name:'', mascot:'', abbr:'', color:'#1F4E9C', roster:{}}, H:{name:'', mascot:'', abbr:'', color:'#B0151B', roster:{}}}, set:{qtr:12, firstKick:'H', men:g.sample ? 11 : rulesOf(g).men}} : g;
+  // A new game starts 11-man, which nearly every school is; the schools typed in set it from there.
+  const src = isNew ? {teams:{A:{name:'', mascot:'', abbr:'', color:'#1F4E9C', roster:{}}, H:{name:'', mascot:'', abbr:'', color:'#B0151B', roster:{}}}, set:{qtr:12, firstKick:'H', men:11}} : g;
   // Started from a scheduled game or quick score: its schools (with anything saved about them) and date.
   const from = isNew && ui.fromSched ? qsLib()[ui.fromSched] : null;
   if (from && from.teams) ['A', 'H'].forEach(s => { const t = findTeam(from.teams[s].name) || {};
@@ -107,7 +107,7 @@ function dlgSetup(isNew){
       <div class="hint" id="s-${s}-shared">${sharedHint(s, src.teams[s].name)}</div></div></div>`;
   return `${dlgHead(isNew ? 'New game' : 'Game setup')}<div class="dlg-bd">${teamRow('A', 'Visitors')}${teamRow('H', 'Home')}
     <div class="grp"><h3>Rules</h3>
-      <div class="fld"><span class="eyebrow">Game</span><div class="seg" id="s-men">${[[11, '11-man · 100 yards'], [8, '8-man · 80 yards']].map(([m, l]) => `<button type="button" data-men="${m}" aria-pressed="${ru.men === m}">${l}</button>`).join('')}</div></div>
+      <div class="fld"><span class="eyebrow">Game</span><div class="seg" id="s-men"${isNew ? '' : ' data-picked="1"'}>${[[11, '11-man · 100 yards'], [8, '8-man · 80 yards']].map(([m, l]) => `<button type="button" data-men="${m}" aria-pressed="${ru.men === m}">${l}</button>`).join('')}</div></div>
       <div class="row">
       <div class="fld"><span class="eyebrow">Opening kickoff by</span><div class="seg" id="s-kick">${['A', 'H'].map(s => `<button type="button" data-kick="${s}" aria-pressed="${src.set.firstKick === s}">${s === 'A' ? 'Visitors' : 'Home'}</button>`).join('')}</div></div>
       <div class="fld"><label class="eyebrow" for="s-qtr">Quarter, minutes</label><input class="inp" id="s-qtr" inputmode="numeric" value="${src.set.qtr}"></div></div>
@@ -397,6 +397,7 @@ document.addEventListener('click', e => {
   if ('td' in d){ ui.draft.y = String(Math.ceil(ui.ctx.FL - ui.ctx.st.spot)); ui.draft.yn = 'gain'; return renderPad(); }
   if (d.men){
     t.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === t)));
+    t.parentNode.dataset.picked = '1';          // chosen by hand: the schools don't change it back
     $('#s-rulehint').textContent = ruleHint(+d.men); return;
   }
   if ('undo' in d) return undo();

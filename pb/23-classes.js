@@ -96,6 +96,12 @@ const RANK_CLASSES = {
   '6-Man':['Ingalls', 'South Barber', 'Deerfield', 'Golden Plains', 'Peabody-Burns', 'Satanta', 'Ashland', 'Centre', 'Wheatland-Grinnell', 'Tescott', 'Pawnee Heights', 'Bucklin', 'Altoona-Midway', 'Elyria Christian', 'Cheylin', 'Moscow', 'Southern Coffey County', 'Western Plains', 'Marais des Cygnes Valley', 'Northern Valley', 'Chase', 'Logan', 'Chetopa', 'Palco', 'Otis-Bison', 'Weskan', 'Brewster', 'Winona-Triplains']
 };
 let rankClassIdx = null;
+// 8-man or 11-man from the school itself: 8M-I/8M-II in SCHOOL_INFO, or the poll's 8-Man and 6-Man classes.
+// Null when we don't know the school, so the format is left alone.
+function menOfSchool(name){
+  const info = schoolInfo(name), cls = (info && info[0]) || rankClassOf(name);
+  return cls ? (/^(?:8M|8-Man|6-Man)/i.test(cls) ? 8 : 11) : null;
+}
 function rankClassOf(name){
   if (!rankClassIdx){ rankClassIdx = new Map();
     Object.entries(RANK_CLASSES).forEach(([cls, list]) => list.forEach(n => rankClassIdx.set(canonSchool(n), cls))); }

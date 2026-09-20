@@ -118,7 +118,18 @@ function refreshRosterHints(){
   ['A', 'H'].forEach(s => { const el = $(`#s-${s}-shared`), nm = $(`#s-${s}-name`); if (el && nm) el.innerHTML = sharedHint(s, nm.value.trim()); fillSetupRoster(s); });
   renderTeamPage();   // a school's page lists its roster too
 }
-document.addEventListener('input', e => { if (e.target.id && /^s-[AH]-name$/.test(e.target.id)) refreshRosterHints(); });
+document.addEventListener('input', e => { if (e.target.id && /^s-[AH]-name$/.test(e.target.id)){ refreshRosterHints(); fillSetupFormat(); } });
+// The schools say whether it's 8-man: both 11-man schools means 11-man, and either one an 8-man (or 6-man)
+// school means 8-man. A format picked by hand is left alone, and so is a school we don't know.
+function fillSetupFormat(){
+  const seg = $('#s-men'); if (!seg || seg.dataset.picked) return;
+  const a = ($('#s-A-name') || {}).value, h = ($('#s-H-name') || {}).value;
+  const ms = [a, h].map(n => menOfSchool((n || '').trim())).filter(Boolean);
+  if (!ms.length) return;
+  const men = ms.includes(8) ? 8 : 11;
+  seg.querySelectorAll('[data-men]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.men === men)));
+  const hint = $('#s-rulehint'); if (hint) hint.textContent = ruleHint(men);
+}
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-use-shared]'); if (!b || ui.viewer) return;
   const r = (sharedRosters.list || []).find(x => x.id === b.dataset.useShared), box = $(`#s-${b.dataset.side}-roster`);
