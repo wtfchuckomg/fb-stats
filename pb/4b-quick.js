@@ -515,9 +515,11 @@ function parseQuick(raw, st){
       const k = skip.indexOf(+t); if (k < 0) return true; skip.splice(k, 1); return false;
     });
     const sp = rest.map(spotOf).find(Boolean);   // "punt to I25" or a distance
-    if (sp) p.d = Math.max(0, (FL - toR(sp)) - st.spot);
-    else if (bareN != null) p.d = Math.max(0, (FL - bareN) - st.spot);   // caught at their 30
-    else if (after[0] != null) p.d = Math.abs(+after[0]);
+    // A punt can lose ground: one off the side of the foot that never crosses the line is minus yardage on the
+    // punter (NCAA Section 6, Article 6). So a spot behind the line, or a typed "-5", keeps its sign.
+    if (sp) p.d = (FL - toR(sp)) - st.spot;
+    else if (bareN != null) p.d = (FL - bareN) - st.spot;                // caught at their 30
+    else if (after[0] != null) p.d = +after[0] < 0 ? +after[0] : Math.abs(+after[0]);
     else if (start && retYds != null){
       // "5 punt 15 return 5 ball at SOU35": the ball was fielded retYds short of where the drive starts,
       // and the punt is however far that is from the line of scrimmage.

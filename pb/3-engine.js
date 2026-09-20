@@ -516,7 +516,7 @@ function replay(g, upto = g.plays.length){
     bump(k, 'puy', d); long(k, 'pulg', d); t.pntY += d;
     const at = FL - (st.spot + d);
     leg('kick', O, st.spot, p.res === 'tb' || at <= 0 ? Math.max(st.spot + d, FL + 5) : st.spot + d);
-    let txt = `${nm(O, p.k)} punt ${plural(d, 'yard')}`;
+    let txt = `${nm(O, p.k)} punt ${d < 0 ? `for a loss of ${plural(-d, 'yard')}` : plural(d, 'yard')}`;
     if (p.res === 'tb' || at <= 0){ bump(k, 'ptb'); t.pntTB++; newSeries(R, RU.tb); return txt + `, touchback. ${ab(R)} ball at the ${yl(R, RU.tb)}.`; }
     if (p.res === 'muff'){
       // The receiving team never had it: the kicking team keeps the ball where it fell on it.
