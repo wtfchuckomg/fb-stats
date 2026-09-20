@@ -266,6 +266,13 @@ html[data-skin="tecmo"] .sc-st,html[data-skin="tecmo"] .navlink,html[data-skin="
 html[data-skin="tecmo"] .bbtn,html[data-skin="tecmo"] .btn.primary,html[data-skin="tecmo"] .qk,html[data-skin="tecmo"] .skinpick,html[data-skin="tecmo"] .skinpick select{font-size-adjust:none!important}
 html[data-skin="tecmo"] body::before{display:none}
 html[data-skin="tecmo"] img{image-rendering:pixelated}
+/* Dark looks: every team logo gets a thin white outline that follows its shape, so a black or navy logo
+   doesn't disappear into the background. Same trick as the 8-Bit look, one pixel thinner. */
+html[data-skin="liquid"][data-lg="dark"] .tlogo,
+html[data-skin="material"][data-dark="1"] .tlogo{filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
+@media (prefers-color-scheme: dark){
+  html[data-skin="material"] .tlogo{filter:drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff)}
+}
 /* every logo gets a white outline that follows its shape, so dark logos still stand out on the blue */
 html[data-skin="tecmo"] .tlogo{filter:drop-shadow(1.5px 0 0 #FCFCFC) drop-shadow(-1.5px 0 0 #FCFCFC) drop-shadow(0 1.5px 0 #FCFCFC) drop-shadow(0 -1.5px 0 #FCFCFC)}
 html[data-skin="tecmo"] .tmono{box-shadow:0 0 0 2px #FCFCFC}
