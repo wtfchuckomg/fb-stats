@@ -385,7 +385,33 @@ function parseQuick(raw, st){
     if (sp && !endSp && !nx.length && !caught && ryTold == null && !has('tb', 'oob', 'onside', 'fc')){ delete p.d; p.bs = sp.side === Rk ? sp.n : FL - sp.n; return flag(p); }
     if (has('tb')) p.res = 'tb';
     else if (has('oob') && retNo == null && !endSp && ryTold == null) p.res = 'oob';
-    else if (has('onside')){ p.res = 'onside'; if (retNo != null) p.ret = retNo; if (p.d == null) p.d = 10; }
+    else if (has('onside')){
+      p.res = 'onside';
+      // Who fell on it: "rec 44", "recovered by R44". A number on its own after an onside kick is the recoverer,
+      // not the distance — nobody measures an onside kick.
+      let recNo = retNo, recSide = null;
+      const recI = rest.findIndex(t => ['rec', 'recs', 'recovers', 'recovered', 'recovery'].includes(t));
+      if (recI >= 0){
+        const tail = rest.slice(recI + 1);
+        let tok = null;                                   // the first number that isn't a yard line ("at the 48")
+        for (let i2 = 0; i2 < tail.length; i2++){
+          if (!isNum(tail[i2]) && !spotOf(tail[i2])) continue;
+          let j2 = i2 - 1; while (j2 >= 0 && tail[j2] === 'the') j2--;
+          if (j2 >= 0 && AT.includes(tail[j2])) continue;
+          tok = tail[i2]; break;
+        }
+        const st2 = tok && spotOf(tok);
+        if (st2){ recSide = st2.side; recNo = String(st2.n); }
+        else if (tok != null) recNo = tok;
+        recSide = recSide || tail.map(T).find(Boolean) || rest.slice(0, recI).map(T).find(Boolean) || null;
+      } else recSide = rest.map(T).find(Boolean) || null;
+      // Nobody measures an onside kick: a lone number is the man who recovered it, not the distance.
+      if (recNo == null && !sp && ryTold == null && after[0] != null && +after[0] === +(p.d || 0)){ recNo = after[0]; delete p.d; }
+      if (!sp && ryTold == null && recNo != null && after[0] != null && +after[0] === +recNo) delete p.d;
+      if (p.d == null) p.d = 10;
+      if (recSide === Rk) p.res = 'spot';                 // the receiving team fell on it: a plain short kick
+      else if (recNo != null) p.ret = String(recNo);
+    }
     else if (muff){ p.res = 'muff'; if (muff.by != null) p.by = muff.by; if (muff.ret != null) p.ret = muff.ret; }
     else if (has('fc')){ p.res = 'fc'; if (retNo != null) p.ret = retNo; }
     else if (retNo != null || endSp || ryTold != null){
@@ -677,7 +703,8 @@ function cheatHtml(a, h){
     ['15-fg &nbsp;·&nbsp; 15-fg-no', 'Field goal good / no good (distance fills in)'],
     ['15-xp &nbsp;·&nbsp; 15-xp-no', 'Kick after a touchdown. For 2 points: 3 (run) or 7-88 (pass), add -no if it failed'],
     [`ko-${a}25 &nbsp;·&nbsp; ko-${a}25-3:25`, `Kickoff; the drive starts at the ${a} 25 (with 3:25 left). No need to say who kicked. After a touchdown, enter the extra point first.`],
-    ['15-ko-tb &nbsp;·&nbsp; 15-ko-55-28-21', 'Kickoff with details: touchback / 55 yards, #28 returns it 21. Also 15-ko-oob, 15-ko-onside-44.'],
+    ['15-ko-tb &nbsp;·&nbsp; 15-ko-55-28-21', 'Kickoff with details: touchback / 55 yards, #28 returns it 21. Also 15-ko-oob.'],
+    ['15-ko-onside-44 &nbsp;·&nbsp; ko onside ' + h + ' rec 44', 'Onside kick recovered by the kicking team\u2019s #44. The other team\u2019s letter instead means they fell on it. Add at ' + h.toUpperCase() + '48 for where.'],
     ['ko-28-at the 8-for 12 &nbsp;·&nbsp; 28 caught the kickoff at the 8 and ran it to the 20', 'Never type how far it was kicked: say where it was caught and how far it came back. Both yard lines are the receiving team’s.'],
     [`pen ${h} 15 pf`, `15 yards on ${h}. Codes: fs off hold pi pf fm uc rtp ig dog and more. Add 1st for an automatic first down.`],
     [`pen ${a} 10 pen ${h} 10 &nbsp;·&nbsp; offsetting pen`, 'Flags on both teams: they cancel and the down is played again. Neither one counts in the totals.'],
