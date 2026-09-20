@@ -54,6 +54,12 @@ async function startScoreboard(){
 
 /* ---------- one game ---------- */
 // Initial and last name, then the number: "I. Ford #28".
+// The full name behind a leader's short one, for the link to his page.
+function leaderFull(x, s, n){
+  if (n === 'team') return '';
+  const num = /^\d+$/.test(n);
+  return playerName(rosterGet(x.teams[s].roster, n, s) || (num ? fillName(x.teams[s].name, n, s) : n)) || '';
+}
 function leaderName(x, s, n){
   if (n === 'team') return 'TEAM';
   // A box score's players are keyed by name and have no number.
@@ -74,7 +80,7 @@ function boardLeaders(x, S){
     const sides = ['A', 'H'].map(s => ({s, p:best(s, key)})).filter(o => o.p);
     if (!sides.length) return '';
     return `<div class="bl"><span class="bl-k">${k}</span><div class="bl-body">${sides.map(o => `<div class="bl-side">
-      <div class="bl-who">${esc(leaderName(x, o.s, o.p.n))} <span>- ${esc(x.teams[o.s].abbr)}</span></div>
+      <div class="bl-who">${plLink(leaderFull(x, o.s, o.p.n), x.teams[o.s].name, esc(leaderName(x, o.s, o.p.n)))} <span>- ${esc(x.teams[o.s].abbr)}</span></div>
       <div class="bl-line">${line(o.p)}</div></div>`).join('')}</div></div>`;
   }).join('');
 }
@@ -92,7 +98,7 @@ function preLeaders(x){
     const sides = ['A', 'H'].map(s => ({s, p:L[s] && L[s][key]})).filter(o => o.p);
     if (!sides.length) return '';
     return `<div class="bl"><span class="bl-k">${k}</span><div class="bl-body">${sides.map(o => `<div class="bl-side">
-      <div class="bl-who">${esc(shortPlayer(o.p.name))} <span>- ${esc(x.teams[o.s].abbr || shortName(x.teams[o.s].name))}</span></div>
+      <div class="bl-who">${plLink(o.p.name, x.teams[o.s].name, esc(shortPlayer(o.p.name)))} <span>- ${esc(x.teams[o.s].abbr || shortName(x.teams[o.s].name))}</span></div>
       <div class="bl-line">${line(o.p)}</div></div>`).join('')}</div></div>`;
   }).join('');
   return rows ? `<div class="bl-hd">Season leaders</div>${rows}` : '';

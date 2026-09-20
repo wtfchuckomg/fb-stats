@@ -298,7 +298,7 @@ function renderCounty(){
   else {
     const {teams, players} = y25 ? countyStats2025() : countyStats(games);
     if (v === 'team'){
-      const o = {first:'TEAM', name:t => `${cMark(t.name)}<b>${esc(t.name)}</b>`, hi:t => sameTeamName(t.name, county.team)};
+      const o = {first:'TEAM', name:t => `${cMark(t.name)}<a class="tlink" href="?team=${encodeURIComponent(t.name)}"><b>${esc(t.name)}</b></a>`, hi:t => sameTeamName(t.name, county.team)};
       const card = (title, id, cols, def, asc) => `<section class="bcard ccard"><div class="ccard-hd"><h2>${title}</h2></div>${statTable(id, STATE_STATS ? teams.filter(t => t.gp) : teams, cols, def, {...o, asc})}</section>`;
       if (y25){
         const cols = yardCols('').filter(c => !c[0].endsWith('/G'));

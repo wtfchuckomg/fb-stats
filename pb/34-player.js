@@ -142,3 +142,9 @@ document.addEventListener('click', e => {
 });
 // A player's name on the stats pages and in the leaders links here.
 const playerHref = (name, team) => `?player=${encodeURIComponent(name)}&team=${encodeURIComponent(team)}`;
+// Wrap a name in a link to his page, when we know the school and his name (not a bare "#12").
+function plLink(name, team, inner){
+  const n = playerName(name || '');
+  if (!n || /^#/.test(n) || n === 'Team' || n === 'TEAM' || !team) return inner;
+  return `<a class="tlink" href="${playerHref(n, team)}">${inner}</a>`;
+}

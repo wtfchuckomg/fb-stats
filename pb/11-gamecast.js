@@ -5,6 +5,8 @@
    ================================================================ */
 // Players go by name, number if none; a box score's players are keyed by their names.
 const PT = (s, n) => n === 'team' ? 'Team' : rosterName(s, n) || (/^\d+$/.test(n) ? `#${n}` : playerName(n));
+// The same name, linked to the player's own page for anyone watching (the scorer stays put).
+const plName = (s, n) => ui.viewer ? plLink(PT(s, n), g.teams[s].name, esc(PT(s, n))) : esc(PT(s, n));
 const whenTxt = (q, clk) => clk != null && q <= 4 ? `${mmss(clk)} - ${perShort(q)}` : q <= 4 ? `${ord(q)} Quarter` : perShort(q);
 const openDrive = () => { const d = R.drives[R.drives.length - 1]; return d && d.open ? d : null; };
 const plural2 = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
@@ -166,9 +168,9 @@ function viewBoxTab(){
   for (const [title, heads, keep, row, key] of BOX_CATS){
     const lists = {A:pick('A', keep, key), H:pick('H', keep, key)};
     if (!lists.A.length && !lists.H.length) continue;
-    const table = s => `<div><div class="bx-team">${teamMark(s, 22)}${esc(T[s].name)}</div>${lists[s].length
+    const table = s => `<div><div class="bx-team">${teamMark(s, 22)}${ui.viewer ? `<a class="tlink" href="?team=${encodeURIComponent(T[s].name)}">${esc(T[s].name)}</a>` : esc(T[s].name)}</div>${lists[s].length
       ? `<div class="tbl-wrap"><table class="st"><thead><tr><th>${title}</th>${heads.map(x => `<th>${x}</th>`).join('')}</tr></thead>
-        <tbody>${lists[s].map(p => `<tr><td>${esc(PT(s, p.n))}</td>${row(p).map(v => `<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`
+        <tbody>${lists[s].map(p => `<tr><td>${plName(s, p.n)}</td>${row(p).map(v => `<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`
       : `<div class="muted" style="font-size:13px;padding:6px 0">No ${title.toLowerCase()} stats</div>`}</div>`;
     h += `<section class="card"><div class="card-hd"><h2 class="card-title">${title}</h2></div><div class="bx2">${table('A')}${table('H')}</div></section>`;
   }
@@ -284,7 +286,7 @@ function cardLeaders(){
   const cell = (s, has, val, line) => {
     const best = Object.values(R.S.pl[s]).filter(p => p.n !== 'team' && has(p) > 0).sort((a, b) => val(b) - val(a))[0];
     if (!best) return `<div class="ldr ldr-empty"><div class="ldr-mark">${teamMark(s, 28)}</div><div class="ldr-name muted">—</div></div>`;
-    return `<div class="ldr"><div class="ldr-mark">${teamMark(s, 28)}</div><div class="ldr-name">${esc(PT(s, best.n))}</div>
+    return `<div class="ldr"><div class="ldr-mark">${teamMark(s, 28)}</div><div class="ldr-name">${plName(s, best.n)}</div>
       <div class="ldr-big">${fy(val(best))}</div><div class="ldr-line">${esc(line(best))}</div></div>`;
   };
   // Tackles only when the game has some recorded; a box score never does.
