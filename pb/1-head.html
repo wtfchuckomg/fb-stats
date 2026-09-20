@@ -354,6 +354,21 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .tp-p b{min-width:28px;text-align:right;font:600 13px/1.3 var(--sans);color:var(--muted);font-variant-numeric:tabular-nums}
 .tp-p span{color:var(--ink-2)}
 .cn-in{display:flex;align-items:center;gap:10px}
+/* a player's own page */
+a.c-pl{color:inherit;text-decoration:none}
+a.c-pl:hover b{text-decoration:underline}
+.pl-head{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+.pl-name{margin:0;font:800 30px/1.05 var(--cond),var(--sans);letter-spacing:-.01em;text-transform:uppercase}
+.pl-sub{margin:5px 0 0;color:var(--muted);font-size:14px}
+.pl-sub a{color:inherit}
+.pl-tbl th.nm,.pl-tbl td.nm{text-align:left;white-space:nowrap}
+.pl-tbl tbody tr.pl-career td{font-weight:700;border-top:1px solid var(--line)}
+.pl-opp{display:inline-flex;align-items:center;gap:7px;color:inherit;text-decoration:none}
+.pl-opp:hover b,.pl-opp:hover .pl-res{text-decoration:underline}
+.pl-res{font-weight:700}
+.pl-res.w{color:var(--good)} .pl-res.l{color:var(--bad)}
+.h-btn.on{background:var(--blue);color:var(--blue-ink)}
+@media (max-width:640px){.pl-name{font-size:24px}.pl-head{gap:12px}}
 .c-pl{display:flex;align-items:baseline;gap:6px}
 .c-pl b{font-weight:500}
 .c-pl small{color:var(--muted);font-size:13px}

@@ -45,7 +45,7 @@ async function startCounty(){
 
 // The season's numbers feed three pages: the stats pages, a pregame page, and the scoreboard, where a game
 // that hasn't kicked off shows each team's season leaders where a played game shows its own.
-function statsArrived(){ renderCounty(); if (ui.preview) renderPreview(); if (ui.board) renderScoreboard(); }
+function statsArrived(){ renderCounty(); if (ui.player) renderPlayer(); if (ui.preview) renderPreview(); if (ui.board) renderScoreboard(); }
 // A game as the stats file carries it: the numbers already added up, and just enough around them to be
 // filtered by week and team.
 const statsGame = e => ({id:e.id, date:e.date || '', wk:e.wk, updated:e.updated || 0, opp:e.opp,
@@ -313,7 +313,7 @@ function renderCounty(){
     else {
       const V = y25 && v === 'scoring' ? SCORING_25 : P_VIEWS[v], rows = players.filter(p => V.keep(p) && (county.team === 'all' || sameTeamName(p.team, county.team)));
       // Phones show the short form, like ESPN's ("W. Quinn").
-      const name = p => `${cMark(p.team)}<span class="c-pl"><b><span class="pl-full">${esc(p.name)}</span><span class="pl-short">${esc(plShort(p.name))}</span></b><small>${esc(shortName(p.team))}${p.yr ? `<span class="pl-yr"> · ${esc(p.yr)}</span>` : ''}</small></span>`;
+      const name = p => `${cMark(p.team)}<a class="c-pl" href="${playerHref(p.name, p.team)}"><b><span class="pl-full">${esc(p.name)}</span><span class="pl-short">${esc(plShort(p.name))}</span></b><small>${esc(shortName(p.team))}${p.yr ? `<span class="pl-yr"> · ${esc(p.yr)}</span>` : ''}</small></a>`;
       // 2025's tables keep their own sort (its Scoring has fewer columns than this season's).
       body = `<section class="bcard ccard">${rows.length ? statTable(y25 ? v + '25' : v, rows, V.cols, V.def, {name, groups:V.groups})
         : `<p class="bempty" style="padding:4px 20px 10px">No ${V.label.toLowerCase()} stats yet${county.team === 'all' ? '' : ` for ${esc(county.team)}`}.</p>`}</section>`;
