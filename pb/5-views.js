@@ -99,6 +99,7 @@ function dlgSetup(isNew){
       <div class="fld"><label class="eyebrow" for="s-${s}-name">School</label>${schoolPicker(`s-${s}-name`, src.teams[s].name, s === 'A' ? 'Visiting school' : 'Home school')}</div>
       <div class="fld"><label class="eyebrow" for="s-${s}-mascot">Mascot</label><input class="inp" id="s-${s}-mascot" value="${esc(src.teams[s].mascot || '')}" placeholder="e.g. Bulldogs"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-abbr">Short</label><input class="inp" id="s-${s}-abbr" maxlength="5" value="${esc(src.teams[s].abbr)}" placeholder="${s === 'A' ? 'VIS' : 'HOME'}"></div>
+      <div class="fld"><label class="eyebrow" for="s-${s}-key">Letter</label><input class="inp" id="s-${s}-key" maxlength="1" autocapitalize="characters" value="${esc(src.teams[s].key || '')}" placeholder="${esc((String(src.teams[s].abbr || (s === 'A' ? 'V' : 'H'))[0] || '').toUpperCase())}" title="The letter you type for this team in shorthand"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-color">Color</label><input type="color" id="s-${s}-color" value="${esc(src.teams[s].color)}"></div></div>
       <div class="row">${recFields('s', s, src.teams[s])}</div>
       <div class="fld"><label class="eyebrow" for="s-${s}-roster">Roster, optional · one player per line, number then name · home/road numbers: 7/82</label>
@@ -123,7 +124,8 @@ function saveSetup(isNew){
   if (!schoolsSettled(['s-A-name', 's-H-name'], () => saveSetup(isNew))) return;
   const team = (s, def) => {
     const name = v(`s-${s}-name`) || def;
-    return {name, mascot:v(`s-${s}-mascot`), abbr:(v(`s-${s}-abbr`) || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(), color:$(`#s-${s}-color`).value, roster:parseRoster($(`#s-${s}-roster`).value),
+    return {name, mascot:v(`s-${s}-mascot`), abbr:(v(`s-${s}-abbr`) || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(),
+      key:(v(`s-${s}-key`).match(/[A-Za-z]/) || [''])[0].toUpperCase(), color:$(`#s-${s}-color`).value, roster:parseRoster($(`#s-${s}-roster`).value),
       rec:recValue('s', s, 'rec'), hrec:recValue('s', s, 'hrec')};
   };
   const kick = $('#s-kick [aria-pressed="true"]');

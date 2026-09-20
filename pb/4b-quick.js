@@ -22,10 +22,28 @@ const FILLER = ['for', 'yds', 'yards', 'yd', 'to', 'ran', 'run', 'rush', 'pass',
 
 // Team letters come from the short names in Setup: NOR → N, SOU → S.
 function quickTeams(){
-  const a = String(g.teams.A.abbr || 'V').toLowerCase(), h = String(g.teams.H.abbr || 'H').toLowerCase();
-  let ka = a[0], kh = h[0];
-  if (ka === kh){ ka = 'v'; kh = 'h'; }
-  const map = {[a]:'A', [h]:'H', [ka]:'A', [kh]:'H'};
+  const ab = s => String(g.teams[s].abbr || (s === 'A' ? 'V' : 'H')).toLowerCase();
+  const a = ab('A'), h = ab('H');
+  // The letter the hints show: the one typed in Setup, else the short name's first letter.
+  const pick = s => (String(g.teams[s].key || '').toLowerCase().match(/[a-z]/) || [''])[0];
+  let ka = pick('A') || a[0], kh = pick('H') || h[0];
+  if (ka === kh){ ka = pick('A') || 'v'; kh = ka === 'h' ? 'v' : 'h'; }
+  const map = {};
+  // Anything that names one team and not the other can be typed: "wichita collegiate" is w, c, wc or collegiate.
+  const WORDS_TAKEN = ['at', 'to', 'td', 'inc', 'punt', 'fg', 'xp', 'int', 'sack', 'fum', 'pen', 'ko', 'ret', 'ball', 'rec',
+    'oob', 'tb', 'fc', 'blk', 'down', 'half', 'end', 'final', 'undo', 'safety', 'saf', 'kneel', 'muff', 'lateral', 'team'];
+  const add = (w, side) => {
+    const k = String(w || '').toLowerCase();
+    if (!/^[a-z]+$/.test(k) || (k.length > 1 && WORDS_TAKEN.includes(k))) return;
+    if (k in map && map[k] !== side) map[k] = null; else if (!(k in map)) map[k] = side;
+  };
+  ['A', 'H'].forEach(s => {
+    const words = String(g.teams[s].name || '').toLowerCase().split(/[^a-z]+/i).filter(Boolean);
+    add(ab(s), s); add(ab(s)[0], s);
+    words.forEach(w => { add(w, s); add(w[0], s); });
+  });
+  Object.keys(map).forEach(k => { if (!map[k]) delete map[k]; });
+  map[ka] = 'A'; map[kh] = 'H';                       // the two the hints name always win
   if (!map.v) map.v = 'A';
   if (!map.h) map.h = 'H';
   return {map, key:{A:ka, H:kh}};
