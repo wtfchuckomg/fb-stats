@@ -246,7 +246,8 @@ function parseQuick(raw, st){
     const declined = pt.some(t => ['dec', 'declined'].includes(t));
     if (!toks.length){ delete pen.at; return ok({t:'pen', pen:{...pen, enf:declined ? 'dec' : 'acc'}}); }
     pen.enf = pt.some(t => ['np', 'noplay', 'nullified', 'replay'].includes(t)) ? 'prev'
-      : declined ? 'dec' : 'end';
+      : declined ? 'dec'
+      : pt.some(t => ['db', 'dead', 'deadball', 'after'].includes(t)) ? 'dead' : 'end';
     }
   }
   let fumErr = null;                       // set when a fumble's "ball on" spot can't be right
@@ -709,6 +710,7 @@ function cheatHtml(a, h){
     [`pen ${h} 15 pf`, `15 yards on ${h}. Codes: fs off hold pi pf fm uc rtp ig dog and more. Add 1st for an automatic first down.`],
     [`pen ${a} 10 pen ${h} 10 &nbsp;·&nbsp; offsetting pen`, 'Flags on both teams: they cancel and the down is played again. Neither one counts in the totals.'],
     [`3-12 pen ${a} 10 hold np`, 'Flag wipes out the play (np = no play). Without np, the yards add on to the end of the play.'],
+    [`22-12 pen ${a} 15 uc db`, 'A dead-ball foul (db) after the play: the play counts, a first down earned on it stays 1st & 10, and the yards are marked off from there.'],
     [`pen ${h} 10 ball spot 35 &nbsp;·&nbsp; pen ${h} 10 foul at the 25`, 'A spot foul, marched off from where it happened rather than the line of scrimmage. Say where the ref put the ball, or where the foul was.'],
     [`to ${a}`, `${g.teams.A.name} timeout`],
     ['28 is now 35', 'A jersey change. From there on #35 is that player: the play-by-play shows the number he is wearing, the box score keeps one line.'],

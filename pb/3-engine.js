@@ -293,7 +293,7 @@ function replay(g, upto = g.plays.length){
     st[base] += off ? -y : y;
     return y;
   }
-  function penalize(pen, seriesNew, pre){
+  function penalize(pen, seriesNew, pre, dead){
     const side = pen.side, offFoul = side === st.poss;
     // Where it's marched off from: the line of scrimmage, or the foul's own spot on a spot foul. Told the
     // ball spot instead, the foul is however many yards back the other way.
@@ -301,6 +301,8 @@ function replay(g, upto = g.plays.length){
       : pen.foul != null ? clamp(+pen.foul, 1, (FL - 1))
       : pen.ball != null ? clamp(+pen.ball + (offFoul ? (+pen.y || 0) : -(+pen.y || 0)), 1, (FL - 1))
       : st.spot;
+    // A series nobody has run a play in yet: a foul before the snap leaves it 1st & 10 from wherever it ends up.
+    const wasFresh = st.phase === 'play' && st.down === 1 && st.ltg === Math.min(st.spot + 10, FL);
     const full = +pen.y || 0, y = enforce(pen);
     S.team[side].pen++; S.team[side].penY += y;
     tags.push(['flag', 'Flag']);
@@ -308,8 +310,11 @@ function replay(g, upto = g.plays.length){
     if (st.phase === 'kick') return txt + `. Kick from the ${yl(st.poss, st.kickFrom)}.`;
     if (st.phase === 'try') return txt + `. Try from the ${yl(st.poss, st.spot)}.`;
     if (st.phase !== 'play') return txt + '.';
-    txt += `, from the ${yl(st.poss, from)}`;
+    txt += `, from the ${yl(st.poss, from)}${dead ? ' (dead ball)' : ''}`;
     if (seriesNew){ newSeries(st.poss, st.spot); return txt + '.'; }
+    // Between plays (a flag on its own line) or after one (a dead-ball foul): the down isn't replayed, and a
+    // series that hadn't been run in yet starts again from the new spot.
+    if ((dead || !pre) && wasFresh){ newSeries(st.poss, st.spot); return txt + '.'; }
     if (pre){ st.down = pre.down; st.ltg = pre.ltg; }          // the down is played over
     if (!offFoul && (pen.a || st.spot >= st.ltg)){
       S.team[st.poss].fd++; S.team[st.poss].fdX++;
@@ -665,6 +670,9 @@ function replay(g, upto = g.plays.length){
     // An accepted flag replays the down (unless the ball changed hands, or the penalty itself gives a first down
     // or takes the down away), so the down and the line to gain go back to what they were before the play.
     if (pen && pen.enf === 'end') text += ' ' + penalize(pen, st.poss !== beforePoss, {down:beforeDown, ltg:beforeLtg});
+    // A dead-ball foul happens after the play, so the play stands as it was: a first down earned on it is kept
+    // (a fresh 1st & 10 from the new spot), and otherwise the down the play left is the one that's played.
+    else if (pen && pen.enf === 'dead') text += ' ' + penalize(pen, st.fresh || st.poss !== beforePoss, null, true);
     else if (pen && pen.enf === 'dec'){ text += ` Penalty ${ab(pen.side)} ${pen.name}, declined.`; tags.push(['flag', 'Declined']); }
     if (st.drive && st.drive.team === st.poss && st.phase === 'play') st.drive.last = st.spot;
     return {text};
