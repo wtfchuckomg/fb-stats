@@ -1493,7 +1493,11 @@
   "city": "",
   "w": 400,
   "h": 304,
-  "aliases": [],
+  "aliases": [
+   "KC Sumner Academy",
+   "Sumner Academy",
+   "Kansas City-Sumner Academy"
+  ],
   "abbr": "KS"
  },
  {
@@ -2643,7 +2647,12 @@
   "city": "",
   "w": 316,
   "h": 400,
-  "aliases": [],
+  "aliases": [
+   "KC Schlagle",
+   "F.L. Schlagle",
+   "KC F.L. Schlagle",
+   "Kansas City-F. L. Schlagle"
+  ],
   "abbr": "Schlagle"
  },
  {
