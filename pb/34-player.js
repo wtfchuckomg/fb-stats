@@ -40,6 +40,15 @@ function playerGames(){
   });
   return out.sort((a, b) => gameDay(a.x) - gameDay(b.x));
 }
+// 2025, for a Butler County player: his season totals from the county leaderboard. There were no games behind it,
+// so it is passing, rushing and receiving only — no kicking, returns or games played.
+function p2025(){
+  const key = String(ppage.name || '').trim().toLowerCase();
+  if (!key || typeof STATS_2025 === 'undefined') return null;
+  const hit = STATS_2025.find(r => sameTeamName(r.team, ppage.team) && playerName(r.name).toLowerCase() === key);
+  return hit ? Object.assign({gp:null, src25:true}, zeros(C_KEYS), {pc:hit.pc, pa:hit.pa, py:hit.py, ptd:hit.ptd, pint:hit.pint,
+    ru:hit.ru, ry:hit.ry, rtd:hit.rtd, re:hit.re, rey:hit.rey, retd:hit.retd}) : null;
+}
 const pTot = rows => { const t = Object.assign({gp:0}, zeros(C_KEYS)); rows.forEach(r => { t.gp++; C_KEYS.forEach(k => { t[k] += +r.row[k] || 0; }); }); return t; };
 
 // The sections, in ESPN's order. Each one is shown only when he has something in it.
@@ -53,9 +62,15 @@ const P_SEC = [
   ['Scoring', p => ptsOf(p) > 0, [['RUSH', p => p.rtd], ['REC', p => p.retd], ['RET', p => p.ret], ['TD', tdAll],
     ['2PT', p => p.two], ['PAT', p => p.xpm], ['FG', p => p.fgm], ['PTS', ptsOf]]]];
 
-const pCell = (c, t) => { const v = num(c[1](t)); return v == null ? '—' : c[2] ? v.toFixed(c[2]) : String(Math.round(v * 10) / 10); };
+// The 2025 leaderboard knows nothing about kicks, returns or two-point tries, so those columns stay blank for it.
+const NOT_IN_25 = ['RET', '2PT', 'PAT', 'FG', 'FGM', 'FGA', 'FG%', 'XPM', 'XPA'];
+const pCell = (c, t) => {
+  if (t.src25 && NOT_IN_25.includes(c[0])) return '—';
+  const v = num(c[1](t)); return v == null ? '—' : c[2] ? v.toFixed(c[2]) : String(Math.round(v * 10) / 10);
+};
 // One category: a row per season, then the career line. Season and team on the left, numbers on the right.
 function pSeasonTable(title, cols, bySeason, career){
+  if (title === 'Kicking') bySeason = bySeason.filter(([, t]) => !t.src25);   // nothing about kicking in 2025
   const row = (label, team, t, cls) => `<tr${cls ? ` class="${cls}"` : ''}><td class="nm"><b>${esc(label)}</b></td>
     <td class="nm">${team ? `<div class="cn-in">${cMark(team)}<span>${esc(shortName(team))}</span></div>` : ''}</td>
     ${cols.map(c => `<td class="num">${esc(pCell(c, t))}</td>`).join('')}</tr>`;
@@ -114,9 +129,11 @@ function renderPlayer(){
   let body;
   if (county.err) body = note(county.err);
   else if (!county.games) body = note('Loading stats…');
-  else if (!rows.length) body = note(`No stats for ${ppage.name} yet. A player turns up here once a game he played in has been kept on this site.`);
+  else if (!rows.length && !p2025()) body = note(`No stats for ${ppage.name} yet. A player turns up here once a game he played in has been kept on this site.`);
   else {
+    const old25 = p2025();
     const career = pTot(rows);
+    if (old25) C_KEYS.forEach(k => { career[k] += +old25[k] || 0; });
     const secs = P_SEC.filter(([, keep]) => keep(career));
     if (ppage.view === 'log'){
       const mine = rows.filter(r => seasonOf(r.x) === ppage.season);
@@ -126,9 +143,11 @@ function renderPlayer(){
       body = `<section class="bcard ccard"><div class="ccard-hd"><h2>${ppage.season} Game Log</h2>${pick}</div>
         ${mine.length ? pLogTable(logSecs.length ? logSecs : secs, mine) : `<p class="bempty" style="padding:4px 20px 10px">No games for ${ppage.season}.</p>`}</section>`;
     } else {
-      const bySeason = seasons.slice().sort((a, b) => a - b).map(y => [y, pTot(rows.filter(r => seasonOf(r.x) === y))]);
+      let bySeason = seasons.slice().sort((a, b) => a - b).map(y => [y, pTot(rows.filter(r => seasonOf(r.x) === y))]);
+      if (old25 && !bySeason.some(([y]) => y === 2025)) bySeason = [[2025, old25], ...bySeason].sort((a, b) => a[0] - b[0]);
       body = `<section class="bcard ccard pl-stats"><div class="ccard-hd"><h2>Stats</h2></div>
-        ${secs.map(([title, , cols]) => pSeasonTable(title, cols, bySeason, career)).join('')}</section>`;
+        ${secs.map(([title, , cols]) => pSeasonTable(title, cols, bySeason, career)).join('')}
+        ${old25 ? '<p class="h-note pl-note">2025 is the season total from the Butler County leaderboard: passing, rushing and receiving only, with no games behind it.</p>' : ''}</section>`;
     }
   }
   box.innerHTML = head + body;
