@@ -396,8 +396,10 @@ a.c-pl:hover b{text-decoration:underline}
 /* the seed table: a narrow seed column, the team taking the slack, numbers only as wide as they need */
 .bks-tbl{width:100%}
 .bks-tbl th,.bks-tbl td{padding:8px 10px;vertical-align:middle}
-.bks-tbl th.c-seed,.bks-tbl td.c-seed{width:52px;text-align:center;white-space:nowrap}
-.bks-tbl th.nm,.bks-tbl td.nm{text-align:left}
+.bks-tbl th.c-seed,.bks-tbl td.c-seed{width:52px;min-width:52px;text-align:center;white-space:nowrap}
+/* the team column takes every spare pixel, so the seed column can't stretch */
+.bks-tbl th.nm,.bks-tbl td.nm{text-align:left;width:100%}
+.bks-tbl th.c-tb,.bks-tbl td.c-tb{width:1%}
 .bks-tbl th.num,.bks-tbl td.num{width:1%;white-space:nowrap;text-align:right}
 .bks-tbl th.c-tb,.bks-tbl td.c-tb{width:1%;white-space:nowrap;color:var(--muted);font-size:12.5px;padding-left:16px}
 .bks-tbl td.nm .cn-in{gap:8px}
