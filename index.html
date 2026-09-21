@@ -10462,9 +10462,6 @@ function renderBracket(){
   const box = $('#board'), S = SECTIONS[bk.cls];
   document.title = `Class ${bk.cls} Bracketology · Kansas Media Stats`;
   const head = `<section class="bcard bhead"><div class="bhead-top"><h1>Class ${bk.cls} Bracketology</h1></div>
-    <p class="h-note" style="margin:0 0 10px">Where the playoff bracket would stand if the season ended today, seeded the way the KSHSAA does it:
-      win-loss percentage first, then head-to-head when everyone tied has played everyone else, then average margin (13 points a game, 1 in overtime).
-      The higher seed hosts, and the East and West champions meet for the title.</p>
     <div class="tp-links">${Object.keys(SECTIONS).map(c => `<a class="h-btn${c === bk.cls ? ' on' : ''}" href="?bracket=${c}">Class ${c}</a>`).join('')}</div></section>`;
   if (!allGames.list && !allGames.err) return void (box.innerHTML = head + '<section class="bcard"><p class="bempty">Loading the season…</p></section>');
   if (allGames.err) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${esc(allGames.err)}</p></section>`);
