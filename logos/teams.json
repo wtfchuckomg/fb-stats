@@ -2344,7 +2344,8 @@
   "w": 400,
   "h": 372,
   "aliases": [
-   "KC Piper"
+   "KC Piper",
+   "Kansas City-Piper"
   ],
   "abbr": "Piper"
  },
@@ -3219,7 +3220,10 @@
   "city": "",
   "w": 358,
   "h": 400,
-  "aliases": [],
+  "aliases": [
+   "KC Turner",
+   "Kansas City-Turner"
+  ],
   "abbr": "Turner"
  },
  {
@@ -3379,7 +3383,10 @@
   "city": "",
   "w": 333,
   "h": 323,
-  "aliases": [],
+  "aliases": [
+   "KC Washington",
+   "Kansas City-Washington"
+  ],
   "abbr": "Washington"
  },
  {
@@ -3586,7 +3593,10 @@
   "city": "",
   "w": 255,
   "h": 205,
-  "aliases": [],
+  "aliases": [
+   "KC Wyandotte",
+   "Kansas City-Wyandotte"
+  ],
   "abbr": "Wyandotte"
  },
  {
