@@ -102,20 +102,17 @@ const bkGame = (a, b) => {
   return {a, b, win, html:`<div class="bk-game">${bkTeamRow(a, win === a)}${bkTeamRow(b, win === b)}</div>`};
 };
 
-function bkSideHtml(seeds, side){
-  const byNo = {}; seeds.forEach(t => { byNo[t.seed] = t; });
-  let games = BK_PAIRS.map(([x, y]) => bkGame(byNo[x], byNo[y]));
-  const rounds = [games];
-  while (games.length > 1){
-    const next = [];
-    for (let i = 0; i < games.length; i += 2) next.push(bkGame(games[i].win, games[i + 1].win));
-    rounds.push(next); games = next;
-  }
-  const label = ['Week 9', 'Regional', 'Sectional', 'Sub-State'];
-  return `<div class="bk-side ${side}">
-    <div class="bk-heads">${label.map(l => `<span>${l}</span>`).join('')}</div>
-    <div class="bk-rounds">${rounds.map((r, i) => `<div class="bk-round r${i}">${r.map(gm => gm.html).join('')}</div>`).join('')}</div>
-  </div>`;
+// The week #9 round, east and west facing each other with the pairing down the middle.
+function bkWeek9Html(east, west){
+  const by = seeds => { const m = {}; seeds.forEach(t => { m[t.seed] = t; }); return m; };
+  const E = by(east), W = by(west);
+  const rows = BK_PAIRS.map(([x, y]) => `
+    <div class="bk2-cell east">${bkGame(E[x], E[y]).html}</div>
+    <div class="bk2-spine"><b>${x}</b><span>vs</span><b>${y}</b></div>
+    <div class="bk2-cell west">${bkGame(W[x], W[y]).html}</div>`).join('');
+  return `<div class="bk2">
+    <div class="bk2-hd east">East</div><div class="bk2-hd mid">Week 9</div><div class="bk2-hd west">West</div>
+    ${rows}</div>`;
 }
 
 function bkListHtml(seeds, side){
@@ -140,13 +137,9 @@ function renderBracket(){
   if (!allGames.list && !allGames.err) return void (box.innerHTML = head + '<section class="bcard"><p class="bempty">Loading the season…</p></section>');
   if (allGames.err) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${esc(allGames.err)}</p></section>`);
   const east = bkSeed(S.East), west = bkSeed(S.West);
-  const champ = (seeds) => seeds[0];
-  const title = `<div class="bk-title"><span class="bk-k">State Championship</span>
-    <div class="bk-game">${bkTeamRow(champ(east), false)}${bkTeamRow(champ(west), false)}</div>
-    <p class="bk-note">Nov. 27-28 · the host rotates between east and west</p></div>`;
   box.innerHTML = head
-    + `<section class="bcard ccard"><div class="ccard-hd"><h2>The bracket as it stands</h2></div>
-        <div class="bk-wrap"><div class="bk">${bkSideHtml(east, 'east')}${title}${bkSideHtml(west, 'west')}</div></div>
-        <p class="h-note pl-note">Every game after week 9 shows the higher seed moving on — a bracket, not a prediction.</p></section>`
+    + `<section class="bcard ccard"><div class="ccard-hd"><h2>Week 9 matchups</h2></div>
+        <div class="bk-wrap">${bkWeek9Html(east, west)}</div>
+        <p class="h-note pl-note">The higher seed hosts. Games are set after week 8, so these move every Friday.</p></section>`
     + `<section class="bcard ccard"><div class="ccard-hd"><h2>How they're seeded</h2></div>${bkListHtml(east, 'East')}${bkListHtml(west, 'West')}</section>`;
 }
