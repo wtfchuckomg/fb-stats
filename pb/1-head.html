@@ -393,6 +393,45 @@ a.c-pl:hover b{text-decoration:underline}
 .bk2-cell.west .bk-nm{text-align:right}
 .bk-list{padding-top:6px}
 .bk-list h3{margin:0;padding:0 20px 8px;font:700 16px/1.2 var(--sans)}
+/* the other bracket looks */
+.bk-looks button{padding:0 12px;height:30px;font-size:13px}
+.bkt{min-width:0;padding:0 6px 16px}
+/* wide screens: east and west side by side. Phones: one column, no connectors, and air between the pairs. */
+@media (min-width:1040px){.bkt-wrap{display:grid;grid-template-columns:1fr 1fr;gap:26px}}
+@media (max-width:700px){
+  .bkt-wrap{overflow-x:visible}
+  .bkt-cols{grid-template-columns:1fr;gap:0}
+  .bkt-pairs{gap:20px}
+  .bkt-pair{gap:6px;padding-bottom:0}
+  .bkt-pair::after,.bkt-pair::before{display:none}
+  .bkp{font-size:13px;padding:8px 10px;border-radius:9px}
+  .bkt h3{padding:10px 8px 6px;font-size:16px}
+}
+.bkt h3,.bkc-side h3,.bkb h3{margin:0;padding:6px 8px 8px;font:700 15px/1.2 var(--sans)}
+.bkt-cols{display:grid;grid-template-columns:minmax(280px,460px);gap:34px;justify-content:center}
+.bkt-h{display:block;font:700 11px/1 var(--sans);letter-spacing:.06em;color:var(--muted);text-transform:uppercase;text-align:center;margin-bottom:8px}
+.bkt-pairs{display:flex;flex-direction:column;gap:16px}
+/* the pair's connector: an elbow from the middle of each pill, joined into one line going right */
+.bkt-pair{position:relative;display:flex;flex-direction:column;gap:5px}
+.bkt-pair::after{content:"";position:absolute;left:100%;top:25%;bottom:25%;width:17px;border:1px solid var(--line);border-left:0;border-radius:0 8px 8px 0}
+.bkt-pair::before{content:"";position:absolute;left:calc(100% + 17px);top:50%;width:12px;border-top:1px solid var(--line)}
+.bkp{display:flex;align-items:center;gap:9px;padding:7px 11px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13.5px}
+.bkp.empty{color:var(--muted);justify-content:center}
+.bkc-side{padding:0 14px 6px}
+.bkc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
+.bkc{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.bkc-hd{display:flex;justify-content:space-between;padding:6px 10px;background:var(--surface);font:700 11px/1.2 var(--sans);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+.bkc-row{display:flex;align-items:center;gap:8px;padding:8px 10px;font-size:14px}
+.bkc-row + .bkc-row{border-top:1px solid var(--line-2)}
+.bkc-marg{color:var(--muted);font-size:12px;width:42px;text-align:right}
+.bkb-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;padding:0 14px 8px}
+.bkb-list{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.bkb-list li{display:flex;align-items:center;gap:9px;padding:7px 10px;font-size:14px}
+.bkb-list li + li{border-top:1px solid var(--line-2)}
+.bkb-list li:nth-child(-n+8){background:var(--good-wash)}
+.bkb-no{width:20px;text-align:center;font-weight:800;color:var(--muted)}
+.bkb-rec{color:var(--muted);font-size:12.5px}
+.bkb-vs{margin-left:auto;color:var(--muted);font-size:12px;white-space:nowrap}
 @media (max-width:640px){.bk-wrap{padding:0 8px 10px}.bk2{grid-template-columns:minmax(150px,1fr) 56px minmax(150px,1fr);min-width:560px}.bk-row{font-size:12px;padding:5px 7px}}
 @media (max-width:640px){.pl-sec h3{padding:0 14px 6px;font-size:15px}.pl-tbl th.num,.pl-tbl td.num{padding-left:10px;padding-right:10px}}
 .pl-tbl tbody tr.pl-career td{font-weight:700;border-top:1px solid var(--line)}

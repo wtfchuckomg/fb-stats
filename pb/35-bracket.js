@@ -14,8 +14,8 @@ const BRACKET_PAGE = PAGE_Q.has('bracket');
 // The KSHSAA's east and west sections, 2026-27 (FootballDistrictAssignments_26-27), under this site's own names.
 const SECTIONS = {
   '4A': {
-    East:['Labette County', 'Bonner Springs', 'Chanute', 'Field Kindley', 'Eudora', 'Fort Scott', 'Independence', 'KC Schlagle',
-      'KC Sumner Academy', 'Lansing', 'Louisburg', 'St. Thomas Aquinas', 'Ottawa', 'Paola', 'Bishop Miege', 'Tonganoxie'],
+    East:['Labette County', 'Bonner Springs', 'Chanute', 'Field Kindley', 'Eudora', 'Fort Scott', 'Independence', 'Schlagle',
+      'KC Sumner', 'Lansing', 'Louisburg', 'St. Thomas Aquinas', 'Ottawa', 'Paola', 'Bishop Miege', 'Tonganoxie'],
     West:['Abilene', 'Arkansas City', 'Augusta', 'Buhler', 'El Dorado', 'Great Bend', 'McPherson', 'Mulvane', 'Rose Hill',
       'Rock Creek', 'Highland Park', 'Circle', 'Ulysses', 'Wamego', 'Wellington', 'Winfield']},
   '5A': {
@@ -102,19 +102,19 @@ const bkGame = (a, b) => {
   return {a, b, win, html:`<div class="bk-game">${bkTeamRow(a, win === a)}${bkTeamRow(b, win === b)}</div>`};
 };
 
-// The week #9 round, east and west facing each other with the pairing down the middle.
-function bkWeek9Html(east, west){
-  const by = seeds => { const m = {}; seeds.forEach(t => { m[t.seed] = t; }); return m; };
-  const E = by(east), W = by(west);
-  const rows = BK_PAIRS.map(([x, y]) => `
-    <div class="bk2-cell east">${bkGame(E[x], E[y]).html}</div>
-    <div class="bk2-spine"><b>${x}</b><span>vs</span><b>${y}</b></div>
-    <div class="bk2-cell west">${bkGame(W[x], W[y]).html}</div>`).join('');
-  return `<div class="bk2">
-    <div class="bk2-hd east">East</div><div class="bk2-hd mid">Week 9</div><div class="bk2-hd west">West</div>
-    ${rows}</div>`;
+// LOOK 2: the bracket. Each team its own pill, the pair joined by a connector into the next round.
+function bkPill(t){
+  if (!t) return `<div class="bkp empty"><span class="bk-nm">—</span></div>`;
+  return `<div class="bkp"><span class="bk-seed">${t.seed}</span>${bkMark(t.name)}
+    <a class="bk-nm" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a>
+    <span class="bk-rec">${t.gp ? esc(bkRec(t)) : '<i>no games</i>'}</span></div>`;
 }
-
+function bkTreeHtml(seeds, side){
+  const byNo = {}; seeds.forEach(t => { byNo[t.seed] = t; });
+  const pairs = BK_PAIRS.map(([x, y]) => `<div class="bkt-pair">${bkPill(byNo[x])}${bkPill(byNo[y])}</div>`);
+  return `<div class="bkt"><h3>${side}</h3>
+    <div class="bkt-cols"><div class="bkt-col"><span class="bkt-h">Week 9</span><div class="bkt-pairs">${pairs.join('')}</div></div></div></div>`;
+}
 function bkListHtml(seeds, side){
   return `<div class="bk-list"><h3>${side}</h3>
     <div class="tbl-wrap"><table class="ctbl pl-tbl"><thead><tr><th class="nm">SEED</th><th class="nm">TEAM</th><th class="num">W-L</th><th class="num">PCT</th><th class="num">MARGIN</th><th class="nm">TIEBREAK</th></tr></thead>
@@ -137,9 +137,10 @@ function renderBracket(){
   if (!allGames.list && !allGames.err) return void (box.innerHTML = head + '<section class="bcard"><p class="bempty">Loading the season…</p></section>');
   if (allGames.err) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${esc(allGames.err)}</p></section>`);
   const east = bkSeed(S.East), west = bkSeed(S.West);
+  const body = `<div class="bk-wrap bkt-wrap">${bkTreeHtml(east, 'East')}${bkTreeHtml(west, 'West')}</div>`;
   box.innerHTML = head
     + `<section class="bcard ccard"><div class="ccard-hd"><h2>Week 9 matchups</h2></div>
-        <div class="bk-wrap">${bkWeek9Html(east, west)}</div>
+        ${body}
         <p class="h-note pl-note">The higher seed hosts. Games are set after week 8, so these move every Friday.</p></section>`
     + `<section class="bcard ccard"><div class="ccard-hd"><h2>How they're seeded</h2></div>${bkListHtml(east, 'East')}${bkListHtml(west, 'West')}</section>`;
 }
