@@ -117,12 +117,15 @@ function bkTreeHtml(seeds, side){
 }
 function bkListHtml(seeds, side){
   return `<div class="bk-list"><h3>${side}</h3>
-    <div class="tbl-wrap"><table class="ctbl pl-tbl"><thead><tr><th class="nm">SEED</th><th class="nm">TEAM</th><th class="num">W-L</th><th class="num">PCT</th><th class="num">MARGIN</th><th class="nm">TIEBREAK</th></tr></thead>
-    <tbody>${seeds.map(t => `<tr><td class="nm"><b>${t.seed}</b></td>
+    <div class="tbl-wrap"><table class="ctbl bks-tbl"><thead><tr>
+      <th class="c-seed">SEED</th><th class="nm">TEAM</th><th class="num c-wl">W-L</th>
+      <th class="num c-pct">PCT</th><th class="num c-marg">MARGIN</th><th class="nm c-tb">TIEBREAK</th></tr></thead>
+    <tbody>${seeds.map(t => `<tr><td class="c-seed"><b>${t.seed}</b></td>
       <td class="nm"><div class="cn-in">${bkMark(t.name)}<a class="tlink" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a></div></td>
-      <td class="num">${t.gp ? esc(bkRec(t)) : '—'}</td><td class="num">${t.gp ? t.pct.toFixed(3).replace(/^0/, '') : '—'}</td>
-      <td class="num">${t.gp ? (t.avg > 0 ? '+' : '') + t.avg.toFixed(1) : '—'}</td>
-      <td class="nm">${esc(t.how || '')}</td></tr>`).join('')}</tbody></table></div></div>`;
+      <td class="num c-wl">${t.gp ? esc(bkRec(t)) : '—'}</td>
+      <td class="num c-pct">${t.gp ? t.pct.toFixed(3).replace(/^0/, '') : '—'}</td>
+      <td class="num c-marg">${t.gp ? (t.avg > 0 ? '+' : '') + t.avg.toFixed(1) : '—'}</td>
+      <td class="nm c-tb">${esc(t.how || '')}</td></tr>`).join('')}</tbody></table></div></div>`;
 }
 
 function renderBracket(){
