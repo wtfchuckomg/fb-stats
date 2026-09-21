@@ -393,21 +393,26 @@ a.c-pl:hover b{text-decoration:underline}
 .bk2-cell.west .bk-nm{text-align:right}
 .bk-list{padding-top:6px}
 .bk-list h3{margin:0;padding:0 20px 8px;font:700 16px/1.2 var(--sans)}
-/* the seed table: a narrow seed column, the team taking the slack, numbers only as wide as they need */
-.bks-tbl{width:100%}
-.bks-tbl th,.bks-tbl td{padding:8px 10px;vertical-align:middle}
-.bks-tbl th.c-seed,.bks-tbl td.c-seed{width:52px;min-width:52px;text-align:center;white-space:nowrap}
-/* the team column takes every spare pixel, so the seed column can't stretch */
-.bks-tbl th.nm,.bks-tbl td.nm{text-align:left;width:100%}
-.bks-tbl th.c-tb,.bks-tbl td.c-tb{width:1%}
-.bks-tbl th.num,.bks-tbl td.num{width:1%;white-space:nowrap;text-align:right}
-.bks-tbl th.c-tb,.bks-tbl td.c-tb{width:1%;white-space:nowrap;color:var(--muted);font-size:12.5px;padding-left:16px}
-.bks-tbl td.nm .cn-in{gap:8px}
+/* the seed table: fixed shares so the columns stay even at any width — no gap between name and numbers */
+.bks-tbl{width:100%;table-layout:fixed}
+.bks-tbl th,.bks-tbl td{padding:8px 6px;vertical-align:middle}
+.bks-tbl th.c-seed,.bks-tbl td.c-seed{width:7%;text-align:center}
+.bks-tbl th.nm,.bks-tbl td.nm{text-align:left;width:41%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bks-tbl th.c-wl,.bks-tbl td.c-wl{width:13%}
+.bks-tbl th.c-pct,.bks-tbl td.c-pct{width:13%}
+.bks-tbl th.c-marg,.bks-tbl td.c-marg{width:13%}
+.bks-tbl th.c-tb,.bks-tbl td.c-tb{width:13%;text-align:right;color:var(--muted);font-size:12.5px}
+.bks-tbl th.num,.bks-tbl td.num{text-align:right;white-space:nowrap}
+.bks-tbl td.nm .cn-in{gap:8px;min-width:0}
+.bks-tbl td.nm .cn-in a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-width:760px){
   .bks-tbl th.c-tb,.bks-tbl td.c-tb,.bks-tbl th.c-pct,.bks-tbl td.c-pct{display:none}
-  .bks-tbl th,.bks-tbl td{padding:7px 6px;font-size:13px}
-  .bks-tbl th.c-seed,.bks-tbl td.c-seed{width:34px}
+  .bks-tbl th.c-seed,.bks-tbl td.c-seed{width:12%}
+  .bks-tbl th.nm,.bks-tbl td.nm{width:52%}
+  .bks-tbl th.c-wl,.bks-tbl td.c-wl,.bks-tbl th.c-marg,.bks-tbl td.c-marg{width:18%}
+  .bks-tbl th,.bks-tbl td{padding:7px 5px;font-size:13px}
   .bk-list h3{padding:0 12px 6px}
+}
 }
 /* the other bracket looks */
 .bk-looks button{padding:0 12px;height:30px;font-size:13px}
