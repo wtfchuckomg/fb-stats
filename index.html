@@ -7370,7 +7370,7 @@ const LOGO_MAP = {
 // The front door: the site's plain address opens here. The Game Tracker has its own, ?tracker (and ?edit=<id>).
 const PAGE_Q = new URLSearchParams(location.search);
 const TRACKER_PAGE = PAGE_Q.has('tracker') || PAGE_Q.has('edit');
-const HOME_PAGE = PAGE_Q.has('home') || (!TRACKER_PAGE && !['scores', 'state', 'stats', 'statestats', 'avctl', 'avstats', 'standings', 'game', 'live', 'gamecast', 'preview', 'team', 'teams', 'player', 'bracket'].some(k => PAGE_Q.has(k)));
+const HOME_PAGE = PAGE_Q.has('home') || (!TRACKER_PAGE && !['scores', 'state', 'stats', 'statestats', 'avctl', 'avstats', 'standings', 'game', 'live', 'gamecast', 'preview', 'team', 'teams', 'player'].some(k => PAGE_Q.has(k)));
 
 // On a scorer's device (signed in on the Game Tracker), the menu bar's scorer buttons show on every page too. Away
 // from the tracker they open it, with that window up: ?tracker&open=games, setup, export or share.
@@ -7830,7 +7830,6 @@ function teamHistory(name){
 }
 
 function renderTeamPage(){
-  if (ui.bracket) renderBracket();     // the bracket reads the same games
   if (ui.preview) renderPreview();
   if (!ui.teamPage) return;
   const name = PAGE_Q.get('team');
@@ -10271,151 +10270,6 @@ function plLink(name, team, inner){
   if (!n || /^#/.test(n) || n === 'Team' || n === 'TEAM' || !team) return inner;
   return `<a class="tlink" href="${playerHref(n, team)}">${inner}</a>`;
 }
-/* ================================================================
-   Bracketology (?bracket=4A): where the playoff bracket stands today,
-   by the KSHSAA's own seeding rules for Classes 6A, 5A and 4A —
-   the 16 schools in each half of the state are seeded 1-16 on:
-     1. win-loss percentage, weeks 1-8
-     2. head-to-head, when everyone tied has played everyone else
-     3. average margin, no more than 13 points a game (1 in overtime)
-     4. drawn by lot
-   The higher seed hosts, and the East and West champions meet for the
-   title. Week #9 pairs 1-16, 8-9, 4-13, 5-12, 2-15, 7-10, 3-14, 6-11.
-   Districts (3A and down) come later, when district play starts.
-   ================================================================ */
-const BRACKET_PAGE = PAGE_Q.has('bracket');
-// The KSHSAA's east and west sections, 2026-27 (FootballDistrictAssignments_26-27), under this site's own names.
-const SECTIONS = {
-  '4A': {
-    East:['Labette County', 'Bonner Springs', 'Chanute', 'Field Kindley', 'Eudora', 'Fort Scott', 'Independence', 'KC Schlagle',
-      'KC Sumner Academy', 'Lansing', 'Louisburg', 'St. Thomas Aquinas', 'Ottawa', 'Paola', 'Bishop Miege', 'Tonganoxie'],
-    West:['Abilene', 'Arkansas City', 'Augusta', 'Buhler', 'El Dorado', 'Great Bend', 'McPherson', 'Mulvane', 'Rose Hill',
-      'Rock Creek', 'Highland Park', 'Circle', 'Ulysses', 'Wamego', 'Wellington', 'Winfield']},
-  '5A': {
-    East:['Basehor-Linwood', 'De Soto', 'JC Harmon', 'KC Piper', 'KC Turner', 'KC Washington', 'Leavenworth', 'St. James Academy',
-      'Blue Valley', 'Blue Valley North', 'Blue Valley Southwest', 'Pittsburg', 'Spring Hill', 'Shawnee Heights', 'Seaman', 'Topeka West'],
-    West:['Andover', 'Andover Central', 'Emporia', 'Goddard', 'Eisenhower', 'Hays', 'Hutchinson', 'Liberal', 'Maize South', 'Newton',
-      'Salina Central', 'Salina South', 'Valley Center', 'Bishop Carroll', 'Kapaun Mt. Carmel', 'Wichita West']},
-  '6A': {
-    East:['Gardner-Edgerton', 'KC Wyandotte', 'Lawrence', 'Olathe East', 'Olathe North', 'Olathe Northwest', 'Olathe South', 'Olathe West',
-      'BV Northwest', 'BV West', 'Shawnee Mission East', 'Shawnee Mission North', 'Shawnee Mission Northwest', 'Shawnee Mission South',
-      'Shawnee Mission West', 'Mill Valley'],
-    West:['Derby', 'Dodge City', 'Garden City', 'Campus', 'Junction City', 'Lawrence Free State', 'Maize', 'Manhattan', 'Topeka High',
-      'Washburn Rural', 'Wichita East', 'Wichita Heights', 'Wichita North', 'Wichita Northwest', 'Wichita South', 'Wichita Southeast']}};
-const BK_PAIRS = [[1, 16], [8, 9], [4, 13], [5, 12], [2, 15], [7, 10], [3, 14], [6, 11]];
-const bk = {cls:'4A'};
-
-async function startBracket(){
-  ui.viewer = true; ui.bracket = true; document.body.classList.add('viewer', 'bpage');
-  $('#board').hidden = false;
-  const want = String(PAGE_Q.get('bracket') || '4A').toUpperCase();
-  if (SECTIONS[want]) bk.cls = want;
-  loadLogos();
-  renderBracket();
-  try {
-    const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
-    const [appM, fsM] = await Promise.all(['app', 'firestore'].map(m => import(base + m + '.js')));
-    const fsdb = fsM.getFirestore(appM.initializeApp(firebaseConfig));
-    scoresReady({fsM, fsdb});
-  } catch (e) { allGames.err = 'Can’t reach the games. Check your connection and reload.'; renderBracket(); }
-}
-
-// One school's season so far: record, and the average margin the KSHSAA counts (13 a game, 1 in overtime).
-function bkTeam(name){
-  const t = {name, w:0, l:0, t:0, gp:0, marg:0, beat:new Set(), lost:new Set(), games:[]};
-  schoolRows(name).forEach(({x, side, opp}) => {
-    const f = finalOf(x); if (!f.fin || !f.score) return;
-    const mine = +f.score[side], theirs = +f.score[opp], other = x.teams[opp].name;
-    const ot = (f.q || 0) > 4, cap = ot ? 1 : 13;
-    const d = Math.max(-cap, Math.min(cap, mine - theirs));
-    t.gp++; t.marg += d; t.games.push({opp:other, mine, theirs, ot});
-    if (mine > theirs){ t.w++; t.beat.add(canonSchool(other)); }
-    else if (mine < theirs){ t.l++; t.lost.add(canonSchool(other)); }
-    else t.t++;
-  });
-  t.pct = t.gp ? (t.w + t.t / 2) / t.gp : 0;
-  t.avg = t.gp ? t.marg / t.gp : 0;
-  return t;
-}
-
-// Seeds 1-16 in one section, by the manual's criteria in order.
-function bkSeed(names){
-  const teams = names.map(bkTeam);
-  const byPct = {};
-  teams.forEach(t => { (byPct[t.pct.toFixed(4)] = byPct[t.pct.toFixed(4)] || []).push(t); });
-  const out = [];
-  Object.keys(byPct).sort((a, b) => b - a).forEach(k => {
-    let tied = byPct[k];
-    if (tied.length === 1) return out.push(Object.assign(tied[0], {how:''}));
-    // Head-to-head counts only when everyone tied has played everyone else.
-    const all = tied.every(a => tied.every(b => a === b || a.beat.has(canonSchool(b.name)) || a.lost.has(canonSchool(b.name))));
-    if (all){
-      tied = tied.slice().sort((a, b) => tied.filter(x => a.beat.has(canonSchool(x.name))).length - tied.filter(x => b.beat.has(canonSchool(x.name))).length);
-      tied.reverse();
-      tied.forEach(t => out.push(Object.assign(t, {how:'head-to-head'})));
-      return;
-    }
-    tied.slice().sort((a, b) => b.avg - a.avg || a.name.localeCompare(b.name))
-      .forEach(t => out.push(Object.assign(t, {how:'13-point margin'})));
-  });
-  return out.slice(0, 16).map((t, i) => Object.assign(t, {seed:i + 1}));
-}
-
-const bkRec = t => `${t.w}-${t.l}${t.t ? `-${t.t}` : ''}`;
-const bkMark = name => markFor({name, abbr:shortName(name), color:'#4A4B4D'}, 22);
-// One team inside a bracket game. A seed with no games on file says so instead of pretending to a record.
-function bkTeamRow(t, win){
-  if (!t) return `<div class="bk-row empty"><span class="bk-seed"></span><span class="bk-nm">—</span></div>`;
-  return `<div class="bk-row${win ? ' win' : ''}"><span class="bk-seed">${t.seed}</span>${bkMark(t.name)}
-    <a class="bk-nm" href="?team=${encodeURIComponent(t.name)}" title="${esc(t.name)}">${esc(t.name)}</a>
-    <span class="bk-rec">${t.gp ? esc(bkRec(t)) : '<i>no games</i>'}</span></div>`;
-}
-const bkGame = (a, b) => {
-  const win = !a ? null : !b ? a : (a.seed <= b.seed ? a : b);   // the projection: the higher seed moves on
-  return {a, b, win, html:`<div class="bk-game">${bkTeamRow(a, win === a)}${bkTeamRow(b, win === b)}</div>`};
-};
-
-// The week #9 round, east and west facing each other with the pairing down the middle.
-function bkWeek9Html(east, west){
-  const by = seeds => { const m = {}; seeds.forEach(t => { m[t.seed] = t; }); return m; };
-  const E = by(east), W = by(west);
-  const rows = BK_PAIRS.map(([x, y]) => `
-    <div class="bk2-cell east">${bkGame(E[x], E[y]).html}</div>
-    <div class="bk2-spine"><b>${x}</b><span>vs</span><b>${y}</b></div>
-    <div class="bk2-cell west">${bkGame(W[x], W[y]).html}</div>`).join('');
-  return `<div class="bk2">
-    <div class="bk2-hd east">East</div><div class="bk2-hd mid">Week 9</div><div class="bk2-hd west">West</div>
-    ${rows}</div>`;
-}
-
-function bkListHtml(seeds, side){
-  return `<div class="bk-list"><h3>${side}</h3>
-    <div class="tbl-wrap"><table class="ctbl pl-tbl"><thead><tr><th class="nm">SEED</th><th class="nm">TEAM</th><th class="num">W-L</th><th class="num">PCT</th><th class="num">MARGIN</th><th class="nm">TIEBREAK</th></tr></thead>
-    <tbody>${seeds.map(t => `<tr><td class="nm"><b>${t.seed}</b></td>
-      <td class="nm"><div class="cn-in">${bkMark(t.name)}<a class="tlink" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a></div></td>
-      <td class="num">${t.gp ? esc(bkRec(t)) : '—'}</td><td class="num">${t.gp ? t.pct.toFixed(3).replace(/^0/, '') : '—'}</td>
-      <td class="num">${t.gp ? (t.avg > 0 ? '+' : '') + t.avg.toFixed(1) : '—'}</td>
-      <td class="nm">${esc(t.how || '')}</td></tr>`).join('')}</tbody></table></div></div>`;
-}
-
-function renderBracket(){
-  if (!ui.bracket) return;
-  const box = $('#board'), S = SECTIONS[bk.cls];
-  document.title = `Class ${bk.cls} Bracketology · Kansas Media Stats`;
-  const head = `<section class="bcard bhead"><div class="bhead-top"><h1>Class ${bk.cls} Bracketology</h1></div>
-    <p class="h-note" style="margin:0 0 10px">Where the playoff bracket would stand if the season ended today, seeded the way the KSHSAA does it:
-      win-loss percentage first, then head-to-head when everyone tied has played everyone else, then average margin (13 points a game, 1 in overtime).
-      The higher seed hosts, and the East and West champions meet for the title.</p>
-    <div class="tp-links">${Object.keys(SECTIONS).map(c => `<a class="h-btn${c === bk.cls ? ' on' : ''}" href="?bracket=${c}">Class ${c}</a>`).join('')}</div></section>`;
-  if (!allGames.list && !allGames.err) return void (box.innerHTML = head + '<section class="bcard"><p class="bempty">Loading the season…</p></section>');
-  if (allGames.err) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${esc(allGames.err)}</p></section>`);
-  const east = bkSeed(S.East), west = bkSeed(S.West);
-  box.innerHTML = head
-    + `<section class="bcard ccard"><div class="ccard-hd"><h2>Week 9 matchups</h2></div>
-        <div class="bk-wrap">${bkWeek9Html(east, west)}</div>
-        <p class="h-note pl-note">The higher seed hosts. Games are set after week 8, so these move every Friday.</p></section>`
-    + `<section class="bcard ccard"><div class="ccard-hd"><h2>How they're seeded</h2></div>${bkListHtml(east, 'East')}${bkListHtml(west, 'West')}</section>`;
-}
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
@@ -10444,7 +10298,6 @@ if (PREVIEW_ID) startPreview(PREVIEW_ID);   // ?preview=<id>: a game before kick
 else if (HOME_PAGE) startHome();             // ?home: the front page, read-only
 else if (AV_STAND) startStandings();    // ?standings: the AVCTL's four divisions
 else if (BOARD) startScoreboard();      // ?scores: the week's scoreboard, read-only
-else if (BRACKET_PAGE) startBracket();   // ?bracket=4A: bracketology
 else if (PLAYER_PAGE) startPlayerPage();  // ?player=<name>&team=<school>: one player's own page
 else if (COUNTY_PAGE) startCounty();    // ?stats: the county's season stats, read-only
 else if (TEAM_PAGE) startTeamPage();    // ?teams, ?team=<name>: the schools, and each one's record and schedule

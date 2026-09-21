@@ -6,7 +6,7 @@
 // The front door: the site's plain address opens here. The Game Tracker has its own, ?tracker (and ?edit=<id>).
 const PAGE_Q = new URLSearchParams(location.search);
 const TRACKER_PAGE = PAGE_Q.has('tracker') || PAGE_Q.has('edit');
-const HOME_PAGE = PAGE_Q.has('home') || (!TRACKER_PAGE && !['scores', 'state', 'stats', 'statestats', 'avctl', 'avstats', 'standings', 'game', 'live', 'gamecast', 'preview', 'team', 'teams', 'player', 'bracket'].some(k => PAGE_Q.has(k)));
+const HOME_PAGE = PAGE_Q.has('home') || (!TRACKER_PAGE && !['scores', 'state', 'stats', 'statestats', 'avctl', 'avstats', 'standings', 'game', 'live', 'gamecast', 'preview', 'team', 'teams', 'player'].some(k => PAGE_Q.has(k)));
 
 // On a scorer's device (signed in on the Game Tracker), the menu bar's scorer buttons show on every page too. Away
 // from the tracker they open it, with that window up: ?tracker&open=games, setup, export or share.
