@@ -10081,6 +10081,7 @@ async function startPlayerPage(){
   ppage.team = (PAGE_Q.get('team') || '').trim();
   loadLogos();
   renderPlayer();
+  shareAddress();
   try {
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
     const [appM, fsM] = await Promise.all(['app', 'firestore'].map(m => import(base + m + '.js')));
@@ -10088,6 +10089,18 @@ async function startPlayerPage(){
     loadStats({fsM, fsdb});     // the season's numbers, the same file the stats pages read
     watchRosters({fsM, fsdb});  // for his jersey number
   } catch (e) { county.err = 'Can’t reach the stats. Check your connection and reload.'; renderPlayer(); }
+}
+
+// On the site itself the address becomes the player's preview link (/p/<school>-<name>/), so copying it and
+// posting it shows his card. Only once that page exists: a player added tonight keeps ?player= until the rebuild.
+function shareAddress(){
+  if (location.hostname !== 'stats.kansasmediarankings.com' || location.pathname.startsWith('/p/')) return;
+  const k = `${logoSlug(ppage.team)}-${logoSlug(ppage.name)}`;
+  fetch(`/p/${k}/`, {method:'HEAD'}).then(r => {
+    if (!r.ok || location.pathname.startsWith('/p/')) return;
+    if (!document.querySelector('base')){ const b = document.createElement('base'); b.href = '/'; document.head.prepend(b); }
+    history.replaceState(null, '', `/p/${k}/`);
+  }).catch(() => {});
 }
 
 // Every game this player has a line in: the game, which side he was on, and his numbers from it.

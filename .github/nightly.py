@@ -63,7 +63,34 @@ async () => {
       }
     } catch (err) { broken.push(x.id + ': ' + err.message); }
   });
-  return {built:started, season, stats, cards, broken, read:snap.size};
+  // Every player the stats know, with his jersey number from the rosters scorers have shared: one page and one
+  // link card each (players.py).
+  const rosters = {};
+  const rs = await fsM.getDocs(fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true), fsM.where('kind', '==', 'roster')));
+  rs.forEach(d => {
+    const v = d.data(); if (!v || v.deleted || !v.json) return;
+    try {
+      const r = JSON.parse(v.json), k = canonSchool(r.name), cur = rosters[k] || (rosters[k] = {});
+      Object.entries(r.roster || {}).forEach(([no, nm]) => {
+        const n = playerName(nm).toLowerCase();
+        if (n && !cur[n]) cur[n] = String(no).split('/')[0];
+      });
+    } catch (e) {}
+  });
+  const P_KEYS = ['pc', 'pa', 'py', 'ptd', 'ru', 'ry', 'rtd', 're', 'rey', 'retd'];
+  const pmap = {};
+  stats.forEach(s => ['A', 'H'].forEach(side => {
+    const sd = s.numbers[side];
+    (sd.pl || []).forEach(row => {
+      const nm = playerName(row.name);
+      if (!nm || nm.startsWith('#') || nm === 'TEAM') return;
+      const k = canonSchool(sd.name), key = k + '|' + nm.toLowerCase();
+      const p = pmap[key] || (pmap[key] = Object.assign({name:nm, team:sd.name, no:(rosters[k] || {})[nm.toLowerCase()] || ''},
+        Object.fromEntries(P_KEYS.map(x => [x, 0]))));
+      P_KEYS.forEach(x => { p[x] += +row[x] || 0; });
+    });
+  }));
+  return {built:started, season, stats, cards, players:Object.values(pmap), broken, read:snap.size};
 }
 """
 
@@ -90,6 +117,8 @@ def main():
 
     import previews
     previews.build((c['id'], c['t'], c['s']) for c in out['cards'])
+    import players
+    players.build(out.get('players') or [])
     subprocess.run([sys.executable, str(REPO / '.github' / 'embeds.py')], check=True)
 
 
