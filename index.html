@@ -8915,10 +8915,13 @@ function othersRow(o){
   // A quick score is a score and nothing else; there are no plays to fix.
   const mine = db.games[x.id] && db.games[x.id].foreign;
   const edit = x.kind === 'score' ? '' : `<button class="btn small${mine ? ' primary' : ''}" data-adopt="${esc(x.id)}">${mine ? 'Back to editing' : 'Edit'}</button>`;
+  // Put another scorer's game on the scoreboards, or take it off again. It stays their game and keeps updating
+  // as they enter plays; this only says whether everyone can see it.
+  const live = `<button class="btn small${o.shared ? '' : ' primary'}" data-golive="${esc(x.id)}">${o.shared ? 'Take off' : 'Push live'}</button>`;
   return `<div class="gitem"><div><b>${esc(A.abbr || A.name)} ${m.pre ? '' : m.score.A} at ${esc(H.abbr || H.name)} ${m.pre ? '' : m.score.H}</b>`
     + `<span class="cur-tag"${o.shared ? '' : ' style="color:var(--flag-ink)"'}>${o.shared ? 'Shared' : 'Not shared'}</span>
     <div class="meta">${esc(A.name)} at ${esc(H.name)} · ${gameDay(x).toLocaleDateString()} · ${esc(m.status)} · ${how} · scorer ${esc(o.owner.slice(0, 6))} · updated ${agoText(o.updated)}</div></div>
-    <div class="acts">${watch}${edit}</div></div>`;
+    <div class="acts">${watch}${edit}${live}</div></div>`;
 }
 function dlgOthers(){
   let body;
@@ -8960,6 +8963,28 @@ function adoptGame(id){
   toast(`Editing ${scorerName(o.owner)}’s game`);
 }
 const scorerName = uid => `scorer ${String(uid || '').slice(0, 6)}`;
+
+/* ---------- putting someone else's game on the scoreboards ----------
+   The database lets the admin change another scorer's game as long as it stays theirs (firestore.rules,
+   isAdmin), so this sets the one field that decides who can see it. Nothing else about the game is touched:
+   they go on keeping it, and every play they enter shows up live. The week goes in alongside, because that is
+   what the scoreboards ask the database for, and a game saved before weeks existed hasn't got one. */
+async function pushOthersLive(id){
+  const o = (others.list || []).find(v => v.x.id === id);
+  if (!o || !sync.api || !sync.user) return toast('That game isn’t loaded any more');
+  const on = !o.shared;
+  try {
+    const {fsM, fsdb} = sync.api;
+    await fsM.updateDoc(fsM.doc(fsdb, 'pressbox', id), {public:on, week:gameWeek(o.x)});
+    // A game taken off the scoreboards by hand shouldn't come back as hidden as well.
+    if (on && hideList.ids.has(id)) toggleHide(id);
+    toast(on ? `${o.x.teams.A.name} at ${o.x.teams.H.name} is live on the scoreboards` : 'Taken off the scoreboards');
+  } catch (e) {
+    toast(String((e && e.code) || '').includes('permission')
+      ? 'The database wouldn’t allow that. Publish the updated rules (fb stats/firestore.rules), then try again.'
+      : 'Couldn’t change that game. Check your connection and try again.');
+  }
+}
 
 // Said plainly, above the game, the whole time it is open.
 function renderForeign(){
@@ -9013,6 +9038,8 @@ function dropForeign(){
 document.addEventListener('click', e => {
   const a = e.target.closest && e.target.closest('[data-adopt]');
   if (a) return adoptGame(a.dataset.adopt);
+  const L = e.target.closest && e.target.closest('[data-golive]');
+  if (L) return void pushOthersLive(L.dataset.golive);
   const b = e.target.closest && e.target.closest('[data-foreign]'); if (!b) return;
   if (b.dataset.foreign === 'save') return saveForeign(ui.confirm === 'foreign');
   if (b.dataset.foreign === 'drop') return dropForeign();
