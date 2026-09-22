@@ -178,7 +178,7 @@ function dlgGames(){
       <div class="acts">${x.id !== g.id ? `<button class="btn small" data-open-game="${x.id}">Open</button>` : ''}<button class="btn small danger" data-del-game="${x.id}">${ui.confirm === 'g:' + x.id ? 'Tap again' : 'Delete'}</button></div></div>`; }).join('');
   // The buttons sit at the top, under the title, so New game is there without scrolling past every saved game.
   return `${dlgHead('Games')}<div class="dlg-ft top"><button class="btn" data-open="export" style="margin-right:auto">Export</button><button class="btn" data-box-new>Paste a box score</button><button class="btn primary" data-open="new">New game</button></div>
-    <div class="dlg-bd">${syncBlock()}<div class="grp"><h3>Games</h3><div class="glist">${items}</div></div>
+    <div class="dlg-bd">${syncBlock()}${typeof turboBlock === 'function' ? turboBlock() : ''}<div class="grp"><h3>Games</h3><div class="glist">${items}</div></div>
     <p class="hint">Every game is saved in this browser${sync.user ? ' and to your Google account' : ''}. Export makes a backup you can keep anywhere.</p></div>`;
 }
 // The live look-in: a link anyone can open to watch this game, read-only.
