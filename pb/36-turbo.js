@@ -272,5 +272,11 @@ const PLAY_KINDS = ['run', 'pass', 'punt', 'ko', 'fg'];
 const redrawGames = () => { if (ui.dlg === 'games' && dlg() && dlg().open) dlg().innerHTML = dlgGames(); };
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-turbo]');
-  if (b && b.dataset.turbo === 'go') return void turboImport();
+  if (!b) return;
+  if (b.dataset.turbo === 'go') return void turboImport();
+  // From the start screen: open Games, where the box lives, and put the cursor in it.
+  if (b.dataset.turbo === 'open'){
+    openDialog('games');
+    setTimeout(() => { const el = $('#tg-link'); if (el){ el.scrollIntoView({block:'center'}); el.focus(); } }, 60);
+  }
 });
