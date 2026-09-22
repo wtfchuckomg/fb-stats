@@ -119,6 +119,11 @@ def main():
     previews.build((c['id'], c['t'], c['s']) for c in out['cards'])
     import players
     players.build(out.get('players') or [])
+    # The week ahead: a link card for every game that hasn't kicked off. Games already played come down.
+    import pregames
+    from datetime import date, timedelta
+    today = date.today()
+    pregames.build([str(today + timedelta(days=i)) for i in range(8)])
     subprocess.run([sys.executable, str(REPO / '.github' / 'embeds.py')], check=True)
 
 
