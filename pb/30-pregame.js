@@ -78,13 +78,21 @@ function ratingOf(name){
   return pre.ratIdx[k];
 }
 // What each side is expected to score, home team first.
+const TOTAL_PULL = .5;   // how much of the total's own opinion to keep; see below
 function ourLine(A, H){
   const a = ratingOf(A), h = ratingOf(H);
   if (!a || !h || a.group !== h.group) return null;
   const g = pre.rat.groups[h.group] || {mu:26, hfa:1.5};
   const hp = g.mu + h.off + a.def + g.hfa / 2, ap = g.mu + a.off + h.def - g.hfa / 2;
   const round1 = v => Math.round(v * 2) / 2;
-  return {home:hp, away:ap, spread:round1(hp - ap), total:round1(hp + ap), hs:Math.round(hp), as:Math.round(ap), thin:Math.min(a.gp, h.gp) < 6};
+  // The margin is well judged, the total is not: on its own it is too sure of itself, calling blowouts higher
+  // and slugfests lower than they come out. Counting only half its distance from the group's average takes the
+  // miss on the total from 13.33 points to 12.91 in 11-man, 15.42 to 14.74 in 8-man and 17.70 to 16.95 in
+  // 6-man — every group, walking the seasons forward a week at a time. The margin is left exactly as it was.
+  const base = 2 * g.mu, marg = hp - ap;
+  const total = base + (hp + ap - base) * TOTAL_PULL;
+  const hs = (total + marg) / 2, as = (total - marg) / 2;
+  return {home:hs, away:as, spread:round1(marg), total:round1(total), hs:Math.round(hs), as:Math.round(as), thin:Math.min(a.gp, h.gp) < 6};
 }
 
 /* ---------- past seasons, from KPreps by way of history/<school>.json (.github/kphistory.py) ---------- */
