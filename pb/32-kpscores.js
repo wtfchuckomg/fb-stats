@@ -44,8 +44,12 @@ function kpIndex(){
 // The final for this game, if KPreps has one and we don't.
 function kpFinal(x){
   if (!kps.rows || !x || !x.teams || !x.teams.A || !x.teams.H) return null;
-  if (x.kind !== 'score' || x.box || x.stats || (x.plays && x.plays.length)) return null;
-  if (x.per !== 'pre' || (+x.A || 0) || (+x.H || 0)) return null;    // a score is already in
+  // A schedule entry, or a gamecast somebody opened and never kept: either way nothing has been entered, so
+  // the final we already have can stand in. A game with plays, a box score or a typed score is left alone.
+  if (x.box || x.stats || (x.plays && x.plays.length)) return null;
+  // Nothing entered at all: not before kickoff, and not a game marked final with nobody's score in it.
+  // A game in progress keeps whatever the scorer has, and any score at all is left alone.
+  if (!['pre', 'final', 'fot'].includes(x.per || 'pre') || (+x.A || 0) || (+x.H || 0)) return null;    // a score is already in
   const A = x.teams.A.name, H = x.teams.H.name;
   const r = kpIndex().get(`${gameWeek(x)}|${[kpAlias(A), kpAlias(H)].sort().join('|')}`);
   if (!r) return null;

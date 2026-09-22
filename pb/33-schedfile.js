@@ -42,8 +42,10 @@ function schedStubs(){
 // a box score are all left alone: only an untouched schedule entry fills in.
 function schedFinal(x){
   if (!sched.rows || !x || !x.teams || !x.teams.A || !x.teams.H) return null;
-  if (x.kind !== 'score' || x.box || x.stats || (x.plays && x.plays.length)) return null;
-  if (x.per !== 'pre' || (+x.A || 0) || (+x.H || 0)) return null;   // a score is already in
+  if (x.box || x.stats || (x.plays && x.plays.length)) return null;
+  // Nothing entered at all: not before kickoff, and not a game marked final with nobody's score in it.
+  // A game in progress keeps whatever the scorer has, and any score at all is left alone.
+  if (!['pre', 'final', 'fot'].includes(x.per || 'pre') || (+x.A || 0) || (+x.H || 0)) return null;   // a score is already in
   schedStubs();
   const r = sched.byPair.get(schedPair(x));
   if (!r || r.per === 'pre' || r.id === x.id) return null;

@@ -19,7 +19,7 @@ const allGames = {list:null, idx:null, err:'', unsub:null, built:0};
 // Called twice: once at page start with no database yet (the file needs none), and again when the database is
 // ready, which is when the handful of games saved since the file was written can be asked for.
 function watchAllGames(api){
-  if (allGames.unsub || ui.home || ui.county){
+  if (allGames.unsub || ui.county){
     if (api && allGames.list && !allGames.since) watchSince(api, allGames.built);
     return;
   }

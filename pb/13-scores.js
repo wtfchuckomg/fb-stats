@@ -300,12 +300,16 @@ const recValue = (pre, s, k) => { const el = $(`#${pre}-${s}-${k}`); return el ?
 function summary(x){
   // A snapshot game (season.json) already carries its result, so the board can draw it the moment the file
   // lands, without waiting on the database. It draws again, with the line score and the leaders, when the live
-  // copy arrives a moment later.
-  if (x.snap) return {quick:x.kind === 'score', snap:true, fin:!!x.snap.fin, live:!!x.snap.live,
+  // copy arrives a moment later. A quick score with its own score in it is the real thing, not a snapshot:
+  // some documents were saved with a stale snapshot inside them, and the score they carry is the one that counts.
+  if (x.snap && !(x.kind === 'score' && (x.A != null || x.H != null)))
+    return {quick:x.kind === 'score', snap:true, fin:!!x.snap.fin, live:!!x.snap.live,
     pre:!x.snap.fin && !x.snap.live, ff:false, q:x.snap.q || 0, score:x.snap.score || {A:0, H:0},
     status:x.snap.status || (x.snap.fin ? 'Final' : x.snap.live ? 'Live' : dayShort(gameDay(x))),
     poss:null, lines:null, S:null, men:rulesOf(x).men};
-  if (x.kind === 'score'){
+  // A gamecast nobody ever kept, with the final filled in from KPreps, reads like a score: there are no plays
+  // to replay, and without this it would sit at "Pregame" for good with the result already in hand.
+  if (x.kind === 'score' || (x.kp && !hasStats(x))){
     // Before kickoff a scheduled game shows its day ("Fri 9/18") and no score.
     const fin = qsOver(x.per), pre = x.per === 'pre';
     return {quick:true, fin, pre, ff:x.per === 'ff', live:!pre && !fin, q:{pre:0, half:2, ot:5, final:4, fot:5, ff:4}[x.per] ?? +x.per,
@@ -331,7 +335,10 @@ const leadOf = m => m.score.A === m.score.H ? null : m.score.A > m.score.H ? 'A'
 const hasStats = x => !!(x.snap ? (x.box || x.stats) : ((x.plays && x.plays.length) || x.box));
 function scoreCard(x){
   const m = summary(x), T = x.teams, lead = leadOf(m), cur = !m.quick && !!g && x.id === g.id;
-  const row = s => `<div class="sc-row${m.fin && lead ? (lead === s ? ' won' : ' lose') : ''}">${markFor(T[s], 20)}<span class="sc-ab">${esc(T[s].abbr || T[s].name)}</span>`
+  // The record beside the school: where it stands for a game still to come, counting this one once it's final.
+  const rec = s => { const r = (recordText(T[s], s, !m.fin, gameWeek(x), m.score) || '').split(',')[0].trim();
+    return r ? `<span class="sc-rec">${esc(r)}</span>` : ''; };
+  const row = s => `<div class="sc-row${m.fin && lead ? (lead === s ? ' won' : ' lose') : ''}">${markFor(T[s], 20)}<span class="sc-ab">${esc(T[s].abbr || T[s].name)}</span>${rec(s)}`
     + `${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}<span class="sc-pts">${m.pre ? '' : m.score[s]}</span><i class="sc-win"></i></div>`;
   // Friday is game night; a final from any other day says which one: "Final - Thurs."
   const dayName = ['Sun.', 'Mon.', 'Tues.', 'Wed.', 'Thurs.', 'Fri.', 'Sat.'][gameDay(x).getDay()];
