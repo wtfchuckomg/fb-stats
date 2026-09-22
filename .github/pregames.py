@@ -1,11 +1,10 @@
 """A link card for every game on the schedule that hasn't been played yet.
 
 Where g/<id>/ is the card a finished game shows, pv/<id>/ is the card the week ahead shows: the two schools
-with their logos and records, when they kick off, and this site's own line. Opening the link goes on to the
-pregame page (/?preview=<id>), which has the predictor, the leaders and the series.
+with their logos and records and when they kick off. No line: the card is a billboard, not a betting sheet.
+Opening the link goes on to the pregame page (/?preview=<id>), which has the predictor, the leaders and the series.
 
-The games come from schedule.json (KPreps' statewide schedule) and the line from ratings.json, worked out the
-same way the site's ourLine() does it. Run it for one week's games:
+The games come from schedule.json, KPreps' statewide schedule. Run it for one week's games:
 
     python3 .github/pregames.py 2026-09-25               every game that Friday
     python3 .github/pregames.py 2026-09-25 --county butler
@@ -43,16 +42,6 @@ def records(games):
     return {s: f'{r[0]}-{r[1]}' + (f'-{r[2]}' if r[2] else '') for s, r in rec.items()}
 
 
-def line_of(rat, away, home):
-    """What the site's own ratings make of the game: (favorite name, points), home team's side first."""
-    a, h = rat['teams'].get(away), rat['teams'].get(home)
-    if not a or not h or a['group'] != h['group']: return None
-    g = rat['groups'][h['group']]
-    hp = g['mu'] + h['off'] + a['def'] + g['hfa'] / 2
-    ap = g['mu'] + a['off'] + h['def'] - g['hfa'] / 2
-    return round((hp - ap) * 2) / 2
-
-
 def when_of(d):
     y, m, dy = map(int, d.split('-'))
     return date(y, m, dy).strftime('%A, %B %-d')
@@ -76,7 +65,7 @@ def draw(g, path):
     d.text((118, 178 + 144), 'at', font=cards.font('reg', 30), fill=MUTE, anchor='mm')
 
     d.line([(60, H - 130), (W - 60, H - 130)], fill=LINE, width=2)
-    foot = ' · '.join(x for x in (g['when'], '7:00 PM', g.get('line')) if x)
+    foot = f"{g['when']} · 7:00 PM"
     d.text((60, H - 84), foot, font=cards.fit(d, foot, 'bold', 32, W - 60 - 470), fill=INK, anchor='lm')
     d.text((W - 60, H - 84), 'stats.kansasmediarankings.com', font=cards.font('reg', 26), fill=MUTE, anchor='rm')
 
@@ -86,8 +75,7 @@ def draw(g, path):
 
 def page(g):
     t = html.escape(f"{g['an']} at {g['hn']}", quote=True)
-    bits = [g['when'], '7:00 PM'] + ([g['line']] if g.get('line') else [])
-    d = html.escape(' · '.join(bits) + ' · Records, the matchup predictor and the series, on Kansas Media Stats', quote=True)
+    d = html.escape(f"{g['when']} · 7:00 PM · Records, the matchup predictor and the series, on Kansas Media Stats", quote=True)
     here = f"{SITE}/pv/{g['id']}/"
     go = f"/?preview={html.escape(g['id'], quote=True)}"
     return f'''<!doctype html>
@@ -116,17 +104,13 @@ def page(g):
 def build(days, only=None, prune=True):
     """days: the dates to cover ('2026-09-25'). only: slugs at least one side must be, or None for every game."""
     sched = read('schedule.json')['games']
-    rat = read('ratings.json')
     rec = records(sched)
     keep, made = set(), 0
     for g in sched:
         if g['d'] not in days: continue
         if g.get('hp') is not None and g.get('ap') is not None: continue   # already played
         if only and g['h'] not in only and g['a'] not in only: continue
-        sp = line_of(rat, g['a'], g['h'])
-        row = dict(g, arec=rec.get(g['a'], ''), hrec=rec.get(g['h'], ''), when=when_of(g['d']),
-                   line=None if sp is None else 'Pick ’em' if sp == 0 else
-                        f"{g['hn'] if sp > 0 else g['an']} by {abs(sp):g}")
+        row = dict(g, arec=rec.get(g['a'], ''), hrec=rec.get(g['h'], ''), when=when_of(g['d']))
         folder = os.path.join(OUT, g['id'])
         os.makedirs(folder, exist_ok=True)
         with open(os.path.join(folder, 'index.html'), 'w', encoding='utf-8') as f:
