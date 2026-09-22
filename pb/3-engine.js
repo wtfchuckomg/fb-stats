@@ -698,13 +698,13 @@ function replay(g, upto = g.plays.length){
       if (nx && nx.t === 'set' && nx.poss === other(st.poss)) p = {...p, d:Math.max(0, FL - st.kickFrom - nx.spot + (+p.ry || 0))};
     }
     curI = i;
-    const pre = {sit: sit(), q: st.q, poss: st.poss};
+    const pre = {sit: sit(), q: st.q, poss: st.poss, spot: st.spot, down: st.down, phase: st.phase};
     // The last quarter football was actually played in. A game stopped early — 8-man's 45-point rule from the half
     // on, or weather — never reaches the rest, and those quarters show an X instead of a 0. Ending the game is
     // bookkeeping, not a play: it is recorded after the half has already turned the clock to the 3rd quarter.
     if (!['final', 'note', 'to'].includes(p.t) && pre.q > st.qPlayed) st.qPlayed = pre.q;
     const r = apply(p);
-    log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, trace, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q, A:st.score.A, H:st.score.H});
+    log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, spot:pre.spot, down:pre.down, phase:pre.phase, trace, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q, A:st.score.A, H:st.score.H});
   }
   if (g.box) boxInto(g, st, S, scoring);   // entered from a pasted box score: no plays, just its totals
   if (g.lines && upto >= g.plays.length) applyLines(g.lines, st);   // a typed line score wins over the plays

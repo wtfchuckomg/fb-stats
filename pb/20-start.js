@@ -46,7 +46,7 @@ function renderStart(){
         <div class="h-btns"><button type="button" class="h-btn primary" data-open="new">New game</button>
           <button type="button" class="h-btn" data-box-new>Paste a box score</button>
           <button type="button" class="h-btn" data-qs-new>Add a score</button>
-          <button type="button" class="h-btn" data-turbo="open">Import a gamecast</button></div>
+          ${sync.user && sync.user.uid === ADMIN_UID ? '<button type="button" class="h-btn" data-turbo="open">Import a gamecast</button>' : ''}</div>
       </section>
       <section class="hcard"><h2 class="h-rail">On the schedule · ${esc(weekLabel(sched.k))}</h2>
         ${schedRows ? `<ul class="s-list">${schedRows}</ul>` : `<p class="h-note">Nothing left on the schedule for ${esc(weekLabel(sched.k))}. Start a new game, or add one with <b>Add a score</b>.</p>`}
