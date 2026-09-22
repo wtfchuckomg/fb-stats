@@ -22,10 +22,18 @@ CLASS_PRIOR = 1.5 # points per class step (6A highest), where a team starts befo
 # Schools Chuck says play above what the numbers alone show. Their strength is lifted by this much at the end;
 # 0.15 is a 15% bump. Keyed by KPreps slug.
 BUMP = {'kapaun-mt-carmel': .15, 'st-thomas-aquinas': .15, 'st-james-academy': .15, 'andale': .15, 'bishop-miege': .15}
-PREV = .80        # last season's weight in week 1...
-PREV_DROP = .25   # ...falling by this much a week as this season fills in
+# How much the past counts. Walked forward through 2025 and 2026 — fit on everything before a week, then score
+# that week's games, 1,091 of them in 11-man — the old settings leaned far too hard on seasons already over:
+# they missed the margin by 13.93 points and called 81.6% of winners, against 13.36 and 82.7% at these.
+PREV = .50        # last season's weight in week 1...
+PREV_DROP = .40   # ...falling by this much a week as this season fills in
 PREV_FLOOR = .15  # but never below this
-OLDER = .5        # each season before that counts half again
+OLDER = .3        # each season before that counts this much again
+# What a team has done lately, against what the fit expected of it. Worth 8 points a win above expectation:
+# 13.23 and 83.1% in 11-man, and it helps 8-man and 6-man a little too. An explicit strength-of-schedule term
+# was tried here as well and made every group worse — the fit already prices the schedule in, because each
+# team's rating is worked out alongside its opponents'.
+FORM = 8.0
 W_YEAR = None     # worked out per season below
 slug = lambda s: re.sub(r'^-+|-+$', '', re.sub(r'[^a-z0-9]+', '-', (s or '').lower().strip()))
 
@@ -132,6 +140,21 @@ def fit(games, ignore=None, season=YEAR_NOW, played_weeks=0, cls=None):
     return {'mu': mu, 'hfa': hfa, 'off': off, 'def': dfn, 'gp': gp}
 
 
+def form_of(model, season_games):
+    """Wins above what the fit expected, per game, for each team this season. A team beating schedules it was
+    supposed to lose is telling us something the ratings haven't caught up with yet."""
+    rate = lambda t: model['off'].get(t, 0) - model['def'].get(t, 0)
+    out = {}
+    for g in season_games:
+        for me, you, pts, theirs, home in ((g['home'], g['away'], g['hp'], g['ap'], True),
+                                           (g['away'], g['home'], g['ap'], g['hp'], False)):
+            edge = rate(me) - rate(you) + (0 if g['neutral'] else (model['hfa'] if home else -model['hfa']))
+            p = 1 / (1 + math.exp(-edge / 14))
+            got = 1 if pts > theirs else .5 if pts == theirs else 0
+            out.setdefault(me, []).append(got - p)
+    return {t: sum(v) / len(v) for t, v in out.items()}
+
+
 def predict(m, home, away, neutral=False):
     h = 0 if neutral else 1
     hp = m['mu'] + m['off'].get(home, 0) + m['def'].get(away, 0) + .5 * h * m['hfa']
@@ -185,9 +208,13 @@ def main():
     for name in ('11-man', '8-man', '6-man'):
         mine = [g for g in games if same(g) and grp.get(g['home']) == name]
         m = fit(mine, season=YEAR_NOW, played_weeks=weeks_in, cls=cls)
+        form = form_of(m, [g for g in mine if g['year'] == YEAR_NOW])
         out['groups'][name] = {'mu': round(m['mu'], 2), 'hfa': round(m['hfa'], 2), 'games': len(mine)}
         for n in m['off']:
             off, dfn = m['off'][n], m['def'][n]
+            f = form.get(n)
+            if f:   # how it has gone this season against what the fit expected, half on each side of the ball
+                off, dfn = off + FORM * f / 2, dfn - FORM * f / 2
             b = BUMP.get(n)
             if b:   # lift the school's strength, half from its offense and half from its defense
                 lift = (off - dfn) * b / 2
