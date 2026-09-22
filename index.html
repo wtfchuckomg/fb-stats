@@ -1990,7 +1990,9 @@ function replay(g, upto = g.plays.length){
       : pen.foul != null ? clamp(+pen.foul, 1, (FL - 1))
       : pen.ball != null ? clamp(+pen.ball + (offFoul ? (+pen.y || 0) : -(+pen.y || 0)), 1, (FL - 1))
       : st.spot;
-    // A series nobody has run a play in yet: a foul before the snap leaves it 1st & 10 from wherever it ends up.
+    // A dead-ball foul on the play that ended the last series is marked off before the new series is awarded,
+    // so the chains are set afterwards and it stays 1st & 10 from wherever the ball ends up. Any other foul
+    // comes after the line to gain is already set, and the line to gain never moves for a penalty.
     const wasFresh = st.phase === 'play' && st.down === 1 && st.ltg === Math.min(st.spot + 10, FL);
     const full = +pen.y || 0, y = enforce(pen);
     S.team[side].pen++; S.team[side].penY += y;
@@ -2001,9 +2003,7 @@ function replay(g, upto = g.plays.length){
     if (st.phase !== 'play') return txt + '.';
     txt += `, from the ${yl(st.poss, from)}${dead ? ' (dead ball)' : ''}`;
     if (seriesNew){ newSeries(st.poss, st.spot); return txt + '.'; }
-    // Between plays (a flag on its own line) or after one (a dead-ball foul): the down isn't replayed, and a
-    // series that hadn't been run in yet starts again from the new spot.
-    if ((dead || !pre) && wasFresh){ newSeries(st.poss, st.spot); return txt + '.'; }
+    if (dead && wasFresh){ newSeries(st.poss, st.spot); return txt + '.'; }
     if (pre){ st.down = pre.down; st.ltg = pre.ltg; }          // the down is played over
     if (!offFoul && (pen.a || st.spot >= st.ltg)){
       S.team[st.poss].fd++; S.team[st.poss].fdX++;
