@@ -9886,8 +9886,7 @@ function predict(A, H){
     const five = fiveYear(n), fwp = five ? (five.w + five.t / 2 + 2) / (five.gp + 4) : null;
     // Who they've played: the average rating of the schools on the schedule so far. Beating a team that
     // hasn't won in two years isn't the same as beating a good one, and this is where that shows up.
-    const seen = s.opps.map(o => ratingOf(o)).filter(Boolean).map(o => o.rating);
-    const sos = seen.length ? seen.reduce((t, v) => t + v, 0) / seen.length : null;
+    const sos = typeof sosOf === 'function' ? sosOf(n) : null;
     return {s, wp, margin, sos, five, fwp, cls:cls == null ? null : cls, bonus:rk ? (rk.rank ? (11 - rk.rank) * 1.2 : 1) : 0, rk};
   };
   const a = side(A), h = side(H);
@@ -9895,11 +9894,15 @@ function predict(A, H){
   const met = pastMeetings(A, H), hh = met.length ? met.reduce((t, m) => t + (m.them - m.us), 0) / met.length : 0;
   const parts = [
     ['Scoring margin', Math.max(-12, Math.min(12, .4 * (h.margin - a.margin)))],
-    // Who they beat, not just by how much: the two rows together are the margin with the schedule taken out.
-    // Early in the year two games say little about a schedule, so it counts for less until more are played.
-    ['Schedule faced', a.sos != null && h.sos != null
-      ? Math.max(-8, Math.min(8, .4 * (h.sos - a.sos) * (g5 => g5 / (g5 + 2))(Math.min(a.s.gp, h.s.gp)))) : 0],
-    ['Record', 14 * (h.wp - a.wp)],
+    // Who they played, not just how they did: the ratings' view of every school on the card so far. This line
+    // was worth far too little. Tested against this season's 457 results — with each game taken back out of
+    // its own two teams' records first, so nothing is judged on knowing its own outcome — the predictor picked
+    // 75.1% of games straight up and missed the margin by 23.7 points at the old weight, and 80.1% missing by
+    // 22.5 at this one. A record counts for more alongside it, since it is now read against the schedule
+    // behind it. Two games still say little about a schedule, so it grows as they are played.
+    ['Schedule faced', a.sos && h.sos && a.sos.faced != null && h.sos.faced != null
+      ? Math.max(-16, Math.min(16, 1.2 * (h.sos.faced - a.sos.faced) * (n => n / (n + 2))(Math.min(a.s.gp, h.s.gp)))) : 0],
+    ['Record', 16 * (h.wp - a.wp)],
     ['Media Rankings', h.bonus - a.bonus],
     ['Class', a.cls != null && h.cls != null && !bumpSchool(A) && !bumpSchool(H) ? 3.5 * (h.cls - a.cls) : 0],
     ['Past meetings', Math.max(-7, Math.min(7, .35 * hh))],
@@ -9994,7 +9997,7 @@ function previewHtml(){
         <div class="pg-ringwrap">${ring}<div class="pg-marks">${markFor(T.A, 34)}${markFor(T.H, 34)}</div></div>
         <div class="pg-pct r"><b>${pctH}%</b><span>${esc(T.H.abbr || shortName(H))}</span></div></div>
       <details class="pg-how"><summary>How it’s figured</summary>
-        <table class="pg-parts">${partRows}</table></details>
+        <table class="pg-parts">${partRows}</table>${sosNote(A, H, P)}</details>
     </section>`;
 
   const info = n => { const i = schoolInfo(n); return i ? `Class ${i[0].replace('8M-', '8-Man ').replace('6M', '6-Man')} · ${i[1]}` : ''; };
@@ -10090,6 +10093,71 @@ function previewHtml(){
   // Three columns on a computer, the way a gamecast reads: the predictor and the game's details down the left, the
   // leaders and last games in the middle, the line and standings down the right.
   return `${head}<div class="pg-grid"><div class="pg-col">${predictor}${gameInfo}</div><div class="pg-col pg-mid">${leaders}${five}${past}</div><div class="pg-col">${odds}${standings}</div></div>`;
+}
+
+/* ---------- strength of schedule ----------
+   The line (ourLine) already takes the schedule into account: the ratings are fitted to every result at once,
+   so beating a good team moves a school further than beating a poor one. The predictor's record line did not —
+   3-0 counted the same however it was earned. This is what fixes that, and what the SOS numbers on the pages
+   are drawn from. Ratings are in points, and a game's expected margin is simply the difference between them. */
+const SOS_SIGMA = 14;                        // how often the better team actually wins, in points
+let sosMemo = {}, sosStamp = '';
+function sosOf(name){
+  const k = canonSchool(name); if (!k || !pre.rat || !sched.rows) return null;
+  // Games and schedules arrive one after another: an answer worked out before they landed must not be kept.
+  const stamp = `${(allGames.list || []).length}|${sched.rows.length}|${(logoLib.list || []).length}`;
+  if (stamp !== sosStamp){ sosMemo = {}; sosStamp = stamp; }
+  if (sosMemo[k]) return sosMemo[k];
+  schedStubs();
+  const full = [], faced = [];
+  let exp = 0, act = 0, gp = 0;
+  // The whole 2026 card, from the schedule file: who they play, whatever has been played so far.
+  sched.stubs.forEach(x => {
+    const side = canonSchool(x.teams.A.name) === k ? 'A' : canonSchool(x.teams.H.name) === k ? 'H' : null;
+    if (!side) return;
+    const opp = ratingOf(x.teams[side === 'A' ? 'H' : 'A'].name);
+    if (opp) full.push(opp.rating);
+  });
+  // The games actually played, and how likely each one was to be won by a team of this quality.
+  const me = ratingOf(name);
+  schoolRows(name).forEach(({x, side, opp}) => {
+    const f = finalOf(x); if (!f.fin || !f.score) return;
+    const other = ratingOf(x.teams[opp].name); if (!other || !me) return;
+    const hfa = (pre.rat.groups[me.group] || {hfa:1.5}).hfa;
+    const edge = me.rating - other.rating + (side === 'H' ? hfa : -hfa);
+    exp += 1 / (1 + Math.exp(-edge / SOS_SIGMA));
+    act += f.score[side] > f.score[opp] ? 1 : f.score[side] === f.score[opp] ? .5 : 0;
+    faced.push(other.rating); gp++;
+  });
+  const mean = a => a.length ? a.reduce((t, v) => t + v, 0) / a.length : null;
+  const out = {full:mean(full), faced:mean(faced), n:full.length, gp, exp, act,
+    over:gp ? (act - exp) / gp : 0};   // wins above what the schedule asked for, per game
+  sosMemo[k] = out;
+  return out;
+}
+// Where a school's schedule ranks in its own class, the way a strength-of-schedule table reads.
+function sosRank(name){
+  const info = schoolInfo(name), cls = info && info[0]; if (!cls) return null;
+  const peers = (logoLib.list || []).filter(t => { const i = schoolInfo(t.name); return i && i[0] === cls; });
+  const rows = peers.map(t => ({name:t.name, sos:(sosOf(t.name) || {}).full})).filter(r => r.sos != null)
+    .sort((a, b) => b.sos - a.sos);
+  const at = rows.findIndex(r => canonSchool(r.name) === canonSchool(name));
+  return at < 0 ? null : {rank:at + 1, of:rows.length, cls, sos:rows[at].sos};
+}
+
+// Strength of schedule, said plainly under the predictor: what each side's opponents rate, on average, and how
+// the whole 2026 card compares. A plus number is a schedule tougher than the middle of the state.
+function sosNote(A, H, P){
+  const a = P.a.sos, h = P.h.sos;
+  if (!a || !h || a.faced == null || h.faced == null) return '';
+  const num = v => (v > 0 ? '+' : '') + v.toFixed(1);
+  const row = (n, o) => `<tr><td>${esc(shortName(n))}</td><td class="num">${o.gp ? num(o.faced) : '\u2014'}</td>`
+    + `<td class="num">${o.full != null ? num(o.full) : '\u2014'}</td></tr>`;
+  return `<div class="pg-sos"><b>Strength of schedule</b>
+    <table class="pg-parts"><thead><tr><td></td><td class="num">PLAYED</td><td class="num">FULL YEAR</td></tr></thead>
+    <tbody>${row(A, a)}${row(H, h)}</tbody></table>
+    <p class="h-note">The average rating of the schools on the card, in points. Above zero is a schedule
+      harder than the middle of the state; the played column is the games so far, the full year every game on it.</p></div>`;
 }
 /* ================================================================
    Friday night's finals, for the games nobody kept stats on.
