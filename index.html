@@ -5478,7 +5478,12 @@ function deleteScore(id){
 
 /* ---------- shared games for the week, live from Firestore ---------- */
 const scores = {api:null, key:null, unsub:null, docs:{}, seen:null};
-function scoresReady(api){ scores.api = api; loadKpScores(); loadSchedFile(); scores.key = null; watchHidden(api); watchTeamRecs(api); watchAllGames(api); watchSchools(api); renderScores(); }
+// The three files the site serves itself — last night's games, the schedule and Friday's KPreps finals — need no
+// database, so a page reads them the moment it opens instead of waiting on the Firebase code to download and the
+// database to answer. That is the difference between a board that fills in at once and one that sits empty for
+// three seconds. The live copies land on top a moment later.
+function loadFiles(){ loadKpScores(); loadSchedFile(); watchAllGames(null); }
+function scoresReady(api){ scores.api = api; loadFiles(); scores.key = null; watchHidden(api); watchTeamRecs(api); watchAllGames(api); watchSchools(api); renderScores(); }
 
 /* ---------- games the admin has hidden from the scoreboards ---------- */
 // One shared list, in a document only the admin's account can change (the rules let only a document's owner write
@@ -5546,7 +5551,10 @@ function shownWeek(){
 // opponents' own games (the State Scoreboard asks for those).
 function weekGames(key, withHidden, withOpp){
   const out = {};
-  Object.entries(scores.docs).forEach(([id, x]) => { if (x && x.teams) out[id] = Object.assign(x, {id}); });
+  // The database has the live copies, but it takes a few seconds to answer. Until it does, the week is drawn
+  // from last night's snapshot, which is already in hand — the board fills in at once instead of sitting empty.
+  if (scores.ready === key) Object.entries(scores.docs).forEach(([id, x]) => { if (x && x.teams) out[id] = Object.assign(x, {id}); });
+  else (allGames.list || []).forEach(x => { if (x && x.teams && gameWeek(x) === key) out[x.id] = x; });
   if (!ui.viewer){
     Object.values(db.games).forEach(x => { if (x && x.teams && x.teams.A && x.teams.H && !x.sample && gameWeek(x) === key) out[x.id] = x; });
     Object.values(qsLib()).forEach(x => { if (x.deleted) delete out[x.id]; else if (x.teams && gameWeek(x) === key) out[x.id] = x; });
@@ -5558,7 +5566,8 @@ function weekGames(key, withHidden, withOpp){
   const pair = x => [x.teams.A.name, x.teams.H.name].map(canonSchool).sort().join('|');
   // One card per matchup. A gamecast with plays in it wins (two of them: the one with more plays, then the
   // newer one); a gamecast nobody has entered plays in doesn't hide a typed-in score. A hidden game takes no part.
-  const plays = x => x.kind === 'score' ? -1 : (x.plays && x.plays.length) || (x.box ? 1 : 0);
+  // A snapshot game has no plays to count, so it says for itself whether stats were kept on it.
+  const plays = x => x.kind === 'score' ? -1 : x.snap ? (hasStats(x) ? 1 : 0) : (x.plays && x.plays.length) || (x.box ? 1 : 0);
   const byPair = new Map();
   Object.values(out).forEach(x => { if (isHidden(x)) return; const k = pair(x); (byPair.get(k) || byPair.set(k, []).get(k)).push(x); });
   byPair.forEach(xs => {
@@ -5611,6 +5620,13 @@ const recValue = (pre, s, k) => { const el = $(`#${pre}-${s}-${k}`); return el ?
 /* ---------- the strip ---------- */
 // What a strip card or a scoreboard row needs from a game or a quick score: status, score, line score, stats.
 function summary(x){
+  // A snapshot game (season.json) already carries its result, so the board can draw it the moment the file
+  // lands, without waiting on the database. It draws again, with the line score and the leaders, when the live
+  // copy arrives a moment later.
+  if (x.snap) return {quick:x.kind === 'score', snap:true, fin:!!x.snap.fin, live:!!x.snap.live,
+    pre:!x.snap.fin && !x.snap.live, ff:false, q:x.snap.q || 0, score:x.snap.score || {A:0, H:0},
+    status:x.snap.status || (x.snap.fin ? 'Final' : x.snap.live ? 'Live' : dayShort(gameDay(x))),
+    poss:null, lines:null, S:null, men:rulesOf(x).men};
   if (x.kind === 'score'){
     // Before kickoff a scheduled game shows its day ("Fri 9/18") and no score.
     const fin = qsOver(x.per), pre = x.per === 'pre';
@@ -5633,6 +5649,8 @@ function summary(x){
     lines:st.lines, qPlayed:st.qPlayed, typed:st.typed, S:r.S, men:rulesOf(x).men};
 }
 const leadOf = m => m.score.A === m.score.H ? null : m.score.A > m.score.H ? 'A' : 'H';
+// Is anyone keeping stats on this game? A snapshot game says so itself; a live copy carries the plays.
+const hasStats = x => !!(x.snap ? (x.box || x.stats) : ((x.plays && x.plays.length) || x.box));
 function scoreCard(x){
   const m = summary(x), T = x.teams, lead = leadOf(m), cur = !m.quick && !!g && x.id === g.id;
   const row = s => `<div class="sc-row${m.fin && lead ? (lead === s ? ' won' : ' lose') : ''}">${markFor(T[s], 20)}<span class="sc-ab">${esc(T[s].abbr || T[s].name)}</span>`
@@ -5645,7 +5663,7 @@ function scoreCard(x){
   // A game opens once stats are being kept on it; the scorer can always open their own.
   if (!m.quick){
     const title = esc(`${T.A.name} at ${T.H.name}`);
-    if (x.plays.length || x.box || (!ui.viewer && db.games[x.id]))
+    if (hasStats(x) || (!ui.viewer && db.games[x.id]))
       return `<a class="${cls}" href="?game=${encodeURIComponent(x.id)}" data-sc="${esc(x.id)}" title="${title}">${inner}</a>`;
     // Not started yet: the card opens its pregame page.
     if (m.pre) return `<a class="${cls}" href="?preview=${encodeURIComponent(x.id)}" data-sc="${esc(x.id)}" title="${title}">${inner}</a>`;
@@ -5923,7 +5941,7 @@ async function startScoreboard(){
   document.title = `${boardName()} Scoreboard · Kansas Media Stats`;
   const want = new URLSearchParams(location.search).get(boardParam()) || '';
   ui.week = /^\d{4}-\d\d-\d\d$/.test(want) ? weekKey(fromYmd(want).getTime()) : boardDefaultWeek();
-  loadLogos(); renderScoreboard();
+  loadLogos(); loadFiles(); renderScoreboard();
   // The admin's own devices (the Game Tracker marks them at sign-in) sign in here too, for the Hide buttons.
   let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
   try {
@@ -6005,7 +6023,7 @@ function boardGame(x){
   };
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
   // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
-  const acts = m.pre ? `<a class="bbtn" href="?preview=${id}">Preview</a>` : m.quick || (!x.plays.length && !x.box) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a>`;
+  const acts = m.pre ? `<a class="bbtn" href="?preview=${id}">Preview</a>` : m.quick || !hasStats(x) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a>`;
   // The admin can hide any game from the scoreboards, or bring a hidden one back.
   const off = ui.admin && isHidden(x);
   const hide = ui.admin ? `${off ? '<span class="b-hidtag">Hidden</span>' : ''}<button type="button" class="bhide" data-hide="${esc(x.id)}"${x.opp ? ' data-opp="1"' : ''}>${off ? 'Show' : 'Hide'}</button>` : '';
@@ -6031,7 +6049,7 @@ function renderScoreboard(){
   const games = weekGames(key, ui.admin, ui.state || ui.av).filter(x => (!ui.state && !ui.av) ? inBuco(x) : (onStateBoard(x) && (!ui.av || inAvctl(x)))), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (board.err) body = note(board.err);
-  else if (scores.ready !== key) body = note('Loading scores…');
+  else if (scores.ready !== key && !allGames.list) body = note('Loading scores…');
   else if (!games.length) body = note(`No games for ${weekLabel(key)} yet.`);
   else {
     const days = [];
@@ -6042,8 +6060,11 @@ function renderScoreboard(){
     });
     // Live games first, then finals, then games still to come; a day with a game going on moves to the top.
     const rank = new Map(games.map(x => { const m = summary(x); return [x, m.live ? 0 : m.fin ? 1 : 2]; }));
-    days.forEach(day => { day.games.sort((a, b) => rank.get(a) - rank.get(b)); day.live = rank.get(day.games[0]) === 0; });
-    days.sort((a, b) => (b.live ? 1 : 0) - (a.live ? 1 : 0));
+    // Within a day, by home school, so the cards sit in the same order in the snapshot and in the live copy
+    // that replaces it a moment later — nothing jumps under the reader's finger.
+    const bySchool = x => canonSchool(x.teams.H.name);
+    days.forEach(day => { day.games.sort((a, b) => rank.get(a) - rank.get(b) || bySchool(a).localeCompare(bySchool(b))); day.live = rank.get(day.games[0]) === 0; });
+    days.sort((a, b) => (b.live ? 1 : 0) - (a.live ? 1 : 0) || a.k.localeCompare(b.k));
     body = days.map(day => `<section class="bcard"><h2 class="bday">${esc(day.d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'}))}</h2>
       ${day.games.map(boardGame).join('')}</section>`).join('');
   }
@@ -7661,8 +7682,13 @@ const tpage = {edit:false, draft:null, sug:null, name:'', season:'', hist:{}};
 // for every game on every page — 370-odd reads a visit, growing with the season. This week's games arrive live
 // on top of it (watchWeek), so a score still moves the moment it changes.
 const allGames = {list:null, idx:null, err:'', unsub:null, built:0};
+// Called twice: once at page start with no database yet (the file needs none), and again when the database is
+// ready, which is when the handful of games saved since the file was written can be asked for.
 function watchAllGames(api){
-  if (allGames.unsub || ui.home || ui.county) return;
+  if (allGames.unsub || ui.home || ui.county){
+    if (api && allGames.list && !allGames.since) watchSince(api, allGames.built);
+    return;
+  }
   allGames.unsub = () => {};
   loadSeason(api);
 }
@@ -7674,24 +7700,27 @@ function seasonGame(e){
     snap:{fin:!!e.fin, live:!!e.live, status:e.status || '', q:e.q || 0, score:{A:+e.A || 0, H:+e.H || 0}}};
 }
 async function loadSeason(api){
+  let d;
+  // Only reading the file is worth falling back over. Anything that goes wrong drawing what it says is a bug to
+  // see in the console, not a reason to throw the file away and ask the database for all 400 games again.
   try {
     const r = await fetch('/season.json', {cache:'no-cache'});
     if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
+    d = await r.json();
     if (!d || !Array.isArray(d.games) || !d.games.length) throw new Error('empty');
-    allGames.list = d.games.map(seasonGame); allGames.built = d.built || 0; allGames.err = '';
-    indexGames(); recordsChanged();
-    watchSince(api, allGames.built);   // and whatever has changed since the file was written
   } catch (e) {
     // No file, or it can't be read: ask the database for the games, the way this used to work.
     allGames.unsub = null;
-    watchAllGamesLive(api);
+    return watchAllGamesLive(api);
   }
+  allGames.list = d.games.map(seasonGame); allGames.built = d.built || 0; allGames.err = '';
+  indexGames(); recordsChanged();
+  watchSince(api, allGames.built);   // and whatever has changed since the file was written
 }
 // Anything saved since the snapshot was built — a box score pasted for an old week, a score corrected — read
 // live and laid over it. It asks only for documents newer than the file, which on a normal day is a handful.
 function watchSince(api, built){
-  if (!api || !built) return;
+  if (!api || !built || allGames.since) return;
   const {fsM, fsdb} = api;
   try {
     const q = fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true), fsM.where('updated', '>', built));

@@ -16,8 +16,13 @@ const tpage = {edit:false, draft:null, sug:null, name:'', season:'', hist:{}};
 // for every game on every page — 370-odd reads a visit, growing with the season. This week's games arrive live
 // on top of it (watchWeek), so a score still moves the moment it changes.
 const allGames = {list:null, idx:null, err:'', unsub:null, built:0};
+// Called twice: once at page start with no database yet (the file needs none), and again when the database is
+// ready, which is when the handful of games saved since the file was written can be asked for.
 function watchAllGames(api){
-  if (allGames.unsub || ui.home || ui.county) return;
+  if (allGames.unsub || ui.home || ui.county){
+    if (api && allGames.list && !allGames.since) watchSince(api, allGames.built);
+    return;
+  }
   allGames.unsub = () => {};
   loadSeason(api);
 }
@@ -29,24 +34,27 @@ function seasonGame(e){
     snap:{fin:!!e.fin, live:!!e.live, status:e.status || '', q:e.q || 0, score:{A:+e.A || 0, H:+e.H || 0}}};
 }
 async function loadSeason(api){
+  let d;
+  // Only reading the file is worth falling back over. Anything that goes wrong drawing what it says is a bug to
+  // see in the console, not a reason to throw the file away and ask the database for all 400 games again.
   try {
     const r = await fetch('/season.json', {cache:'no-cache'});
     if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
+    d = await r.json();
     if (!d || !Array.isArray(d.games) || !d.games.length) throw new Error('empty');
-    allGames.list = d.games.map(seasonGame); allGames.built = d.built || 0; allGames.err = '';
-    indexGames(); recordsChanged();
-    watchSince(api, allGames.built);   // and whatever has changed since the file was written
   } catch (e) {
     // No file, or it can't be read: ask the database for the games, the way this used to work.
     allGames.unsub = null;
-    watchAllGamesLive(api);
+    return watchAllGamesLive(api);
   }
+  allGames.list = d.games.map(seasonGame); allGames.built = d.built || 0; allGames.err = '';
+  indexGames(); recordsChanged();
+  watchSince(api, allGames.built);   // and whatever has changed since the file was written
 }
 // Anything saved since the snapshot was built — a box score pasted for an old week, a score corrected — read
 // live and laid over it. It asks only for documents newer than the file, which on a normal day is a handful.
 function watchSince(api, built){
-  if (!api || !built) return;
+  if (!api || !built || allGames.since) return;
   const {fsM, fsdb} = api;
   try {
     const q = fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true), fsM.where('updated', '>', built));

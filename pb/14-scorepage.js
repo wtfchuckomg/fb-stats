@@ -38,7 +38,7 @@ async function startScoreboard(){
   document.title = `${boardName()} Scoreboard · Kansas Media Stats`;
   const want = new URLSearchParams(location.search).get(boardParam()) || '';
   ui.week = /^\d{4}-\d\d-\d\d$/.test(want) ? weekKey(fromYmd(want).getTime()) : boardDefaultWeek();
-  loadLogos(); renderScoreboard();
+  loadLogos(); loadFiles(); renderScoreboard();
   // The admin's own devices (the Game Tracker marks them at sign-in) sign in here too, for the Hide buttons.
   let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
   try {
@@ -120,7 +120,7 @@ function boardGame(x){
   };
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
   // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
-  const acts = m.pre ? `<a class="bbtn" href="?preview=${id}">Preview</a>` : m.quick || (!x.plays.length && !x.box) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a>`;
+  const acts = m.pre ? `<a class="bbtn" href="?preview=${id}">Preview</a>` : m.quick || !hasStats(x) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a>`;
   // The admin can hide any game from the scoreboards, or bring a hidden one back.
   const off = ui.admin && isHidden(x);
   const hide = ui.admin ? `${off ? '<span class="b-hidtag">Hidden</span>' : ''}<button type="button" class="bhide" data-hide="${esc(x.id)}"${x.opp ? ' data-opp="1"' : ''}>${off ? 'Show' : 'Hide'}</button>` : '';
@@ -146,7 +146,7 @@ function renderScoreboard(){
   const games = weekGames(key, ui.admin, ui.state || ui.av).filter(x => (!ui.state && !ui.av) ? inBuco(x) : (onStateBoard(x) && (!ui.av || inAvctl(x)))), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (board.err) body = note(board.err);
-  else if (scores.ready !== key) body = note('Loading scores…');
+  else if (scores.ready !== key && !allGames.list) body = note('Loading scores…');
   else if (!games.length) body = note(`No games for ${weekLabel(key)} yet.`);
   else {
     const days = [];
@@ -157,8 +157,11 @@ function renderScoreboard(){
     });
     // Live games first, then finals, then games still to come; a day with a game going on moves to the top.
     const rank = new Map(games.map(x => { const m = summary(x); return [x, m.live ? 0 : m.fin ? 1 : 2]; }));
-    days.forEach(day => { day.games.sort((a, b) => rank.get(a) - rank.get(b)); day.live = rank.get(day.games[0]) === 0; });
-    days.sort((a, b) => (b.live ? 1 : 0) - (a.live ? 1 : 0));
+    // Within a day, by home school, so the cards sit in the same order in the snapshot and in the live copy
+    // that replaces it a moment later — nothing jumps under the reader's finger.
+    const bySchool = x => canonSchool(x.teams.H.name);
+    days.forEach(day => { day.games.sort((a, b) => rank.get(a) - rank.get(b) || bySchool(a).localeCompare(bySchool(b))); day.live = rank.get(day.games[0]) === 0; });
+    days.sort((a, b) => (b.live ? 1 : 0) - (a.live ? 1 : 0) || a.k.localeCompare(b.k));
     body = days.map(day => `<section class="bcard"><h2 class="bday">${esc(day.d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'}))}</h2>
       ${day.games.map(boardGame).join('')}</section>`).join('');
   }
