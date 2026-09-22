@@ -55,7 +55,10 @@ function kpFinal(x){
 }
 // The same game with that score in it. Nothing is written to the database: this is how the page reads it.
 function kpFill(x){
-  const f = kpFinal(x);
+  // Friday night's file first, then the schedule file, which carries KPreps' finals for every week of the season.
+  const f = kpFinal(x) || schedFinal(x);
   if (!f) return x;
-  return Object.assign({}, x, {A:f.A, H:f.H, per:'final', kp:true});
+  // A snapshot game carries its result in snap, so that has to say final too, or the page reads the old 0-0.
+  const snap = x.snap ? {snap:{fin:true, live:false, status:'Final', q:4, score:{A:f.A, H:f.H}}} : null;
+  return Object.assign({}, x, {A:f.A, H:f.H, per:'final', kp:true}, snap);
 }

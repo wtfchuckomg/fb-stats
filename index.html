@@ -10112,9 +10112,12 @@ function kpFinal(x){
 }
 // The same game with that score in it. Nothing is written to the database: this is how the page reads it.
 function kpFill(x){
-  const f = kpFinal(x);
+  // Friday night's file first, then the schedule file, which carries KPreps' finals for every week of the season.
+  const f = kpFinal(x) || schedFinal(x);
   if (!f) return x;
-  return Object.assign({}, x, {A:f.A, H:f.H, per:'final', kp:true});
+  // A snapshot game carries its result in snap, so that has to say final too, or the page reads the old 0-0.
+  const snap = x.snap ? {snap:{fin:true, live:false, status:'Final', q:4, score:{A:f.A, H:f.H}}} : null;
+  return Object.assign({}, x, {A:f.A, H:f.H, per:'final', kp:true}, snap);
 }
 /* ================================================================
    Every logo school's full schedule, from KPreps.
@@ -10151,7 +10154,23 @@ function schedStubs(){
       per:fin ? (r.ot ? 'fot' : 'final') : 'pre', clk:'', ...(fin ? {kp:true} : {})};
   });
   sched.byId = new Map(sched.stubs.map(x => [x.id, x]));
+  sched.byPair = new Map(sched.stubs.map(x => [schedPair(x), x]));
   return sched.stubs;
+}
+// The file's final for a game the site is still showing at 0-0. The opponents' schedules were seeded once, when
+// those games hadn't been played, and each one is a saved entry that outranks the schedule file — so without this
+// a result sits in the file while the team page still reads "Fri 9/18". A score someone typed, a tracked game and
+// a box score are all left alone: only an untouched schedule entry fills in.
+function schedFinal(x){
+  if (!sched.rows || !x || !x.teams || !x.teams.A || !x.teams.H) return null;
+  if (x.kind !== 'score' || x.box || x.stats || (x.plays && x.plays.length)) return null;
+  if (x.per !== 'pre' || (+x.A || 0) || (+x.H || 0)) return null;   // a score is already in
+  schedStubs();
+  const r = sched.byPair.get(schedPair(x));
+  if (!r || r.per === 'pre' || r.id === x.id) return null;
+  // Whichever side the file has at home may be the other way round from ours: go by the school, not the side.
+  const home = kpAlias(r.teams.H.name) === kpAlias(x.teams.H.name);
+  return {A:home ? r.A : r.H, H:home ? r.H : r.A};
 }
 const schedById = id => { if (!sched.rows) return null; schedStubs(); return sched.byId.get(id) || null; };
 // The same two schools in the same week, however either side spells them.
