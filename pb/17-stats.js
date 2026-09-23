@@ -35,10 +35,15 @@ async function startCounty(){
   if (pickSeason) county.season = pickSeason;
   loadLogos(); renderCounty();
   try {
+    // The admin's own devices (the Game Tracker marks them at sign-in) sign in here too, to set the minimums.
+    let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
-    const [appM, fsM] = await Promise.all([import(base + 'app.js'), import(base + 'firestore.js')]);
-    const fsdb = fsM.getFirestore(appM.initializeApp(firebaseConfig));
+    const [appM, fsM, authM] = await Promise.all(['app', 'firestore', ...(admin ? ['auth'] : [])].map(m => import(base + m + '.js')));
+    const app = appM.initializeApp(firebaseConfig);
+    if (authM) authM.onAuthStateChanged(authM.getAuth(app), u => { ui.admin = !!u && u.uid === ADMIN_UID; renderCounty(); });
+    const fsdb = fsM.getFirestore(app);
     scoresReady({fsM, fsdb});   // the week's scores strip, above the menu bar
+    watchStatMins({fsM, fsdb});
     loadStats({fsM, fsdb});
   } catch (e) { county.err = 'Can’t reach the stats. Check your connection and reload.'; renderCounty(); }
 }
@@ -213,13 +218,13 @@ const rating = p => {
   return (part((p.pc / p.pa - 0.3) * 5) + part((p.py / p.pa - 3) * 0.25) + part(p.ptd / p.pa * 20) + part(2.375 - p.pint / p.pa * 25)) / 6 * 100;
 };
 const P_VIEWS = {
-  passing:{label:'Passing', keep:p => p.pa > 0, def:3, cols:[['CMP', p => p.pc], ['ATT', p => p.pa], ['CMP%', p => per(100 * p.pc, p.pa), 1], ['YDS', p => p.py],
+  passing:{label:'Passing', keep:p => p.pa > 0, def:3, qual:p => p.pa, unit:'pass attempts', rate:['CMP%', 'AVG', 'RTG'], cols:[['CMP', p => p.pc], ['ATT', p => p.pa], ['CMP%', p => per(100 * p.pc, p.pa), 1], ['YDS', p => p.py],
     ['AVG', p => per(p.py, p.pa), 1], ['TD', p => p.ptd], ['INT', p => p.pint], ['RTG', rating, 1]]},
-  rushing:{label:'Rushing', keep:p => p.ru > 0, def:1, cols:[['ATT', p => p.ru], ['YDS', p => p.ry], ['AVG', p => per(p.ry, p.ru), 1], ['TD', p => p.rtd]]},
-  receiving:{label:'Receiving', keep:p => p.re > 0 || p.rey !== 0, def:1, cols:[['REC', p => p.re], ['YDS', p => p.rey], ['AVG', p => per(p.rey, p.re), 1], ['TD', p => p.retd]]},
+  rushing:{label:'Rushing', keep:p => p.ru > 0, def:1, qual:p => p.ru, unit:'carries', rate:['AVG'], cols:[['ATT', p => p.ru], ['YDS', p => p.ry], ['AVG', p => per(p.ry, p.ru), 1], ['TD', p => p.rtd]]},
+  receiving:{label:'Receiving', keep:p => p.re > 0 || p.rey !== 0, def:1, qual:p => p.re, unit:'catches', rate:['AVG'], cols:[['REC', p => p.re], ['YDS', p => p.rey], ['AVG', p => per(p.rey, p.re), 1], ['TD', p => p.retd]]},
   scoring:{label:'Scoring', keep:p => ptsOf(p) > 0, def:7, groups:[['TOUCHDOWNS', 4], ['SCORING', 5]], cols:[['RUSH', p => p.rtd], ['REC', p => p.retd], ['RET', p => p.ret], ['TD', tdAll],
     ['FG', p => p.fgm], ['XP', p => p.xpm], ['2PT', p => p.two], ['PTS', ptsOf], ['PTS/G', p => per(ptsOf(p), p.gp), 1]]},
-  kicking:{label:'Kicking', keep:p => p.fga > 0 || p.xpa > 0, def:6, cols:[['FGM', p => p.fgm], ['FGA', p => p.fga], ['FG%', p => per(100 * p.fgm, p.fga), 1],
+  kicking:{label:'Kicking', keep:p => p.fga > 0 || p.xpa > 0, def:6, qual:p => p.fga, unit:'field goal tries', rate:['FG%'], cols:[['FGM', p => p.fgm], ['FGA', p => p.fga], ['FG%', p => per(100 * p.fgm, p.fga), 1],
     ['XPM', p => p.xpm], ['XPA', p => p.xpa], ['XP%', p => per(100 * p.xpm, p.xpa), 1], ['PTS', p => 3 * p.fgm + p.xpm]]}};
 // 2025's Scoring: the leaderboard has rushing and receiving touchdowns, no kicks or two-point tries.
 const SCORING_25 = {label:'Scoring', keep:p => p.rtd + p.retd > 0, def:2, groups:[['TOUCHDOWNS', 3]],
@@ -244,18 +249,64 @@ function quarterCols(ot){
   return [col('1ST', 0), col('2ND', 1), col('3RD', 2), col('4TH', 3), ...(ot ? [col('OT', 4)] : []), col('1ST HALF', 0, 1), col('2ND HALF', 2, 3)];
 }
 
+/* ---------- minimums to rank in a rate (passer rating, yards per carry…), kept by the admin ---------- */
+// One shared setting, like the hidden games: only the admin's account can change it, and anyone can read it.
+// {passing:25} means a passer needs 25 attempts to be ranked when the table is sorted by RTG, CMP% or AVG.
+// Totals (yards, touchdowns) rank everyone, the way ESPN does it.
+const MINS_DOC = 'stat-minimums';
+const statMins = {map:{}, api:null, unsub:null};
+const statMin = view => Math.max(0, +statMins.map[view] || 0);
+function watchStatMins(api){
+  statMins.api = api;
+  if (statMins.unsub) return;
+  const {fsM, fsdb} = api;
+  // Until the first minimum is saved there is no document, and reading it is refused: then there are none.
+  statMins.unsub = fsM.onSnapshot(fsM.doc(fsdb, 'pressbox', MINS_DOC), snap => {
+    const d = snap.exists() ? snap.data() : null;
+    let map = {}; if (d && d.owner === ADMIN_UID && !d.deleted){ try { map = JSON.parse(d.json).views || {}; } catch (e) {} }
+    statMins.map = map; if (ui.county) renderCounty();
+  }, () => { statMins.unsub = null; });
+}
+async function saveStatMin(view, val){
+  if (!ui.admin || !statMins.api) return toast('Sign in on the Game Tracker to set minimums');
+  const n = Math.floor(+val);
+  if (!(n >= 0) || n > 999) return toast('Type a number, or 0 for no minimum');
+  const map = Object.assign({}, statMins.map);
+  if (n) map[view] = n; else delete map[view];
+  const {fsM, fsdb} = statMins.api;
+  try {
+    // Save first, then show it: a refused write must not leave the table ranked by a minimum nobody else sees.
+    await fsM.setDoc(fsM.doc(fsdb, 'pressbox', MINS_DOC), {owner:ADMIN_UID, updated:Date.now(), public:true, kind:'minimums',
+      title:'Minimums to rank', json:JSON.stringify({views:map})});
+    statMins.map = map; renderCounty();
+    toast(n ? `Minimum saved: ${n} ${P_VIEWS[view].unit}` : 'Minimum removed');
+    if (!statMins.unsub) watchStatMins(statMins.api);   // the first save makes the document: follow it from now on
+  } catch (e) { toast('Couldn’t save that. Sign in on the Game Tracker, then try again.'); }
+}
+// Under the table: what the minimum is, for everyone; a box to change it, for the admin.
+function minLine(V, min){
+  if (!V.qual) return '';
+  const what = `to rank in ${V.rate.join(', ')}`;
+  if (ui.admin) return `<div class="c-min"><label for="cmin">Minimum ${what}:</label><input id="cmin" type="number" inputmode="numeric" min="0" max="999" value="${min || ''}" placeholder="none"><span>${esc(V.unit)}</span><button type="button" data-cminsave>Save</button></div>`;
+  return min ? `<div class="c-min">Minimum ${min} ${esc(V.unit)} ${what}.</div>` : '';
+}
+
 /* ---------- the table, ESPN style: rank, name, then numbers; the sorted column shaded ---------- */
 function statTable(id, rows, cols, def, o){
   const s = county.sort[id] || {i:def, desc:!o.asc}, key = r => num(cols[s.i][1](r));
+  // Sorted by a rate (RTG, AVG…) with a minimum set: players short of it go below everyone who has it, unranked.
+  const q = o.qual && o.rate && o.rate.has(s.i) ? o.qual : null;
   // A team with no games yet always sorts to the bottom, whichever way the column runs; so do blanks.
   const sorted = rows.slice().sort((a, b) => {
     if ((a.gp === 0) !== (b.gp === 0)) return a.gp === 0 ? 1 : -1;
+    if (q && q(a) !== q(b)) return q(a) ? -1 : 1;
     const x = key(a), y = key(b);
     if (x == null || y == null) return (x == null) - (y == null) || a.name.localeCompare(b.name);
     return (s.desc ? y - x : x - y) || a.name.localeCompare(b.name);
   });
-  let rank = 0, prev;   // ties share a rank
-  const rk = sorted.map((r, i) => { const v = key(r); if (i === 0 || v !== prev) rank = i + 1; prev = v; return rank; });
+  let rank = 0, prev, n = 0;   // ties share a rank
+  const rk = sorted.map(r => { if (q && !q(r)) return ''; const v = key(r); if (n === 0 || v !== prev) rank = n + 1; prev = v; n++; return rank; });
+  const firstShort = q ? sorted.findIndex(r => !q(r)) : -1;
   const cell = (c, r) => {
     if (r.gp === 0 && c[0] !== 'GP') return '—';
     if (c[3]) return c[3](r);
@@ -264,7 +315,7 @@ function statTable(id, rows, cols, def, o){
   const groups = o.groups ? `<tr class="cgrp"><th class="rk"></th><th class="nm"></th>${o.groups.map(([g, n]) => `<th colspan="${n}">${g}</th>`).join('')}</tr>` : '';
   return `<div class="tbl-wrap"><table class="ctbl"><thead>${groups}<tr><th class="rk">RK</th><th class="nm">${o.first || 'NAME'}</th>
       ${cols.map((c, i) => `<th class="num${i === s.i ? ' on' : ''}" data-csort="${id}:${i}"><span>${c[0]}</span>${i === s.i ? `<i>${s.desc ? '▾' : '▴'}</i>` : ''}</th>`).join('')}</tr></thead>
-    <tbody>${sorted.map((r, j) => `<tr${o.hi && o.hi(r) ? ' class="hi"' : ''}><td class="rk">${rk[j]}</td><td class="nm"><div class="cn-in">${o.name(r)}</div></td>
+    <tbody>${sorted.map((r, j) => `${j === firstShort ? `<tr class="nq-hd"><td colspan="${cols.length + 2}">${esc(o.shortLabel || 'Below the minimum')}</td></tr>` : ''}<tr class="${[o.hi && o.hi(r) && 'hi', q && !q(r) && 'nq'].filter(Boolean).join(' ')}"><td class="rk">${rk[j]}</td><td class="nm"><div class="cn-in">${o.name(r)}</div></td>
       ${cols.map((c, i) => `<td class="num${i === s.i ? ' on' : ''}">${esc(String(cell(c, r)))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
 const cMark = name => markFor({name, abbr:shortName(name), color:'#4A4B4D'}, 26);   // phones: 22 (1-head.html)
@@ -315,20 +366,26 @@ function renderCounty(){
       // Phones show the short form, like ESPN's ("W. Quinn").
       const name = p => `${cMark(p.team)}<a class="c-pl" href="${playerHref(p.name, p.team)}"><b><span class="pl-full">${esc(p.name)}</span><span class="pl-short">${esc(plShort(p.name))}</span></b><small>${esc(shortName(p.team))}${p.yr ? `<span class="pl-yr"> · ${esc(p.yr)}</span>` : ''}</small></a>`;
       // 2025's tables keep their own sort (its Scoring has fewer columns than this season's).
-      body = `<section class="bcard ccard">${rows.length ? statTable(y25 ? v + '25' : v, rows, V.cols, V.def, {name, groups:V.groups})
-        : `<p class="bempty" style="padding:4px 20px 10px">No ${V.label.toLowerCase()} stats yet${county.team === 'all' ? '' : ` for ${esc(county.team)}`}.</p>`}</section>`;
+      const min = V.qual ? statMin(v) : 0, rateAt = new Set((V.rate || []).map(h => V.cols.findIndex(c => c[0] === h)));
+      const mo = min ? {qual:p => V.qual(p) >= min, rate:rateAt, shortLabel:`Under ${min} ${V.unit}`} : {};
+      body = `<section class="bcard ccard">${rows.length ? statTable(y25 ? v + '25' : v, rows, V.cols, V.def, {name, groups:V.groups, ...mo})
+        : `<p class="bempty" style="padding:4px 20px 10px">No ${V.label.toLowerCase()} stats yet${county.team === 'all' ? '' : ` for ${esc(county.team)}`}.</p>`}${minLine(V, min)}</section>`;
     }
   }
   box.innerHTML = head + body;
 }
 document.addEventListener('click', e => {
   if (!ui.county || !e.target.closest) return;
+  if (e.target.closest('[data-cminsave]')) return saveStatMin(county.view, $('#cmin') && $('#cmin').value);
   const vb = e.target.closest('[data-cview]');
   if (vb){ county.view = vb.dataset.cview; history.replaceState(null, '', `?${STATE_STATS ? 'statestats' : 'stats'}=${county.view}`); return renderCounty(); }
   const th = e.target.closest('[data-csort]'); if (!th) return;
   const [id, i] = th.dataset.csort.split(':'), cur = county.sort[id];
   county.sort[id] = {i:+i, desc:cur && cur.i === +i ? !cur.desc : true};
   renderCounty();
+});
+document.addEventListener('keydown', e => {
+  if (ui.county && e.key === 'Enter' && e.target.id === 'cmin') saveStatMin(county.view, e.target.value);
 });
 document.addEventListener('change', e => {
   if (!ui.county) return;

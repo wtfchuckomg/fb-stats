@@ -59,7 +59,7 @@ function listen(){
       const id = ch.doc.id, d = ch.doc.data(), local = db.games[id];
       if (id === teamsDocId()) return mergeTeams(d.json);        // the saved-teams library, not a game
       if (id === mySchoolsDocId() || d.kind === 'my-schools') return mergeMySchools(d.json);   // schools this scorer added, not a game
-      if (id === HIDE_DOC || id === RECS_DOC || d.kind === 'roster' || d.kind === 'massey') return;   // hidden games, team records, shared rosters, the old Massey lines: not games
+      if (id === HIDE_DOC || id === RECS_DOC || id === MINS_DOC || d.kind === 'roster' || d.kind === 'massey') return;   // hidden games, team records, stat minimums, shared rosters, the old Massey lines: not games
       if (d.kind === 'score') return mergeScore(id, d);           // a quick score, not a game
       const lu = local ? local.updated || 0 : -1, ru = d.updated || 0;
       if (ru > lu){
