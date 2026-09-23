@@ -333,17 +333,6 @@ function editClock(){
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') finish(true); if (e.key === 'Escape') finish(false); });
 }
 
-// The Look picker, up in the site bar for everyone, the Game Tracker included.
-(function(){
-  const box = $('#skinpick'), sel = $('#skinsel'); if (!box || !sel) return;
-  const q = new URLSearchParams(location.search);
-  if (q.has('embed')) return;
-  box.hidden = false; sel.value = window.KMS_SKIN_PICKED ? window.KMS_SKIN : 'auto';
-  sel.addEventListener('change', () => {
-    try { if (sel.value === 'auto') localStorage.removeItem('kms.skin'); else localStorage.setItem('kms.skin', sel.value); } catch (e) {}
-    location.reload();
-  });
-})();
 // Press and hold a play to edit it straight away — the phone's long-press. A tap still opens the row with its
 // Edit and Delete buttons. The click that follows a hold is swallowed, so the row doesn't open underneath the edit.
 const hold = {t:0, x:0, y:0, row:null, fired:false};
