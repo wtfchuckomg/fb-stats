@@ -7831,7 +7831,9 @@ function teamPageHtml(nameIn){
              <button type="button" class="btn danger" data-tp-remove-yes>Remove</button><button type="button" class="linkbtn" data-tp-remove-no>Keep it</button></span>`
           : '<button type="button" class="btn danger" data-tp-remove>Remove game</button>'}</div></td></tr>` : '';
     if (m.fin) now[a > b ? 'w' : a < b ? 'l' : 't']++;
-    const runNow = m.fin ? `${now.w}-${now.l}${now.t ? '-' + now.t : ''}` : '';
+    // Before kickoff the record's spot links to the game's pregame page; a final (or a game someone is tracking) takes it over.
+    const runNow = m.fin ? `${now.w}-${now.l}${now.t ? '-' + now.t : ''}`
+      : !m.live && !stats ? `<a class="tp-go" href="?preview=${encodeURIComponent(x.id)}">Preview</a>` : '';
     return `<tr><td class="wk">${esc(weekLabel(wk))}</td><td class="opp"><em>${side === 'A' ? 'at' : 'vs'}</em><a href="?team=${encodeURIComponent(o.name)}">${markFor(o, 24)}${esc(o.name)}</a></td>
       <td class="res">${cell}</td><td class="tp-run">${runNow}</td><td class="lnk">${go}</td></tr>${form}`;
   }).join('');
