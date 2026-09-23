@@ -188,6 +188,10 @@ function teamSeason(name){
 // punished for playing up: in those games the class line reads even, whichever way it falls.
 const CLASS_STEP = {'6A':6, '5A':5, '4A':4, '3A':3, '2A':2, '1A':1, '8M-I':0, '8M-II':-.5, '6M':-1};
 const bumpSchool = n => { const r = ratingOf(n); return !!(r && r.bump); };
+// How a projected margin becomes a chance to win. Fitted 2026-09-23 on 4,112 games from 2023-2025, each one
+// predicted only from the games before it: favorites by 3-7 won 64% (this says 63%), by 7-10 69% (72%), by
+// 10-14 78% (79%), by 14-21 86% (87%). 8-man and 6-man scores swing more, so a point there is worth less.
+const WIN_SCALE = {'11-man':8.5, '8-man':10.5, '6-man':9.6};
 function predict(A, H){
   const side = n => {
     const s = teamSeason(n), g = s.w + s.l + s.t;
@@ -221,6 +225,14 @@ function predict(A, H){
     // The last five seasons, when both schools have them on file: how good these programs have been, counted lightly.
     ['Last 5 seasons', a.fwp != null && h.fwp != null ? Math.max(-6, Math.min(6, 12 * (h.fwp - a.fwp))) : 0],
     ['Home field', 2.5]];
+  // With a Game line, the ring is that line's margin turned into a chance, so the two can never disagree.
+  const L = ourLine(A, H);
+  if (L){
+    const m = L.home - L.away, sc = WIN_SCALE[ratingOf(H).group] || 9;
+    const home = Math.min(.99, Math.max(.01, 1 / (1 + Math.exp(-m / sc))));
+    return {home, away:1 - home, pts:m, parts, a, h, line:L};
+  }
+  // No line (a school the ratings don't have, or 11-man against 8-man): the hand-weighted parts above.
   const pts = parts.reduce((t, p) => t + p[1], 0);
   const home = Math.min(.97, Math.max(.03, 1 / (1 + Math.exp(-pts / 8))));
   return {home, away:1 - home, pts, parts, a, h};
@@ -303,13 +315,15 @@ function previewHtml(){
       <circle cx="90" cy="90" r="${R}" fill="none" stroke="${esc(colorH)}" stroke-width="16"/>
       <circle cx="90" cy="90" r="${R}" fill="none" stroke="${esc(colorA)}" stroke-width="16" stroke-dasharray="${(P.away * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 90 90) scale(1 -1) translate(0 -180)"/>
     </svg>`;
-  const partRows = P.parts.map(([k, v]) => `<tr><td>${k}</td><td class="num">${Math.abs(v) < .05 ? 'even' : `${esc(v > 0 ? H : A)} +${Math.abs(v).toFixed(1)}`}</td></tr>`).join('');
+  const partRows = P.line ? lineRows(A, H, P) : P.parts.map(([k, v]) => `<tr><td>${k}</td><td class="num">${Math.abs(v) < .05 ? 'even' : `${esc(v > 0 ? H : A)} +${Math.abs(v).toFixed(1)}`}</td></tr>`).join('');
   const predictor = `<section class="bcard pg-card"><h2 class="pg-h">Matchup predictor</h2>
       <div class="pg-pred"><div class="pg-pct"><b>${pctA}%</b><span>${esc(T.A.abbr || shortName(A))}</span></div>
         <div class="pg-ringwrap">${ring}<div class="pg-marks">${markFor(T.A, 34)}${markFor(T.H, 34)}</div></div>
         <div class="pg-pct r"><b>${pctH}%</b><span>${esc(T.H.abbr || shortName(H))}</span></div></div>
       <details class="pg-how"><summary>How it’s figured</summary>
-        <table class="pg-parts">${partRows}</table>${sosNote(A, H, P)}</details>
+        <table class="pg-parts">${partRows}</table>${P.line ? `<p class="h-note">The same numbers as the Game line. A rating is how many points better than an
+          average Kansas team a school has been, from every result since 2021 with this season counting most. A
+          favorite by ${Math.abs(P.line.spread)} has won about ${Math.round(Math.max(P.home, P.away) * 100)}% of the time.</p>` : ''}${sosNote(A, H, P)}</details>
     </section>`;
 
   const info = n => { const i = schoolInfo(n); return i ? `Class ${i[0].replace('8M-', '8-Man ').replace('6M', '6-Man')} · ${i[1]}` : ''; };
@@ -459,6 +473,16 @@ function sosRank(name){
 
 // Strength of schedule, said plainly under the predictor: what each side's opponents rate, on average, and how
 // the whole 2026 card compares. A plus number is a schedule tougher than the middle of the state.
+// "How it's figured" when the ring comes from the Game line: each school's rating, home field, the margin.
+function lineRows(A, H, P){
+  const ra = ratingOf(A), rh = ratingOf(H), hfa = (pre.rat.groups[rh.group] || {hfa:1.5}).hfa;
+  const sg = v => (v > 0 ? '+' : v < 0 ? '\u2212' : '') + Math.abs(v).toFixed(1);
+  const sp = P.line.spread, fav = sp > 0 ? H : A;
+  return `<tr><td>${esc(A)} rating</td><td class="num">${sg(ra.rating)}</td></tr>
+    <tr><td>${esc(H)} rating</td><td class="num">${sg(rh.rating)}</td></tr>
+    <tr><td>Home field</td><td class="num">${esc(H)} +${hfa.toFixed(1)}</td></tr>
+    <tr><td><b>Projected margin</b></td><td class="num"><b>${sp === 0 ? 'even' : `${esc(fav)} by ${Math.abs(sp)}`}</b></td></tr>`;
+}
 function sosNote(A, H, P){
   const a = P.a.sos, h = P.h.sos;
   if (!a || !h || a.faced == null || h.faced == null) return '';
