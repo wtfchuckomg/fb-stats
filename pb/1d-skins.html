@@ -21,7 +21,7 @@ html[data-skin="liquid"]{
   --ink:#1D1D1F; --ink-2:#1D1D1F; --muted:#6E6E73; --line:rgba(60,60,67,.14); --line-2:rgba(60,60,67,.08);
   --pill:rgba(118,118,128,.12); --seg:rgba(118,118,128,.2); --blue:#007AFF; --accent:#007AFF; --red:#FF3B30;
   --good:#248A3D; --bad:#D70015;
-  --lg-glass:rgba(255,255,255,.52); --lg-rim-hi:rgba(255,255,255,.95); --lg-rim-lo:rgba(255,255,255,.3);
+  --lg-glass:rgba(255,255,255,.52); --lg-menu:rgba(255,255,255,.82); --lg-rim-hi:rgba(255,255,255,.95); --lg-rim-lo:rgba(255,255,255,.3);
   --lg-float:0 12px 34px rgba(24,36,70,.14),0 2px 8px rgba(24,36,70,.07);
   --lg-card-shadow:0 1px 2px rgba(24,36,70,.06),0 8px 24px rgba(24,36,70,.07);
   --lg-wall-a:#C9D6FF; --lg-wall-b:#F6D5E3; --lg-wall-c:#D8F1EA; --lg-cur:rgba(255,255,255,.7); --lg-zebra:rgba(118,118,128,.04);
@@ -40,7 +40,7 @@ html[data-skin="liquid"] .navbar,html[data-skin="liquid"] .scores,html[data-skin
   background:var(--lg-glass);border:0;-webkit-backdrop-filter:blur(16px) saturate(190%) brightness(1.06);backdrop-filter:blur(16px) saturate(190%) brightness(1.06);
   box-shadow:inset 0 1px 0 var(--lg-rim-hi),inset 0 -1px 0 var(--lg-rim-lo),inset 0 0 0 .5px var(--lg-rim-lo),var(--lg-float)}
 html[data-skin="liquid"] .navbar{top:8px;margin:10px auto 0;width:min(1180px,calc(100% - 24px));border-radius:999px}
-html[data-skin="liquid"] .navmenu{border-radius:18px}
+html[data-skin="liquid"] .navmenu{border-radius:18px;background:var(--lg-menu)}   /* read, not looked through: more solid than the bar */
 html[data-skin="liquid"] .scores{margin:10px auto 0;width:min(1180px,calc(100% - 24px));border-radius:22px;overflow:hidden}
 html[data-skin="liquid"] .gtabs{border-radius:999px;margin-inline:auto}
 html[data-skin="liquid"] .navlink{color:var(--ink);font-weight:500;opacity:.8}
@@ -100,7 +100,7 @@ html[data-skin="liquid"] .ctbl tbody tr:nth-child(even) td{background:var(--lg-z
   --flag:#FFD60A; --flag-wash:rgba(255,214,10,.14); --flag-ink:#FFD60A;
   --top:#000000; --top-2:#17181D; --top-ink:#FFFFFF; --top-muted:#9A9AA1;
   --fld-a:#2F7A34; --fld-b:#28692C; --fld-line:rgba(255,255,255,.55); --fld-num:#FFFFFF; --drive:#FFFFFF;
-  --lg-glass:rgba(38,40,48,.46); --lg-rim-hi:rgba(255,255,255,.3); --lg-rim-lo:rgba(255,255,255,.07);
+  --lg-glass:rgba(38,40,48,.46); --lg-menu:rgba(38,40,48,.84); --lg-rim-hi:rgba(255,255,255,.3); --lg-rim-lo:rgba(255,255,255,.07);
   --lg-float:0 12px 34px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.45);
   --lg-card-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 8px 24px rgba(0,0,0,.35);
   --lg-wall-a:#1B2550; --lg-wall-b:#3A1B2E; --lg-wall-c:#113129; --lg-cur:rgba(255,255,255,.1); --lg-zebra:rgba(255,255,255,.03);

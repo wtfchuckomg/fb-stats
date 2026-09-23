@@ -95,6 +95,28 @@ function ourLine(A, H){
   return {home:hs, away:as, spread:round1(marg), total:round1(total), hs:Math.round(hs), as:Math.round(as), thin:Math.min(a.gp, h.gp) < 6};
 }
 
+// The pregame line: the ratings' line, plus what the Media Rankings and past meetings add. Both were measured
+// against real results (2026-09-23) rather than guessed:
+// - Rankings, on this season's first three weeks with each week held out in turn: the ratings alone picked 173
+//   of 245 winners, with the poll added 186. Votes are worth half of being ranked, and each spot up the top 10
+//   (top 5 in 6-Man) adds on: about 4.7 points for votes, 10.4 for #10, 19 for #1. Within a class only, so a
+//   1A #1 against a 6A #1 cancels out; the ratings handle the class gap. Worth re-checking as weeks come in:
+//   the ratings lean on last season early, which is when the poll knows most that they don't.
+// - Past meetings, on 3,527 games from 2023-2025 with a meeting in the five seasons before: they add little,
+//   because those same games are already in both schools' ratings. 0.05 a point of average margin, at most 0.7.
+const RANK_PTS = 9.5, MEET_W = .05, MEET_CAP = 14;
+const pollScore = n => { const r = rankOf(n); if (!r) return 0; const top = r.cls === '6-Man' ? 5 : 10; return r.rank ? 1 + (top + 1 - r.rank) / top : .5; };
+function gameLine(A, H, year){
+  const L = ourLine(A, H); if (!L) return null;
+  const rank = RANK_PTS * (pollScore(H) - pollScore(A));
+  const met = pastMeetings(A, H).filter(m => !m.old && m.year >= year - 5);
+  const avg = met.length ? met.reduce((t, m) => t + (m.them - m.us), 0) / met.length : 0;   // home team's side
+  const meet = MEET_W * Math.max(-MEET_CAP, Math.min(MEET_CAP, avg));
+  const m = L.home - L.away + rank + meet, round1 = v => Math.round(v * 2) / 2;
+  return Object.assign({}, L, {home:(L.total + m) / 2, away:(L.total - m) / 2, spread:round1(m),
+    hs:Math.round((L.total + m) / 2), as:Math.round((L.total - m) / 2), base:L.home - L.away, rank, meet, nMeet:met.length});
+}
+
 /* ---------- past seasons, from KPreps by way of history/<school>.json (.github/kphistory.py) ---------- */
 // The files are named the way KPreps writes a school, so try our spelling first and then theirs.
 function fetchHistory(name, done){
@@ -192,7 +214,7 @@ const bumpSchool = n => { const r = ratingOf(n); return !!(r && r.bump); };
 // predicted only from the games before it: favorites by 3-7 won 64% (this says 63%), by 7-10 69% (72%), by
 // 10-14 78% (79%), by 14-21 86% (87%). 8-man and 6-man scores swing more, so a point there is worth less.
 const WIN_SCALE = {'11-man':8.5, '8-man':10.5, '6-man':9.6};
-function predict(A, H){
+function predict(A, H, year){
   const side = n => {
     const s = teamSeason(n), g = s.w + s.l + s.t;
     const wp = (s.w + s.t / 2 + 1) / (g + 2);                  // a record, pulled toward .500 while it's short
@@ -226,7 +248,7 @@ function predict(A, H){
     ['Last 5 seasons', a.fwp != null && h.fwp != null ? Math.max(-6, Math.min(6, 12 * (h.fwp - a.fwp))) : 0],
     ['Home field', 2.5]];
   // With a Game line, the ring is that line's margin turned into a chance, so the two can never disagree.
-  const L = ourLine(A, H);
+  const L = gameLine(A, H, year || new Date().getFullYear());
   if (L){
     const m = L.home - L.away, sc = WIN_SCALE[ratingOf(H).group] || 9;
     const home = Math.min(.99, Math.max(.01, 1 / (1 + Math.exp(-m / sc))));
@@ -285,7 +307,7 @@ function previewHtml(){
   if (!x) return `<section class="bcard"><p class="bempty">${esc(pre.err || (allGames.list ? 'That game isn’t on the site.' : 'Loading the game…'))}</p></section>`;
   const T = x.teams, A = T.A.name, H = T.H.name;
   document.title = `${A} at ${H} · Preview · Kansas Media Stats`;
-  const P = predict(A, H), day = gameDay(x);
+  const day = gameDay(x), P = predict(A, H, day.getFullYear());
   const when = `${day.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'})}`;
   const time = '7:00 PM';   // every Kansas game kicks off at 7 p.m.; a listing that says otherwise is ignored
   // A game someone is keeping stats on. Once the first play is in, a shared preview link becomes the gamecast
@@ -322,8 +344,9 @@ function previewHtml(){
         <div class="pg-pct r"><b>${pctH}%</b><span>${esc(T.H.abbr || shortName(H))}</span></div></div>
       <details class="pg-how"><summary>How it’s figured</summary>
         <table class="pg-parts">${partRows}</table>${P.line ? `<p class="h-note">The same numbers as the Game line. A rating is how many points better than an
-          average Kansas team a school has been, from every result since 2021 with this season counting most. A
-          favorite by ${Math.abs(P.line.spread)} has won about ${Math.round(Math.max(P.home, P.away) * 100)}% of the time.</p>` : ''}${sosNote(A, H, P)}</details>
+          average Kansas team a school has been, from every result since 2021 with this season counting most.
+          The Media Rankings count for what they've been worth this season; past meetings count lightly, since
+          those games are already in the ratings. A favorite by ${Math.abs(P.line.spread)} has won about ${Math.round(Math.max(P.home, P.away) * 100)}% of the time.</p>` : ''}${sosNote(A, H, P)}</details>
     </section>`;
 
   const info = n => { const i = schoolInfo(n); return i ? `Class ${i[0].replace('8M-', '8-Man ').replace('6M', '6-Man')} · ${i[1]}` : ''; };
@@ -333,7 +356,7 @@ function previewHtml(){
     </section>`;
 
   // The line: the site's own, from every Kansas result since 2021.
-  const OL = ourLine(A, H);
+  const OL = P.line || null;
   const oddsRow = (s, n) => {
     const ourSpread = !OL ? '&#8212;' : OL.spread === 0 ? 'PK' : (s === 'H') === (OL.spread > 0) ? `&#8722;${Math.abs(OL.spread)}` : `+${Math.abs(OL.spread)}`;
     return `<tr><td><div class="pg-oteam">${markFor(T[s], 22)}<b>${esc(T[s].abbr || shortName(n))}</b></div></td>
@@ -478,9 +501,12 @@ function lineRows(A, H, P){
   const ra = ratingOf(A), rh = ratingOf(H), hfa = (pre.rat.groups[rh.group] || {hfa:1.5}).hfa;
   const sg = v => (v > 0 ? '+' : v < 0 ? '\u2212' : '') + Math.abs(v).toFixed(1);
   const sp = P.line.spread, fav = sp > 0 ? H : A;
+  const edge = v => Math.abs(v) < .05 ? 'even' : `${esc(v > 0 ? H : A)} +${Math.abs(v).toFixed(1)}`;
   return `<tr><td>${esc(A)} rating</td><td class="num">${sg(ra.rating)}</td></tr>
     <tr><td>${esc(H)} rating</td><td class="num">${sg(rh.rating)}</td></tr>
     <tr><td>Home field</td><td class="num">${esc(H)} +${hfa.toFixed(1)}</td></tr>
+    <tr><td>Media Rankings</td><td class="num">${edge(P.line.rank)}</td></tr>
+    <tr><td>Past meetings${P.line.nMeet ? ` (${P.line.nMeet})` : ''}</td><td class="num">${P.line.nMeet ? edge(P.line.meet) : 'none on file'}</td></tr>
     <tr><td><b>Projected margin</b></td><td class="num"><b>${sp === 0 ? 'even' : `${esc(fav)} by ${Math.abs(sp)}`}</b></td></tr>`;
 }
 function sosNote(A, H, P){
