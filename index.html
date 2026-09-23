@@ -369,6 +369,18 @@ a.c-pl:hover b{text-decoration:underline}
 .pl-tbl th:first-child,.pl-tbl td:first-child{width:1%}
 .pl-stats .pl-sec + .pl-sec{margin-top:6px;border-top:1px solid var(--line-2);padding-top:14px}
 .pl-sec h3{margin:0;padding:0 20px 8px;font:700 16px/1.2 var(--sans)}
+/* Season and team sit in the same place in every section, however many stat columns follow them:
+   without this each table sizes its own first two columns and the logos step in and out. */
+/* Season and team start in the same place in every section. Under a table's ordinary sizing any spare width is
+   shared out across the columns, so a section with fewer stats pushed its team column further right; sending the
+   slack to the last column instead keeps the two name columns put. */
+.pl-tbl th:first-child{width:104px}
+.pl-tbl th:nth-child(2){width:150px}
+table.pl-tbl{table-layout:fixed;width:100%}
+.pl-tbl th.num{width:auto;min-width:64px}   /* the numbers keep their room; the wrap scrolls if the screen is small */
+.pl-tbl th:first-child,.pl-tbl th:nth-child(2){padding-right:12px}   /* the wide right padding crowded SEASON into TEAM */
+@media (max-width:640px){
+  .pl-tbl th:first-child{width:76px}.pl-tbl th:nth-child(2){width:112px}.pl-tbl th.num{width:60px}}
 .pl-note{margin:2px 0 0;padding:10px 20px 14px}
 /* bracketology */
 .bk-wrap{overflow-x:auto;padding:0 12px 10px}
@@ -7437,12 +7449,13 @@ const tpage = {edit:false, draft:null, sug:null, name:'', season:'', hist:{}};
 // the score and whether it's final. It costs no database reads at all, which matters because this used to ask
 // for every game on every page — 370-odd reads a visit, growing with the season. This week's games arrive live
 // on top of it (watchWeek), so a score still moves the moment it changes.
-const allGames = {list:null, idx:null, err:'', unsub:null, built:0};
+const allGames = {list:null, idx:null, err:'', unsub:null, built:0, api:null, since:null};
 // Called twice: once at page start with no database yet (the file needs none), and again when the database is
 // ready, which is when the handful of games saved since the file was written can be asked for.
 function watchAllGames(api){
+  if (api) allGames.api = api;                 // kept, because the file usually lands after this is called
   if (allGames.unsub || ui.county){
-    if (api && allGames.list && !allGames.since) watchSince(api, allGames.built);
+    if (allGames.list) watchSince(allGames.api, allGames.built);
     return;
   }
   allGames.unsub = () => {};
@@ -7471,7 +7484,10 @@ async function loadSeason(api){
   }
   allGames.list = d.games.map(seasonGame); allGames.built = d.built || 0; allGames.err = '';
   indexGames(); recordsChanged();
-  watchSince(api, allGames.built);   // and whatever has changed since the file was written
+  // And whatever has changed since the file was written. The database is usually ready before the file lands,
+  // so the connection is taken from whichever call had one — waiting for this call's own `api` missed it, and
+  // finals entered after the last rebuild never reached the team pages.
+  watchSince(api || allGames.api, allGames.built);
 }
 // Anything saved since the snapshot was built — a box score pasted for an old week, a score corrected — read
 // live and laid over it. It asks only for documents newer than the file, which on a normal day is a handful.

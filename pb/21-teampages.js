@@ -15,12 +15,13 @@ const tpage = {edit:false, draft:null, sug:null, name:'', season:'', hist:{}};
 // the score and whether it's final. It costs no database reads at all, which matters because this used to ask
 // for every game on every page — 370-odd reads a visit, growing with the season. This week's games arrive live
 // on top of it (watchWeek), so a score still moves the moment it changes.
-const allGames = {list:null, idx:null, err:'', unsub:null, built:0};
+const allGames = {list:null, idx:null, err:'', unsub:null, built:0, api:null, since:null};
 // Called twice: once at page start with no database yet (the file needs none), and again when the database is
 // ready, which is when the handful of games saved since the file was written can be asked for.
 function watchAllGames(api){
+  if (api) allGames.api = api;                 // kept, because the file usually lands after this is called
   if (allGames.unsub || ui.county){
-    if (api && allGames.list && !allGames.since) watchSince(api, allGames.built);
+    if (allGames.list) watchSince(allGames.api, allGames.built);
     return;
   }
   allGames.unsub = () => {};
@@ -49,7 +50,10 @@ async function loadSeason(api){
   }
   allGames.list = d.games.map(seasonGame); allGames.built = d.built || 0; allGames.err = '';
   indexGames(); recordsChanged();
-  watchSince(api, allGames.built);   // and whatever has changed since the file was written
+  // And whatever has changed since the file was written. The database is usually ready before the file lands,
+  // so the connection is taken from whichever call had one — waiting for this call's own `api` missed it, and
+  // finals entered after the last rebuild never reached the team pages.
+  watchSince(api || allGames.api, allGames.built);
 }
 // Anything saved since the snapshot was built — a box score pasted for an old week, a score corrected — read
 // live and laid over it. It asks only for documents newer than the file, which on a normal day is a handful.
