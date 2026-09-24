@@ -31,7 +31,7 @@ function renderAvHome(){
   if (!ui.avhome) return;
   const note = t => `<p class="bempty">${esc(t)}</p>`;
   const hero = `<section class="bcard avh-hero">
-      <img src="${esc(document.querySelector('.av-mark img') ? document.querySelector('.av-mark img').src : '')}" alt="" width="96" height="96">
+      <img src="${esc($('#av-logo') ? $('#av-logo').src : '')}" alt="" width="96" height="96">
       <div><span class="h-eyebrow">${county.season} season</span><h1>Ark Valley Chisholm Trail League</h1>
         <p class="avh-dek">Statistics and leaders: every score, standing and stat for the league’s 26 schools, as the games are played.</p>
         <div class="h-btns"><a class="h-btn primary" href="?avctl">Scoreboard</a><a class="h-btn" href="?standings">Standings</a><a class="h-btn" href="?avstats">Player Stats</a><a class="h-btn" href="?avstats=team">Team Stats</a></div></div>
