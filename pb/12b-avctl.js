@@ -90,7 +90,7 @@ function standingsCard(title, list){
 }
 
 function standingsHtml(){
-  document.title = 'AVCTL Standings · Kansas Media Stats';
+  document.title = `${SITE_AV ? 'Standings' : 'AVCTL Standings'} · ${SITE_TITLE}`;
   const head = leagueNav('standings'), hint = `<section class="bcard"><p class="hint">League records count each team’s games against its own division, as they’re kept here. Overall is each team’s record as the site has it.</p></section>`;
   if (stand.err) return head + `<section class="bcard"><p class="bempty">${esc(stand.err)}</p></section>`;
   if (!allGames.list) return head + '<section class="bcard"><p class="bempty">Loading the league…</p></section>';

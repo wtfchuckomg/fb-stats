@@ -51,7 +51,7 @@ function leagueNav(on){
 
 /* ---------- a league's standings: one table, its league games apart from the rest ---------- */
 function lgStandingsHtml(){
-  document.title = `${LG.name} Standings · Kansas Media Stats`;
+  document.title = `${LG.name} Standings · ${SITE_TITLE}`;
   const head = leagueNav('standings');
   if (stand.err) return head + `<section class="bcard"><p class="bempty">${esc(stand.err)}</p></section>`;
   if (!allGames.list) return head + '<section class="bcard"><p class="bempty">Loading the league…</p></section>';

@@ -15,8 +15,9 @@ const COUNTY = ['Andover', 'Andover Central', 'Augusta', 'Bluestem', 'Circle', '
 const COUNTY_ALIASES = {Bluestem:['Leon-Bluestem'], Circle:['Towanda-Circle'], Remington:['Whitewater-Remington']};
 // Which schools this page covers: Butler County, the AVCTL, a league (State › Leagues), or (State Stats) whoever
 // turns up in the games.
-const GROUP = AV_STATS ? AVCTL : LG_STATS ? LG.teams : COUNTY;
-const GROUP_ALIASES = AV_STATS ? AVCTL_ALIASES : LG_STATS ? {} : COUNTY_ALIASES;
+// The AVCTL site's pages (its home's leaders too) are always the league's.
+const GROUP = AV_STATS || SITE_AV ? AVCTL : LG_STATS ? LG.teams : COUNTY;
+const GROUP_ALIASES = AV_STATS || SITE_AV ? AVCTL_ALIASES : LG_STATS ? {} : COUNTY_ALIASES;
 const groupOf = name => LG_STATS ? lgOf(name)
   : GROUP.find(c => [c, ...(GROUP_ALIASES[c] || [])].some(a => logoSlug(a) === logoSlug(name))) || null;
 const countyOf = name => COUNTY.find(c => [c, ...(COUNTY_ALIASES[c] || [])].some(a => logoSlug(a) === logoSlug(name))) || null;
@@ -27,7 +28,7 @@ const county = {games:null, err:'', team:'all', season:new Date().getFullYear(),
 async function startCounty(){
   ui.viewer = true; ui.county = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
-  document.title = `${groupName()} Stats · Kansas Media Stats`;
+  document.title = `${groupName()} Stats · ${SITE_TITLE}`;
   const want = new URLSearchParams(location.search).get(AV_STATS ? 'avstats' : LG_STATS ? 'lgstats' : STATE_STATS ? 'statestats' : 'stats');
   if (C_VIEWS.includes(want)) county.view = want;
   // &team=<school>, from a team's page: that team's stats (statewide, any school).
@@ -52,7 +53,7 @@ async function startCounty(){
 
 // The season's numbers feed three pages: the stats pages, a pregame page, and the scoreboard, where a game
 // that hasn't kicked off shows each team's season leaders where a played game shows its own.
-function statsArrived(){ renderCounty(); if (ui.player) renderPlayer(); if (ui.preview) renderPreview(); if (ui.board) renderScoreboard(); }
+function statsArrived(){ renderCounty(); renderAvHome(); if (ui.player) renderPlayer(); if (ui.preview) renderPreview(); if (ui.board) renderScoreboard(); }
 // A game as the stats file carries it: the numbers already added up, and just enough around them to be
 // filtered by week and team.
 const statsGame = e => ({id:e.id, date:e.date || '', wk:e.wk, updated:e.updated || 0, opp:e.opp,
@@ -64,7 +65,7 @@ async function loadStats(api){
   const {fsM, fsdb} = api;
   let built = 0;
   try {
-    const r = await fetch('/stats.json', {cache:'no-cache'});
+    const r = await fetch(DATA + '/stats.json', {cache:'no-cache'});
     if (!r.ok) throw new Error(r.status);
     const d = await r.json();
     if (!d || !Array.isArray(d.games) || !d.games.length) throw new Error('empty');

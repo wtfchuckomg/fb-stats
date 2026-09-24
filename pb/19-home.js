@@ -34,12 +34,13 @@ function scorerBar(){
     + (localStorage.getItem('pressbox.admin') === '1' ? `<a class="abtn" href="${go('others')}">Others</a>` : '')   // the admin's devices only
     + `<a class="abtn" href="${go('setup')}">Setup</a>`;
 }
-if (!TRACKER_PAGE) scorerBar();
+if (!TRACKER_PAGE && !SITE_AV) scorerBar();   // the AVCTL site is for fans: no sign-in
 
 async function startHome(){
+  if (SITE_AV) return startAvHome();   // the AVCTL site's own front page (37-avhome.js)
   ui.viewer = true; ui.home = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
-  document.title = 'Kansas Media Stats · Track high school football live';
+  document.title = `${SITE_TITLE} · Track high school football live`;
   renderHome();
   try {
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;

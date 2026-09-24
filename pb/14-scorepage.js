@@ -35,7 +35,7 @@ function weekRange(k){
 async function startScoreboard(){
   ui.viewer = true; ui.board = true; ui.state = STATE_BOARD; ui.av = AV_BOARD; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
-  document.title = `${boardName()} Scoreboard · Kansas Media Stats`;
+  document.title = `${SITE_AV ? '' : boardName() + ' '}Scoreboard · ${SITE_TITLE}`;
   const want = new URLSearchParams(location.search).get(boardParam()) || '';
   ui.week = /^\d{4}-\d\d-\d\d$/.test(want) ? weekKey(fromYmd(want).getTime()) : boardDefaultWeek();
   loadLogos(); loadFiles(); renderScoreboard();

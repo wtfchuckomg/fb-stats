@@ -4,7 +4,7 @@
    with no logo there gets a monogram in its own team color.
    ================================================================ */
 // This site's own logos folder first (stats.kansasmediarankings.com/logos), then the Pick 'ems library for the rest.
-const LOGO_SRC = [{base:'logos/', list:[]}, {base:'https://picks.kansasmediarankings.com/logos/', list:[]}];
+const LOGO_SRC = [{base:DATA ? `${DATA}/logos/` : 'logos/', list:[]}, {base:'https://picks.kansasmediarankings.com/logos/', list:[]}];
 const logoLib = {list:null, busy:false};   // list: every school from both, for the school-name suggestions
 const logoSlug = s => String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 function loadLogos(){
@@ -19,7 +19,7 @@ function loadLogos(){
       // other name has to be filed again — or a school's page finds none of its own games.
       schoolIdx = null;          // keyed by canonical name as well, so it is built again
       if (allGames.list) indexGames();
-      if (g && R) refresh(); else { renderScoreboard(); renderCounty(); renderTeamPage(); renderStandings(); }
+      if (g && R) refresh(); else { renderScoreboard(); renderCounty(); renderTeamPage(); renderStandings(); renderAvHome(); }
     });
 }
 /* ---------- the school list, for picking a school instead of typing one ----------

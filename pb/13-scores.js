@@ -371,7 +371,9 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
     : q.has('avctl') ? 'avscores' : q.has('standings') ? 'standings' : q.has('avstats') ? 'avstats'
     : q.has('scores') ? 'scores' : q.has('state') ? 'state' : q.has('statestats') ? 'sstats'
     : q.has('stats') ? 'stats' : q.has('team') || q.has('teams') ? 'teams' : q.has('game') || q.has('live') || q.has('gamecast') || q.has('preview') ? '' : 'home';
-  // Each menu's pages sit under its own name: Butler County, AVCTL, State.
+  // Each menu's pages sit under its own name: Butler County, AVCTL, State. The AVCTL site has no menus, just a link
+  // for each page, Team Stats apart from Player Stats.
+  if (SITE_AV) return markSite(here === 'avstats' && q.get('avstats') === 'team' ? 'avteam' : here === 'avscores' ? 'avctl' : here);
   const UNDER = {scores:'buco', stats:'buco', teams:'buco', avscores:'avctl', standings:'avctl', avstats:'avctl', state:'state', sstats:'state', leagues:'state'};
   const top = UNDER[here] || here;
   const a = top && document.querySelector(`.navlink[data-nav="${top}"]`);
@@ -381,6 +383,11 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
     const nl = a.parentElement; nl.scrollLeft += a.getBoundingClientRect().left - nl.getBoundingClientRect().left - (nl.clientWidth - a.offsetWidth) / 2;
   }
 })();
+function markSite(here){
+  const a = document.querySelector(`.navlink[data-nav="${here}"]`); if (!a) return;
+  a.classList.add('on'); a.setAttribute('aria-current', 'page');
+  const nl = a.parentElement; nl.scrollLeft += a.getBoundingClientRect().left - nl.getBoundingClientRect().left - (nl.clientWidth - a.offsetWidth) / 2;
+}
 // Which page of a menu is open, so the menu can mark it.
 function menuHere(){
   if (ui.teamPage) return 'teams';
@@ -451,7 +458,7 @@ function lgTabs(){
   const q = new URLSearchParams(location.search);
   const here = q.has('tracker') || q.has('edit') ? 'tracker' : q.has('standings') || LG_STAND ? 'standings'
     : q.has('game') || q.has('live') || q.has('gamecast') || q.has('preview') ? 'gamecast'
-    : q.has('state') || q.has('scores') || q.has('avctl') ? 'scores' : '';
+    : q.has('state') || q.has('scores') || q.has('avctl') ? 'scores' : q.has('avstats') ? 'stats' : q.has('teams') || q.has('team') ? 'teams' : '';
   bar.querySelectorAll('[data-lgtab]').forEach(a => { if (a.dataset.lgtab === here) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   const gc = $('#lgtab-gc'); if (!gc || !scores.docs) return;
   const games = weekGames(shownWeek(), false, true).filter(x => x.kind !== 'score' && x.plays && x.plays.length);
@@ -464,7 +471,7 @@ function renderScores(){
   const key = shownWeek(); watchWeek(key);
   // On the AVCTL's pages the strip is the league's games, on a league's (State › Leagues) that league's, and on
   // BUCO's the county's (their opponents included).
-  const league = AV_BOARD || AV_STAND || AV_STATS, buco = (BOARD && !STATE_BOARD && !AV_BOARD) || (COUNTY_PAGE && !STATE_STATS && !AV_STATS && !LG_STATS);
+  const league = SITE_AV || AV_BOARD || AV_STAND || AV_STATS, buco = (BOARD && !STATE_BOARD && !AV_BOARD) || (COUNTY_PAGE && !STATE_STATS && !AV_STATS && !LG_STATS);
   const games = LG ? weekGames(key, false, true).filter(inLeague) : league ? weekGames(key, false, true).filter(inAvctl)
     : buco ? weekGames(key).filter(inBuco) : weekGames(key);
   // The scorer always gets the strip, for its Add a score button; fans only when there's something to show.

@@ -115,7 +115,7 @@ function openEmbed(){
   if (!(LOGO_SRC[0].list || []).length) fetch(LOGO_SRC[0].base + 'teams.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : [])
     .then(list => { if (!Array.isArray(list) || !list.length) return; LOGO_SRC[0].list = list; if (ui.dlg === 'embed' && dlg().open) openEmbed(); }).catch(() => {});
   // A game's own link only exists once the rebuild has made it.
-  dlg().querySelectorAll('[data-emb-check]').forEach(el => fetch('/embed/' + el.dataset.embCheck + '/oembed.json', {method:'HEAD', cache:'no-cache'})
+  dlg().querySelectorAll('[data-emb-check]').forEach(el => fetch(DATA + '/embed/' + el.dataset.embCheck + '/oembed.json', {method:'HEAD', cache:'no-cache'})
     .then(r => { if (!r.ok) el.hidden = false; }).catch(() => {}));
 }
 function startEmbedButton(){

@@ -39,7 +39,7 @@ async function loadSeason(api){
   // Only reading the file is worth falling back over. Anything that goes wrong drawing what it says is a bug to
   // see in the console, not a reason to throw the file away and ask the database for all 400 games again.
   try {
-    const r = await fetch('/season.json', {cache:'no-cache'});
+    const r = await fetch(DATA + '/season.json', {cache:'no-cache'});
     if (!r.ok) throw new Error(r.status);
     d = await r.json();
     if (!d || !Array.isArray(d.games) || !d.games.length) throw new Error('empty');
@@ -148,7 +148,7 @@ function watchTeamRecs(api){
     teamRecs.map = map; recCache.clear(); recordsChanged();
   }, () => { teamRecs.unsub = null; });
 }
-function recordsChanged(){ renderScores(); renderScoreboard(); renderTeamPage(); renderStandings(); if (g && R && !ui.board) renderBoard(); }
+function recordsChanged(){ renderScores(); renderScoreboard(); renderTeamPage(); renderStandings(); renderAvHome(); if (g && R && !ui.board) renderBoard(); }
 
 // "3-1" or "3-1-1" as numbers, or null when it's something else (left as typed).
 const parseRec = s => { const m = String(s || '').trim().match(/^(\d+)\s*-\s*(\d+)(?:\s*-\s*(\d+))?$/); return m ? [+m[1], +m[2], +(m[3] || 0)] : null; };
@@ -266,7 +266,11 @@ function renderTeamPage(){
 }
 
 function teamsIndexHtml(){
-  document.title = 'Teams · Kansas Media Stats';
+  document.title = `Teams · ${SITE_TITLE}`;
+  // The AVCTL site: the league's schools, by division.
+  if (SITE_AV) return `<section class="bcard bhead"><div class="bhead-top"><h1>Teams</h1></div><p class="h-note" style="margin:0">Each team’s record, schedule and results.</p></section>`
+    + AV_NAMES.map(d => `<section class="bcard"><h2 class="tp-h">Division ${d}</h2><div class="tp-grid">${AVCTL_DIV[d].map(n => { const r = recParts(shownRecord(n));
+      return `<a class="tp-card" href="?team=${encodeURIComponent(n)}">${markFor({name:n, abbr:shortName(n), color:'#4A4B4D'}, 56)}<b>${esc(n)}</b>${r.length ? `<span>${esc(r[0])}</span>` : ''}</a>`; }).join('')}</div></section>`).join('');
   // The teams the county plays, each with its whole schedule on the site (their own opponents aren't listed: the site
   // has only their games against these teams).
   const county = new Set(COUNTY.map(canonSchool));
@@ -291,7 +295,7 @@ function teamPageHtml(nameIn){
   const roster = rosterFor(nameIn) || rosterFromGames(nameIn);
   const lib = (logoLib.list || []).find(t => logoSlug(t.name) === k);
   const name = COUNTY.find(n => canonSchool(n) === k) || (lib && lib.name) || (tm && tm.name) || nameIn;
-  tpage.name = name; document.title = `${name} · Kansas Media Stats`;
+  tpage.name = name; document.title = `${name} · ${SITE_TITLE}`;
   const inCounty = COUNTY.some(n => canonSchool(n) === k), r = shownRecord(name);
   const mark = {name, abbr:(tm && tm.abbr) || shortName(name), color:(tm && tm.color) || '#4A4B4D'};
   // The record from the finals on the site, offered when entering one (it misses any game that isn't on the site).
@@ -368,9 +372,12 @@ function teamPageHtml(nameIn){
       ${ui.admin && !tpage.edit ? `<button type="button" class="bhide" data-tp-add-game>Add a game</button><button type="button" class="bhide" data-tp-edit>Edit record</button>${teamRecs.map[k] ? '<p class="h-note tp-manual">This record was set by hand, so it doesn’t come from the tally. Edit record to change or clear it.</p>' : ''}` : ''}
       ${form}
       ${inCounty || rows.some(r => r.stats) || roster || ui.admin ? (() => {
-        // Butler County has its own stats pages; every other school's numbers live on State Stats.
-        const p = inCounty ? '?stats' : '?statestats', t = inCounty ? '?stats=team' : '?statestats=team', q = encodeURIComponent(name);
-        const stats = inCounty || rows.some(r => r.stats)
+        // Butler County has its own stats pages; every other school's numbers live on State Stats. On the AVCTL site
+        // only the league's schools have stats pages.
+        const av = SITE_AV && avctlOf(name);
+        const p = av ? '?avstats' : inCounty ? '?stats' : '?statestats', t = av ? '?avstats=team' : inCounty ? '?stats=team' : '?statestats=team';
+        const q = encodeURIComponent(av || name);
+        const stats = (SITE_AV ? !!av : inCounty || rows.some(r => r.stats))
           ? `<a class="h-btn" href="${p}&amp;team=${q}">Player stats</a><a class="h-btn" href="${t}&amp;team=${q}">Team stats</a>` : '';
         return `<div class="tp-links">${stats}${roster || ui.admin ? '<button type="button" class="h-btn" data-tp-roster>Roster</button>' : ''}</div>`;
       })() : ''}

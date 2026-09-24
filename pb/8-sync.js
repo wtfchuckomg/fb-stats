@@ -224,7 +224,7 @@ async function startViewer(id){
     // as the site. The base keeps the page's own links pointing at the site.
     if (d.public && !SCHOOL_CAST && location.hostname === 'stats.kansasmediarankings.com' && !location.pathname.startsWith('/g/') && !startViewer.checked){
       startViewer.checked = true;
-      fetch(`/g/${encodeURIComponent(id)}/`, {method:'HEAD'}).then(r => {
+      fetch(`${DATA}/g/${encodeURIComponent(id)}/`, {method:'HEAD'}).then(r => {
         if (!r.ok || location.pathname.startsWith('/g/')) return;
         if (!document.querySelector('base')){ const b = document.createElement('base'); b.href = '/'; document.head.prepend(b); }
         const tab = new URLSearchParams(location.search).get('tab');
@@ -236,7 +236,7 @@ async function startViewer(id){
     g = game; $('#tabs').hidden = false;
     refresh(); viewerTools(id);
     const [hi, lo] = R.st.score.H > R.st.score.A ? ['H', 'A'] : ['A', 'H'];   // the higher score first, like the link's preview
-    document.title = `${g.teams[hi].name} ${R.st.score[hi]}, ${g.teams[lo].name} ${R.st.score[lo]} · Kansas Media Stats`;
+    document.title = `${g.teams[hi].name} ${R.st.score[hi]}, ${g.teams[lo].name} ${R.st.score[lo]} · ${SITE_TITLE}`;
   }, gone);
 }
 // Firebase for a watcher's page, set up once and shared (a school's gamecast moves from game to game).

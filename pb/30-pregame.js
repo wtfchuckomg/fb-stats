@@ -59,7 +59,7 @@ function rankOf(name){
 function loadRatings(){
   if (pre.rat !== null) return;
   pre.rat = false;
-  fetch('/ratings.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
+  fetch(DATA + '/ratings.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
     .then(d => { if (d && d.teams){ pre.rat = d; renderPreview(); if (typeof renderRail === 'function') renderRail(); } }).catch(() => {});
 }
 // The ratings are keyed the way KPreps writes a school ("towanda-circle"); match ours to them once each.
@@ -124,7 +124,7 @@ function fetchHistory(name, done){
   if (r && r.slug && !tries.includes(r.slug)) tries.push(r.slug);
   (function next(i){
     if (i >= tries.length) return done(false);
-    fetch(`/history/${tries[i]}.json`, {cache:'no-cache'}).then(x => x.ok ? x.json() : null)
+    fetch(`${DATA}/history/${tries[i]}.json`, {cache:'no-cache'}).then(x => x.ok ? x.json() : null)
       .then(d => d ? done(d) : next(i + 1)).catch(() => next(i + 1));
   })(0);
 }
@@ -137,7 +137,7 @@ function loadMeetings(name){
   if (r && r.slug && !tries.includes(r.slug)) tries.push(r.slug);
   (function next(i){
     if (i >= tries.length){ pre.meet[k] = false; return renderPreview(); }
-    fetch(`/meetings/${tries[i]}.json`, {cache:'no-cache'}).then(x => x.ok ? x.json() : null)
+    fetch(`${DATA}/meetings/${tries[i]}.json`, {cache:'no-cache'}).then(x => x.ok ? x.json() : null)
       .then(d => { if (!d) return next(i + 1); pre.meet[k] = d; renderPreview(); }).catch(() => next(i + 1));
   })(0);
 }
@@ -306,7 +306,7 @@ function previewHtml(){
   const x = previewGame();
   if (!x) return `<section class="bcard"><p class="bempty">${esc(pre.err || (allGames.list ? 'That game isn’t on the site.' : 'Loading the game…'))}</p></section>`;
   const T = x.teams, A = T.A.name, H = T.H.name;
-  document.title = `${A} at ${H} · Preview · Kansas Media Stats`;
+  document.title = `${A} at ${H} · Preview · ${SITE_TITLE}`;
   const day = gameDay(x), P = predict(A, H, day.getFullYear());
   const when = `${day.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'})}`;
   const time = '7:00 PM';   // every Kansas game kicks off at 7 p.m.; a listing that says otherwise is ignored

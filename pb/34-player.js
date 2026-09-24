@@ -31,7 +31,7 @@ async function startPlayerPage(){
 function shareAddress(){
   if (location.hostname !== 'stats.kansasmediarankings.com' || location.pathname.startsWith('/p/')) return;
   const k = `${logoSlug(ppage.team)}-${logoSlug(ppage.name)}`;
-  fetch(`/p/${k}/`, {method:'HEAD'}).then(r => {
+  fetch(`${DATA}/p/${k}/`, {method:'HEAD'}).then(r => {
     if (!r.ok || location.pathname.startsWith('/p/')) return;
     if (!document.querySelector('base')){ const b = document.createElement('base'); b.href = '/'; document.head.prepend(b); }
     history.replaceState(null, '', `/p/${k}/`);
@@ -128,7 +128,7 @@ function pNumber(){
 function renderPlayer(){
   if (!ui.player) return;
   const box = $('#board');
-  document.title = `${ppage.name} · ${ppage.team} · Kansas Media Stats`;
+  document.title = `${ppage.name} · ${ppage.team} · ${SITE_TITLE}`;
   const rows = playerGames();
   const seasons = [...new Set(rows.map(r => seasonOf(r.x)))].sort((a, b) => b - a);
   if (ppage.season == null || !seasons.includes(ppage.season)) ppage.season = seasons[0] || new Date().getFullYear();

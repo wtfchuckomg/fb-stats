@@ -18,7 +18,7 @@ const kpAlias = n => {
 function loadKpScores(){
   if (kps.want) return;
   kps.want = true;
-  fetch('/kpscores.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).then(d => {
+  fetch(DATA + '/kpscores.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).then(d => {
     if (!d || !Array.isArray(d.games)) return;
     kps.rows = d.games; kps.idx = null;
     renderScores(); renderScoreboard(); renderTeamPage(); renderHome();

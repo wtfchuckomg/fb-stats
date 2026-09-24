@@ -9,6 +9,11 @@ glues them back together.
     python3 build.py           build, write index.html, report what changed
     python3 build.py --check   build and compare only; write nothing
 
+The same parts build a second site: AVCTLstats.com, the AVCTL's own fans-only
+site, written to ~/Desktop/avctl-stats/ (its own repo, wtfchuckomg/avctl-stats). pb/0-site.js tells the script
+which site it is, and a block of HTML marked <!--@kmr--> … <!--@end--> or
+<!--@avctl--> … <!--@end--> goes only into that site's page.
+
 Two things worth knowing before editing a part:
 
 * Every .js part is concatenated into ONE <script>, so they all share one
@@ -37,6 +42,7 @@ PARTS_HTML = ['1-head.html', '1b-glass.html', '1c-embed.html', '1d-skins.html', 
 
 # The script, in the order it has to run.
 PARTS_JS = [
+    '0-site.js',         # which site this is (stats/KMR or AVCTLstats.com): first, so every part can ask
     '3-engine.js',       # a game is its plays; every score and stat is replayed from them
     '4-ui.js',           # scoreboard, field, play-entry pad
     '4b-quick.js',       # shorthand and plain-English play entry
@@ -69,6 +75,7 @@ PARTS_JS = [
     '34-player.js',     # ?player=<name>&team=<school>: one player's stats and game log
     '35-bracket.js',
     '36-turbo.js',    # importing a TurboStats gamecast as real plays    # ?bracket=4A: where the playoff bracket stands, seeded the KSHSAA way
+    '37-avhome.js',      # AVCTLstats.com's front page: leaders and the four divisions
     '7-sample.js',       # the sample game, then boot. Always last.
 ]
 
@@ -92,35 +99,47 @@ def clashes(parts):
     return dupes
 
 
-def build():
+SITES = {'kmr': HERE, 'avctl': HERE.parent.parent / 'avctl-stats'}   # each site's page, and the folder it goes in: ~/Desktop/avctl-stats is that repo
+MARKED = re.compile(r'<!--@(kmr|avctl)-->(.*?)<!--@end-->\n?', re.S)
+
+
+def build(site='kmr'):
     missing = [p for p in PARTS_HTML + PARTS_JS if not (PB / p).exists()]
     if missing:
         sys.exit('missing parts: ' + ', '.join(missing))
 
     js = [(p, (PB / p).read_text(encoding='utf-8')) for p in PARTS_JS]
-    for who, first, second in clashes(js):
-        print(f'! {who} is declared at the top level of both {first} and {second}')
+    if site == 'kmr':
+        for who, first, second in clashes(js):
+            print(f'! {who} is declared at the top level of both {first} and {second}')
     page = ''.join((PB / p).read_text(encoding='utf-8') for p in PARTS_HTML)
-    page += ''.join(text for _, text in js)
+    page = MARKED.sub(lambda m: m.group(2) if m.group(1) == site else '', page)
+    page += ''.join(text.replace("'__SITE__'", f"'{site}'") if p == '0-site.js' else text for p, text in js)
     page += '</script>\n'
     return page
 
 
 def main():
     check = '--check' in sys.argv
-    page = build()
-    out = HERE / 'index.html'
-    old = out.read_text(encoding='utf-8') if out.exists() else ''
-    same = old == page
-    print(f'{len(page):,} chars, sha {hashlib.sha256(page.encode()).hexdigest()[:12]}'
-          f' — {"unchanged" if same else "CHANGED"} from the committed index.html')
-    if check:
-        return 0 if same else 1
-    for target in (out, HERE.parent / 'index.html'):
-        if target.parent.exists():
+    changed = False
+    for site, folder in SITES.items():
+        page = build(site)
+        out = folder / 'index.html'
+        old = out.read_text(encoding='utf-8') if out.exists() else ''
+        same = old == page
+        changed |= not same
+        print(f'{site}: {len(page):,} chars, sha {hashlib.sha256(page.encode()).hexdigest()[:12]}'
+              f' — {"unchanged" if same else "CHANGED"} from {out}')
+        if check:
+            continue
+        folder.mkdir(parents=True, exist_ok=True)
+        # stats/KMR also keeps a copy one folder up, where it has always been previewed from.
+        for target in (out, HERE.parent / 'index.html') if site == 'kmr' else (out,):
             target.write_text(page, encoding='utf-8')
             print('wrote', target)
-    return 0
+        if site == 'avctl':
+            (folder / 'CNAME').write_text('avctlstats.com\n', encoding='utf-8')   # GitHub Pages' custom domain
+    return 1 if check and changed else 0
 
 
 if __name__ == '__main__':

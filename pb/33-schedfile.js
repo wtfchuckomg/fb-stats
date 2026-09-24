@@ -12,7 +12,7 @@ const sched = {rows:null, stubs:null, byId:null, want:false, logos:-1};
 function loadSchedFile(){
   if (sched.want) return;
   sched.want = true;
-  fetch('/schedule.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).then(d => {
+  fetch(DATA + '/schedule.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).then(d => {
     if (!d || !Array.isArray(d.games)) return;
     sched.rows = d.games; sched.stubs = null;
     if (allGames.list) indexGames();

@@ -69,6 +69,36 @@ button{cursor:pointer}
 /* the logo, at the left of the site bar (its letters are outlined in white, so it reads on black) */
 .mark{flex:none}
 .mark img{display:block;height:40px;width:auto}
+/* AVCTLstats.com: the league's seal on a white disc, and its name beside it. */
+.av-mark{display:flex;align-items:center;gap:12px;text-decoration:none;color:#FFFFFF;padding:6px 0}
+.av-mark img{height:44px;width:44px;border-radius:50%;background:#FFFFFF;padding:2px;object-fit:contain}
+.av-mark span{font:600 15px/1.2 var(--sans);letter-spacing:.01em}
+@media (max-width:640px){.av-mark img{height:38px;width:38px}.av-mark span{font-size:13px}}
+/* AVCTLstats.com's home (37-avhome.js): the league's seal and name, then leaders and divisions in a grid of cards. */
+.avh-hero{display:flex;gap:22px;align-items:center}
+.avh-hero img{flex:none;width:96px;height:96px;border-radius:50%;object-fit:contain;background:#FFFFFF}
+.avh-hero h1{margin:4px 0 6px;font:800 30px/1.1 var(--sans);color:var(--ink)}
+.avh-dek{margin:0 0 14px;color:var(--muted);font-size:16px;line-height:1.45}
+.avh-sec{box-sizing:border-box;width:100%;max-width:1280px;margin:22px auto 10px;padding:0 20px;font:800 20px/1 var(--sans);color:var(--ink)}
+.avh-grid{box-sizing:border-box;width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;max-width:1280px;margin:0 auto}
+.avh-grid .bcard{margin:0}
+.avh-hd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}
+.avh-hd h2{margin:0;font:700 17px/1.2 var(--sans);color:var(--ink)}
+.avh-hd a{font-size:14px;font-weight:600;color:var(--blue,#1F5FBF);text-decoration:none;white-space:nowrap}
+.avh-list{list-style:none;margin:0;padding:0}
+.avh-list li{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.avh-list li:first-child{border-top:0}
+.avh-rk{width:16px;flex:none;color:var(--muted);font-weight:600;text-align:right}
+.avh-pl{flex:1;min-width:0;text-decoration:none;color:var(--ink)}
+.avh-pl b,.avh-pl small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.avh-pl small{color:var(--muted);font-size:13px}
+.avh-v{font:700 18px/1 var(--sans);color:var(--ink);font-variant-numeric:tabular-nums}
+.avh-st{width:100%;border-collapse:collapse;font-size:15px}
+.avh-st th{text-align:right;font-size:12px;color:var(--muted);font-weight:600;padding:0 0 6px}
+.avh-st td{padding:6px 0;border-top:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.avh-st td:first-child{text-align:left;display:flex;align-items:center;gap:8px;white-space:normal}
+.avh-st th+th,.avh-st td+td{padding-left:14px}
+@media (max-width:640px){.avh-hero{flex-direction:column;align-items:flex-start;gap:12px}.avh-hero img{width:72px;height:72px}.avh-hero h1{font-size:24px}.avh-sec{padding:0 14px}}
 @media (max-width:640px){.sitebar-in{gap:16px;padding:0 12px}.mark img{height:34px}}
 .abtns{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .emb-row .line{display:flex;gap:8px;align-items:center}
@@ -1478,6 +1508,35 @@ html[data-skin="liquid"] .ctbl tbody tr:nth-child(even) td{background:var(--lg-z
 <dialog id="dlg"></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
+/* ================================================================
+   Which site this build is. The same parts build two sites:
+   stats.kansasmediarankings.com (kmr) and AVCTLstats.com (avctl), the
+   AVCTL's own fans-only site. build.py writes the site's name in for
+   __SITE__. The AVCTL site keeps no games of its own: it reads the
+   same database and the same nightly files as stats/KMR, so anything
+   entered there shows up here too.
+   ================================================================ */
+const SITE = 'kmr';
+const SITE_AV = SITE === 'avctl';
+const SITE_NAME = SITE_AV ? 'Ark Valley Chisholm Trail League statistics and leaders' : 'Kansas Media Stats';
+const SITE_TITLE = SITE_AV ? 'AVCTL Stats' : 'Kansas Media Stats';   // after the page's own name in a tab's title
+// Where the nightly files (season.json, stats.json, schedules, logos, game snapshots) live: stats/KMR builds
+// them, so the AVCTL site reads them from there.
+const DATA = SITE_AV ? 'https://stats.kansasmediarankings.com' : '';
+
+// The AVCTL site has the league's pages only: any other page's address becomes its league twin before a part reads
+// the address, and the Game Tracker's becomes the home page (the site is for fans).
+if (SITE_AV) (function(){
+  const q = new URLSearchParams(location.search), keep = ['game', 'live', 'preview', 'team', 'teams', 'player', 'avctl', 'avstats', 'standings', 'season', 'tab'];
+  const to = new URLSearchParams();
+  const val = k => q.get(k) || '';
+  if (q.has('scores') || q.has('state')) to.set('avctl', val('scores') || val('state'));
+  else if (q.has('stats') || q.has('statestats')) to.set('avstats', val('stats') || val('statestats'));
+  else if (q.has('league') || q.has('bracket')) to.set('standings', '');
+  q.forEach((v, k) => { if (keep.includes(k) && !to.has(k)) to.set(k, v); });
+  const s = to.toString().replace(/=(?=&|$)/g, '');
+  if (s !== location.search.slice(1)) history.replaceState(null, '', `${location.pathname}${s ? '?' + s : ''}${location.hash}`);
+})();
 /* ================================================================
    Engine. A game is its setup plus an ordered list of plays; every
    score, down, spot and stat is derived by replaying that list, so
@@ -3962,7 +4021,7 @@ setInterval(() => {
    with no logo there gets a monogram in its own team color.
    ================================================================ */
 // This site's own logos folder first (stats.kansasmediarankings.com/logos), then the Pick 'ems library for the rest.
-const LOGO_SRC = [{base:'logos/', list:[]}, {base:'https://picks.kansasmediarankings.com/logos/', list:[]}];
+const LOGO_SRC = [{base:DATA ? `${DATA}/logos/` : 'logos/', list:[]}, {base:'https://picks.kansasmediarankings.com/logos/', list:[]}];
 const logoLib = {list:null, busy:false};   // list: every school from both, for the school-name suggestions
 const logoSlug = s => String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 function loadLogos(){
@@ -3977,7 +4036,7 @@ function loadLogos(){
       // other name has to be filed again — or a school's page finds none of its own games.
       schoolIdx = null;          // keyed by canonical name as well, so it is built again
       if (allGames.list) indexGames();
-      if (g && R) refresh(); else { renderScoreboard(); renderCounty(); renderTeamPage(); renderStandings(); }
+      if (g && R) refresh(); else { renderScoreboard(); renderCounty(); renderTeamPage(); renderStandings(); renderAvHome(); }
     });
 }
 /* ---------- the school list, for picking a school instead of typing one ----------
@@ -4605,7 +4664,7 @@ function standingsCard(title, list){
 }
 
 function standingsHtml(){
-  document.title = 'AVCTL Standings · Kansas Media Stats';
+  document.title = `${SITE_AV ? 'Standings' : 'AVCTL Standings'} · ${SITE_TITLE}`;
   const head = leagueNav('standings'), hint = `<section class="bcard"><p class="hint">League records count each team’s games against its own division, as they’re kept here. Overall is each team’s record as the site has it.</p></section>`;
   if (stand.err) return head + `<section class="bcard"><p class="bempty">${esc(stand.err)}</p></section>`;
   if (!allGames.list) return head + '<section class="bcard"><p class="bempty">Loading the league…</p></section>';
@@ -4676,7 +4735,7 @@ function leagueNav(on){
 
 /* ---------- a league's standings: one table, its league games apart from the rest ---------- */
 function lgStandingsHtml(){
-  document.title = `${LG.name} Standings · Kansas Media Stats`;
+  document.title = `${LG.name} Standings · ${SITE_TITLE}`;
   const head = leagueNav('standings');
   if (stand.err) return head + `<section class="bcard"><p class="bempty">${esc(stand.err)}</p></section>`;
   if (!allGames.list) return head + '<section class="bcard"><p class="bempty">Loading the league…</p></section>';
@@ -4910,7 +4969,7 @@ async function startViewer(id){
     // as the site. The base keeps the page's own links pointing at the site.
     if (d.public && !SCHOOL_CAST && location.hostname === 'stats.kansasmediarankings.com' && !location.pathname.startsWith('/g/') && !startViewer.checked){
       startViewer.checked = true;
-      fetch(`/g/${encodeURIComponent(id)}/`, {method:'HEAD'}).then(r => {
+      fetch(`${DATA}/g/${encodeURIComponent(id)}/`, {method:'HEAD'}).then(r => {
         if (!r.ok || location.pathname.startsWith('/g/')) return;
         if (!document.querySelector('base')){ const b = document.createElement('base'); b.href = '/'; document.head.prepend(b); }
         const tab = new URLSearchParams(location.search).get('tab');
@@ -4922,7 +4981,7 @@ async function startViewer(id){
     g = game; $('#tabs').hidden = false;
     refresh(); viewerTools(id);
     const [hi, lo] = R.st.score.H > R.st.score.A ? ['H', 'A'] : ['A', 'H'];   // the higher score first, like the link's preview
-    document.title = `${g.teams[hi].name} ${R.st.score[hi]}, ${g.teams[lo].name} ${R.st.score[lo]} · Kansas Media Stats`;
+    document.title = `${g.teams[hi].name} ${R.st.score[hi]}, ${g.teams[lo].name} ${R.st.score[lo]} · ${SITE_TITLE}`;
   }, gone);
 }
 // Firebase for a watcher's page, set up once and shared (a school's gamecast moves from game to game).
@@ -5540,7 +5599,9 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
     : q.has('avctl') ? 'avscores' : q.has('standings') ? 'standings' : q.has('avstats') ? 'avstats'
     : q.has('scores') ? 'scores' : q.has('state') ? 'state' : q.has('statestats') ? 'sstats'
     : q.has('stats') ? 'stats' : q.has('team') || q.has('teams') ? 'teams' : q.has('game') || q.has('live') || q.has('gamecast') || q.has('preview') ? '' : 'home';
-  // Each menu's pages sit under its own name: Butler County, AVCTL, State.
+  // Each menu's pages sit under its own name: Butler County, AVCTL, State. The AVCTL site has no menus, just a link
+  // for each page, Team Stats apart from Player Stats.
+  if (SITE_AV) return markSite(here === 'avstats' && q.get('avstats') === 'team' ? 'avteam' : here === 'avscores' ? 'avctl' : here);
   const UNDER = {scores:'buco', stats:'buco', teams:'buco', avscores:'avctl', standings:'avctl', avstats:'avctl', state:'state', sstats:'state', leagues:'state'};
   const top = UNDER[here] || here;
   const a = top && document.querySelector(`.navlink[data-nav="${top}"]`);
@@ -5550,6 +5611,11 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
     const nl = a.parentElement; nl.scrollLeft += a.getBoundingClientRect().left - nl.getBoundingClientRect().left - (nl.clientWidth - a.offsetWidth) / 2;
   }
 })();
+function markSite(here){
+  const a = document.querySelector(`.navlink[data-nav="${here}"]`); if (!a) return;
+  a.classList.add('on'); a.setAttribute('aria-current', 'page');
+  const nl = a.parentElement; nl.scrollLeft += a.getBoundingClientRect().left - nl.getBoundingClientRect().left - (nl.clientWidth - a.offsetWidth) / 2;
+}
 // Which page of a menu is open, so the menu can mark it.
 function menuHere(){
   if (ui.teamPage) return 'teams';
@@ -5620,7 +5686,7 @@ function lgTabs(){
   const q = new URLSearchParams(location.search);
   const here = q.has('tracker') || q.has('edit') ? 'tracker' : q.has('standings') || LG_STAND ? 'standings'
     : q.has('game') || q.has('live') || q.has('gamecast') || q.has('preview') ? 'gamecast'
-    : q.has('state') || q.has('scores') || q.has('avctl') ? 'scores' : '';
+    : q.has('state') || q.has('scores') || q.has('avctl') ? 'scores' : q.has('avstats') ? 'stats' : q.has('teams') || q.has('team') ? 'teams' : '';
   bar.querySelectorAll('[data-lgtab]').forEach(a => { if (a.dataset.lgtab === here) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   const gc = $('#lgtab-gc'); if (!gc || !scores.docs) return;
   const games = weekGames(shownWeek(), false, true).filter(x => x.kind !== 'score' && x.plays && x.plays.length);
@@ -5633,7 +5699,7 @@ function renderScores(){
   const key = shownWeek(); watchWeek(key);
   // On the AVCTL's pages the strip is the league's games, on a league's (State › Leagues) that league's, and on
   // BUCO's the county's (their opponents included).
-  const league = AV_BOARD || AV_STAND || AV_STATS, buco = (BOARD && !STATE_BOARD && !AV_BOARD) || (COUNTY_PAGE && !STATE_STATS && !AV_STATS && !LG_STATS);
+  const league = SITE_AV || AV_BOARD || AV_STAND || AV_STATS, buco = (BOARD && !STATE_BOARD && !AV_BOARD) || (COUNTY_PAGE && !STATE_STATS && !AV_STATS && !LG_STATS);
   const games = LG ? weekGames(key, false, true).filter(inLeague) : league ? weekGames(key, false, true).filter(inAvctl)
     : buco ? weekGames(key).filter(inBuco) : weekGames(key);
   // The scorer always gets the strip, for its Add a score button; fans only when there's something to show.
@@ -5814,7 +5880,7 @@ function weekRange(k){
 async function startScoreboard(){
   ui.viewer = true; ui.board = true; ui.state = STATE_BOARD; ui.av = AV_BOARD; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
-  document.title = `${boardName()} Scoreboard · Kansas Media Stats`;
+  document.title = `${SITE_AV ? '' : boardName() + ' '}Scoreboard · ${SITE_TITLE}`;
   const want = new URLSearchParams(location.search).get(boardParam()) || '';
   ui.week = /^\d{4}-\d\d-\d\d$/.test(want) ? weekKey(fromYmd(want).getTime()) : boardDefaultWeek();
   loadLogos(); loadFiles(); renderScoreboard();
@@ -6594,8 +6660,9 @@ const COUNTY = ['Andover', 'Andover Central', 'Augusta', 'Bluestem', 'Circle', '
 const COUNTY_ALIASES = {Bluestem:['Leon-Bluestem'], Circle:['Towanda-Circle'], Remington:['Whitewater-Remington']};
 // Which schools this page covers: Butler County, the AVCTL, a league (State › Leagues), or (State Stats) whoever
 // turns up in the games.
-const GROUP = AV_STATS ? AVCTL : LG_STATS ? LG.teams : COUNTY;
-const GROUP_ALIASES = AV_STATS ? AVCTL_ALIASES : LG_STATS ? {} : COUNTY_ALIASES;
+// The AVCTL site's pages (its home's leaders too) are always the league's.
+const GROUP = AV_STATS || SITE_AV ? AVCTL : LG_STATS ? LG.teams : COUNTY;
+const GROUP_ALIASES = AV_STATS || SITE_AV ? AVCTL_ALIASES : LG_STATS ? {} : COUNTY_ALIASES;
 const groupOf = name => LG_STATS ? lgOf(name)
   : GROUP.find(c => [c, ...(GROUP_ALIASES[c] || [])].some(a => logoSlug(a) === logoSlug(name))) || null;
 const countyOf = name => COUNTY.find(c => [c, ...(COUNTY_ALIASES[c] || [])].some(a => logoSlug(a) === logoSlug(name))) || null;
@@ -6606,7 +6673,7 @@ const county = {games:null, err:'', team:'all', season:new Date().getFullYear(),
 async function startCounty(){
   ui.viewer = true; ui.county = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
-  document.title = `${groupName()} Stats · Kansas Media Stats`;
+  document.title = `${groupName()} Stats · ${SITE_TITLE}`;
   const want = new URLSearchParams(location.search).get(AV_STATS ? 'avstats' : LG_STATS ? 'lgstats' : STATE_STATS ? 'statestats' : 'stats');
   if (C_VIEWS.includes(want)) county.view = want;
   // &team=<school>, from a team's page: that team's stats (statewide, any school).
@@ -6631,7 +6698,7 @@ async function startCounty(){
 
 // The season's numbers feed three pages: the stats pages, a pregame page, and the scoreboard, where a game
 // that hasn't kicked off shows each team's season leaders where a played game shows its own.
-function statsArrived(){ renderCounty(); if (ui.player) renderPlayer(); if (ui.preview) renderPreview(); if (ui.board) renderScoreboard(); }
+function statsArrived(){ renderCounty(); renderAvHome(); if (ui.player) renderPlayer(); if (ui.preview) renderPreview(); if (ui.board) renderScoreboard(); }
 // A game as the stats file carries it: the numbers already added up, and just enough around them to be
 // filtered by week and team.
 const statsGame = e => ({id:e.id, date:e.date || '', wk:e.wk, updated:e.updated || 0, opp:e.opp,
@@ -6643,7 +6710,7 @@ async function loadStats(api){
   const {fsM, fsdb} = api;
   let built = 0;
   try {
-    const r = await fetch('/stats.json', {cache:'no-cache'});
+    const r = await fetch(DATA + '/stats.json', {cache:'no-cache'});
     if (!r.ok) throw new Error(r.status);
     const d = await r.json();
     if (!d || !Array.isArray(d.games) || !d.games.length) throw new Error('empty');
@@ -7422,12 +7489,13 @@ function scorerBar(){
     + (localStorage.getItem('pressbox.admin') === '1' ? `<a class="abtn" href="${go('others')}">Others</a>` : '')   // the admin's devices only
     + `<a class="abtn" href="${go('setup')}">Setup</a>`;
 }
-if (!TRACKER_PAGE) scorerBar();
+if (!TRACKER_PAGE && !SITE_AV) scorerBar();   // the AVCTL site is for fans: no sign-in
 
 async function startHome(){
+  if (SITE_AV) return startAvHome();   // the AVCTL site's own front page (37-avhome.js)
   ui.viewer = true; ui.home = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
-  document.title = 'Kansas Media Stats · Track high school football live';
+  document.title = `${SITE_TITLE} · Track high school football live`;
   renderHome();
   try {
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
@@ -7649,7 +7717,7 @@ async function loadSeason(api){
   // Only reading the file is worth falling back over. Anything that goes wrong drawing what it says is a bug to
   // see in the console, not a reason to throw the file away and ask the database for all 400 games again.
   try {
-    const r = await fetch('/season.json', {cache:'no-cache'});
+    const r = await fetch(DATA + '/season.json', {cache:'no-cache'});
     if (!r.ok) throw new Error(r.status);
     d = await r.json();
     if (!d || !Array.isArray(d.games) || !d.games.length) throw new Error('empty');
@@ -7758,7 +7826,7 @@ function watchTeamRecs(api){
     teamRecs.map = map; recCache.clear(); recordsChanged();
   }, () => { teamRecs.unsub = null; });
 }
-function recordsChanged(){ renderScores(); renderScoreboard(); renderTeamPage(); renderStandings(); if (g && R && !ui.board) renderBoard(); }
+function recordsChanged(){ renderScores(); renderScoreboard(); renderTeamPage(); renderStandings(); renderAvHome(); if (g && R && !ui.board) renderBoard(); }
 
 // "3-1" or "3-1-1" as numbers, or null when it's something else (left as typed).
 const parseRec = s => { const m = String(s || '').trim().match(/^(\d+)\s*-\s*(\d+)(?:\s*-\s*(\d+))?$/); return m ? [+m[1], +m[2], +(m[3] || 0)] : null; };
@@ -7876,7 +7944,11 @@ function renderTeamPage(){
 }
 
 function teamsIndexHtml(){
-  document.title = 'Teams · Kansas Media Stats';
+  document.title = `Teams · ${SITE_TITLE}`;
+  // The AVCTL site: the league's schools, by division.
+  if (SITE_AV) return `<section class="bcard bhead"><div class="bhead-top"><h1>Teams</h1></div><p class="h-note" style="margin:0">Each team’s record, schedule and results.</p></section>`
+    + AV_NAMES.map(d => `<section class="bcard"><h2 class="tp-h">Division ${d}</h2><div class="tp-grid">${AVCTL_DIV[d].map(n => { const r = recParts(shownRecord(n));
+      return `<a class="tp-card" href="?team=${encodeURIComponent(n)}">${markFor({name:n, abbr:shortName(n), color:'#4A4B4D'}, 56)}<b>${esc(n)}</b>${r.length ? `<span>${esc(r[0])}</span>` : ''}</a>`; }).join('')}</div></section>`).join('');
   // The teams the county plays, each with its whole schedule on the site (their own opponents aren't listed: the site
   // has only their games against these teams).
   const county = new Set(COUNTY.map(canonSchool));
@@ -7901,7 +7973,7 @@ function teamPageHtml(nameIn){
   const roster = rosterFor(nameIn) || rosterFromGames(nameIn);
   const lib = (logoLib.list || []).find(t => logoSlug(t.name) === k);
   const name = COUNTY.find(n => canonSchool(n) === k) || (lib && lib.name) || (tm && tm.name) || nameIn;
-  tpage.name = name; document.title = `${name} · Kansas Media Stats`;
+  tpage.name = name; document.title = `${name} · ${SITE_TITLE}`;
   const inCounty = COUNTY.some(n => canonSchool(n) === k), r = shownRecord(name);
   const mark = {name, abbr:(tm && tm.abbr) || shortName(name), color:(tm && tm.color) || '#4A4B4D'};
   // The record from the finals on the site, offered when entering one (it misses any game that isn't on the site).
@@ -7978,9 +8050,12 @@ function teamPageHtml(nameIn){
       ${ui.admin && !tpage.edit ? `<button type="button" class="bhide" data-tp-add-game>Add a game</button><button type="button" class="bhide" data-tp-edit>Edit record</button>${teamRecs.map[k] ? '<p class="h-note tp-manual">This record was set by hand, so it doesn’t come from the tally. Edit record to change or clear it.</p>' : ''}` : ''}
       ${form}
       ${inCounty || rows.some(r => r.stats) || roster || ui.admin ? (() => {
-        // Butler County has its own stats pages; every other school's numbers live on State Stats.
-        const p = inCounty ? '?stats' : '?statestats', t = inCounty ? '?stats=team' : '?statestats=team', q = encodeURIComponent(name);
-        const stats = inCounty || rows.some(r => r.stats)
+        // Butler County has its own stats pages; every other school's numbers live on State Stats. On the AVCTL site
+        // only the league's schools have stats pages.
+        const av = SITE_AV && avctlOf(name);
+        const p = av ? '?avstats' : inCounty ? '?stats' : '?statestats', t = av ? '?avstats=team' : inCounty ? '?stats=team' : '?statestats=team';
+        const q = encodeURIComponent(av || name);
+        const stats = (SITE_AV ? !!av : inCounty || rows.some(r => r.stats))
           ? `<a class="h-btn" href="${p}&amp;team=${q}">Player stats</a><a class="h-btn" href="${t}&amp;team=${q}">Team stats</a>` : '';
         return `<div class="tp-links">${stats}${roster || ui.admin ? '<button type="button" class="h-btn" data-tp-roster>Roster</button>' : ''}</div>`;
       })() : ''}
@@ -9617,7 +9692,7 @@ function openEmbed(){
   if (!(LOGO_SRC[0].list || []).length) fetch(LOGO_SRC[0].base + 'teams.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : [])
     .then(list => { if (!Array.isArray(list) || !list.length) return; LOGO_SRC[0].list = list; if (ui.dlg === 'embed' && dlg().open) openEmbed(); }).catch(() => {});
   // A game's own link only exists once the rebuild has made it.
-  dlg().querySelectorAll('[data-emb-check]').forEach(el => fetch('/embed/' + el.dataset.embCheck + '/oembed.json', {method:'HEAD', cache:'no-cache'})
+  dlg().querySelectorAll('[data-emb-check]').forEach(el => fetch(DATA + '/embed/' + el.dataset.embCheck + '/oembed.json', {method:'HEAD', cache:'no-cache'})
     .then(r => { if (!r.ok) el.hidden = false; }).catch(() => {}));
 }
 function startEmbedButton(){
@@ -9696,7 +9771,7 @@ function rankOf(name){
 function loadRatings(){
   if (pre.rat !== null) return;
   pre.rat = false;
-  fetch('/ratings.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
+  fetch(DATA + '/ratings.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
     .then(d => { if (d && d.teams){ pre.rat = d; renderPreview(); if (typeof renderRail === 'function') renderRail(); } }).catch(() => {});
 }
 // The ratings are keyed the way KPreps writes a school ("towanda-circle"); match ours to them once each.
@@ -9761,7 +9836,7 @@ function fetchHistory(name, done){
   if (r && r.slug && !tries.includes(r.slug)) tries.push(r.slug);
   (function next(i){
     if (i >= tries.length) return done(false);
-    fetch(`/history/${tries[i]}.json`, {cache:'no-cache'}).then(x => x.ok ? x.json() : null)
+    fetch(`${DATA}/history/${tries[i]}.json`, {cache:'no-cache'}).then(x => x.ok ? x.json() : null)
       .then(d => d ? done(d) : next(i + 1)).catch(() => next(i + 1));
   })(0);
 }
@@ -9774,7 +9849,7 @@ function loadMeetings(name){
   if (r && r.slug && !tries.includes(r.slug)) tries.push(r.slug);
   (function next(i){
     if (i >= tries.length){ pre.meet[k] = false; return renderPreview(); }
-    fetch(`/meetings/${tries[i]}.json`, {cache:'no-cache'}).then(x => x.ok ? x.json() : null)
+    fetch(`${DATA}/meetings/${tries[i]}.json`, {cache:'no-cache'}).then(x => x.ok ? x.json() : null)
       .then(d => { if (!d) return next(i + 1); pre.meet[k] = d; renderPreview(); }).catch(() => next(i + 1));
   })(0);
 }
@@ -9943,7 +10018,7 @@ function previewHtml(){
   const x = previewGame();
   if (!x) return `<section class="bcard"><p class="bempty">${esc(pre.err || (allGames.list ? 'That game isn’t on the site.' : 'Loading the game…'))}</p></section>`;
   const T = x.teams, A = T.A.name, H = T.H.name;
-  document.title = `${A} at ${H} · Preview · Kansas Media Stats`;
+  document.title = `${A} at ${H} · Preview · ${SITE_TITLE}`;
   const day = gameDay(x), P = predict(A, H, day.getFullYear());
   const when = `${day.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'})}`;
   const time = '7:00 PM';   // every Kansas game kicks off at 7 p.m.; a listing that says otherwise is ignored
@@ -10178,7 +10253,7 @@ const kpAlias = n => {
 function loadKpScores(){
   if (kps.want) return;
   kps.want = true;
-  fetch('/kpscores.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).then(d => {
+  fetch(DATA + '/kpscores.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).then(d => {
     if (!d || !Array.isArray(d.games)) return;
     kps.rows = d.games; kps.idx = null;
     renderScores(); renderScoreboard(); renderTeamPage(); renderHome();
@@ -10240,7 +10315,7 @@ const sched = {rows:null, stubs:null, byId:null, want:false, logos:-1};
 function loadSchedFile(){
   if (sched.want) return;
   sched.want = true;
-  fetch('/schedule.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).then(d => {
+  fetch(DATA + '/schedule.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).then(d => {
     if (!d || !Array.isArray(d.games)) return;
     sched.rows = d.games; sched.stubs = null;
     if (allGames.list) indexGames();
@@ -10340,7 +10415,7 @@ async function startPlayerPage(){
 function shareAddress(){
   if (location.hostname !== 'stats.kansasmediarankings.com' || location.pathname.startsWith('/p/')) return;
   const k = `${logoSlug(ppage.team)}-${logoSlug(ppage.name)}`;
-  fetch(`/p/${k}/`, {method:'HEAD'}).then(r => {
+  fetch(`${DATA}/p/${k}/`, {method:'HEAD'}).then(r => {
     if (!r.ok || location.pathname.startsWith('/p/')) return;
     if (!document.querySelector('base')){ const b = document.createElement('base'); b.href = '/'; document.head.prepend(b); }
     history.replaceState(null, '', `/p/${k}/`);
@@ -10437,7 +10512,7 @@ function pNumber(){
 function renderPlayer(){
   if (!ui.player) return;
   const box = $('#board');
-  document.title = `${ppage.name} · ${ppage.team} · Kansas Media Stats`;
+  document.title = `${ppage.name} · ${ppage.team} · ${SITE_TITLE}`;
   const rows = playerGames();
   const seasons = [...new Set(rows.map(r => seasonOf(r.x)))].sort((a, b) => b - a);
   if (ppage.season == null || !seasons.includes(ppage.season)) ppage.season = seasons[0] || new Date().getFullYear();
@@ -10622,7 +10697,7 @@ function bkListHtml(seeds, side){
 function renderBracket(){
   if (!ui.bracket) return;
   const box = $('#board'), S = SECTIONS[bk.cls];
-  document.title = `Class ${bk.cls} Bracketology · Kansas Media Stats`;
+  document.title = `Class ${bk.cls} Bracketology · ${SITE_TITLE}`;
   const head = `<section class="bcard bhead"><div class="bhead-top"><h1>Class ${bk.cls} Bracketology</h1></div>
     <div class="tp-links">${Object.keys(SECTIONS).map(c => `<a class="h-btn${c === bk.cls ? ' on' : ''}" href="?bracket=${c}">Class ${c}</a>`).join('')}</div></section>`;
   if (!allGames.list && !allGames.err) return void (box.innerHTML = head + '<section class="bcard"><p class="bempty">Loading the season…</p></section>');
@@ -10929,6 +11004,72 @@ document.addEventListener('click', e => {
     setTimeout(() => { const el = $('#tg-link'); if (el){ el.scrollIntoView({block:'center'}); el.focus(); } }, 60);
   }
 });
+/* ================================================================
+   AVCTLstats.com's front page: the league's name, this season's
+   leaders and the four divisions at a glance, each a door into its
+   full page. Built on the pages it summarizes — the stats page's
+   season numbers and the standings' records — so the three always
+   agree. stats/KMR never opens it (its home is the tracker's guide).
+   ================================================================ */
+const avHome = {err:''};
+// The leader boards, and the full table each one opens.
+const AV_LEADS = [
+  ['Passing Yards', 'passing', p => p.pa > 0, p => p.py],
+  ['Rushing Yards', 'rushing', p => p.ru > 0, p => p.ry],
+  ['Receiving Yards', 'receiving', p => p.re > 0, p => p.rey],
+  ['Points', 'scoring', p => ptsOf(p) > 0, ptsOf]];
+
+async function startAvHome(){
+  ui.viewer = true; ui.avhome = true; document.body.classList.add('viewer', 'bpage');
+  $('#board').hidden = false;
+  document.title = SITE_NAME;
+  loadLogos(); loadFiles(); renderAvHome();
+  try {
+    const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
+    const [appM, fsM] = await Promise.all([import(base + 'app.js'), import(base + 'firestore.js')]);
+    const fsdb = fsM.getFirestore(appM.initializeApp(firebaseConfig));
+    scoresReady({fsM, fsdb});   // the week's scores strip, and every game for the standings
+    loadStats({fsM, fsdb});     // the season's numbers, for the leaders
+  } catch (e) { avHome.err = 'Can’t reach the games. Check your connection and reload.'; renderAvHome(); }
+}
+
+function renderAvHome(){
+  if (!ui.avhome) return;
+  const note = t => `<p class="bempty">${esc(t)}</p>`;
+  const hero = `<section class="bcard avh-hero">
+      <img src="${esc(document.querySelector('.av-mark img') ? document.querySelector('.av-mark img').src : '')}" alt="" width="96" height="96">
+      <div><span class="h-eyebrow">${county.season} season</span><h1>Ark Valley Chisholm Trail League</h1>
+        <p class="avh-dek">Statistics and leaders: every score, standing and stat for the league’s 26 schools, as the games are played.</p>
+        <div class="h-btns"><a class="h-btn primary" href="?avctl">Scoreboard</a><a class="h-btn" href="?standings">Standings</a><a class="h-btn" href="?avstats">Player Stats</a><a class="h-btn" href="?avstats=team">Team Stats</a></div></div>
+    </section>`;
+
+  // Leaders: the top five in each, from the same numbers as the stats pages.
+  let leaders;
+  if (avHome.err && !county.games) leaders = note(avHome.err);
+  else if (!county.games) leaders = note('Loading the leaders…');
+  else {
+    const {players} = countyStats(countyGames());
+    leaders = `<div class="avh-grid">${AV_LEADS.map(([title, view, keep, val]) => {
+      const top = players.filter(keep).sort((a, b) => val(b) - val(a) || a.name.localeCompare(b.name)).slice(0, 5);
+      const rows = top.map((p, i) => `<li><span class="avh-rk">${i + 1}</span>${cMark(p.team)}
+          <a class="avh-pl" href="${playerHref(p.name, p.team)}"><b>${esc(p.name)}</b><small>${esc(p.team)}</small></a><span class="avh-v">${val(p)}</span></li>`).join('');
+      return `<section class="bcard avh-card"><div class="avh-hd"><h2>${title}</h2><a href="?avstats=${view}">All »</a></div>
+        ${rows ? `<ol class="avh-list">${rows}</ol>` : note('No stats yet.')}</section>`;
+    }).join('')}</div>`;
+  }
+
+  // The four divisions: league record first, then overall, the way the standings read.
+  let divs;
+  if (avHome.err && !allGames.list) divs = note(avHome.err);
+  else if (!allGames.list) divs = note('Loading the standings…');
+  else divs = `<div class="avh-grid">${AV_NAMES.map(d => `<section class="bcard avh-card"><div class="avh-hd"><h2>Division ${d}</h2><a href="?standings">Standings »</a></div>
+      <table class="avh-st"><thead><tr><th></th><th>League</th><th>Overall</th></tr></thead><tbody>${standingsRows(d).map(o => {
+        const rec = o.rec || {}, r = o.r;
+        return `<tr><td>${cMark(o.name)}<a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
+          <td>${avRec(r.dw, r.dl, r.dt)}</td><td>${esc(rec.rec || avRec(r.w, r.l, r.t))}</td></tr>`; }).join('')}</tbody></table></section>`).join('')}</div>`;
+
+  $('#board').innerHTML = hero + `<h2 class="avh-sec">Leaders</h2>` + leaders + `<h2 class="avh-sec">Standings</h2>` + divs;
+}
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};
