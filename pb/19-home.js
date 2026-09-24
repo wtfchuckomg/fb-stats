@@ -80,7 +80,7 @@ function renderHome(){
     list:'M4 5h12M4 10h12M4 15h8', link:'M8 12l4-4M7 9l-2 2a3 3 0 004 4l2-2M13 11l2-2a3 3 0 00-4-4L9 7', shield:'M10 3l6 3v4c0 4-3 6-6 7-3-1-6-3-6-7V6z'};
   // With two leagues' pages here, each stats link says whose it is.
   const links = [['BUCO Scoreboard', '?scores', I.board], ['BUCO Player Stats', '?stats', I.stats], ['BUCO Team Stats', '?stats=team', I.team],
-    ['AVCTL Scoreboard', '?avctl', I.board], ['AVCTL Standings', '?standings', I.list], ['AVCTL Player Stats', '?avstats', I.stats], ['AVCTL Team Stats', '?avstats=team', I.team],
+    ['AVCTL Scoreboard', `${AV_SITE}?avctl`, I.board], ['AVCTL Standings', `${AV_SITE}?standings`, I.list], ['AVCTL Player Stats', `${AV_SITE}?avstats`, I.stats], ['AVCTL Team Stats', `${AV_SITE}?avstats=team`, I.team],
     ['State Scoreboard', '?state', I.state], ['Game Tracker', tracker, I.track],
     ['Media Rankings', 'https://kansasmediarankings.com/', I.ext], ['Pick ’Em', 'https://picks.kansasmediarankings.com', I.ext], ['Helmets', 'https://kansasmediarankings.com/helmets.html', I.ext]];
   $('#board').innerHTML = `<div class="hpage">

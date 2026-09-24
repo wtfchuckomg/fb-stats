@@ -25,8 +25,8 @@ const LEAGUES = [
   {slug:'united-kansas-conference', name:"United Kansas Conference", teams:["Basehor-Linwood", "De Soto", "Lansing", "Leavenworth", "Piper", "Seaman", "Shawnee Heights", "Spring Hill", "Topeka West", "Turner"]},
   {slug:'western-athletic-conference', name:"Western Athletic Conference", teams:["Dodge City", "Garden City", "Great Bend", "Hays", "Liberal"]},
 ];
-// The Leagues menu, AVCTL first: its pages are its own addresses.
-const LEAGUE_MENU = [{name:'AVCTL', href:'?standings'}, ...LEAGUES.map(l => ({name:l.name, href:`?league=${l.slug}`}))];
+// The Leagues menu, AVCTL first: its pages are on its own site, AVCTLstats.com.
+const LEAGUE_MENU = [{name:'AVCTL', href:`${AV_SITE}?standings`}, ...LEAGUES.map(l => ({name:l.name, href:`?league=${l.slug}`}))];
 
 const LG_Q = new URLSearchParams(location.search);
 const LG = LEAGUES.find(l => l.slug === LG_Q.get('league')) || null;   // the league whose page this is

@@ -13,6 +13,8 @@ const SITE_TITLE = SITE_AV ? 'AVCTL Stats' : 'Kansas Media Stats';   // after th
 // Where the nightly files (season.json, stats.json, schedules, logos, game snapshots) live: stats/KMR builds
 // them, so the AVCTL site reads them from there.
 const DATA = SITE_AV ? 'https://stats.kansasmediarankings.com' : '';
+// The AVCTL's pages live on their own site: stats/KMR's AVCTL links go there.
+const AV_SITE = 'https://avctlstats.com/';
 
 // The AVCTL site has the league's pages only: any other page's address becomes its league twin before a part reads
 // the address, and the Game Tracker's becomes the home page (the site is for fans).
