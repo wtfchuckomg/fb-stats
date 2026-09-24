@@ -343,10 +343,7 @@ function previewHtml(){
         <div class="pg-ringwrap">${ring}<div class="pg-marks">${markFor(T.A, 34)}${markFor(T.H, 34)}</div></div>
         <div class="pg-pct r"><b>${pctH}%</b><span>${esc(T.H.abbr || shortName(H))}</span></div></div>
       <details class="pg-how"><summary>How it’s figured</summary>
-        <table class="pg-parts">${partRows}</table>${P.line ? `<p class="h-note">The same numbers as the Game line. A rating is how many points better than an
-          average Kansas team a school has been, from every result since 2021 with this season counting most.
-          The Media Rankings count for what they've been worth this season; past meetings count lightly, since
-          those games are already in the ratings. A favorite by ${Math.abs(P.line.spread)} has won about ${Math.round(Math.max(P.home, P.away) * 100)}% of the time.</p>` : ''}${sosNote(A, H, P)}</details>
+        <table class="pg-parts">${partRows}</table>${sosNote(A, H, P)}</details>
     </section>`;
 
   const info = n => { const i = schoolInfo(n); return i ? `Class ${i[0].replace('8M-', '8-Man ').replace('6M', '6-Man')} · ${i[1]}` : ''; };
@@ -365,8 +362,7 @@ function previewHtml(){
   const odds = `<section class="bcard pg-card"><h2 class="pg-h">Game line</h2>
       <div class="pg-tbl"><table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th></tr></thead><tbody>
         ${oddsRow('A', A)}${oddsRow('H', H)}</tbody></table></div>
-      ${OL ? `<p class="hint">${OL.thin ? 'One of these teams has few games on file, so treat this lightly. ' : ''}For fun only: there's no betting here.</p>`
-        : `<p class="hint">No line for this game yet: the ratings don't have both schools.</p>`}
+      ${OL ? '' : `<p class="hint">No line for this game yet: the ratings don't have both schools.</p>`}
     </section>`;
 
   // Season leaders, the two teams side by side.
@@ -517,7 +513,5 @@ function sosNote(A, H, P){
     + `<td class="num">${o.full != null ? num(o.full) : '\u2014'}</td></tr>`;
   return `<div class="pg-sos"><b>Strength of schedule</b>
     <table class="pg-parts"><thead><tr><td></td><td class="num">PLAYED</td><td class="num">FULL YEAR</td></tr></thead>
-    <tbody>${row(A, a)}${row(H, h)}</tbody></table>
-    <p class="h-note">The average rating of the schools on the card, in points. Above zero is a schedule
-      harder than the middle of the state; the played column is the games so far, the full year every game on it.</p></div>`;
+    <tbody>${row(A, a)}${row(H, h)}</tbody></table></div>`;
 }

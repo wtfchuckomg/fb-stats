@@ -1,6 +1,7 @@
 /* ================================================================
-   AVCTLstats.com's front page: the league's name, this season's
-   leaders and the four divisions at a glance, each a door into its
+   AVCTLstats.com's front page: this season's leaders and the four
+   divisions at a glance (the header card above every page has the
+   league's name and the way to each page), each a door into its
    full page. Built on the pages it summarizes — the stats page's
    season numbers and the standings' records — so the three always
    agree. stats/KMR never opens it (its home is the tracker's guide).
@@ -30,12 +31,6 @@ async function startAvHome(){
 function renderAvHome(){
   if (!ui.avhome) return;
   const note = t => `<p class="bempty">${esc(t)}</p>`;
-  const hero = `<section class="bcard avh-hero">
-      <img src="${esc($('#av-logo') ? $('#av-logo').src : '')}" alt="" width="96" height="96">
-      <div><span class="h-eyebrow">${county.season} season</span><h1>Ark Valley Chisholm Trail League</h1>
-        <p class="avh-dek">Statistics and leaders: every score, standing and stat for the league’s 26 schools, as the games are played.</p>
-        <div class="h-btns"><a class="h-btn primary" href="?avctl">Scoreboard</a><a class="h-btn" href="?standings">Standings</a><a class="h-btn" href="?avstats">Player Stats</a><a class="h-btn" href="?avstats=team">Team Stats</a></div></div>
-    </section>`;
 
   // Leaders: the top five in each, from the same numbers as the stats pages.
   let leaders;
@@ -62,5 +57,14 @@ function renderAvHome(){
         return `<tr><td>${cMark(o.name)}<a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
           <td>${avRec(r.dw, r.dl, r.dt)}</td><td>${esc(rec.rec || avRec(r.w, r.l, r.t))}</td></tr>`; }).join('')}</tbody></table></section>`).join('')}</div>`;
 
-  $('#board').innerHTML = hero + `<h2 class="avh-sec">Leaders</h2>` + leaders + `<h2 class="avh-sec">Standings</h2>` + divs;
+  $('#board').innerHTML = `<h2 class="avh-sec">Leaders</h2>` + leaders + `<h2 class="avh-sec">Standings</h2>` + divs;
 }
+
+// The header card on every AVCTL page: this season, and the page you're on filled in.
+if (SITE_AV) (function(){
+  const q = new URLSearchParams(location.search), yr = $('#av-season');
+  if (yr) yr.textContent = `${new Date().getFullYear()} season`;
+  const here = q.has('avctl') ? 'avctl' : q.has('standings') ? 'standings' : q.has('avstats') ? (q.get('avstats') === 'team' ? 'avteam' : 'avstats')
+    : q.has('teams') || q.has('team') ? 'teams' : '';
+  document.querySelectorAll('.av-btns [data-av]').forEach(a => { const on = a.dataset.av === here; a.classList.toggle('primary', on); if (on) a.setAttribute('aria-current', 'page'); });
+})();

@@ -291,7 +291,7 @@ function minLine(V, min){
   if (!V.qual) return '';
   const what = `to rank in ${V.rate.join(', ')}`;
   if (ui.admin) return `<div class="c-min"><label for="cmin">Minimum ${what}:</label><input id="cmin" type="number" inputmode="numeric" min="0" max="999" value="${min || ''}" placeholder="none"><span>${esc(V.unit)}</span><button type="button" data-cminsave>Save</button></div>`;
-  return min ? `<div class="c-min">Minimum ${min} ${esc(V.unit)} ${what}.</div>` : '';
+  return '';   // fans see who's under the minimum in the table itself
 }
 
 /* ---------- the table, ESPN style: rank, name, then numbers; the sorted column shaded ---------- */
@@ -356,8 +356,7 @@ function renderCounty(){
       const card = (title, id, cols, def, asc) => `<section class="bcard ccard"><div class="ccard-hd"><h2>${title}</h2></div>${statTable(id, STATE_STATS ? teams.filter(t => t.gp) : teams, cols, def, {...o, asc})}</section>`;
       if (y25){
         const cols = yardCols('').filter(c => !c[0].endsWith('/G'));
-        body = card('Offense', 'off25', cols, cols.findIndex(c => c[0] === 'TOTAL YDS'))
-          + note('The 2025 leaderboard has each player’s season totals, so these are the players added up. Records, points and defense aren’t in it.');
+        body = card('Offense', 'off25', cols, cols.findIndex(c => c[0] === 'TOTAL YDS'));
       } else {
         const qcols = quarterCols(teams.some(t => t.ot));
         body = card('Team Totals', 'team', T_COLS, 1) + card('Offense', 'off', yardCols(''), 10) + card('Defensive Team Stats', 'allow', yardCols('o'), 10, true)

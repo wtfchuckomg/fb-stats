@@ -29,6 +29,7 @@
 <meta property="og:title" content="Ark Valley Chisholm Trail League statistics and leaders">
 <meta property="og:description" content="Scores, standings, stats and leaders for the Ark Valley Chisholm Trail League, updated as games are played.">
 <meta property="og:url" content="https://avctlstats.com/">
+<style>.navbar{display:none!important}</style>
 <meta name="theme-color" content="#151617">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Ark Valley Chisholm Trail League statistics and leaders">
@@ -84,11 +85,20 @@ button{cursor:pointer}
 /* the logo, at the left of the site bar (its letters are outlined in white, so it reads on black) */
 .mark{flex:none}
 .mark img{display:block;height:40px;width:auto}
-/* AVCTLstats.com's home (37-avhome.js): the league's seal and name, then leaders and divisions in a grid of cards. */
+/* AVCTLstats.com: the seal, the season and the league's name over the site's buttons, on every page; the button of
+   the page you're on is filled. Then the home page (37-avhome.js): leaders and divisions in a grid of cards. */
+.av-topwrap{box-sizing:border-box;width:100%;max-width:1280px;margin:0 auto;padding:16px 16px 0}
 .avh-hero{display:flex;gap:22px;align-items:center}
 .avh-hero img{flex:none;width:96px;height:96px;border-radius:50%;object-fit:contain;background:#FFFFFF}
-.avh-hero h1{margin:4px 0 6px;font:800 30px/1.1 var(--sans);color:var(--ink)}
-.avh-dek{margin:0 0 14px;color:var(--muted);font-size:16px;line-height:1.45}
+.av-seal{flex:none;display:block;line-height:0}
+.av-name{display:block;margin:4px 0 14px;font:800 30px/1.1 var(--sans);color:var(--ink);text-decoration:none}
+/* Phones: the seal beside the season and the name, and the buttons in one row beneath that scrolls sideways. */
+@media (max-width:640px){.av-topwrap{padding:12px 12px 0}
+  .av-top{display:grid;grid-template-columns:52px 1fr;column-gap:12px;align-items:center;padding:16px 16px 14px}.av-top>div{display:contents}
+  .av-top .av-seal{grid-row:1/3}.av-top img{width:52px;height:52px}.av-top .h-eyebrow{grid-column:2;align-self:end}
+  .av-top .av-name{grid-column:2;align-self:start;font-size:20px;margin:3px 0 0}
+  .av-top .av-btns{grid-column:1/-1;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:14px -16px 0;padding:0 16px}
+  .av-top .av-btns::-webkit-scrollbar{display:none}.av-top .av-btns .h-btn{flex:none;padding:9px 14px}}
 .avh-sec{box-sizing:border-box;width:100%;max-width:1280px;margin:22px auto 10px;padding:0 20px;font:800 20px/1 var(--sans);color:var(--ink)}
 .avh-grid{box-sizing:border-box;width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;max-width:1280px;margin:0 auto}
 .avh-grid .bcard{margin:0}
@@ -108,7 +118,7 @@ button{cursor:pointer}
 .avh-st td{padding:6px 0;border-top:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .avh-st td:first-child{text-align:left;display:flex;align-items:center;gap:8px;white-space:normal}
 .avh-st th+th,.avh-st td+td{padding-left:14px}
-@media (max-width:640px){.avh-hero{flex-direction:column;align-items:flex-start;gap:12px}.avh-hero img{width:72px;height:72px}.avh-hero h1{font-size:24px}.avh-sec{padding:0 14px}}
+@media (max-width:640px){.avh-sec{padding:0 14px}}
 @media (max-width:640px){.sitebar-in{gap:16px;padding:0 12px}.mark img{height:34px}}
 .abtns{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .emb-row .line{display:flex;gap:8px;align-items:center}

@@ -69,11 +69,20 @@ button{cursor:pointer}
 /* the logo, at the left of the site bar (its letters are outlined in white, so it reads on black) */
 .mark{flex:none}
 .mark img{display:block;height:40px;width:auto}
-/* AVCTLstats.com's home (37-avhome.js): the league's seal and name, then leaders and divisions in a grid of cards. */
+/* AVCTLstats.com: the seal, the season and the league's name over the site's buttons, on every page; the button of
+   the page you're on is filled. Then the home page (37-avhome.js): leaders and divisions in a grid of cards. */
+.av-topwrap{box-sizing:border-box;width:100%;max-width:1280px;margin:0 auto;padding:16px 16px 0}
 .avh-hero{display:flex;gap:22px;align-items:center}
 .avh-hero img{flex:none;width:96px;height:96px;border-radius:50%;object-fit:contain;background:#FFFFFF}
-.avh-hero h1{margin:4px 0 6px;font:800 30px/1.1 var(--sans);color:var(--ink)}
-.avh-dek{margin:0 0 14px;color:var(--muted);font-size:16px;line-height:1.45}
+.av-seal{flex:none;display:block;line-height:0}
+.av-name{display:block;margin:4px 0 14px;font:800 30px/1.1 var(--sans);color:var(--ink);text-decoration:none}
+/* Phones: the seal beside the season and the name, and the buttons in one row beneath that scrolls sideways. */
+@media (max-width:640px){.av-topwrap{padding:12px 12px 0}
+  .av-top{display:grid;grid-template-columns:52px 1fr;column-gap:12px;align-items:center;padding:16px 16px 14px}.av-top>div{display:contents}
+  .av-top .av-seal{grid-row:1/3}.av-top img{width:52px;height:52px}.av-top .h-eyebrow{grid-column:2;align-self:end}
+  .av-top .av-name{grid-column:2;align-self:start;font-size:20px;margin:3px 0 0}
+  .av-top .av-btns{grid-column:1/-1;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:14px -16px 0;padding:0 16px}
+  .av-top .av-btns::-webkit-scrollbar{display:none}.av-top .av-btns .h-btn{flex:none;padding:9px 14px}}
 .avh-sec{box-sizing:border-box;width:100%;max-width:1280px;margin:22px auto 10px;padding:0 20px;font:800 20px/1 var(--sans);color:var(--ink)}
 .avh-grid{box-sizing:border-box;width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;max-width:1280px;margin:0 auto}
 .avh-grid .bcard{margin:0}
@@ -93,7 +102,7 @@ button{cursor:pointer}
 .avh-st td{padding:6px 0;border-top:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .avh-st td:first-child{text-align:left;display:flex;align-items:center;gap:8px;white-space:normal}
 .avh-st th+th,.avh-st td+td{padding-left:14px}
-@media (max-width:640px){.avh-hero{flex-direction:column;align-items:flex-start;gap:12px}.avh-hero img{width:72px;height:72px}.avh-hero h1{font-size:24px}.avh-sec{padding:0 14px}}
+@media (max-width:640px){.avh-sec{padding:0 14px}}
 @media (max-width:640px){.sitebar-in{gap:16px;padding:0 12px}.mark img{height:34px}}
 .abtns{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .emb-row .line{display:flex;gap:8px;align-items:center}
@@ -4660,10 +4669,10 @@ function standingsCard(title, list){
 
 function standingsHtml(){
   document.title = `${SITE_AV ? 'Standings' : 'AVCTL Standings'} · ${SITE_TITLE}`;
-  const head = leagueNav('standings'), hint = `<section class="bcard"><p class="hint">League records count each team’s games against its own division, as they’re kept here. Overall is each team’s record as the site has it.</p></section>`;
+  const head = leagueNav('standings');
   if (stand.err) return head + `<section class="bcard"><p class="bempty">${esc(stand.err)}</p></section>`;
   if (!allGames.list) return head + '<section class="bcard"><p class="bempty">Loading the league…</p></section>';
-  return head + AV_NAMES.map(div => standingsCard(`Division ${div}`, standingsRows(div))).join('') + hint;
+  return head + AV_NAMES.map(div => standingsCard(`Division ${div}`, standingsRows(div))).join('');
 }
 
 function renderStandings(){
@@ -4719,6 +4728,7 @@ const inLeague = x => !!x && !!x.teams && (!!lgOf(x.teams.A.name) || !!lgOf(x.te
 
 // The three pages of a league, as tabs over each of them: Standings, Player Stats, Team Stats.
 function leagueNav(on){
+  if (SITE_AV) return '';   // the AVCTL site's header card has these pages as its buttons
   const av = !LG, base = av ? '' : `league=${LG.slug}`;
   const tabs = av
     ? [['standings', 'Standings', '?standings'], ['players', 'Player Stats', '?avstats'], ['team', 'Team Stats', '?avstats=team']]
@@ -4735,8 +4745,7 @@ function lgStandingsHtml(){
   if (stand.err) return head + `<section class="bcard"><p class="bempty">${esc(stand.err)}</p></section>`;
   if (!allGames.list) return head + '<section class="bcard"><p class="bempty">Loading the league…</p></section>';
   const rows = LG.teams.map(name => ({name, r:avRecord(name, o => !!lgOf(o)), rec:shownRecord(name)})).sort(standOrder);
-  return head + standingsCard('Standings', rows)
-    + `<section class="bcard"><p class="hint">League records count each team’s games against the rest of the league, as they’re kept here. Overall is each team’s record as the site has it.</p></section>`;
+  return head + standingsCard('Standings', rows);
 }
 /* ================================================================
    Sync. Games follow a Google sign-in through the stats project's own
@@ -6931,7 +6940,7 @@ function minLine(V, min){
   if (!V.qual) return '';
   const what = `to rank in ${V.rate.join(', ')}`;
   if (ui.admin) return `<div class="c-min"><label for="cmin">Minimum ${what}:</label><input id="cmin" type="number" inputmode="numeric" min="0" max="999" value="${min || ''}" placeholder="none"><span>${esc(V.unit)}</span><button type="button" data-cminsave>Save</button></div>`;
-  return min ? `<div class="c-min">Minimum ${min} ${esc(V.unit)} ${what}.</div>` : '';
+  return '';   // fans see who's under the minimum in the table itself
 }
 
 /* ---------- the table, ESPN style: rank, name, then numbers; the sorted column shaded ---------- */
@@ -6996,8 +7005,7 @@ function renderCounty(){
       const card = (title, id, cols, def, asc) => `<section class="bcard ccard"><div class="ccard-hd"><h2>${title}</h2></div>${statTable(id, STATE_STATS ? teams.filter(t => t.gp) : teams, cols, def, {...o, asc})}</section>`;
       if (y25){
         const cols = yardCols('').filter(c => !c[0].endsWith('/G'));
-        body = card('Offense', 'off25', cols, cols.findIndex(c => c[0] === 'TOTAL YDS'))
-          + note('The 2025 leaderboard has each player’s season totals, so these are the players added up. Records, points and defense aren’t in it.');
+        body = card('Offense', 'off25', cols, cols.findIndex(c => c[0] === 'TOTAL YDS'));
       } else {
         const qcols = quarterCols(teams.some(t => t.ot));
         body = card('Team Totals', 'team', T_COLS, 1) + card('Offense', 'off', yardCols(''), 10) + card('Defensive Team Stats', 'allow', yardCols('o'), 10, true)
@@ -7941,7 +7949,7 @@ function renderTeamPage(){
 function teamsIndexHtml(){
   document.title = `Teams · ${SITE_TITLE}`;
   // The AVCTL site: the league's schools, by division.
-  if (SITE_AV) return `<section class="bcard bhead"><div class="bhead-top"><h1>Teams</h1></div><p class="h-note" style="margin:0">Each team’s record, schedule and results.</p></section>`
+  if (SITE_AV) return `<section class="bcard bhead"><div class="bhead-top"><h1>Teams</h1></div></section>`
     + AV_NAMES.map(d => `<section class="bcard"><h2 class="tp-h">Division ${d}</h2><div class="tp-grid">${AVCTL_DIV[d].map(n => { const r = recParts(shownRecord(n));
       return `<a class="tp-card" href="?team=${encodeURIComponent(n)}">${markFor({name:n, abbr:shortName(n), color:'#4A4B4D'}, 56)}<b>${esc(n)}</b>${r.length ? `<span>${esc(r[0])}</span>` : ''}</a>`; }).join('')}</div></section>`).join('');
   // The teams the county plays, each with its whole schedule on the site (their own opponents aren't listed: the site
@@ -7957,7 +7965,7 @@ function teamsIndexHtml(){
   const others = [...named.values()].sort((a, b) => a.localeCompare(b));
   const card = (n, size) => { const r = recParts(shownRecord(n));
     return `<a class="tp-card" href="?team=${encodeURIComponent(n)}">${markFor({name:n, abbr:shortName(n), color:'#4A4B4D'}, size)}<b>${esc(n)}</b>${r.length ? `<span>${esc(r[0])}</span>` : ''}</a>`; };
-  return `<section class="bcard bhead"><div class="bhead-top"><h1>Teams</h1></div><p class="h-note" style="margin:0">Each team’s record, schedule and results.</p></section>
+  return `<section class="bcard bhead"><div class="bhead-top"><h1>Teams</h1></div></section>
     <section class="bcard"><h2 class="tp-h">Butler County</h2><div class="tp-grid">${COUNTY.map(n => card(n, 56)).join('')}</div></section>
     <section class="bcard"><h2 class="tp-h">Every other team</h2>${allGames.err ? `<p class="bempty">${esc(allGames.err)}</p>` : ''}
       <div class="tp-grid small">${others.map(n => card(n, 28)).join('')}</div></section>`;
@@ -8056,7 +8064,6 @@ function teamPageHtml(nameIn){
       })() : ''}
     </section>
     <section class="bcard"><div class="tp-h-row"><h2 class="tp-h">Schedule &amp; Results</h2>${seasonPick}</div>
-      ${coveredSchool(name) || !r ? '' : `<p class="h-note" style="margin:0 0 10px">${esc(name)}’s record here counts the games this site has — a paste or a tracked game adds to it.</p>`}
       ${past ? `<div class="tbl-x"><table class="tp-sched"><tbody>${past}</tbody></table></div>`
         : allGames.list ? (sched ? `<div class="tbl-x"><table class="tp-sched"><tbody>${sched}</tbody></table></div>` : `<p class="bempty">No games for ${esc(name)} on the site yet.</p>`)
         : `<p class="bempty">${esc(allGames.err || 'Loading…')}</p>`}
@@ -10050,10 +10057,7 @@ function previewHtml(){
         <div class="pg-ringwrap">${ring}<div class="pg-marks">${markFor(T.A, 34)}${markFor(T.H, 34)}</div></div>
         <div class="pg-pct r"><b>${pctH}%</b><span>${esc(T.H.abbr || shortName(H))}</span></div></div>
       <details class="pg-how"><summary>How it’s figured</summary>
-        <table class="pg-parts">${partRows}</table>${P.line ? `<p class="h-note">The same numbers as the Game line. A rating is how many points better than an
-          average Kansas team a school has been, from every result since 2021 with this season counting most.
-          The Media Rankings count for what they've been worth this season; past meetings count lightly, since
-          those games are already in the ratings. A favorite by ${Math.abs(P.line.spread)} has won about ${Math.round(Math.max(P.home, P.away) * 100)}% of the time.</p>` : ''}${sosNote(A, H, P)}</details>
+        <table class="pg-parts">${partRows}</table>${sosNote(A, H, P)}</details>
     </section>`;
 
   const info = n => { const i = schoolInfo(n); return i ? `Class ${i[0].replace('8M-', '8-Man ').replace('6M', '6-Man')} · ${i[1]}` : ''; };
@@ -10072,8 +10076,7 @@ function previewHtml(){
   const odds = `<section class="bcard pg-card"><h2 class="pg-h">Game line</h2>
       <div class="pg-tbl"><table class="ctbl pg-odds"><thead><tr><th></th><th class="num">Spread</th><th class="num">Total</th></tr></thead><tbody>
         ${oddsRow('A', A)}${oddsRow('H', H)}</tbody></table></div>
-      ${OL ? `<p class="hint">${OL.thin ? 'One of these teams has few games on file, so treat this lightly. ' : ''}For fun only: there's no betting here.</p>`
-        : `<p class="hint">No line for this game yet: the ratings don't have both schools.</p>`}
+      ${OL ? '' : `<p class="hint">No line for this game yet: the ratings don't have both schools.</p>`}
     </section>`;
 
   // Season leaders, the two teams side by side.
@@ -10224,9 +10227,7 @@ function sosNote(A, H, P){
     + `<td class="num">${o.full != null ? num(o.full) : '\u2014'}</td></tr>`;
   return `<div class="pg-sos"><b>Strength of schedule</b>
     <table class="pg-parts"><thead><tr><td></td><td class="num">PLAYED</td><td class="num">FULL YEAR</td></tr></thead>
-    <tbody>${row(A, a)}${row(H, h)}</tbody></table>
-    <p class="h-note">The average rating of the schools on the card, in points. Above zero is a schedule
-      harder than the middle of the state; the played column is the games so far, the full year every game on it.</p></div>`;
+    <tbody>${row(A, a)}${row(H, h)}</tbody></table></div>`;
 }
 /* ================================================================
    Friday night's finals, for the games nobody kept stats on.
@@ -11000,8 +11001,9 @@ document.addEventListener('click', e => {
   }
 });
 /* ================================================================
-   AVCTLstats.com's front page: the league's name, this season's
-   leaders and the four divisions at a glance, each a door into its
+   AVCTLstats.com's front page: this season's leaders and the four
+   divisions at a glance (the header card above every page has the
+   league's name and the way to each page), each a door into its
    full page. Built on the pages it summarizes — the stats page's
    season numbers and the standings' records — so the three always
    agree. stats/KMR never opens it (its home is the tracker's guide).
@@ -11031,12 +11033,6 @@ async function startAvHome(){
 function renderAvHome(){
   if (!ui.avhome) return;
   const note = t => `<p class="bempty">${esc(t)}</p>`;
-  const hero = `<section class="bcard avh-hero">
-      <img src="${esc($('#av-logo') ? $('#av-logo').src : '')}" alt="" width="96" height="96">
-      <div><span class="h-eyebrow">${county.season} season</span><h1>Ark Valley Chisholm Trail League</h1>
-        <p class="avh-dek">Statistics and leaders: every score, standing and stat for the league’s 26 schools, as the games are played.</p>
-        <div class="h-btns"><a class="h-btn primary" href="?avctl">Scoreboard</a><a class="h-btn" href="?standings">Standings</a><a class="h-btn" href="?avstats">Player Stats</a><a class="h-btn" href="?avstats=team">Team Stats</a></div></div>
-    </section>`;
 
   // Leaders: the top five in each, from the same numbers as the stats pages.
   let leaders;
@@ -11063,8 +11059,17 @@ function renderAvHome(){
         return `<tr><td>${cMark(o.name)}<a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
           <td>${avRec(r.dw, r.dl, r.dt)}</td><td>${esc(rec.rec || avRec(r.w, r.l, r.t))}</td></tr>`; }).join('')}</tbody></table></section>`).join('')}</div>`;
 
-  $('#board').innerHTML = hero + `<h2 class="avh-sec">Leaders</h2>` + leaders + `<h2 class="avh-sec">Standings</h2>` + divs;
+  $('#board').innerHTML = `<h2 class="avh-sec">Leaders</h2>` + leaders + `<h2 class="avh-sec">Standings</h2>` + divs;
 }
+
+// The header card on every AVCTL page: this season, and the page you're on filled in.
+if (SITE_AV) (function(){
+  const q = new URLSearchParams(location.search), yr = $('#av-season');
+  if (yr) yr.textContent = `${new Date().getFullYear()} season`;
+  const here = q.has('avctl') ? 'avctl' : q.has('standings') ? 'standings' : q.has('avstats') ? (q.get('avstats') === 'team' ? 'avteam' : 'avstats')
+    : q.has('teams') || q.has('team') ? 'teams' : '';
+  document.querySelectorAll('.av-btns [data-av]').forEach(a => { const on = a.dataset.av === here; a.classList.toggle('primary', on); if (on) a.setAttribute('aria-current', 'page'); });
+})();
 /* ---------- sample game: made-up teams and plays, typed in shorthand ---------- */
 function sampleGame(){
   const A = {name:'North Eagles', mascot:'Eagles', abbr:'NOR', color:'#1F4E9C', roster:{7:'Cole Brandt', 22:'Mason Ortiz', 11:'Tyler Reyes', 84:'Jace Miller', 15:'Luke Dean', 54:'Gavin Hart', 24:'Eli Novak', 90:'Owen Pratt', 72:'Sam Keller'}};

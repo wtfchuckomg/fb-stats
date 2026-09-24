@@ -40,6 +40,7 @@ const inLeague = x => !!x && !!x.teams && (!!lgOf(x.teams.A.name) || !!lgOf(x.te
 
 // The three pages of a league, as tabs over each of them: Standings, Player Stats, Team Stats.
 function leagueNav(on){
+  if (SITE_AV) return '';   // the AVCTL site's header card has these pages as its buttons
   const av = !LG, base = av ? '' : `league=${LG.slug}`;
   const tabs = av
     ? [['standings', 'Standings', '?standings'], ['players', 'Player Stats', '?avstats'], ['team', 'Team Stats', '?avstats=team']]
@@ -56,6 +57,5 @@ function lgStandingsHtml(){
   if (stand.err) return head + `<section class="bcard"><p class="bempty">${esc(stand.err)}</p></section>`;
   if (!allGames.list) return head + '<section class="bcard"><p class="bempty">Loading the league…</p></section>';
   const rows = LG.teams.map(name => ({name, r:avRecord(name, o => !!lgOf(o)), rec:shownRecord(name)})).sort(standOrder);
-  return head + standingsCard('Standings', rows)
-    + `<section class="bcard"><p class="hint">League records count each team’s games against the rest of the league, as they’re kept here. Overall is each team’s record as the site has it.</p></section>`;
+  return head + standingsCard('Standings', rows);
 }
