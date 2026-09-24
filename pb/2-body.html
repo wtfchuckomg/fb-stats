@@ -33,9 +33,15 @@
       <a role="menuitem" data-menu="avteam" href="?avstats=team">Team Stats</a>
     </div>
     <div class="navmenu" id="nav-state-menu" role="menu" aria-label="State" hidden>
-      <a role="menuitem" data-menu="state" href="?state">Scoreboard</a>
-      <a role="menuitem" data-menu="sstats" href="?statestats">Stats</a>
-      <a role="menuitem" data-menu="bracket" href="?bracket=4A">Bracketology</a>
+      <div class="nm-panel" data-panel="main">
+        <a role="menuitem" data-menu="state" href="?state">Scoreboard</a>
+        <a role="menuitem" data-menu="leagues" href="#leagues" data-sub="leagues" aria-haspopup="true">Leagues<span class="nm-go" aria-hidden="true">›</span></a>
+        <a role="menuitem" data-menu="sstats" href="?statestats">Stats</a>
+        <a role="menuitem" data-menu="bracket" href="?bracket=4A">Bracketology</a>
+      </div>
+      <div class="nm-panel nm-list" data-panel="leagues" hidden>
+        <a class="nm-back" href="#state" data-sub="main"><span aria-hidden="true">‹ </span>State</a>
+      </div>
     </div>
     <div class="navtools">
       <div class="livebadge" id="livebadge" hidden></div>

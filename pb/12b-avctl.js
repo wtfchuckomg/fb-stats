@@ -40,9 +40,11 @@ async function startStandings(){
 }
 
 // A team's league season: every final on the site, with the division games counted apart from the rest,
-// and home and away kept apart the way a standings table shows them.
-function avRecord(name){
+// and home and away kept apart the way a standings table shows them. `peer` says which opponents count as
+// league games: the team's own AVCTL division unless a league's page says otherwise (12c-leagues.js).
+function avRecord(name, peer){
   const div = avctlDiv(name);
+  const same = peer || (o => avctlDiv(o) === div);
   const r = {gp:0, w:0, l:0, t:0, pf:0, pa:0, dgp:0, dw:0, dl:0, dt:0, dpf:0, dpa:0, hw:0, hl:0, ht:0, aw:0, al:0, at:0};
   schoolRows(name).forEach(row => {
     const f = finalOf(row.x); if (!f.fin) return;
@@ -50,50 +52,54 @@ function avRecord(name){
     const i = us > them ? 'w' : us < them ? 'l' : 't';
     r.gp++; r.pf += us; r.pa += them; r[i]++;
     r[(row.side === 'H' ? 'h' : 'a') + i]++;
-    if (avctlDiv(row.x.teams[row.opp].name) === div){ r.dgp++; r.dpf += us; r.dpa += them; r['d' + i]++; }
+    if (same(row.x.teams[row.opp].name)){ r.dgp++; r.dpf += us; r.dpa += them; r['d' + i]++; }
   });
   return r;
 }
-const avPct = r => r.dw + r.dl + r.dt ? (r.dw + r.dt / 2) / (r.dw + r.dl + r.dt) : -1;
+// League winning percentage; a team yet to play a league game sits at .500, between the unbeaten and the winless.
+const avPct = r => r.dw + r.dl + r.dt ? (r.dw + r.dt / 2) / (r.dw + r.dl + r.dt) : .5;
+const allPct = r => r.w + r.l + r.t ? (r.w + r.t / 2) / (r.w + r.l + r.t) : .5;
+// The table's order, as KPreps keeps it: league percentage, then fewer league losses, more league wins, the
+// overall percentage, and the name.
+const standOrder = (a, b) => avPct(b.r) - avPct(a.r) || (a.r.dl - b.r.dl) || (b.r.dw - a.r.dw)
+  || allPct(b.r) - allPct(a.r) || a.name.localeCompare(b.name);
 const avRec = (w, l, t) => `${w}-${l}${t ? '-' + t : ''}`;
 
 function standingsRows(div){
-  return AVCTL_DIV[div].map(name => ({name, r:avRecord(name), rec:shownRecord(name)}))
-    .sort((a, b) => avPct(b.r) - avPct(a.r) || (b.r.dw - a.r.dw) || (b.r.w - a.r.w) || a.name.localeCompare(b.name));
+  return AVCTL_DIV[div].map(name => ({name, r:avRecord(name), rec:shownRecord(name)})).sort(standOrder);
+}
+
+// One standings table: the league games first, then the whole season — the way a league table reads.
+function standingsCard(title, list){
+  const rows = list.map(o => {
+    const {r} = o, rec = o.rec || {};
+    const overall = rec.rec || avRec(r.w, r.l, r.t);
+    const home = rec.home || avRec(r.hw, r.hl, r.ht);
+    const away = rec.away || avRec(r.aw, r.al, r.at);
+    return `<tr><td class="rk">${cMark(o.name)}</td><td class="nm"><a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
+      <td class="num gsep">${avRec(r.dw, r.dl, r.dt)}</td><td class="num">${r.dpf}</td><td class="num">${r.dpa}</td>
+      <td class="num gsep">${esc(overall)}</td><td class="num">${r.pf}</td><td class="num">${r.pa}</td>
+      <td class="num">${esc(home)}</td><td class="num">${esc(away)}</td></tr>`;
+  }).join('');
+  return `<section class="bcard ccard"><div class="ccard-hd"><h2>${esc(title)}</h2></div>
+    <div class="tbl-wrap"><table class="ctbl av-st"><thead>
+      <tr class="cgrp"><th class="rk"></th><th class="nm"></th><th colspan="3">League</th><th colspan="5">Overall</th></tr>
+      <tr><th class="rk"></th><th class="nm"></th><th class="num gsep">W-L</th><th class="num">PF</th><th class="num">PA</th>
+        <th class="num gsep">W-L</th><th class="num">PF</th><th class="num">PA</th><th class="num">Home</th><th class="num">Away</th></tr></thead>
+    <tbody>${rows}</tbody></table></div></section>`;
 }
 
 function standingsHtml(){
   document.title = 'AVCTL Standings · Kansas Media Stats';
-  const waiting = !allGames.list;
-  // The league first, then the whole season — the way a league table reads.
-  const card = div => {
-    const rows = standingsRows(div).map(o => {
-      const {r} = o, rec = o.rec || {};
-      const overall = rec.rec || avRec(r.w, r.l, r.t);
-      const home = rec.home || avRec(r.hw, r.hl, r.ht);
-      const away = rec.away || avRec(r.aw, r.al, r.at);
-      return `<tr><td class="rk">${cMark(o.name)}</td><td class="nm"><a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
-        <td class="num gsep">${avRec(r.dw, r.dl, r.dt)}</td><td class="num">${r.dpf}</td><td class="num">${r.dpa}</td>
-        <td class="num gsep">${esc(overall)}</td><td class="num">${r.pf}</td><td class="num">${r.pa}</td>
-        <td class="num">${esc(home)}</td><td class="num">${esc(away)}</td></tr>`;
-    }).join('');
-    return `<section class="bcard ccard"><div class="ccard-hd"><h2>Division ${div}</h2></div>
-      <div class="tbl-wrap"><table class="ctbl av-st"><thead>
-        <tr class="cgrp"><th class="rk"></th><th class="nm"></th><th colspan="3">League</th><th colspan="5">Overall</th></tr>
-        <tr><th class="rk"></th><th class="nm"></th><th class="num gsep">W-L</th><th class="num">PF</th><th class="num">PA</th>
-          <th class="num gsep">W-L</th><th class="num">PF</th><th class="num">PA</th><th class="num">Home</th><th class="num">Away</th></tr></thead>
-      <tbody>${rows}</tbody></table></div></section>`;
-  };
-  const head = `<section class="bcard bhead"><div class="bhead-top"><h1 class="c-title">AVCTL Standings</h1></div>
-    <p class="hint">League records count each team’s games against its own division, as they’re kept here. Overall is each team’s record as the site has it.</p></section>`;
+  const head = leagueNav('standings'), hint = `<section class="bcard"><p class="hint">League records count each team’s games against its own division, as they’re kept here. Overall is each team’s record as the site has it.</p></section>`;
   if (stand.err) return head + `<section class="bcard"><p class="bempty">${esc(stand.err)}</p></section>`;
-  if (waiting) return head + '<section class="bcard"><p class="bempty">Loading the league…</p></section>';
-  return head + AV_NAMES.map(card).join('');
+  if (!allGames.list) return head + '<section class="bcard"><p class="bempty">Loading the league…</p></section>';
+  return head + AV_NAMES.map(div => standingsCard(`Division ${div}`, standingsRows(div))).join('') + hint;
 }
 
 function renderStandings(){
   if (!ui.stand) return;
-  $('#board').innerHTML = standingsHtml();
+  $('#board').innerHTML = LG ? lgStandingsHtml() : standingsHtml();
 }
 
 // A table scrolled sideways has its numbers passing under the pinned team name: mark it so the name can go

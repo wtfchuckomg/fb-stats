@@ -45,6 +45,7 @@ PARTS_JS = [
     '11-gamecast.js',    # gamecast, line score, play-by-play, drive chart, box score
     '12-xlsx.js',        # .xlsx export, written by hand, no library
     '12b-avctl.js',      # the AVCTL divisions and standings — before the pages that read them
+    '12c-leagues.js',    # State › Leagues: every 4A-6A league's standings and stats — before the pages that read them
     '8-sync.js',         # Google sign-in and the per-account Firestore document
     '9-teams.js',        # saved teams: short name, colors, roster
     '13-scores.js',      # the week's scores strip

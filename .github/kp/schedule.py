@@ -135,4 +135,5 @@ def main():
     print(f'{len(rows)} games for {len(crawled)} KPreps schools -> schedule.json')
     print('No logo, kept by name:', ', '.join(sorted(name_of(s_) for s_ in crawled if not ours.get(s_))))
 
-main()
+if __name__ == '__main__':
+    main()

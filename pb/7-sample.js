@@ -25,6 +25,7 @@ function sampleGame(){
 if (PREVIEW_ID) startPreview(PREVIEW_ID);   // ?preview=<id>: a game before kickoff
 else if (HOME_PAGE) startHome();             // ?home: the front page, read-only
 else if (AV_STAND) startStandings();    // ?standings: the AVCTL's four divisions
+else if (LG_STAND) startStandings();    // ?league=<slug>: a league's standings (State › Leagues)
 else if (BOARD) startScoreboard();      // ?scores: the week's scoreboard, read-only
 else if (BRACKET_PAGE) startBracket();   // ?bracket=4A: bracketology
 else if (PLAYER_PAGE) startPlayerPage();  // ?player=<name>&team=<school>: one player's own page

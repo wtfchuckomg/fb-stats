@@ -74,8 +74,8 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 
 /* ---------- segmented controls with a glass thumb ---------- */
 .c-tabs{display:inline-flex;max-width:100%;gap:2px;padding:3px;border-bottom:0;border-radius:980px;background:var(--fill)}
-.c-tabs button{flex:0 0 auto;border-bottom:0;border-radius:980px;padding:8px 18px;font:500 14px/1 var(--sans);color:var(--ink)}
-.c-tabs button.on,.c-pills button.on,.gtab[aria-selected="true"],.bw.on{background:rgba(255,255,255,.85);color:var(--ink);
+.c-tabs button,.c-tabs a{flex:0 0 auto;border-bottom:0;border-radius:980px;padding:8px 18px;font:500 14px/1 var(--sans);color:var(--ink)}
+.c-tabs button.on,.c-tabs a.on,.c-pills button.on,.gtab[aria-selected="true"],.bw.on{background:rgba(255,255,255,.85);color:var(--ink);
   box-shadow:inset 0 1px 0 #FFFFFF,0 0 0 1px rgba(255,255,255,.6),0 4px 14px rgba(30,40,90,.14)}
 .c-pills{background:var(--fill)}
 .c-pills button{padding:8px 18px;font:500 14px/1 var(--sans)}

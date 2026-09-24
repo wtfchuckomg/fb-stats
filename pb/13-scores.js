@@ -367,11 +367,12 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
   const q = new URLSearchParams(location.search);
   // The site's plain address is Home; the Game Tracker is ?tracker (or ?edit=<id>).
   const here = q.has('tracker') || q.has('edit') ? 'tracker'
+    : q.has('league') ? 'leagues'
     : q.has('avctl') ? 'avscores' : q.has('standings') ? 'standings' : q.has('avstats') ? 'avstats'
     : q.has('scores') ? 'scores' : q.has('state') ? 'state' : q.has('statestats') ? 'sstats'
     : q.has('stats') ? 'stats' : q.has('team') || q.has('teams') ? 'teams' : q.has('game') || q.has('live') || q.has('gamecast') || q.has('preview') ? '' : 'home';
   // Each menu's pages sit under its own name: Butler County, AVCTL, State.
-  const UNDER = {scores:'buco', stats:'buco', teams:'buco', avscores:'avctl', standings:'avctl', avstats:'avctl', state:'state', sstats:'state'};
+  const UNDER = {scores:'buco', stats:'buco', teams:'buco', avscores:'avctl', standings:'avctl', avstats:'avctl', state:'state', sstats:'state', leagues:'state'};
   const top = UNDER[here] || here;
   const a = top && document.querySelector(`.navlink[data-nav="${top}"]`);
   if (a){
@@ -383,6 +384,7 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
 // Which page of a menu is open, so the menu can mark it.
 function menuHere(){
   if (ui.teamPage) return 'teams';
+  if (LG) return 'leagues';
   if (ui.stand) return 'standings';
   if (ui.board) return ui.av ? 'avscores' : ui.state ? 'state' : 'scores';
   if (ui.county){
@@ -395,6 +397,9 @@ function menuHere(){
 // The menus: open on hover with a mouse, on a tap on a phone, and mark the page you're on. Opening one closes the rest.
 (function navMenus(){
   const bar = document.querySelector('.navbar'); if (!bar) return;
+  // State › Leagues: the list comes from LEAGUE_MENU (12c-leagues.js), so a league added there shows up here.
+  const lgList = document.querySelector('.nm-panel[data-panel="leagues"]');
+  if (lgList) lgList.insertAdjacentHTML('beforeend', LEAGUE_MENU.map(l => `<a role="menuitem" data-league href="${esc(l.href)}">${esc(l.name)}</a>`).join(''));
   const shut = [];
   document.querySelectorAll('.navdrop').forEach(btn => {
   const menu = document.getElementById(btn.getAttribute('aria-controls'));
@@ -403,18 +408,33 @@ function menuHere(){
   let t = 0;
   const close = () => { clearTimeout(t); menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
   shut.push(close);
-  const open = () => {
-    clearTimeout(t);
-    if (!menu.hidden) return;
-    shut.forEach(f => { if (f !== close) f(); });
-    const cur = menuHere();
-    menu.querySelectorAll('[data-menu]').forEach(x => x.classList.toggle('on', x.dataset.menu === cur));
-    menu.hidden = false; btn.setAttribute('aria-expanded', 'true');
-    // Under the name and on screen, with the notch pointing up at the name.
+  // Under the name and on screen, with the notch pointing up at the name.
+  const place = () => {
     const b = btn.getBoundingClientRect(), r = bar.getBoundingClientRect();
     const left = Math.max(8, Math.min(b.left - r.left, r.width - menu.offsetWidth - 8));
     menu.style.left = `${left}px`;
     menu.style.setProperty('--notch', `${b.left - r.left + b.width / 2 - left - 8}px`);
+  };
+  // A menu with a second list in it (State › Leagues) opens on its first; Leagues swaps to the list, and back.
+  const panel = name => {
+    menu.querySelectorAll('.nm-panel').forEach(p => { p.hidden = p.dataset.panel !== name; });
+    place();
+  };
+  menu.addEventListener('click', e => {
+    const sub = e.target.closest('[data-sub]'); if (!sub) return;
+    e.preventDefault(); e.stopPropagation(); clearTimeout(t);
+    panel(sub.dataset.sub);
+    const first = menu.querySelector(`.nm-panel[data-panel="${sub.dataset.sub}"] a`); if (first) first.focus({preventScroll:true});
+  });
+  const open = () => {
+    clearTimeout(t);
+    if (!menu.hidden) return;
+    shut.forEach(f => { if (f !== close) f(); });
+    const cur = menuHere(), lg = LG ? `?league=${LG.slug}` : ui.stand || AV_STATS ? '?standings' : '';
+    menu.querySelectorAll('[data-menu]').forEach(x => x.classList.toggle('on', x.dataset.menu === cur));
+    menu.querySelectorAll('[data-league]').forEach(x => x.classList.toggle('on', x.getAttribute('href') === lg));
+    menu.hidden = false; btn.setAttribute('aria-expanded', 'true');
+    if (menu.querySelector('.nm-panel')) panel('main'); else place();
   };
   btn.addEventListener('click', e => { e.stopPropagation(); if (hover || menu.hidden) open(); else close(); });
   if (hover) [btn, menu].forEach(el => { el.addEventListener('mouseenter', open); el.addEventListener('mouseleave', () => { clearTimeout(t); t = setTimeout(close, 200); }); });
@@ -429,7 +449,7 @@ function menuHere(){
 function lgTabs(){
   const bar = $('#lgtabs'); if (!bar) return;
   const q = new URLSearchParams(location.search);
-  const here = q.has('tracker') || q.has('edit') ? 'tracker' : q.has('standings') ? 'standings'
+  const here = q.has('tracker') || q.has('edit') ? 'tracker' : q.has('standings') || LG_STAND ? 'standings'
     : q.has('game') || q.has('live') || q.has('gamecast') || q.has('preview') ? 'gamecast'
     : q.has('state') || q.has('scores') || q.has('avctl') ? 'scores' : '';
   bar.querySelectorAll('[data-lgtab]').forEach(a => { if (a.dataset.lgtab === here) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
@@ -442,9 +462,11 @@ function renderScores(){
   lgTabs();
   const box = $('#scores'); if (!box) return;
   const key = shownWeek(); watchWeek(key);
-  // On the AVCTL's pages the strip is the league's games, and on BUCO's the county's (their opponents included).
-  const league = AV_BOARD || AV_STAND || AV_STATS, buco = (BOARD && !STATE_BOARD && !AV_BOARD) || (COUNTY_PAGE && !STATE_STATS && !AV_STATS);
-  const games = league ? weekGames(key, false, true).filter(inAvctl) : buco ? weekGames(key).filter(inBuco) : weekGames(key);
+  // On the AVCTL's pages the strip is the league's games, on a league's (State › Leagues) that league's, and on
+  // BUCO's the county's (their opponents included).
+  const league = AV_BOARD || AV_STAND || AV_STATS, buco = (BOARD && !STATE_BOARD && !AV_BOARD) || (COUNTY_PAGE && !STATE_STATS && !AV_STATS && !LG_STATS);
+  const games = LG ? weekGames(key, false, true).filter(inLeague) : league ? weekGames(key, false, true).filter(inAvctl)
+    : buco ? weekGames(key).filter(inBuco) : weekGames(key);
   // The scorer always gets the strip, for its Add a score button; fans only when there's something to show.
   const any = !ui.viewer || games.length > 0;
   box.hidden = !any;
@@ -455,7 +477,7 @@ function renderScores(){
     <div class="sc-wrap"><div class="sc-list">${games.length ? games.map(scoreCard).join('') : `<div class="sc-empty">No games for ${esc(weekLabel(key))} yet.</div>`}</div>
       <button type="button" class="sc-arrow l" data-scroll="-1" aria-label="Earlier games" hidden>${chev('M9 1L1 9l8 8')}</button>
       <button type="button" class="sc-arrow r" data-scroll="1" aria-label="More games" hidden>${chev('M1 1l8 8-8 8')}</button></div>
-    <a class="sc-full" href="?${league ? 'avctl' : 'scores'}=${key}">Full Scoreboard »</a>
+    <a class="sc-full" href="?${LG ? 'state' : league ? 'avctl' : 'scores'}=${key}">Full Scoreboard »</a>
     ${ui.viewer ? '' : `<button type="button" class="sc-add" data-qs-new aria-label="Add a score from another game"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 2v14M2 9h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>Score</span></button>`}</div>`;
   const sel = box.querySelector('#scweek');
   fitSelect(sel); sel.addEventListener('change', () => fitSelect(sel));

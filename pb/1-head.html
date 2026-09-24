@@ -109,6 +109,12 @@ a.abtn{display:inline-block;text-decoration:none}
 .navmenu a{display:block;padding:14px 28px;font:400 17px/1.2 var(--sans);color:var(--muted);text-decoration:none;white-space:nowrap}
 .navmenu a:hover{background:#F1F2F3;color:var(--ink-2)}
 .navmenu a.on{color:var(--ink-2);font-weight:600}
+/* State › Leagues: a second list inside the State menu, swapped in by Leagues and out by the back link. */
+.navmenu .nm-go{float:right;margin-left:18px;font-weight:600}
+.navmenu .nm-list{max-height:min(66vh,560px);overflow-y:auto;overscroll-behavior:contain}
+.navmenu .nm-back{font-size:15px;font-weight:600;color:var(--ink-2);border-bottom:1px solid var(--line);margin-bottom:4px}
+/* A league's page: its name over three tabs, Standings, Player Stats and Team Stats. */
+.lg-head .c-tabs{margin-bottom:0}
 .navtools{display:flex;align-items:center;gap:4px}
 .navbar .abtns,.navbar .vbtns{gap:4px}
 .navbar .abtn{background:none;border:0;border-radius:6px;color:#FFFFFF;padding:9px 9px;font:600 14.5px/1 var(--sans);white-space:nowrap}
@@ -217,8 +223,8 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .bhead-top h1.c-title{font:800 30px/1.15 var(--sans)}
 .c-tabs{display:flex;border-bottom:1px solid var(--line);margin:2px 0 16px;overflow-x:auto;scrollbar-width:none}
 .c-tabs::-webkit-scrollbar{display:none}
-.c-tabs button{flex:1 0 auto;border:0;background:none;padding:13px 16px;border-bottom:3px solid transparent;font:700 16px/1 var(--sans);color:var(--muted);cursor:pointer;white-space:nowrap}
-.c-tabs button.on{color:var(--ink-2);border-bottom-color:var(--red)}
+.c-tabs button,.c-tabs a{flex:1 0 auto;text-align:center;text-decoration:none;border:0;background:none;padding:13px 16px;border-bottom:3px solid transparent;font:700 16px/1 var(--sans);color:var(--muted);cursor:pointer;white-space:nowrap}
+.c-tabs button.on,.c-tabs a.on{color:var(--ink-2);border-bottom-color:var(--red)}
 .c-pills{display:inline-flex;background:#EEEFF1;border-radius:26px;padding:4px;margin:0 0 12px}
 .c-pills button{border:0;background:none;border-radius:22px;padding:11px 20px;font:600 15px/1 var(--sans);color:var(--ink-2);cursor:pointer}
 .c-pills button.on{background:#FFFFFF;color:var(--red);box-shadow:0 1px 5px rgba(0,0,0,.16)}
@@ -486,7 +492,7 @@ table.pl-tbl{table-layout:fixed;width:100%}
 .pl-short{display:none}
 /* phones: sized like ESPN's stats pages (13px table, tight rows, small logos) with short names ("W. Quinn") */
 @media (max-width:640px){.bhead-top h1.c-title{font-size:20px;margin-bottom:10px}.ccard-hd{padding:0 14px 8px}
-  .c-tabs button{padding:12px 12px;font-size:14px}.c-pills button{padding:10px 14px;font-size:14px}
+  .c-tabs button,.c-tabs a{padding:12px 12px;font-size:14px}.c-pills button{padding:10px 14px;font-size:14px}
   .ctbl{font-size:13px}.ctbl th{font-size:12px}.ctbl th,.ctbl td{padding:7px 8px}
   .ctbl .rk{padding-left:10px;width:32px;min-width:32px;max-width:32px}.ctbl .nm{left:32px}
   .ctbl .nm + .num{padding-left:10px}
