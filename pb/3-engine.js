@@ -493,6 +493,11 @@ function replay(g, upto = g.plays.length){
     closeDrive('Punt', st.spot);
     if (p.res === 'blk'){
       t.pntBlk++; bump(pl(R, p.by), 'bk'); tags.push(['to', 'Blocked']);
+      // Blocked out of the back of the end zone: a safety, and the punting team kicks off from its 20.
+      if (p.saf){
+        const last = drives[drives.length - 1]; if (last) last.res = 'Safety';
+        return `${nm(O, p.k)} punt BLOCKED${p.by ? ` by ${nm(R, p.by)}` : ''}, out of the end zone.` + safety(R);
+      }
       // The punting team fell on it: a first down if it got back to the line to gain, otherwise the ball goes over.
       if (p.own){
         const mine = clamp(st.spot - (+p.b || 0), 0, (FL - 1));

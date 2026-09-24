@@ -261,7 +261,7 @@ function buildPlay(d){
       Object.assign(p, {k:j(d.k), d:n(d.d), res:d.res});
       if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:n(d.ry) || 0, tk:js(d.tk)});
       if (d.res === 'fc') p.ret = j(d.ret);
-      if (d.res === 'blk') Object.assign(p, {by:j(d.by), b:n(d.b) || 0, ret:j(d.ret), ry:n(d.ry) || 0});
+      if (d.res === 'blk') Object.assign(p, d.saf ? {by:j(d.by), saf:true} : {by:j(d.by), b:n(d.b) || 0, ret:j(d.ret), ry:n(d.ry) || 0});
       break;
     case 'ko':
       Object.assign(p, {k:j(d.k), d:n(d.d) || 0, res:d.res});
@@ -367,7 +367,8 @@ function formHtml(){
       h += fSeg('res', 'Result', [['ret', 'Returned'], ['fc', 'Fair catch'], ['down', 'Downed'], ['oob', 'Out of bounds'], ['tb', 'Touchback'], ['blk', 'Blocked']]);
       if (d.res === 'ret') h += row(fJ('ret', 'Returner', D, 'ret'), fN('ry', 'Return yards', '0')) + row(fJ('tk.0', 'Tackle', O, 'def'), fJ('tk.1', 'Assist', O));
       if (d.res === 'fc') h += row(fJ('ret', 'Caught by', D, 'ret'));
-      if (d.res === 'blk') h += row(fJ('by', 'Blocked by', D), fN('b', 'Recovered, yds behind line', '0')) + row(fJ('ret', 'Recovered by', D), fN('ry', 'Return yards', '0'));
+      if (d.res === 'blk') h += row(fJ('by', 'Blocked by', D), `<div class="fld">${tog('saf', 'Out of the end zone: safety')}</div>`)
+        + (d.saf ? '' : row(fN('b', 'Recovered, yds behind line', '0'), fJ('ret', 'Recovered by', D), fN('ry', 'Return yards', '0')));
       return h + extras();
     }
     case 'ko': {

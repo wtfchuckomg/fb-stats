@@ -3,6 +3,8 @@
      N ball at N35 1-10 · 3-10 · 3--1 · 7-inc · 7-88-5 · 15-0-50-td
      N punt · S ball at S10 · 3-3-fumble S rec · pen S 15 pf · 15-xp
    ================================================================ */
+// Every way a scorer says a kick was blocked: punts, field goals and tries.
+const BLK_WORDS = ['blk', 'block', 'blocks', 'blocked'];
 const PEN_CODES = {fs:'False start', enc:'Encroachment', off:'Offside', os:'Offside', offside:'Offside',
   dog:'Delay of game', delay:'Delay of game', form:'Illegal formation', formation:'Illegal formation',
   motion:'Illegal motion', mot:'Illegal motion', shift:'Illegal shift', snap:'Illegal snap',
@@ -31,7 +33,7 @@ function quickTeams(){
   const map = {};
   // Anything that names one team and not the other can be typed: "wichita collegiate" is w, c, wc or collegiate.
   const WORDS_TAKEN = ['at', 'to', 'td', 'inc', 'punt', 'fg', 'xp', 'int', 'sack', 'fum', 'pen', 'ko', 'ret', 'ball', 'rec',
-    'oob', 'tb', 'fc', 'blk', 'down', 'half', 'end', 'final', 'undo', 'safety', 'saf', 'kneel', 'muff', 'lateral', 'team'];
+    'oob', 'tb', 'fc', 'blk', 'block', 'blocks', 'blocked', 'down', 'half', 'end', 'final', 'undo', 'safety', 'saf', 'kneel', 'muff', 'lateral', 'team'];
   const add = (w, side) => {
     const k = String(w || '').toLowerCase();
     if (!/^[a-z]+$/.test(k) || (k.length > 1 && WORDS_TAKEN.includes(k))) return;
@@ -432,7 +434,7 @@ function parseQuick(raw, st){
     const nums = toks.filter(isNum), no = has(...NO_WORDS);
     if (has('fg', 'punt', 'sack', 'sacked', 'sk', 'int', 'fum', 'fumble'))
       return bad('This is the try after the touchdown: 15-xp for the kick (15-xp-no if missed), 3 for a two-point run, 7-88 for a two-point pass.');
-    if (has('xp', 'pat', 'kick', '1pt')) return ok({t:'try', kind:'kick', ...(nums[0] != null ? {k:nums[0]} : {}), res:has('blk', 'blocked') ? 'blk' : no ? 'miss' : 'good'});
+    if (has('xp', 'pat', 'kick', '1pt')) return ok({t:'try', kind:'kick', ...(nums[0] != null ? {k:nums[0]} : {}), res:has(...BLK_WORDS) ? 'blk' : no ? 'miss' : 'good'});
     const need = FL - st.spot;
     if (has('inc')) return ok({t:'pass', qb:nums[0], res:'i', ...(nums[1] != null ? {to:nums[1]} : {})});
     if (nums.length === 1) return ok({t:'run', r:nums[0], y:no ? 0 : need});
@@ -482,9 +484,11 @@ function parseQuick(raw, st){
       saidSide = rest.slice(0, bi).map(T).find(Boolean) || null;
       rest = rest.slice(0, bi).filter(t => !T(t));
     }
-    if (has('blk', 'blocked')){
+    if (has(...BLK_WORDS)){
       const after = rest.filter(isNum);
       p.res = 'blk'; if (after[0] != null) p.by = after[0]; if (after[1] != null) p.ret = after[1];
+      // Blocked out of the back of the end zone: a safety for the other team, and nobody recovered it.
+      if (has('safety', 'saf', 'sfty')){ p.saf = true; delete p.ret; return flag(p); }
       // The kicking team can fall on its own blocked punt, and "ball at …" says where it was recovered.
       const who = saidSide || rest.map(T).find(Boolean);
       if (who === O){ p.own = true; if (after[0] != null && after[1] == null){ p.ret = after[0]; delete p.by; } }
@@ -550,7 +554,7 @@ function parseQuick(raw, st){
     return flag(p);
   }
   if (has('fg')){
-    const i = toks.indexOf('fg'), bi = toks.findIndex(t => t === 'blk' || t === 'blocked');
+    const i = toks.indexOf('fg'), bi = toks.findIndex(t => BLK_WORDS.includes(t));
     const before = toks.slice(0, i).filter(isNum), after = toks.slice(i + 1, bi > i ? bi : undefined).filter(isNum);
     const p = {t:'fg', res:bi >= 0 ? 'blk' : has(...NO_WORDS) ? 'miss' : 'good'};
     if (before[0] != null) p.k = before[0];
@@ -701,7 +705,8 @@ function cheatHtml(a, h){
     [`${a} punt ${h} ball at ${h}25`, `Punt with no return: ${h}'s drive starts at its 25. Or just ${a} punt, then ${h} ball at ${h}25 on the next line.`],
     [`${a} punt to ${h}25-${h}2 return-10`, `Fielded at the ${h} 25, #2 returns it 10. Leave off the yards and type the drive start next (${h} ball at ${h}35); the return fills in.`],
     ['punt-11-at the 30-for 6 &nbsp;·&nbsp; 19-punt-40-11-6', 'Caught at their 30, back 6 — the punt’s own distance works itself out. Or say it the short way: #19 punts 40, #11 returns it 6. Also punt-tb, punt-fc, punt-oob, punt-blk. With a return on the line, oob means the returner ran out of bounds.'],
-    ['13 punt blk 55 22 &nbsp;·&nbsp; 13 punt blk 55 ' + h + ' rec 20 ball at ' + h.toUpperCase() + '43', 'Blocked by #55 and recovered by the other team\u2019s #22 / by the kicking team\u2019s own #20, with where it was recovered. Add td if it was run in.'],
+    ['13 punt blk 55 22 &nbsp;·&nbsp; 13 punt blk 55 ' + h + ' rec 20 ball at ' + h.toUpperCase() + '43', 'Blocked by #55 and recovered by the other team\u2019s #22 / by the kicking team\u2019s own #20, with where it was recovered. Add td if it was run in. blk, block or blocked all work.'],
+    ['13 punt blk 55 safety', 'Blocked by #55 and out of the back of the end zone: a safety for the other team.'],
     [`19 punt 11 return 5 ball at ${h}35`, `Give the return and where the drive starts and the punt's distance is worked out: #19 punts, #11 returns 5, ${h} ball at its 35.`],
     ['15-fg &nbsp;·&nbsp; 15-fg-no', 'Field goal good / no good (distance fills in)'],
     ['15-xp &nbsp;·&nbsp; 15-xp-no', 'Kick after a touchdown. For 2 points: 3 (run) or 7-88 (pass), add -no if it failed'],
