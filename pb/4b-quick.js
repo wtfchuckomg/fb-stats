@@ -266,7 +266,7 @@ function parseQuick(raw, st){
       // kick, the defense after a pick or a lost fumble (and back again if the returner fumbles it away).
       if (pen.at){
         const kick = p.t === 'ko' || p.t === 'punt', flips = (kick && p.res !== 'muff') || (p.t === 'pass' && p.res === 'x');
-        const after = flips !== !!(p.fum && p.fum.lost) ? D : O, pos = pen.at.side === after ? pen.at.n : FL - pen.at.n;
+        const after = flips !== !!(p.fum && (p.fum.then ? p.fum.endLost : p.fum.lost)) ? D : O, pos = pen.at.side === after ? pen.at.n : FL - pen.at.n;
         if (pen.foul != null) pen.foul = pos; else if (pen.ball != null) pen.ball = pos;
       }
       delete pen.at; p.pen = pen;
@@ -278,42 +278,65 @@ function parseQuick(raw, st){
   // everywhere else, so keep a copy of the line before they go.
   /* ---- a fumble, read off the end of the line: the rest of it is the play itself ---- */
   let fum = null;
-  const fi = toks.findIndex(t => ['fum', 'fumble', 'fumbled', 'fumbles'].includes(t));
+  const FUMW = ['fum', 'fumble', 'fumbled', 'fumbles'];
+  const fi = toks.findIndex(t => FUMW.includes(t));
   if (fi >= 0){
     let ft = toks.slice(fi + 1); toks = toks.slice(0, fi);
-    // "… rec at B6": where the ball was recovered, when it isn't where it came loose (a bounce, a scramble).
-    let recAt = null;
-    const ai = ft.indexOf('at');
-    if (ai >= 0){
-      const j = ft.slice(ai + 1).findIndex(t => spotOf(t));
-      if (j >= 0){ const s = spotOf(ft[ai + 1 + j]); recAt = {side:s.side, n:s.n}; ft = ft.slice(0, ai).concat(ft.slice(ai + 2 + j)); }
-    }
-    // "… ball on I24": where the next snap is; the advance is the difference.
-    let endSpot = null;
-    const bi = ft.indexOf('ball');
-    if (bi >= 0){
-      const tail = ft.slice(bi + 1);
-      endSpot = tail.map(spotOf).find(Boolean) || (tail.includes(String(HALF)) ? {side:null, n:HALF} : null);
-      if (!endSpot) return bad(`Say where the ball ended up, like ball on ${L(D)}24.`);
-      ft = ft.slice(0, bi);
-    }
-    // "A31" is team A's #31 recovering; a bare "A" is just the team.
-    const who = ft.map(spotOf).find(Boolean), fn = ft.filter(isNum);
-    // "recovered it himself": the man who dropped it fell on it, so it stays with the offense.
-    const selfRec = ft.some(t => ['himself', 'herself', 'themselves', 'themself', 'itself'].includes(t))
-      || (ft.includes('own') && ft.some(t => ['rec', 'recs', 'recovers', 'recovered', 'recovery'].includes(t)));
+    // It came loose a second time: everything after the second "fum" belongs to that one.
+    const fj = ft.findIndex(t => FUMW.includes(t));
+    let ft2 = null;
+    if (fj >= 0){ ft2 = ft.slice(fj + 1); ft = ft.slice(0, fj); }
     // Who was carrying it: the offense, or the returner on a kick.
     const kickLine = has('punt', 'ko', 'kickoff'), carrier = kickLine ? D : O;
-    const side = who ? who.side : ft.map(T).find(Boolean) || (selfRec ? carrier : null), lost = !side || side !== carrier;
-    const by = who ? String(who.n) : fn[0], adv = who ? fn[0] : fn[1];
+    // One "fum …" tail: who came up with it, where, and how far it went after.
+    const readTail = (ft, carrier) => {
+      // "… rec at B6": where the ball was recovered, when it isn't where it came loose (a bounce, a scramble).
+      let recAt = null;
+      const ai = ft.indexOf('at');
+      if (ai >= 0){
+        const j = ft.slice(ai + 1).findIndex(t => spotOf(t));
+        if (j >= 0){ const s = spotOf(ft[ai + 1 + j]); recAt = {side:s.side, n:s.n}; ft = ft.slice(0, ai).concat(ft.slice(ai + 2 + j)); }
+      }
+      // "… ball on I24", or "… returned to the I24": where the next snap is; the advance is the difference.
+      let endSpot = null, bi = ft.indexOf('ball');
+      if (bi < 0){ const ti = ft.indexOf('to'); if (ti >= 0 && ft.slice(ti + 1).some(spotOf)) bi = ti; }
+      if (bi >= 0){
+        const tail = ft.slice(bi + 1);
+        endSpot = tail.map(spotOf).find(Boolean) || (tail.includes(String(HALF)) ? {side:null, n:HALF} : null);
+        if (!endSpot) return {err:`Say where the ball ended up, like ball on ${L(D)}24.`};
+        ft = ft.slice(0, bi);
+      }
+      // "A31" is team A's #31 recovering; a bare "A" is just the team.
+      const who = ft.map(spotOf).find(Boolean), fn = ft.filter(isNum);
+      // "recovered it himself": the man who dropped it fell on it, so it stays with the offense.
+      const selfRec = ft.some(t => ['himself', 'herself', 'themselves', 'themself', 'itself'].includes(t))
+        || (ft.includes('own') && ft.some(t => ['rec', 'recs', 'recovers', 'recovered', 'recovery'].includes(t)));
+      const side = who ? who.side : ft.map(T).find(Boolean) || (selfRec ? carrier : null), lost = !side || side !== carrier;
+      const by = who ? String(who.n) : fn[0], adv = who ? fn[0] : fn[1];
+      const tdLine = ft.includes('td');
+      // Nobody came up with it and it left the field beyond a goal line: "fum tb", or said in words,
+      // "fumbles out of the end zone". Only when no one is named as recovering it.
+      const ez = ft.includes('tb') || ((ft.includes('end') && ft.includes('zone')) && !who && !fn.length);
+      return {lost, by, ry:Math.abs(+(adv || 0)), td:lost && tdLine, endSpot, at:recAt, self:selfRec && by == null,
+              rs:who ? who.side : ft.map(T).find(Boolean) || null, selfRec, tdLine, ...(ez ? {ez:true} : {})};
+    };
+    fum = readTail(ft, carrier);
+    if (fum.err) return bad(fum.err);
+    if (ft2){
+      if (kickLine || has('int', 'pick', 'picked', 'intercepted'))
+        return bad('Two fumbles on one play only work on a run, a sack or a catch. Put the second one on its own line.');
+      if (fum.ez) return bad('Nobody recovered the first fumble, so there was no second one. Drop one of them.');
+      const h1 = fum.lost ? other(carrier) : carrier;
+      const r2 = readTail(ft2, h1);
+      if (r2.err) return bad(r2.err);
+      fum.then = r2;
+      fum.endLost = (r2.lost ? other(h1) : h1) !== carrier;
+    }
     // td anywhere on a lost-fumble line is the defense's score; on a kept fumble it's the offense's.
-    const tdLine = ft.includes('td') || toks.includes('td');
-    if (lost) toks = toks.filter(t => t !== 'td'); else if (tdLine && !toks.includes('td')) toks.push('td');
-    // Nobody came up with it and it left the field beyond a goal line: "fum tb", or said in words,
-    // "fumbles out of the end zone". Only when no one is named as recovering it.
-    const ez = ft.includes('tb') || ((ft.includes('end') && ft.includes('zone')) && !who && !fn.length);
-    fum = {lost, by, ry:Math.abs(+(adv || 0)), td:lost && tdLine, endSpot, at:recAt, self:selfRec && by == null,
-           rs:who ? who.side : ft.map(T).find(Boolean) || null, selfRec, tdLine, ...(ez ? {ez:true} : {})};
+    const last = fum.then || fum;
+    if (!fum.then && toks.includes('td')){ last.tdLine = true; last.td = last.lost; }
+    if (fum.then ? fum.endLost : fum.lost) toks = toks.filter(t => t !== 'td');
+    else if (last.tdLine && !toks.includes('td')) toks.push('td');
   }
   const rawToks = toks.slice();
   if (toks.some(isNum)) toks = toks.filter(t => !FILLER.includes(t) || T(t));
@@ -585,19 +608,14 @@ function parseQuick(raw, st){
     return flag({t:'run', r:nums[0], y:-st.spot});
   }
 
-  /* ---- a lateral: "8-5 lateral 11-35" is #8 for 5, then #11 for 35 more ---- */
-  const li = toks.findIndex(t => ['lateral', 'laterals', 'lateraled', 'lat', 'pitch', 'pitches', 'pitched'].includes(t));
-  if (li >= 0 && st.phase === 'play'){
-    const a = toks.slice(0, li).filter(isNum), b = toks.slice(li + 1).filter(isNum);
-    if (a.length < 2 || !b.length) return bad('A lateral takes both: 8-5 lateral 11-35 is #8 for 5, then #11 for 35 more.');
-    return flag({t:'run', r:a[0], y:+a[1], lat:{r:b[0], y:+(b[1] || 0)}});
-  }
-
   /* ---- runs and passes ---- */
+  // The second fumble on a play, cut down to what the engine reads.
+  const slim = f => ({lost:f.lost, ...(f.by != null ? {by:f.by} : {}), ...(f.at ? {at:f.at} : {}),
+                      ...(f.td ? {td:true} : {}), ...(f.ez ? {ez:true} : {}), ry:f.ry});
   const withFum = p => {
     if (!fum) return p;
     // Where the ball came loose, in the offense's frame.
-    const y = p.res === 's' ? -Math.min(p.sy, st.spot) : (+p.y || 0), at = clamp(st.spot + y, 0, FL);
+    const y = p.res === 's' ? -Math.min(p.sy, st.spot) : (+p.y || 0) + (p.lat ? +p.lat.y || 0 : 0), at = clamp(st.spot + y, 0, FL);
     let ry = fum.ry;
     // The offense fell on its own fumble somewhere else: the ball moves from where it came loose to there.
     if (fum.at && !fum.lost) ry = (fum.at.side === O ? fum.at.n : FL - fum.at.n) - at;
@@ -615,9 +633,17 @@ function parseQuick(raw, st){
       }
     }
     if (fum.td) ry = at;                     // the recovering team runs it back the whole way
-    p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self ? {self:true} : {}), ...(fum.at ? {at:fum.at} : {}), ...(fum.td ? {td:true} : {}), ...(fum.ez ? {ez:true} : {}), ry};
+    p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self ? {self:true} : {}), ...(fum.at ? {at:fum.at} : {}), ...(fum.td ? {td:true} : {}), ...(fum.ez ? {ez:true} : {}), ry, ...(fum.then ? {endLost:!!fum.endLost, then:slim(fum.then)} : {})};
     return p;
   };
+  /* ---- a lateral: "8-5 lateral 11-35" is #8 for 5, then #11 for 35 more ---- */
+  const li = toks.findIndex(t => ['lateral', 'laterals', 'lateraled', 'lat', 'pitch', 'pitches', 'pitched'].includes(t));
+  if (li >= 0 && st.phase === 'play'){
+    const a = toks.slice(0, li).filter(isNum), b = toks.slice(li + 1).filter(isNum);
+    if (a.length < 2 || !b.length) return bad('A lateral takes both: 8-5 lateral 11-35 is #8 for 5, then #11 for 35 more.');
+    return flag(withFum({t:'run', r:a[0], y:+a[1], lat:{r:b[0], y:+(b[1] || 0)}}));
+  }
+
   // "aug 15 …": the runner or passer named with his team, which has to be the team with the ball.
   if (toks.length > 1 && T(toks[0]) && isNum(toks[1])){
     const s = T(toks[0]);
@@ -701,9 +727,11 @@ function cheatHtml(a, h){
     [`7-int-24-${h}10-12 &nbsp;·&nbsp; 7-int-24-td &nbsp;·&nbsp; 7-int-24-ez`, 'Returned 12 yards / returned for a touchdown / picked off in the end zone (a touchback if not returned)'],
     [`7-int-24-${h}10-${h}40 fum ${a} rec 22`, `Picked off, returned to the ${h} 40, then fumbled; ${a}'s #22 recovers and the ball goes back to ${a}. Add td if the recovery was run in.`],
     [`5-5-fum-rec-${h}31-1`, `#5 runs for 5 and fumbles; ${h}'s #31 recovers and advances 1. Just fum ${h} rec if you don't know who.`],
-    [`5-5-fum-rec-${h}10 ball on ${h}24`, 'Same, with the advance worked out from where the next snap is.'],
+    [`5-5-fum-rec-${h}10 ball on ${a}24`, 'Same, with the advance worked out from where the next snap is.'],
     ['22--5 fum tb', 'Fumbled out of bounds beyond a goal line, nobody on it: a touchback through their end zone, a safety out of your own.'],
     [`10-0 fum ${h} rec td`, `Fumble, ${h} recovers and returns it for a touchdown.`],
+    [`10-1 fum ${a} rec to ${a}34 fum ${h}34 rec at ${a}35`, `Two fumbles on one play: ${a.toUpperCase()} falls on the first one and carries it to its 34, then loses it to ${h.toUpperCase()}'s #34 at the 35.`],
+    ['8-5 lateral 11-35 fum ' + h + ' rec 21', 'A fumble after a lateral: the man who took the pitch is the one who put it on the ground.'],
     [`1-sack-13 fum rec 6 at ${h}6 td`, `Add at ${h.toUpperCase()}6 when the ball was recovered somewhere else than where it came loose. Works on any fumble.`],
     [`punt 40 5 return 10 fum ${a} rec 22`, `A fumble on a punt or kickoff return: say the return first, then who recovered.`],
     [`${a} punt ${h} ball at ${h}25`, `Punt with no return: ${h}'s drive starts at its 25. Or just ${a} punt, then ${h} ball at ${h}25 on the next line.`],

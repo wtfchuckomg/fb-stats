@@ -284,6 +284,26 @@ function replay(g, upto = g.plays.length){
     newSeries(rs, RU.tb);
     return txt + ` Touchback. ${ab(rs)} ball at the ${yl(rs, RU.tb)}.`;
   }
+  // Two fumbles on one play: the first recovery is only a waypoint, and the second one settles it.
+  function fumbleTwice(cs, cn, pos, f){
+    const f2 = f.then, h1 = f.lost ? other(cs) : cs, O = st.poss;
+    const p1 = f.at ? clamp(f.at.side === cs ? f.at.n : FL - f.at.n, 0, FL) : pos;   // cs frame
+    bump(pl(cs, cn), 'fum'); S.team[cs].fum++; if (f.lost) S.team[cs].fumL++;
+    bump(pl(h1, f.by), 'fr'); if (f.ff) bump(pl(h1, f.ff), 'ff');
+    tags.push(['to', 'Fumble']);
+    if (f.lost && st.drive && st.drive.team === cs) closeDrive('Fumble', p1);
+    let txt = ` ${f.lost ? 'FUMBLE' : 'Fumble'}, recovered by ${f.by ? nm(h1, f.by) : ab(h1)} at the ${yl(cs, p1)}`;
+    const from = h1 === cs ? p1 : FL - p1, ry = +f.ry || 0, end = clamp(from + ry, 0, FL);
+    if (ry){ leg('run', h1, from, end); txt += `, ${ry > 0 ? 'returned ' + plural(ry, 'yard') : 'back ' + plural(-ry, 'yard')} to the ${yl(h1, end)}`; }
+    txt += '.';
+    if (st.ot){ otEnd(); return txt + ' (ball dead).'; }
+    if (f2.ez) return txt + fumbleOut(h1, f.by, end);
+    if (f2.lost) return txt + fumbleLost(h1, f.by, end, f2);
+    txt += fumbleKept(h1, f.by, f2, end);
+    const fin = clamp(end + (+f2.ry || 0), 0, FL);
+    if (h1 === O) return txt + progress(fin, null);
+    newSeries(h1, fin); return txt;
+  }
   // The offense gets its own fumble back; a teammate's advance moves the ball but isn't the carrier's yardage.
   function fumbleKept(cs, cn, f, end){
     bump(pl(cs, cn), 'fum'); S.team[cs].fum++;
@@ -369,9 +389,14 @@ function replay(g, upto = g.plays.length){
         + (td ? '' : ` to the ${yl(O, end)}${tackleTxt(D, p.tk)}.`)
       : td ? `${nm(O, p.r)} ${fy(g)}-yard rush` : `${nm(O, p.r)} rush ${yds(g)} to the ${yl(O, end)}${tackleTxt(D, p.tk)}.`;
     if (p.fum){
-      if (p.fum.ez) return (td ? `${nm(O, p.r)} rush ${yds(g)}.` : txt) + fumbleOut(O, p.r, end);
-      if (p.fum.lost) return txt + fumbleLost(O, p.r, end, p.fum);
-      txt += fumbleKept(O, p.r, p.fum, end);
+      const fr = lat ? lat.r : p.r;   // on a lateral it is the second man who puts it on the ground
+      const lead = !td ? txt
+        : lat ? `${nm(O, p.r)} rush ${yds(first)}, lateral to ${nm(O, lat.r)} for ${fy(gained2)} more.`
+        : `${nm(O, p.r)} rush ${yds(g)}.`;
+      if (p.fum.then) return lead + fumbleTwice(O, fr, end, p.fum);
+      if (p.fum.ez) return lead + fumbleOut(O, fr, end);
+      if (p.fum.lost) return txt + fumbleLost(O, fr, end, p.fum);
+      txt += fumbleKept(O, fr, p.fum, end);
       if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), 'R');
     }
     if (td){
@@ -398,7 +423,8 @@ function replay(g, upto = g.plays.length){
       by.forEach(n => { const d = pl(D, n); d.sk += 1 / by.length; });
       tackles(D, by, g); conversion(end);
       let txt = `${nm(O, p.qb)} sacked${by.length ? ` by ${by.map(n => nm(D, n)).join(' and ')}` : ''} ${yds(g)} to the ${yl(O, end)}.`;
-      if (p.fum){ if (p.fum.ez) return txt + fumbleOut(O, p.qb, end);
+      if (p.fum){ if (p.fum.then) return txt + fumbleTwice(O, p.qb, end, p.fum);
+        if (p.fum.ez) return txt + fumbleOut(O, p.qb, end);
         if (p.fum.lost) return txt + fumbleLost(O, p.qb, end, p.fum); txt += fumbleKept(O, p.qb, p.fum, end); if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), null); }
       return txt + progress(end, null);
     }
@@ -445,7 +471,9 @@ function replay(g, upto = g.plays.length){
     tackles(D, p.tk, g); conversion(end);
     let txt = td ? `${nm(O, p.qb)} ${fy(g)}-yard pass to ${nm(O, p.to)}`
                  : `${nm(O, p.qb)} pass complete to ${nm(O, p.to)} ${yds(g)} to the ${yl(O, end)}${tackleTxt(D, p.tk)}.`;
-    if (p.fum){ if (p.fum.ez) return (td ? `${nm(O, p.qb)} pass complete to ${nm(O, p.to)} ${yds(g)}.` : txt) + fumbleOut(O, p.to, end);
+    if (p.fum){ const lead = td ? `${nm(O, p.qb)} pass complete to ${nm(O, p.to)} ${yds(g)}.` : txt;
+      if (p.fum.then) return lead + fumbleTwice(O, p.to, end, p.fum);
+      if (p.fum.ez) return lead + fumbleOut(O, p.to, end);
       if (p.fum.lost) return txt + fumbleLost(O, p.to, end, p.fum); txt += fumbleKept(O, p.to, p.fum, end); if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), 'P'); }
     if (td){ t.passTD++; bump(qb, 'ptd'); bump(rec, 'retd');
       return txt + '.' + progress(end, 'P', `${nm(O, p.to)} ${fy(g)}-yard pass from ${nm(O, p.qb)}`, rec); }
