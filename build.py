@@ -46,6 +46,7 @@ PARTS_JS = [
     '3-engine.js',       # a game is its plays; every score and stat is replayed from them
     '4-ui.js',           # scoreboard, field, play-entry pad
     '4b-quick.js',       # shorthand and plain-English play entry
+    '4c-voice.js',       # calling the play out loud, on phones
     '5-views.js',        # views, dialogs, storage, events
     '10-logos.js',       # the school list and where each logo lives
     '11-gamecast.js',    # gamecast, line score, play-by-play, drive chart, box score

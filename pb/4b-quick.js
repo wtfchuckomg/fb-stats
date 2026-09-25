@@ -762,9 +762,14 @@ function cheatHtml(a, h){
 function quickHtml(){
   const {key} = quickTeams(), a = key.A.toUpperCase(), h = key.H.toUpperCase(), editing = ui.editing != null;
   const keys = [a, h, 'ball at', '-', 'inc', 'td', 'punt', 'fg', 'xp', 'int', 'sack', 'fum', 'pen', 'to'];
+  const mic = canVoice() ? `<button type="button" class="qmic" id="qmic" data-qmic aria-pressed="false" aria-label="Call the play out loud">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Z"/><path fill="currentColor" d="M18 11a1 1 0 1 0-2 0 4 4 0 0 1-8 0 1 1 0 1 0-2 0 6 6 0 0 0 5 5.92V19H9a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-2v-2.08A6 6 0 0 0 18 11Z"/></svg></button>` : '';
   return `<div class="quick">
-    <input id="qk" class="qk" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done"
-      aria-label="Type the play" placeholder="3-10 · 7-88-5 · ${esc(String(g.teams.A.abbr || a).toLowerCase())} 15 runs for 15" value="${esc(ui.qtext || '')}">
+    <div class="qrow">
+      <input id="qk" class="qk" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done"
+        aria-label="Type the play" placeholder="3-10 · 7-88-5 · ${esc(String(g.teams.A.abbr || a).toLowerCase())} 15 runs for 15" value="${esc(ui.qtext || '')}">${mic}
+    </div>
+    <div class="qheard" id="qheard" aria-live="polite" hidden></div>
     <div class="qkeys">${keys.map(k => `<button type="button" class="qkey" data-qkey="${esc(k)}">${esc(k)}</button>`).join('')}</div>
     <div class="qprev" id="qprev" aria-live="polite"></div>
     <div class="actions"><button class="btn primary" id="qrec">${ui.ins ? 'Add play' : editing ? 'Save changes' : 'Record'}</button>
@@ -814,7 +819,7 @@ function recordQuick(){
   const {r} = quickResult(ui.qtext);
   if (!r) return;
   if (r.error){ const el = $('#qprev'); el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); return; }
-  ui.qtext = '';
+  ui.qtext = ''; voiceClear();
   if (r.undo){ undo(); return focusQuick(); }
   const p = JSON.parse(JSON.stringify(r.play));
   if (ui.editing != null && ui.ins){
@@ -837,7 +842,8 @@ function recordQuick(){
   g.plays.push(p); save(); refresh(); focusQuick();
   toast(p.t === 'set' ? 'Spot set' : 'Recorded');
 }
-function focusQuick(){ const q = $('#qk'); if (q) q.focus(); }
+// While the mic is on he isn't typing, so don't bring the phone's keyboard back up between plays.
+function focusQuick(){ if (voiceListening()) return; const q = $('#qk'); if (q) q.focus(); }
 function insertKey(k){
   const inp = $('#qk'); if (!inp) return;
   let v = inp.value;

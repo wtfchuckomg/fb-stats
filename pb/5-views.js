@@ -369,8 +369,9 @@ document.addEventListener('click', e => {
   if (t.id === 'rec') return record();
   if (t.id === 'qrec') return recordQuick();
   if (d.qkey) return insertKey(d.qkey);
+  if ('qmic' in d) return voiceToggle();
   if (d.mode){
-    ui.mode = d.mode; ui.draft = null;
+    ui.mode = d.mode; ui.draft = null; voiceStop();
     try { localStorage.setItem('pressbox.mode', d.mode); } catch (e) {}
     renderPad(); if (d.mode === 'quick') focusQuick(); return;
   }

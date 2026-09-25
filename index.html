@@ -1065,6 +1065,14 @@ a.btn{text-decoration:none;display:inline-block}
 .qk{width:100%;height:54px;border:2px solid var(--ink-2);border-radius:8px;background:var(--card);color:var(--ink-2);padding:0 12px;font:600 21px/1 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
 .qk:focus{outline:none;border-color:var(--blue)}
 .qk::placeholder{color:var(--muted);opacity:.7}
+.qrow{display:flex;gap:8px;align-items:stretch}
+.qrow .qk{flex:1;min-width:0}
+.qmic{flex:0 0 auto;width:54px;border:2px solid var(--ink-2);border-radius:8px;background:var(--card);color:var(--ink-2);
+  display:flex;align-items:center;justify-content:center}
+.qmic.on{border-color:var(--bad);background:var(--bad-wash);color:var(--bad);animation:micpulse 1.4s ease-in-out infinite}
+@keyframes micpulse{50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){.qmic.on{animation:none}}
+.qheard{font:600 14px/1.25 var(--cond);color:var(--muted);padding:0 2px}
 .qkeys{display:flex;flex-wrap:wrap;gap:5px}
 .qkey{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:8px 10px;min-width:38px;font:600 13.5px/1 ui-monospace,"SF Mono",Menlo,Consolas,monospace;color:var(--ink-2)}
 .qkey:hover{border-color:var(--muted)}
@@ -2747,6 +2755,7 @@ function renderPad(){
     pad.innerHTML = `${bar}
       ${openKickHtml()}<div class="pad-hd"><span class="eyebrow">${editing0 ? 'Situation before this play' : 'Next play'}</span><span class="sit">${esc(ctx.sit)}</span></div>
       ${quickHtml()}${editing0 && !ui.ins ? '' : '<button class="linkbtn" data-mode="form">Use the full form instead</button>'}${periodHtml(st)}`;
+    voicePaint();                     // the pad was redrawn under a mic that is still listening
     return quickPreview();
   }
   if (!types.includes(ui.type)) ui.type = types[0];
@@ -3539,9 +3548,14 @@ function cheatHtml(a, h){
 function quickHtml(){
   const {key} = quickTeams(), a = key.A.toUpperCase(), h = key.H.toUpperCase(), editing = ui.editing != null;
   const keys = [a, h, 'ball at', '-', 'inc', 'td', 'punt', 'fg', 'xp', 'int', 'sack', 'fum', 'pen', 'to'];
+  const mic = canVoice() ? `<button type="button" class="qmic" id="qmic" data-qmic aria-pressed="false" aria-label="Call the play out loud">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Z"/><path fill="currentColor" d="M18 11a1 1 0 1 0-2 0 4 4 0 0 1-8 0 1 1 0 1 0-2 0 6 6 0 0 0 5 5.92V19H9a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-2v-2.08A6 6 0 0 0 18 11Z"/></svg></button>` : '';
   return `<div class="quick">
-    <input id="qk" class="qk" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done"
-      aria-label="Type the play" placeholder="3-10 · 7-88-5 · ${esc(String(g.teams.A.abbr || a).toLowerCase())} 15 runs for 15" value="${esc(ui.qtext || '')}">
+    <div class="qrow">
+      <input id="qk" class="qk" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done"
+        aria-label="Type the play" placeholder="3-10 · 7-88-5 · ${esc(String(g.teams.A.abbr || a).toLowerCase())} 15 runs for 15" value="${esc(ui.qtext || '')}">${mic}
+    </div>
+    <div class="qheard" id="qheard" aria-live="polite" hidden></div>
     <div class="qkeys">${keys.map(k => `<button type="button" class="qkey" data-qkey="${esc(k)}">${esc(k)}</button>`).join('')}</div>
     <div class="qprev" id="qprev" aria-live="polite"></div>
     <div class="actions"><button class="btn primary" id="qrec">${ui.ins ? 'Add play' : editing ? 'Save changes' : 'Record'}</button>
@@ -3591,7 +3605,7 @@ function recordQuick(){
   const {r} = quickResult(ui.qtext);
   if (!r) return;
   if (r.error){ const el = $('#qprev'); el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); return; }
-  ui.qtext = '';
+  ui.qtext = ''; voiceClear();
   if (r.undo){ undo(); return focusQuick(); }
   const p = JSON.parse(JSON.stringify(r.play));
   if (ui.editing != null && ui.ins){
@@ -3614,7 +3628,8 @@ function recordQuick(){
   g.plays.push(p); save(); refresh(); focusQuick();
   toast(p.t === 'set' ? 'Spot set' : 'Recorded');
 }
-function focusQuick(){ const q = $('#qk'); if (q) q.focus(); }
+// While the mic is on he isn't typing, so don't bring the phone's keyboard back up between plays.
+function focusQuick(){ if (voiceListening()) return; const q = $('#qk'); if (q) q.focus(); }
 function insertKey(k){
   const inp = $('#qk'); if (!inp) return;
   let v = inp.value;
@@ -3623,6 +3638,94 @@ function insertKey(k){
   else if (/^[a-z]$/i.test(k)) v += (v && !/[\s-]$/.test(v) ? ' ' : '') + k.toUpperCase();
   else v += (v && !/[\s-]$/.test(v) ? '-' : '') + k;
   inp.value = v; ui.qtext = v; inp.focus(); inp.setSelectionRange(v.length, v.length); quickPreview();
+}
+/* ---------- calling the play out loud: the phone's own speech recognition ---------- */
+/* Phones only. The words land in the entry box and nothing else — the preview reads them the way a typed
+   line reads, and the play is recorded only when Record is pressed. A bad hearing is a line to fix, never
+   a play in the game. */
+
+const ON_PHONE = () => (window.KMS_DEVICE ? window.KMS_DEVICE !== 'other' : /iPhone|iPod|Android.*Mobile/i.test(navigator.userAgent || ''));
+const VOICE_API = () => window.SpeechRecognition || window.webkitSpeechRecognition;
+const canVoice = () => !!(ON_PHONE() && VOICE_API() && window.isSecureContext);
+
+const ONES = {zero:0, oh:0, one:1, two:2, three:3, four:4, five:5, six:6, seven:7, eight:8, nine:9, ten:10,
+  eleven:11, twelve:12, thirteen:13, fourteen:14, fifteen:15, sixteen:16, seventeen:17, eighteen:18, nineteen:19};
+const TENS = {twenty:20, thirty:30, forty:40, fourty:40, fifty:50, sixty:60, seventy:70, eighty:80, ninety:90};
+const ORD = {first:1, second:2, third:3, fourth:4, '1st':1, '2nd':2, '3rd':3, '4th':4};
+
+// What was said, in the shape the parser already reads. Numbers are the whole job: a phone writes some of
+// them as digits and some as words, and the same sentence has to read the same either way.
+function voiceText(raw){
+  let s = ' ' + String(raw || '').toLowerCase().replace(/[,!?]/g, ' ').replace(/\.(?=\s|$)/g, ' ') + ' ';
+  const tens = Object.keys(TENS).join('|'), ones = Object.keys(ONES).join('|');
+  s = s
+    .replace(new RegExp(`\\b(${tens})[\\s-]+(${ones})\\b`, 'g'), (m, a, b) => ` ${TENS[a] + ONES[b]} `)   // "twenty two"
+    .replace(new RegExp(`\\b(${tens})\\b`, 'g'), (m, a) => ` ${TENS[a]} `)
+    .replace(new RegExp(`\\b(${ones})\\b`, 'g'), (m, a) => ` ${ONES[a]} `)
+    // "first and ten", "3rd and goal" — the down and distance, said the way it shows on the board
+    .replace(/\b(first|second|third|fourth|1st|2nd|3rd|4th|[1-4])\s+(?:and|&)\s+(goal|g|\d{1,2})\b/g,
+      (m, d, t) => ` ${ORD[d] || d}-${/^g/.test(t) ? 'g' : t} `)
+    .replace(/\b(\d{1,2})\s+yard\s+line\b/g, ' $1 ')
+    .replace(/\bnumber\s+(\d{1,3})\b/g, ' $1 ');
+  return s.replace(/\s+/g, ' ').trim();
+}
+
+let voice = null;          // the live recogniser, when it is listening
+let voiceHeard = '';       // the last thing it heard, shown while listening
+
+function voiceStop(){
+  const r = voice; voice = null;
+  if (r){ r.onend = null; try { r.stop(); } catch (e) {} }
+  voiceHeard = ''; voicePaint();
+}
+function voiceStart(){
+  const API = VOICE_API(); if (!API) return;
+  const r = new API();
+  r.lang = 'en-US'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
+  r.onresult = e => {
+    let said = '', done = false;
+    for (let i = e.resultIndex; i < e.results.length; i++){
+      const res = e.results[i];
+      if (res[0]) said = res[0].transcript;
+      if (res.isFinal) done = true;
+    }
+    if (!said.trim()) return;
+    voiceHeard = said.trim();
+    const line = voiceText(said);
+    const inp = $('#qk'); if (inp) inp.value = line;
+    ui.qtext = line; quickPreview(); voicePaint();
+  };
+  // A phone stops listening on its own after a pause; pick it straight back up until the mic is turned off.
+  // If it keeps dropping the moment it starts, something is wrong with it — stop rather than spin on the battery.
+  let spun = 0, went = Date.now();
+  r.onend = () => {
+    if (voice !== r) return;
+    spun = Date.now() - went < 400 ? spun + 1 : 0;
+    if (spun > 5){ voice = null; voicePaint(); return toast('The microphone keeps dropping out'); }
+    went = Date.now();
+    try { r.start(); } catch (e) { voice = null; voicePaint(); }
+  };
+  r.onerror = e => {
+    const why = e && e.error;
+    if (why === 'no-speech' || why === 'aborted') return;          // ordinary silence: onend restarts it
+    voice = null; voicePaint();
+    toast(why === 'not-allowed' || why === 'service-not-allowed' ? 'The microphone is blocked for this site'
+      : why === 'network' ? 'No signal for the microphone' : 'The microphone stopped');
+  };
+  try { r.start(); } catch (e) { return toast('The microphone would not start'); }
+  voice = r; voiceHeard = ''; voicePaint();
+}
+function voiceToggle(){ if (voice) voiceStop(); else voiceStart(); }
+function voiceListening(){ return !!voice; }
+// The play was recorded: forget what was said so the line under the box belongs to the next one.
+function voiceClear(){ if (!voice) return; voiceHeard = ''; voicePaint(); }
+
+// Just the mic button and the heard line, so a word arriving mid-sentence doesn't redraw the entry box.
+function voicePaint(){
+  const b = $('#qmic'); if (b){ b.classList.toggle('on', !!voice); b.setAttribute('aria-pressed', voice ? 'true' : 'false'); }
+  const h = $('#qheard'); if (!h) return;
+  h.hidden = !voice;
+  h.textContent = voice ? (voiceHeard ? `“${voiceHeard}”` : 'Listening…') : '';
 }
 /* ================================================================
    Views, dialogs, storage, events.
@@ -3995,8 +4098,9 @@ document.addEventListener('click', e => {
   if (t.id === 'rec') return record();
   if (t.id === 'qrec') return recordQuick();
   if (d.qkey) return insertKey(d.qkey);
+  if ('qmic' in d) return voiceToggle();
   if (d.mode){
-    ui.mode = d.mode; ui.draft = null;
+    ui.mode = d.mode; ui.draft = null; voiceStop();
     try { localStorage.setItem('pressbox.mode', d.mode); } catch (e) {}
     renderPad(); if (d.mode === 'quick') focusQuick(); return;
   }

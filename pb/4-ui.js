@@ -449,6 +449,7 @@ function renderPad(){
     pad.innerHTML = `${bar}
       ${openKickHtml()}<div class="pad-hd"><span class="eyebrow">${editing0 ? 'Situation before this play' : 'Next play'}</span><span class="sit">${esc(ctx.sit)}</span></div>
       ${quickHtml()}${editing0 && !ui.ins ? '' : '<button class="linkbtn" data-mode="form">Use the full form instead</button>'}${periodHtml(st)}`;
+    voicePaint();                     // the pad was redrawn under a mic that is still listening
     return quickPreview();
   }
   if (!types.includes(ui.type)) ui.type = types[0];
