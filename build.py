@@ -138,6 +138,11 @@ def main():
         for target in (out, HERE.parent / 'index.html') if site == 'kmr' else (out,):
             target.write_text(page, encoding='utf-8')
             print('wrote', target)
+        # The offline cache, stamped with this build's own hash so a new page means a new cache.
+        sw = (PB / 'sw.js').read_text(encoding='utf-8').replace('__BUILD__', hashlib.sha256(page.encode()).hexdigest()[:12])
+        for target in (folder / 'sw.js', HERE.parent / 'sw.js') if site == 'kmr' else (folder / 'sw.js',):
+            target.write_text(sw, encoding='utf-8')
+            print('wrote', target)
         if site == 'avctl':
             (folder / 'CNAME').write_text('avctlstats.com\n', encoding='utf-8')   # GitHub Pages' custom domain
     return 1 if check and changed else 0

@@ -11337,4 +11337,12 @@ else {
 }
 
 startEmbed();   // ?embed=1: whatever page this is, it is inside someone else's
+
+/* ---------- the offline cache ---------- */
+// Keeps the last good copy of the page on the phone, so the tracker opens at a field with no signal. It is
+// registered after the page has loaded so it never competes with it, and never on a page embedded in
+// someone else's site. sw.js asks the network first, so a new build still wins whenever there is a signal.
+if ('serviceWorker' in navigator && !EMBEDDED && window.isSecureContext){
+  addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
 </script>
