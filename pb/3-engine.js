@@ -316,10 +316,13 @@ function replay(g, upto = g.plays.length){
     if (seriesNew){ newSeries(st.poss, st.spot); return txt + '.'; }
     if (dead && wasFresh){ newSeries(st.poss, st.spot); return txt + '.'; }
     if (pre){ st.down = pre.down; st.ltg = pre.ltg; }          // the down is played over
-    if (!offFoul && (pen.a || st.spot >= st.ltg)){
+    // Reaching the line to gain earns the down whoever was flagged: a foul marked off from a spot downfield can
+    // still leave the ball past it, and the offence keeps the first down it had already run to.
+    const auto = !offFoul && pen.a;
+    if (auto || st.spot >= st.ltg){
       S.team[st.poss].fd++; S.team[st.poss].fdX++;
       newSeries(st.poss, st.spot); tags.push(['fd', '1st down']);
-      return txt + `${pen.a ? ', automatic first down' : ''}. First down.`;
+      return txt + `${auto ? ', automatic first down' : ''}. First down.`;
     }
     if (offFoul && pen.l){
       txt += ', loss of down';
@@ -671,7 +674,22 @@ function replay(g, upto = g.plays.length){
     }
     st.fresh = false;
     const beforePoss = st.poss, beforeDown = st.down, beforeLtg = st.ltg;
+    // A team that fouls on the play it scores on doesn't keep the score: holding downfield brings the touchdown
+    // back. The game as it stood before the play is kept so it can be put back if that happens — cloned in one
+    // piece, so the drive the state points at is still the drive in the list.
+    const mayWipe = !!(pen && pen.enf === 'end');
+    const before = mayWipe ? structuredClone({st, S, scoring, drives}) : null;
+    const scoredFrom = scoring.length;
     let text = core(p);
+    if (mayWipe){
+      const made = scoring.slice(scoredFrom);
+      if (made.length && made.some(e => e.side === pen.side)){
+        const wiped = text;
+        ({st, S, scoring, drives} = before);
+        tags = []; trace = [];
+        return {text:'No play. ' + penalize(pen, false, {down:beforeDown, ltg:beforeLtg}), wiped};
+      }
+    }
     // An accepted flag replays the down (unless the ball changed hands, or the penalty itself gives a first down
     // or takes the down away), so the down and the line to gain go back to what they were before the play.
     if (pen && pen.enf === 'end') text += ' ' + penalize(pen, st.poss !== beforePoss, {down:beforeDown, ltg:beforeLtg});
