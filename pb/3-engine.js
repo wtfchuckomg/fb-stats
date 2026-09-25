@@ -271,6 +271,19 @@ function replay(g, upto = g.plays.length){
     if (fin <= 0){ newSeries(rs, RU.tb); return txt + '. Touchback.'; }
     newSeries(rs, fin); return txt + '.';
   }
+  // A fumble that goes out of bounds beyond a goal line, with nobody coming up with it. Through the other team's
+  // end zone it is a touchback and their ball; out over the fumbling team's own goal line it is a safety.
+  function fumbleOut(cs, cn, end){
+    const rs = other(cs);
+    bump(pl(cs, cn), 'fum'); S.team[cs].fum++; S.team[cs].fumL++;
+    tags.push(['to', 'Fumble']);
+    if (end <= HALF) return ` FUMBLE, out of bounds in the end zone.` + safety(rs);
+    const txt = ' FUMBLE, out of bounds through the end zone.';
+    if (st.drive && st.drive.team === cs) closeDrive('Fumble', FL);
+    if (st.ot){ otEnd(); return txt + ' Touchback (ball dead).'; }
+    newSeries(rs, RU.tb);
+    return txt + ` Touchback. ${ab(rs)} ball at the ${yl(rs, RU.tb)}.`;
+  }
   // The offense gets its own fumble back; a teammate's advance moves the ball but isn't the carrier's yardage.
   function fumbleKept(cs, cn, f, end){
     bump(pl(cs, cn), 'fum'); S.team[cs].fum++;
@@ -356,6 +369,7 @@ function replay(g, upto = g.plays.length){
         + (td ? '' : ` to the ${yl(O, end)}${tackleTxt(D, p.tk)}.`)
       : td ? `${nm(O, p.r)} ${fy(g)}-yard rush` : `${nm(O, p.r)} rush ${yds(g)} to the ${yl(O, end)}${tackleTxt(D, p.tk)}.`;
     if (p.fum){
+      if (p.fum.ez) return (td ? `${nm(O, p.r)} rush ${yds(g)}.` : txt) + fumbleOut(O, p.r, end);
       if (p.fum.lost) return txt + fumbleLost(O, p.r, end, p.fum);
       txt += fumbleKept(O, p.r, p.fum, end);
       if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), 'R');
@@ -384,7 +398,8 @@ function replay(g, upto = g.plays.length){
       by.forEach(n => { const d = pl(D, n); d.sk += 1 / by.length; });
       tackles(D, by, g); conversion(end);
       let txt = `${nm(O, p.qb)} sacked${by.length ? ` by ${by.map(n => nm(D, n)).join(' and ')}` : ''} ${yds(g)} to the ${yl(O, end)}.`;
-      if (p.fum){ if (p.fum.lost) return txt + fumbleLost(O, p.qb, end, p.fum); txt += fumbleKept(O, p.qb, p.fum, end); if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), null); }
+      if (p.fum){ if (p.fum.ez) return txt + fumbleOut(O, p.qb, end);
+        if (p.fum.lost) return txt + fumbleLost(O, p.qb, end, p.fum); txt += fumbleKept(O, p.qb, p.fum, end); if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), null); }
       return txt + progress(end, null);
     }
     t.passA++; bump(qb, 'pa');
@@ -412,6 +427,7 @@ function replay(g, upto = g.plays.length){
       if (p.fum && fin > 0){
         const fs = clamp(fin, 1, FL - 1);
         txt += ` to the ${yl(D, fs)}.`;
+        if (p.fum.ez) return txt + fumbleOut(D, p.ib, fs);
         if (p.fum.lost) return txt + fumbleLost(D, p.ib, fs, p.fum);
         txt += fumbleKept(D, p.ib, p.fum, fs);
         const f2 = clamp(fs + (+p.fum.ry || 0), 0, FL);
@@ -429,7 +445,8 @@ function replay(g, upto = g.plays.length){
     tackles(D, p.tk, g); conversion(end);
     let txt = td ? `${nm(O, p.qb)} ${fy(g)}-yard pass to ${nm(O, p.to)}`
                  : `${nm(O, p.qb)} pass complete to ${nm(O, p.to)} ${yds(g)} to the ${yl(O, end)}${tackleTxt(D, p.tk)}.`;
-    if (p.fum){ if (p.fum.lost) return txt + fumbleLost(O, p.to, end, p.fum); txt += fumbleKept(O, p.to, p.fum, end); if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), 'P'); }
+    if (p.fum){ if (p.fum.ez) return (td ? `${nm(O, p.qb)} pass complete to ${nm(O, p.to)} ${yds(g)}.` : txt) + fumbleOut(O, p.to, end);
+      if (p.fum.lost) return txt + fumbleLost(O, p.to, end, p.fum); txt += fumbleKept(O, p.to, p.fum, end); if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), 'P'); }
     if (td){ t.passTD++; bump(qb, 'ptd'); bump(rec, 'retd');
       return txt + '.' + progress(end, 'P', `${nm(O, p.to)} ${fy(g)}-yard pass from ${nm(O, p.qb)}`, rec); }
     return txt + progress(end, 'P');
@@ -444,6 +461,7 @@ function replay(g, upto = g.plays.length){
     S.team[R][k1 === 'kr' ? 'krN' : 'prN']++; S.team[R][k1 === 'kr' ? 'krY' : 'prY'] += ry;
     tackles(K, p.tk, 1);
     let txt = `, ${nm(R, p.ret)} returns ${plural(ry, 'yard')}`;
+    if (p.fum && p.fum.ez) return {txt: `${txt} to the ${yl(R, clamp(fin, 1, FL - 1))}.` + fumbleOut(R, p.ret, clamp(fin, 0, FL)), fin};
     if (p.fum && p.fum.lost) return {txt: `${txt} to the ${yl(R, clamp(fin, 1, (FL - 1)))}.` + fumbleLost(R, p.ret, clamp(fin, 1, (FL - 1)), p.fum), fin};
     if (fin >= FL){ bump(ret, k1 + 'td'); return {txt: txt + '.' + touchdown(R, `${nm(R, p.ret)} ${fy(ry)}-yard ${kind === 'kr' ? 'kickoff' : 'punt'} return`, ret), fin}; }
     if (fin <= 0){ newSeries(R, RU.tb); return {txt: txt + ', downed in the end zone. Touchback.', fin:RU.tb}; }

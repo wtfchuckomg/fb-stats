@@ -259,7 +259,7 @@ function parseQuick(raw, st){
     if (fum && !p.fum && (p.t === 'ko' || p.t === 'punt')){
       if (p.res !== 'ret') return bad('Say the return first, then the fumble: punt 40 returned 10 fum ' + L(O) + ' rec 31.');
       p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self ? {self:true} : {}),
-               ...(fum.at ? {at:fum.at} : {}), ...(fum.lost && fum.tdLine ? {td:true} : {}), ry:fum.ry};
+               ...(fum.at ? {at:fum.at} : {}), ...(fum.lost && fum.tdLine ? {td:true} : {}), ...(fum.ez ? {ez:true} : {}), ry:fum.ry};
     }
     if (pen){
       // The flag's yard line counts from whoever has the ball once the play is over: the receiving team after a
@@ -309,8 +309,11 @@ function parseQuick(raw, st){
     // td anywhere on a lost-fumble line is the defense's score; on a kept fumble it's the offense's.
     const tdLine = ft.includes('td') || toks.includes('td');
     if (lost) toks = toks.filter(t => t !== 'td'); else if (tdLine && !toks.includes('td')) toks.push('td');
+    // Nobody came up with it and it left the field beyond a goal line: "fum tb", or said in words,
+    // "fumbles out of the end zone". Only when no one is named as recovering it.
+    const ez = ft.includes('tb') || ((ft.includes('end') && ft.includes('zone')) && !who && !fn.length);
     fum = {lost, by, ry:Math.abs(+(adv || 0)), td:lost && tdLine, endSpot, at:recAt, self:selfRec && by == null,
-           rs:who ? who.side : ft.map(T).find(Boolean) || null, selfRec, tdLine};
+           rs:who ? who.side : ft.map(T).find(Boolean) || null, selfRec, tdLine, ...(ez ? {ez:true} : {})};
   }
   const rawToks = toks.slice();
   if (toks.some(isNum)) toks = toks.filter(t => !FILLER.includes(t) || T(t));
@@ -612,7 +615,7 @@ function parseQuick(raw, st){
       }
     }
     if (fum.td) ry = at;                     // the recovering team runs it back the whole way
-    p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self ? {self:true} : {}), ...(fum.at ? {at:fum.at} : {}), ...(fum.td ? {td:true} : {}), ry};
+    p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self ? {self:true} : {}), ...(fum.at ? {at:fum.at} : {}), ...(fum.td ? {td:true} : {}), ...(fum.ez ? {ez:true} : {}), ry};
     return p;
   };
   // "aug 15 …": the runner or passer named with his team, which has to be the team with the ball.
@@ -652,7 +655,7 @@ function parseQuick(raw, st){
         ry = endPos - (lost ? FL - fin : fin);
       }
       if (fum.tdLine) ry = lost ? fin : FL - fin;
-      p.fum = {lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self || (fum.selfRec && fum.by == null) ? {self:true} : {}), ry};
+      p.fum = {lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self || (fum.selfRec && fum.by == null) ? {self:true} : {}), ...(fum.ez ? {ez:true} : {}), ry};
     }
     return flag(p);
   }
@@ -699,6 +702,7 @@ function cheatHtml(a, h){
     [`7-int-24-${h}10-${h}40 fum ${a} rec 22`, `Picked off, returned to the ${h} 40, then fumbled; ${a}'s #22 recovers and the ball goes back to ${a}. Add td if the recovery was run in.`],
     [`5-5-fum-rec-${h}31-1`, `#5 runs for 5 and fumbles; ${h}'s #31 recovers and advances 1. Just fum ${h} rec if you don't know who.`],
     [`5-5-fum-rec-${h}10 ball on ${h}24`, 'Same, with the advance worked out from where the next snap is.'],
+    ['22--5 fum tb', 'Fumbled out of bounds beyond a goal line, nobody on it: a touchback through their end zone, a safety out of your own.'],
     [`10-0 fum ${h} rec td`, `Fumble, ${h} recovers and returns it for a touchdown.`],
     [`1-sack-13 fum rec 6 at ${h}6 td`, `Add at ${h.toUpperCase()}6 when the ball was recovered somewhere else than where it came loose. Works on any fumble.`],
     [`punt 40 5 return 10 fum ${a} rec 22`, `A fumble on a punt or kickoff return: say the return first, then who recovered.`],

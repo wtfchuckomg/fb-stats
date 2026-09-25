@@ -1787,6 +1787,19 @@ function replay(g, upto = g.plays.length){
     if (fin <= 0){ newSeries(rs, RU.tb); return txt + '. Touchback.'; }
     newSeries(rs, fin); return txt + '.';
   }
+  // A fumble that goes out of bounds beyond a goal line, with nobody coming up with it. Through the other team's
+  // end zone it is a touchback and their ball; out over the fumbling team's own goal line it is a safety.
+  function fumbleOut(cs, cn, end){
+    const rs = other(cs);
+    bump(pl(cs, cn), 'fum'); S.team[cs].fum++; S.team[cs].fumL++;
+    tags.push(['to', 'Fumble']);
+    if (end <= HALF) return ` FUMBLE, out of bounds in the end zone.` + safety(rs);
+    const txt = ' FUMBLE, out of bounds through the end zone.';
+    if (st.drive && st.drive.team === cs) closeDrive('Fumble', FL);
+    if (st.ot){ otEnd(); return txt + ' Touchback (ball dead).'; }
+    newSeries(rs, RU.tb);
+    return txt + ` Touchback. ${ab(rs)} ball at the ${yl(rs, RU.tb)}.`;
+  }
   // The offense gets its own fumble back; a teammate's advance moves the ball but isn't the carrier's yardage.
   function fumbleKept(cs, cn, f, end){
     bump(pl(cs, cn), 'fum'); S.team[cs].fum++;
@@ -1872,6 +1885,7 @@ function replay(g, upto = g.plays.length){
         + (td ? '' : ` to the ${yl(O, end)}${tackleTxt(D, p.tk)}.`)
       : td ? `${nm(O, p.r)} ${fy(g)}-yard rush` : `${nm(O, p.r)} rush ${yds(g)} to the ${yl(O, end)}${tackleTxt(D, p.tk)}.`;
     if (p.fum){
+      if (p.fum.ez) return (td ? `${nm(O, p.r)} rush ${yds(g)}.` : txt) + fumbleOut(O, p.r, end);
       if (p.fum.lost) return txt + fumbleLost(O, p.r, end, p.fum);
       txt += fumbleKept(O, p.r, p.fum, end);
       if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), 'R');
@@ -1900,7 +1914,8 @@ function replay(g, upto = g.plays.length){
       by.forEach(n => { const d = pl(D, n); d.sk += 1 / by.length; });
       tackles(D, by, g); conversion(end);
       let txt = `${nm(O, p.qb)} sacked${by.length ? ` by ${by.map(n => nm(D, n)).join(' and ')}` : ''} ${yds(g)} to the ${yl(O, end)}.`;
-      if (p.fum){ if (p.fum.lost) return txt + fumbleLost(O, p.qb, end, p.fum); txt += fumbleKept(O, p.qb, p.fum, end); if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), null); }
+      if (p.fum){ if (p.fum.ez) return txt + fumbleOut(O, p.qb, end);
+        if (p.fum.lost) return txt + fumbleLost(O, p.qb, end, p.fum); txt += fumbleKept(O, p.qb, p.fum, end); if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), null); }
       return txt + progress(end, null);
     }
     t.passA++; bump(qb, 'pa');
@@ -1928,6 +1943,7 @@ function replay(g, upto = g.plays.length){
       if (p.fum && fin > 0){
         const fs = clamp(fin, 1, FL - 1);
         txt += ` to the ${yl(D, fs)}.`;
+        if (p.fum.ez) return txt + fumbleOut(D, p.ib, fs);
         if (p.fum.lost) return txt + fumbleLost(D, p.ib, fs, p.fum);
         txt += fumbleKept(D, p.ib, p.fum, fs);
         const f2 = clamp(fs + (+p.fum.ry || 0), 0, FL);
@@ -1945,7 +1961,8 @@ function replay(g, upto = g.plays.length){
     tackles(D, p.tk, g); conversion(end);
     let txt = td ? `${nm(O, p.qb)} ${fy(g)}-yard pass to ${nm(O, p.to)}`
                  : `${nm(O, p.qb)} pass complete to ${nm(O, p.to)} ${yds(g)} to the ${yl(O, end)}${tackleTxt(D, p.tk)}.`;
-    if (p.fum){ if (p.fum.lost) return txt + fumbleLost(O, p.to, end, p.fum); txt += fumbleKept(O, p.to, p.fum, end); if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), 'P'); }
+    if (p.fum){ if (p.fum.ez) return (td ? `${nm(O, p.qb)} pass complete to ${nm(O, p.to)} ${yds(g)}.` : txt) + fumbleOut(O, p.to, end);
+      if (p.fum.lost) return txt + fumbleLost(O, p.to, end, p.fum); txt += fumbleKept(O, p.to, p.fum, end); if (+p.fum.ry) return txt + progress(clamp(end + +p.fum.ry, 0, FL), 'P'); }
     if (td){ t.passTD++; bump(qb, 'ptd'); bump(rec, 'retd');
       return txt + '.' + progress(end, 'P', `${nm(O, p.to)} ${fy(g)}-yard pass from ${nm(O, p.qb)}`, rec); }
     return txt + progress(end, 'P');
@@ -1960,6 +1977,7 @@ function replay(g, upto = g.plays.length){
     S.team[R][k1 === 'kr' ? 'krN' : 'prN']++; S.team[R][k1 === 'kr' ? 'krY' : 'prY'] += ry;
     tackles(K, p.tk, 1);
     let txt = `, ${nm(R, p.ret)} returns ${plural(ry, 'yard')}`;
+    if (p.fum && p.fum.ez) return {txt: `${txt} to the ${yl(R, clamp(fin, 1, FL - 1))}.` + fumbleOut(R, p.ret, clamp(fin, 0, FL)), fin};
     if (p.fum && p.fum.lost) return {txt: `${txt} to the ${yl(R, clamp(fin, 1, (FL - 1)))}.` + fumbleLost(R, p.ret, clamp(fin, 1, (FL - 1)), p.fum), fin};
     if (fin >= FL){ bump(ret, k1 + 'td'); return {txt: txt + '.' + touchdown(R, `${nm(R, p.ret)} ${fy(ry)}-yard ${kind === 'kr' ? 'kickoff' : 'punt'} return`, ret), fin}; }
     if (fin <= 0){ newSeries(R, RU.tb); return {txt: txt + ', downed in the end zone. Touchback.', fin:RU.tb}; }
@@ -2990,7 +3008,7 @@ function parseQuick(raw, st){
     if (fum && !p.fum && (p.t === 'ko' || p.t === 'punt')){
       if (p.res !== 'ret') return bad('Say the return first, then the fumble: punt 40 returned 10 fum ' + L(O) + ' rec 31.');
       p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self ? {self:true} : {}),
-               ...(fum.at ? {at:fum.at} : {}), ...(fum.lost && fum.tdLine ? {td:true} : {}), ry:fum.ry};
+               ...(fum.at ? {at:fum.at} : {}), ...(fum.lost && fum.tdLine ? {td:true} : {}), ...(fum.ez ? {ez:true} : {}), ry:fum.ry};
     }
     if (pen){
       // The flag's yard line counts from whoever has the ball once the play is over: the receiving team after a
@@ -3040,8 +3058,11 @@ function parseQuick(raw, st){
     // td anywhere on a lost-fumble line is the defense's score; on a kept fumble it's the offense's.
     const tdLine = ft.includes('td') || toks.includes('td');
     if (lost) toks = toks.filter(t => t !== 'td'); else if (tdLine && !toks.includes('td')) toks.push('td');
+    // Nobody came up with it and it left the field beyond a goal line: "fum tb", or said in words,
+    // "fumbles out of the end zone". Only when no one is named as recovering it.
+    const ez = ft.includes('tb') || ((ft.includes('end') && ft.includes('zone')) && !who && !fn.length);
     fum = {lost, by, ry:Math.abs(+(adv || 0)), td:lost && tdLine, endSpot, at:recAt, self:selfRec && by == null,
-           rs:who ? who.side : ft.map(T).find(Boolean) || null, selfRec, tdLine};
+           rs:who ? who.side : ft.map(T).find(Boolean) || null, selfRec, tdLine, ...(ez ? {ez:true} : {})};
   }
   const rawToks = toks.slice();
   if (toks.some(isNum)) toks = toks.filter(t => !FILLER.includes(t) || T(t));
@@ -3343,7 +3364,7 @@ function parseQuick(raw, st){
       }
     }
     if (fum.td) ry = at;                     // the recovering team runs it back the whole way
-    p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self ? {self:true} : {}), ...(fum.at ? {at:fum.at} : {}), ...(fum.td ? {td:true} : {}), ry};
+    p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self ? {self:true} : {}), ...(fum.at ? {at:fum.at} : {}), ...(fum.td ? {td:true} : {}), ...(fum.ez ? {ez:true} : {}), ry};
     return p;
   };
   // "aug 15 …": the runner or passer named with his team, which has to be the team with the ball.
@@ -3383,7 +3404,7 @@ function parseQuick(raw, st){
         ry = endPos - (lost ? FL - fin : fin);
       }
       if (fum.tdLine) ry = lost ? fin : FL - fin;
-      p.fum = {lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self || (fum.selfRec && fum.by == null) ? {self:true} : {}), ry};
+      p.fum = {lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self || (fum.selfRec && fum.by == null) ? {self:true} : {}), ...(fum.ez ? {ez:true} : {}), ry};
     }
     return flag(p);
   }
@@ -3430,6 +3451,7 @@ function cheatHtml(a, h){
     [`7-int-24-${h}10-${h}40 fum ${a} rec 22`, `Picked off, returned to the ${h} 40, then fumbled; ${a}'s #22 recovers and the ball goes back to ${a}. Add td if the recovery was run in.`],
     [`5-5-fum-rec-${h}31-1`, `#5 runs for 5 and fumbles; ${h}'s #31 recovers and advances 1. Just fum ${h} rec if you don't know who.`],
     [`5-5-fum-rec-${h}10 ball on ${h}24`, 'Same, with the advance worked out from where the next snap is.'],
+    ['22--5 fum tb', 'Fumbled out of bounds beyond a goal line, nobody on it: a touchback through their end zone, a safety out of your own.'],
     [`10-0 fum ${h} rec td`, `Fumble, ${h} recovers and returns it for a touchdown.`],
     [`1-sack-13 fum rec 6 at ${h}6 td`, `Add at ${h.toUpperCase()}6 when the ball was recovered somewhere else than where it came loose. Works on any fumble.`],
     [`punt 40 5 return 10 fum ${a} rec 22`, `A fumble on a punt or kickoff return: say the return first, then who recovered.`],
