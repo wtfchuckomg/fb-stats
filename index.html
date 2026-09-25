@@ -9732,16 +9732,38 @@ function pickSchoolOption(el, opt){
   setSchoolValue(el, opt.dataset.pick);
 }
 const isSchoolBox = el => !!(el && el.classList && el.classList.contains('sch-in'));
+let schTap = null;                      // the suggestion a finger is down on
+const schBoxOf = opt => { const b = opt.closest && opt.closest('.sch-sug'); return b ? document.getElementById(String(b.id).replace(/-sug$/, '')) : null; };
 document.addEventListener('focusin', e => { if (isSchoolBox(e.target)) showSchoolSug(e.target); });
 document.addEventListener('input', e => { if (isSchoolBox(e.target) && !e.target.dataset.quiet) showSchoolSug(e.target); });
-document.addEventListener('focusout', e => { if (isSchoolBox(e.target)) closeSchoolSug(e.target); });
+// The box losing focus puts the list away — unless a finger is down on the list itself, which is what
+// happens on a phone the moment you touch a suggestion.
+document.addEventListener('focusout', e => { if (isSchoolBox(e.target) && !schTap) closeSchoolSug(e.target); });
 // Leaving the box with a name we don't have asks about it right then.
 document.addEventListener('change', e => { if (isSchoolBox(e.target) && !askDone) settleSchool(e.target); });
-// A tap on a suggestion mustn't take the focus from the box first (that would close the list under the finger).
-document.addEventListener('pointerdown', e => { if (e.target.closest && e.target.closest('.sch-sug')) e.preventDefault(); });
-document.addEventListener('click', e => {
+document.addEventListener('pointerdown', e => {
+  const sug = e.target.closest && e.target.closest('.sch-sug');
+  if (!sug){    // a touch anywhere else puts an open list away, since the box may already have lost focus
+    if (!isSchoolBox(e.target)) document.querySelectorAll('.sch-sug:not([hidden])')
+      .forEach(b => { const el = document.getElementById(String(b.id).replace(/-sug$/, '')); if (el) closeSchoolSug(el); });
+    return;
+  }
+  schTap = e.target.closest('.sch-opt') || null;
+  // A mouse is held off the list so the box keeps focus. A finger is not: blocking it stops the list
+  // scrolling, and on a phone it can swallow the tap that was meant to pick the school.
+  if (e.pointerType === 'mouse') e.preventDefault();
+});
+// The pick is made on the release. A phone doesn't always send a click after a tap on something that just
+// took the focus, and a school chosen is too important to lose to that.
+document.addEventListener('pointerup', e => {
+  const opt = schTap; schTap = null;
+  if (!opt || (e.target.closest && e.target.closest('.sch-opt')) !== opt) return;   // slid off: not a pick
+  const el = schBoxOf(opt); if (el) pickSchoolOption(el, opt);
+});
+document.addEventListener('pointercancel', () => { schTap = null; });   // a scroll took the finger away
+if (!window.PointerEvent) document.addEventListener('click', e => {
   const opt = e.target.closest && e.target.closest('.sch-opt'); if (!opt) return;
-  const el = document.getElementById(opt.parentNode.id.replace(/-sug$/, '')); if (el) pickSchoolOption(el, opt);
+  const el = schBoxOf(opt); if (el) pickSchoolOption(el, opt);
 });
 document.addEventListener('keydown', e => {
   const el = e.target; if (!isSchoolBox(el)) return;
