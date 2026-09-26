@@ -385,7 +385,7 @@ document.addEventListener('click', e => {
     county.view = vb.dataset.cview;
     // The address keeps the page it's on: a league's, the AVCTL's, the state's or the county's.
     const at = LG_STATS ? `league=${LG.slug}&lgstats` : AV_STATS ? 'avstats' : STATE_STATS ? 'statestats' : 'stats';
-    history.replaceState(null, '', `?${at}=${county.view}`);
+    history.pushState(null, '', `?${at}=${county.view}`);
     return renderCounty();
   }
   const th = e.target.closest('[data-csort]'); if (!th) return;

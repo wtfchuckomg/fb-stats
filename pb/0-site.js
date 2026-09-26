@@ -19,7 +19,7 @@ const AV_SITE = 'https://avctlstats.com/';
 // The AVCTL site has the league's pages only: any other page's address becomes its league twin before a part reads
 // the address, and the Game Tracker's becomes the home page (the site is for fans).
 if (SITE_AV) (function(){
-  const q = new URLSearchParams(location.search), keep = ['game', 'live', 'preview', 'team', 'teams', 'player', 'avctl', 'avstats', 'standings', 'season', 'tab'];
+  const q = new URLSearchParams(location.search), keep = ['game', 'live', 'preview', 'team', 'teams', 'player', 'avctl', 'avstats', 'standings', 'season', 'tab', 'plays'];
   const to = new URLSearchParams();
   const val = k => q.get(k) || '';
   if (q.has('scores') || q.has('state')) to.set('avctl', val('scores') || val('state'));

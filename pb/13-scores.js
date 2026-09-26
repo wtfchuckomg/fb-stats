@@ -602,7 +602,7 @@ document.addEventListener('change', e => {
   if (e.target.id !== 'scweek') return;
   ui.week = e.target.value; renderScores();
   // On the scoreboard page the page below follows the strip to that week.
-  if (ui.board){ history.replaceState(null, '', `?${boardParam()}=${ui.week}`); renderScoreboard(); }
+  if (ui.board){ history.pushState(null, '', `?${boardParam()}=${ui.week}`); renderScoreboard(); }
 });
 // Tapping a score clears it for the new one, with the old one showing faintly; leave it blank to keep it.
 // (Selecting the text instead is unreliable on phones, where lifting the finger drops the selection.)

@@ -377,8 +377,8 @@ document.addEventListener('click', e => {
   }
   if (d.open) return openDialog(d.open);
   if ('close' in d) return closeDialog();
-  if (d.tab){ ui.tab = d.tab; return renderView(); }
-  if (d.pbp){ ui.pbp = d.pbp; return renderView(); }
+  if (d.tab){ ui.tab = d.tab; renderView(); return address(true); }        // a tab is a page: it gets its own link
+  if (d.pbp){ ui.pbp = d.pbp; renderView(); return address(false); }        // a filter on the page you're on
   if (d.pbsort){ pbpSortPick = d.pbsort; try { localStorage.setItem('pressbox.pbpSort', d.pbsort); } catch (e) {} return renderView(); }
   if (d.type){ ui.type = d.type; ui.draft = null; return renderPad(); }
   if (d.seg){ setK(ui.draft, d.seg, d.v); return renderPad(); }

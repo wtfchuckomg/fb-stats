@@ -180,7 +180,7 @@ function renderScoreboard(){
 document.addEventListener('click', e => {
   if (!ui.board || !e.target.closest) return;
   const w = e.target.closest('[data-bweek]');
-  if (w){ ui.week = w.dataset.bweek; history.replaceState(null, '', `?${boardParam()}=${ui.week}`); renderScores(); return renderScoreboard(); }
+  if (w){ ui.week = w.dataset.bweek; history.pushState(null, '', `?${boardParam()}=${ui.week}`); renderScores(); return renderScoreboard(); }
   const h = e.target.closest('[data-hide]');
   if (h) return toggleHide(h.dataset.hide, !!h.dataset.opp);
   const a = e.target.closest('[data-bscroll]');
