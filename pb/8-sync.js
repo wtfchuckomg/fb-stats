@@ -18,7 +18,7 @@ const firebaseConfig = {
 // Google refuses sign-in inside Facebook, Instagram, X and similar in-app browsers.
 const IN_APP_BROWSER = /FBAN|FBAV|FB_IAB|Instagram|Twitter|LinkedInApp|Snapchat|Line\/|MicroMessenger|GSA\//i.test(navigator.userAgent)
   || /Android.*;\s*wv\)/i.test(navigator.userAgent);
-const sync = {state:'off', user:null, api:null, unsub:null, first:true, timers:{}, pending:0, err:''};
+const sync = {state:'off', user:null, api:null, unsub:null, first:true, timers:{}, pending:0, err:'', failed:new Set()};
 
 async function startSync(){
   if (location.protocol === 'file:'){ sync.state = 'unavailable'; return renderSync(); }
@@ -43,8 +43,9 @@ async function startSync(){
     if (user) listen();
     renderSync();
   });
-  addEventListener('online', renderSync);
+  addEventListener('online', () => { retryFailed(); renderSync(); });
   addEventListener('offline', renderSync);
+  setInterval(retryFailed, 30000);   // a signal can come back without the browser saying so
 }
 
 const newestGame = () => Object.values(db.games).filter(x => !x.sample && !x.foreign).sort((a, b) => (b.updated || 0) - (a.updated || 0))[0];
@@ -130,11 +131,17 @@ async function pushNow(id){
   try {
     await fsM.setDoc(fsM.doc(fsdb, 'pressbox', id), {owner:sync.user.uid, updated:game.updated || Date.now(), public:!!game.share, week:gameWeek(game),
       title:`${game.teams.A.abbr} at ${game.teams.H.abbr}`, card:shareCard(game), json:JSON.stringify(game)});
-    sync.err = '';
-  } catch (e) { sync.err = friendlySync(e); }
+    sync.err = ''; sync.failed.delete(id);
+  } catch (e) { sync.err = friendlySync(e); sync.failed.add(id); }
   sync.pending--;
   sync.state = sync.err ? 'error' : sync.pending || Object.keys(sync.timers).length ? 'saving' : 'on';
   renderSync();
+}
+// A save that didn't reach the account is kept and tried again. Without this a game imported or scored where
+// there is no signal stays on the one device, looking saved, and never reaches the scoreboards.
+function retryFailed(){
+  if (!sync.user || !sync.failed.size || navigator.onLine === false) return;
+  [...sync.failed].forEach(id => { if (db.games[id]) syncPush(db.games[id], 0); else sync.failed.delete(id); });
 }
 // Deleting leaves a marker rather than removing the document, so other devices learn about it too.
 function syncDelete(id){

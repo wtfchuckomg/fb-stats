@@ -267,7 +267,7 @@ async function turboGame(feed, id){
   // Who kicked off first, so the engine opens the game the same way they did.
   const firstKo = rows.find(r => String(r.type).trim() === 'Kickoff');
   const game = {
-    id:`tg-${id}`, created:Date.now(), updated:Date.now(), share:false, from:'turbostats', src:turboUrl(id),
+    id:`tg-${id}`, created:Date.now(), updated:Date.now(), share:true, from:'turbostats', src:turboUrl(id),   // the boards are the whole point of bringing one in
     teams:{A:{...team(gi.visName, gi.visId), roster:roster.A}, H:{...team(gi.homeName, gi.homeId), roster:roster.H}},
     set:{qtr:12, men:11, firstKick:(firstKo && codeSide(firstKo.team)) || 'H',
       date:turboDate(gi.date), roster:{A:roster.A, H:roster.H}},
@@ -300,7 +300,7 @@ function turboBlock(){
   const note = turbo.msg ? `<p class="hint"${turbo.ok === false ? ' style="color:var(--flag-ink)"' : ''}>${esc(turbo.msg)}</p>` : '';
   return `<div class="grp"><h3>Import a gamecast</h3>
     <div class="acct"><div style="flex:1;min-width:0">
-      <p class="hint">Paste the link to a TurboStats gamecast (turbogamecast.com) and its play-by-play comes in as a game of its own — gamecast, box score, drive chart and every player's stats, worked out here from the plays. Share it to put it on the scoreboards.</p>
+      <p class="hint">Paste the link to a TurboStats gamecast (turbogamecast.com) and its play-by-play comes in as a game of its own — gamecast, box score, drive chart and every player's stats, worked out here from the plays. It goes on the scoreboards straight away; the Share window takes it back off.</p>
       <input class="inp" id="tg-link" placeholder="https://turbogamecast.com/football/webcast/…" autocomplete="off" spellcheck="false"></div>
       <button class="btn small primary" data-turbo="go"${turbo.busy ? ' disabled' : ''}>${turbo.busy ? 'Reading…' : 'Import'}</button></div>
     ${note}</div>`;
@@ -318,7 +318,8 @@ async function turboImport(){
     turbo.ok = chk.agree;
     turbo.msg = `${A.name} ${chk.ours.A} at ${H.name} ${chk.ours.H} — ${game.plays.length} plays.`
       + (chk.agree ? ' The score matches their gamecast.' : ` Their gamecast says ${chk.theirs.A}-${chk.theirs.H}: check the play-by-play.`)
-      + (skipped.length ? ` ${skipped.length} ${skipped.length === 1 ? 'play' : 'plays'} couldn’t be read and were left out.` : '');
+      + (skipped.length ? ` ${skipped.length} ${skipped.length === 1 ? 'play' : 'plays'} couldn’t be read and were left out.` : '')
+      + ' It’s live on the scoreboards.';
     db.games[game.id] = game; g = game; resetUi(); save(); closeDialog(); refresh();
     toast(`Imported ${A.abbr || A.name} at ${H.abbr || H.name}`);
   } catch (e) {
