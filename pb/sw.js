@@ -26,10 +26,13 @@ const isShell = url => url.pathname === '/' || url.pathname === '/index.html';
 // Worth having offline, but the page still works without it.
 const isData = url => /\.(json|png|jpe?g|svg|webp|ico)$/i.test(url.pathname);
 
-async function fromNet(req, cacheName, ms){
+async function fromNet(req, cacheName, ms, fresh){
   const ctrl = new AbortController(), t = setTimeout(() => ctrl.abort(), ms);
   try {
-    const res = await fetch(req, {signal:ctrl.signal});
+    // The browser is allowed to hold this site's page for ten minutes without asking. That would serve a build
+    // up to ten minutes old on a phone with a perfectly good signal, so the page itself is always revalidated:
+    // it costs one small conditional request, and the answer is usually "still the same".
+    const res = await fetch(req, {signal:ctrl.signal, ...(fresh ? {cache:'no-cache'} : {})});
     clearTimeout(t);
     // The copy has to be taken now: once the response is handed to the page its body is gone.
     if (res && res.ok){
@@ -51,7 +54,7 @@ self.addEventListener('fetch', e => {
     const cacheName = shell ? SHELL : DATA;
     // The page is asked for with its own address; the cache holds one copy of it under ./index.html.
     const key = shell ? new Request(new URL('./index.html', self.location).href) : req;
-    const net = await fromNet(shell ? key : req, cacheName, shell ? NET_MS : 6000);
+    const net = await fromNet(shell ? key : req, cacheName, shell ? NET_MS : 6000, shell);
     if (net) return net;
     const hit = await caches.match(key, {ignoreSearch:shell});
     if (hit) return hit;
