@@ -37,11 +37,21 @@ function turboSpot(txt, poss, side, FL){
   const n = +m[2];
   return m[1].toUpperCase() === String(side[poss] || '').toUpperCase() ? n : FL - n;
 }
+// "WV:17" as the site keeps a spot: which team's half, and the number on it.
+function turboAt(txt, side){
+  const m = String(txt || '').match(/([A-Za-z]+)\s*:\s*(\d{1,3})/);
+  if (!m) return null;
+  const up = m[1].toUpperCase();
+  const s = up === String(side.A).toUpperCase() ? 'A' : up === String(side.H).toUpperCase() ? 'H' : null;
+  return s ? {side:s, n:+m[2]} : null;
+}
 const turboNum = s => { const m = String(s || '').match(/^\s*(\d{1,2})\b/); return m ? m[1] : null; };
 const turboName = s => String(s || '').replace(/^\s*\d{1,2}\s+/, '').trim();
 const turboYards = ev => { const m = String(ev).match(/for\s+(-?\d+)\s+yard/i); return m ? +m[1] : null; };
 const turboClock = s => { const m = String(s || '').match(/^(\d{1,2}):(\d{2})$/); return m ? +m[1] * 60 + +m[2] : null; };
 const turboTD = ev => /:TouchDown:/i.test(ev || '');
+// A two-point try: the points on the row say whether it was good, whatever their wording for it was.
+const turboGood = (ev, pts) => (pts > 0 || turboTD(ev) || /:Good:|:Extra Point:/i.test(ev || '')) ? 'good' : 'no';
 // ":Penalty D:, Encroachment:" — the foul's name, matched to the site's list when it knows it.
 function turboFoul(ev){
   const bits = String(ev || '').split(':').map(s => s.replace(/^[,\s]+|[,\s]+$/g, '')).filter(Boolean);
@@ -97,13 +107,27 @@ async function turboGame(feed, id){
     down:DOWN[String(r.down || '').replace(/[^a-z0-9]/gi, '').slice(0, 3)] || null,
     togo:/^\d+$/.test(String(r.dist || '').trim()) ? +r.dist : null};
   const isPlay = r => r.spot && String(r.spot).trim() && r.down !== '';
+  // Their drive summaries ("Punted", "TD", "Fum") sit between a kick and its return, and a timeout can too.
+  // The return belongs to the kick all the same, so look past anything that isn't a play of its own.
+  const after = (i, n = 6) => { for (let j = i + 1; j < rows.length && j <= i + n; j++) if (isPlay(rows[j])) return {r:rows[j], j}; return null; };
+  const used = new Set();                  // rows already taken as part of the play before them
+  // Every row carries the score after it, which settles a try far better than reading their markers.
+  const scoreAt = i => { for (let j = i; j >= 0; j--){ const v = rows[j].scoreV, h = rows[j].scoreH;
+    if (/^\d+$/.test(String(v).trim()) && /^\d+$/.test(String(h).trim())) return {A:+v, H:+h}; } return {A:0, H:0}; };
+  const gained = (i, s) => { const now = scoreAt(i), was = scoreAt(i - 1); return (now[s] || 0) - (was[s] || 0); };
   let q = 1;
 
   for (let i = 0; i < rows.length; i++){
-    const r = rows[i], next = rows[i + 1] || {}, t = String(r.type || '').trim(), s = codeSide(r.team);
+    if (used.has(i)) continue;
+    const r = rows[i], t = String(r.type || '').trim(), s = codeSide(r.team);
+    const nx = after(i), next = (nx && nx.r) || {};
     const ev = String(r.event || '');
-    // A new quarter: the clock stopping is a play of its own here.
-    while (+r.qtr > q){ plays.push({t:'endq'}); want.push(null); q++; }
+    // A new quarter: the clock stopping is a play of its own here. The one that opens overtime has to say who
+    // takes the ball first, or the engine picks for itself and the whole extra period lands on the wrong team.
+    while (+r.qtr > q){
+      const otFirst = q === 4 ? codeSide((rows.find(x => +x.qtr === 5 && isPlay(x)) || {}).team) : null;
+      plays.push({t:'endq', ...(otFirst ? {first:otFirst} : {})}); want.push(null); q++;
+    }
 
     if (t === 'TimeOut'){ if (s){ plays.push({t:'to', side:s}); want.push(null); } continue; }
     // Drive summaries carry no down or spot: the plays themselves say what happened.
@@ -126,7 +150,7 @@ async function turboGame(feed, id){
       const back = next && String(next.type).trim() === 'Kick Return' ? next : null;
       const d = yds != null ? yds : null;
       const p = {t:'ko', ...(k ? {k} : {}), ...(d != null ? {d} : {})};
-      if (back){ const ry = turboYards(back.event); add({...p, res:'ret', ret:turboNum(back.number) || turboNum(back.player), ry:ry || 0}, r, says); i++; }
+      if (back){ const ry = turboYards(back.event); add({...p, res:'ret', ret:turboNum(back.number) || turboNum(back.player), ry:ry || 0}, r, says); used.add(nx.j); }
       else if (/touchback/i.test(ev)) add({...p, res:'tb'}, r, says);
       else add({...p, res:'spot'}, r, says);
       poss = null; continue;
@@ -137,7 +161,7 @@ async function turboGame(feed, id){
       const k = turboNum(r.player) || turboNum(r.number);
       const back = next && String(next.type).trim() === 'Punt Return' ? next : null;
       const p = {t:'punt', ...(k ? {k} : {}), ...(yds != null ? {d:Math.abs(yds)} : {})};
-      if (back){ add({...p, res:'ret', ret:turboNum(back.number), ry:turboYards(back.event) || 0}, r, says); i++; }
+      if (back){ add({...p, res:'ret', ret:turboNum(back.number), ry:turboYards(back.event) || 0}, r, says); used.add(nx.j); }
       else if (/touchback/i.test(ev)) add({...p, res:'tb'}, r, says);
       else if (/out of bounds/i.test(ev)) add({...p, res:'oob'}, r, says);
       else if (/fair catch/i.test(ev)) add({...p, res:'fc', ret:turboNum(next.number)}, r, says);
@@ -153,19 +177,40 @@ async function turboGame(feed, id){
       continue;
     }
 
+    if (t === 'Field Goal'){
+      const k = turboNum(r.player) || turboNum(r.number);
+      const d = turboYards(ev);
+      add({t:'fg', ...(k ? {k} : {}), ...(d != null ? {d:Math.abs(d)} : {}),
+        res:/block/i.test(ev) ? 'blk' : (gained(i, s) >= 3 || /:Good:/i.test(ev)) ? 'good' : 'no'}, r, says);
+      continue;
+    }
+
     if (t === 'Extra Point'){
       const k = turboNum(r.player) || turboNum(r.number);
-      const good = /:Good:/i.test(ev), blocked = /block/i.test(ev);
+      const blocked = /block/i.test(ev), good = gained(i, s) > 0 || /:Good:/i.test(ev);
       add({t:'try', kind:'kick', ...(k ? {k} : {}), res:blocked ? 'blk' : good ? 'good' : 'no'}, r, says);
       continue;
     }
 
+    // ":Fumble/Lost:" on their play row, and the recovery on a Fumble Return row a line or two later.
+    const fumOf = () => {
+      if (!/fumble/i.test(ev)) return null;
+      const hit = rows.slice(i + 1, i + 5).map((x, k) => ({x, j:i + 1 + k}))
+        .find(({x}) => String(x.type).trim() === 'Fumble Return' && !used.has(x.j));
+      if (!hit) return {lost:/lost/i.test(ev)};                       // nobody's recovery row: at least record it
+      used.add(hit.j);
+      const rs = codeSide(hit.x.team), by = turboNum(hit.x.number) || turboNum(hit.x.player);
+      const at = turboAt(hit.x.spot, side), ry = turboYards(hit.x.event) || 0;
+      return {lost:rs !== s, ...(by ? {by} : {}), ...(at ? {at} : {}),
+        ...(turboTD(hit.x.event) ? {td:true} : {ry})};
+    };
     const isTry = isTryRow;
     if (t === 'Rush'){
       const n = turboNum(r.player) || turboNum(r.number);
-      if (isTry){ add({t:'try', kind:'run', ...(n ? {r:n} : {}), res:turboTD(ev) || /:Good:/i.test(ev) ? 'good' : 'no'}, r, says); continue; }
+      if (isTry){ add({t:'try', kind:'run', ...(n ? {r:n} : {}), res:turboGood(ev, gained(i, s))}, r, says); continue; }
       if (yds == null){ skipped.push(ev); continue; }
-      add({t:'run', ...(n ? {r:n} : {}), y:yds}, r, says);
+      const fum = fumOf();
+      add({t:'run', ...(n ? {r:n} : {}), y:yds, ...(fum ? {fum} : {})}, r, says);
       continue;
     }
 
@@ -181,15 +226,17 @@ async function turboGame(feed, id){
           ...(by ? {ib:by} : {})}, r);
         continue;
       }
-      if (isTry){ add({t:'try', kind:'pass', ...(qb ? {qb} : {}), ...(to ? {to} : {}), res:turboTD(ev) || /:Good:/i.test(ev) ? 'good' : 'no'}, r, says); continue; }
+      if (isTry){ add({t:'try', kind:'pass', ...(qb ? {qb} : {}), ...(to ? {to} : {}), res:turboGood(ev, gained(i, s))}, r, says); continue; }
       if (/incomplete/i.test(ev)){ add({t:'pass', ...(qb ? {qb} : {}), ...(to ? {to} : {}), res:'i'}, r, says); continue; }
-      if (/sack/i.test(ev)){ add({t:'pass', ...(qb ? {qb} : {}), res:'s', sy:Math.abs(yds || 0)}, r, says); continue; }
+      if (/sack/i.test(ev)){ const fum = fumOf();
+        add({t:'pass', ...(qb ? {qb} : {}), res:'s', sy:Math.abs(yds || 0), ...(fum ? {fum} : {})}, r, says); continue; }
       if (yds == null){ skipped.push(ev); continue; }
-      add({t:'pass', ...(qb ? {qb} : {}), ...(to ? {to} : {}), res:'c', y:yds}, r, says);
+      const fum = fumOf();
+      add({t:'pass', ...(qb ? {qb} : {}), ...(to ? {to} : {}), res:'c', y:yds, ...(fum ? {fum} : {})}, r, says);
       continue;
     }
 
-    if (t === 'Int Return' || t === 'Fumble Return'){ skipped.push(ev); continue; }
+    if (t === 'Int Return' || t === 'Fumble Return'){ skipped.push(ev); continue; }   // taken with the play they came from
     skipped.push(ev);
   }
   while (q < 4){ plays.push({t:'endq'}); want.push(null); q++; }
@@ -241,7 +288,7 @@ function turboDate(s){
 function turboCheck(feed, game){
   const gi = feed.gameInfo || {}, r = replay(game);
   const last = feed.playbyplay.filter(x => x && /^[1-9]$/.test(String(x.qtr))).slice(-1)[0] || {};
-  const theirs = {A:+last.scoreH || 0, H:+last.scoreV || 0};
+  const theirs = {A:+last.scoreV || 0, H:+last.scoreH || 0};   // V is the visiting side, which is A here
   const ours = r.st.score;
   return {ours, theirs, agree:ours.A === theirs.A && ours.H === theirs.H, teams:[gi.visName, gi.homeName]};
 }
