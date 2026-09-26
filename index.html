@@ -3850,11 +3850,13 @@ function saveSetup(isNew){
   if (!v('s-A-name') || !v('s-H-name')) return toast('Type both schools');
   // A school not on the list is checked against the ones that are ("Did you mean …?") before the game starts.
   if (!schoolsSettled(['s-A-name', 's-H-name'], () => saveSetup(isNew))) return;
+  // The boxes are gone, so a record already on this game is kept as it was.
+  const was = (s, k) => (!isNew && g && g.teams && g.teams[s] && g.teams[s][k]) || '';
   const team = (s, def) => {
     const name = v(`s-${s}-name`) || def;
     return {name, mascot:v(`s-${s}-mascot`), abbr:(v(`s-${s}-abbr`) || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(),
       key:(v(`s-${s}-key`).match(/[A-Za-z]/) || [''])[0].toUpperCase(), color:$(`#s-${s}-color`).value, roster:parseRoster($(`#s-${s}-roster`).value),
-      rec:recValue('s', s, 'rec', src.teams[s].rec), hrec:recValue('s', s, 'hrec', src.teams[s].hrec)};
+      rec:recValue('s', s, 'rec', was(s, 'rec')), hrec:recValue('s', s, 'hrec', was(s, 'hrec'))};
   };
   const kick = $('#s-kick [aria-pressed="true"]');
   // Only the format is saved; its kickoff, touchback, safety and overtime spots come from FORMATS.
