@@ -47,6 +47,18 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.owner == request.auth.uid;
     }
 
+    // A school's roster, shared (2026-09-26). A roster belongs to the school, not to the scorer who
+    // typed it, so anyone signed in can add to one and anyone at all can read it — that is what lets a
+    // second crew's game show names instead of bare numbers. The document is only a roster: no owner,
+    // nothing private. Removing one stays with the admin.
+    match /rosters/{school} {
+      allow read: if true;
+      allow create, update: if signedIn()
+                    && request.resource.data.json is string
+                    && request.resource.data.json.size() < 100000;
+      allow delete: if isAdmin();
+    }
+
     // Anything not matched above is denied by default.
   }
 }

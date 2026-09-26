@@ -3830,7 +3830,6 @@ function dlgSetup(isNew){
       <div class="fld"><label class="eyebrow" for="s-${s}-abbr">Short</label><input class="inp" id="s-${s}-abbr" maxlength="5" value="${esc(src.teams[s].abbr)}" placeholder="${s === 'A' ? 'VIS' : 'HOME'}"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-key">Letter</label><input class="inp" id="s-${s}-key" maxlength="1" autocapitalize="characters" value="${esc(src.teams[s].key || '')}" placeholder="${esc((String(src.teams[s].abbr || (s === 'A' ? 'V' : 'H'))[0] || '').toUpperCase())}" title="The letter you type for this team in shorthand"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-color">Color</label><input type="color" id="s-${s}-color" value="${esc(src.teams[s].color)}"></div></div>
-      <div class="row">${recFields('s', s, src.teams[s])}</div>
       <div class="fld"><label class="eyebrow" for="s-${s}-roster">Roster, optional · one player per line, number then name · home/road numbers: 7/82</label>
       <textarea class="inp" id="s-${s}-roster" rows="4" placeholder="7 Cole Brandt&#10;22 Mason Ortiz">${esc(rosterTxt(s))}</textarea><div class="hint" id="s-${s}-lib"></div>
       <div class="hint" id="s-${s}-shared">${sharedHint(s, src.teams[s].name)}</div></div></div>`;
@@ -3855,7 +3854,7 @@ function saveSetup(isNew){
     const name = v(`s-${s}-name`) || def;
     return {name, mascot:v(`s-${s}-mascot`), abbr:(v(`s-${s}-abbr`) || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(),
       key:(v(`s-${s}-key`).match(/[A-Za-z]/) || [''])[0].toUpperCase(), color:$(`#s-${s}-color`).value, roster:parseRoster($(`#s-${s}-roster`).value),
-      rec:recValue('s', s, 'rec'), hrec:recValue('s', s, 'hrec')};
+      rec:recValue('s', s, 'rec', src.teams[s].rec), hrec:recValue('s', s, 'hrec', src.teams[s].hrec)};
   };
   const kick = $('#s-kick [aria-pressed="true"]');
   // Only the format is saved; its kickoff, touchback, safety and overtime spots come from FORMATS.
@@ -5340,6 +5339,7 @@ function syncTeams(delay = 700){
     const {fsM, fsdb} = sync.api;
     fsM.setDoc(fsM.doc(fsdb, 'pressbox', teamsDocId()), {owner:sync.user.uid, updated:Date.now(), public:false, kind:'teams', json:JSON.stringify(teamLib())})
       .catch(e => { sync.err = friendlySync(e); sync.state = 'error'; renderSync(); });
+    shareRosters();          // the rosters themselves belong to the schools: everyone gets them
   }, delay);
 }
 // Team by team, whichever copy was saved last wins.
@@ -5412,12 +5412,13 @@ document.addEventListener('click', e => {
 document.addEventListener('input', e => {
   const el = e.target; if (!el.id || !/^s-[AH]-name$/.test(el.id)) return;
   const s = el.id[2], t = findTeam(el.value), hint = $(`#s-${s}-lib`);
-  if (!t){ if (hint) hint.textContent = ''; return; }
+  // Nothing saved for this school here — someone else may still have put its roster up.
+  if (!t){ if (hint) hint.textContent = ''; fillSharedRoster(s, el.value); return; }
   $(`#s-${s}-mascot`).value = t.mascot || '';
   $(`#s-${s}-abbr`).value = t.abbr || '';
   $(`#s-${s}-color`).value = t.color || '#1F4E9C';
   const box = $(`#s-${s}-roster`), n = Object.keys(t.roster || {}).length;
-  if (!n) hint.textContent = 'Filled from your saved teams.';
+  if (!n){ hint.textContent = 'Filled from your saved teams.'; fillSharedRoster(s, el.value); }
   else if (!box.value.trim() || box.value === box.dataset.auto){ box.value = box.dataset.auto = rosterToText(t.roster); hint.textContent = `Filled from your saved teams: ${plural2(n, 'player')}.`; }
   else hint.innerHTML = `Saved roster has ${plural2(n, 'player')}. <button type="button" class="linkbtn" data-useroster="${s}">Use it</button>`;
 });
@@ -5525,7 +5526,7 @@ function dlgScore(id){
       ${schoolPicker(`qs-${s}-name`, x ? x.teams[s].name : (pre && pre.side === s ? pre.name : ''), s === 'A' ? 'Visiting school' : 'Home school')}</div>
     <div class="fld qs-pts"><label class="eyebrow" for="qs-${s}-pts">Score</label>
       <input class="inp" id="qs-${s}-pts" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" value="${x ? +x[s] || 0 : ''}" placeholder="0"></div></div>
-    <div class="row qs-rec">${recFields('qs', s, x && x.teams[s])}</div>`;
+`;
   // On a school's page the admin is signed in beside the records, not through the tracker's sync.
   const upThere = !!sync.user || (ui.admin && !!teamRecs.api);
   const note = upThere ? 'Shows on everyone’s scoreboard as soon as you save.'
@@ -5554,7 +5555,7 @@ function saveScore(id){
   // A saved team brings its short name and color; otherwise keep what this score had, or make one up.
   const team = (s, name, was) => { const t = findTeam(name), same = was && was.name === name;
     return {name, abbr:(t && t.abbr) || (same && was.abbr) || shortName(name), color:(t && t.color) || (same && was.color) || '#4A4B4D',
-      rec:recValue('qs', s, 'rec'), hrec:recValue('qs', s, 'hrec')}; };
+      rec:recValue('qs', s, 'rec', was && was.rec), hrec:recValue('qs', s, 'hrec', was && was.hrec)}; };
   const pts = s => { const el = $(`#qs-${s}-pts`); return clamp(parseInt(el.value || el.dataset.was || '0', 10) || 0, 0, 199); };
   const perBtn = $('#qs-per [aria-pressed="true"]'), per = perBtn ? perBtn.dataset.qsPer : '1', c = parseClock($('#qs-clk').value);
   const dv = $('#qs-date').value, date = /^\d{4}-\d\d-\d\d$/.test(dv) ? dv : ymd(new Date());
@@ -5710,13 +5711,10 @@ function recordText(t, s, current, thru, score){
   const where = s === 'A' ? 'Away' : 'Home', ha = hrec ? `${hrec} ${where}` : '';
   return rec || ha ? [rec, ha].filter(Boolean).join(', ') : '';
 }
-// The two record boxes for a team, in Setup (pre "s") or a quick score (pre "qs").
-function recFields(pre, s, t){
-  const where = s === 'A' ? 'Away' : 'Home';
-  return `<div class="fld"><label class="eyebrow" for="${pre}-${s}-rec">Record, optional</label><input class="inp" id="${pre}-${s}-rec" maxlength="9" autocomplete="off" value="${esc(t && t.rec || '')}" placeholder="1-2"></div>
-    <div class="fld"><label class="eyebrow" for="${pre}-${s}-hrec">${where} record</label><input class="inp" id="${pre}-${s}-hrec" maxlength="9" autocomplete="off" value="${esc(t && t.hrec || '')}" placeholder="0-1"></div>`;
-}
-const recValue = (pre, s, k) => { const el = $(`#${pre}-${s}-${k}`); return el ? el.value.trim().slice(0, 9) : ''; };
+// Records used to be typed in here. They are worked out now from the season's own results, so there is
+// nothing to ask for (2026-09-26) — a record already saved on a game is kept, it just can't be edited.
+function recFields(){ return ''; }
+const recValue = (pre, s, k, was) => { const el = $(`#${pre}-${s}-${k}`); return el ? el.value.trim().slice(0, 9) : (was || ''); };
 
 /* ---------- the strip ---------- */
 // What a strip card or a scoreboard row needs from a game or a quick score: status, score, line score, stats.
@@ -11331,6 +11329,75 @@ if (SITE_AV) (function(){
     : q.has('teams') || q.has('team') ? 'teams' : '';
   document.querySelectorAll('.av-btns [data-av]').forEach(a => { const on = a.dataset.av === here; a.classList.toggle('primary', on); if (on) a.setAttribute('aria-current', 'page'); });
 })();
+/* ================================================================
+   Shared rosters.
+
+   A roster belongs to the school, not to the scorer who typed it.
+   Saved teams stay private to each account ("teams-<uid>"), but the
+   roster inside one is copied to a shared book every scorer reads:
+   one document per school in the `rosters` collection, readable by
+   anyone, writable by anyone signed in.
+
+   Two crews who each know half a team end up with the whole team:
+   a write merges into what's already there by jersey number rather
+   than replacing it, and the newer entry wins a number they share.
+   ================================================================ */
+const rosterBook = {got:{}, sent:{}, busy:false};
+
+// Everything this scorer has, published for everyone else. Called after a team is saved.
+function shareRosters(){
+  if (!sync.user || !sync.api) return;
+  Object.values(teamLib()).forEach(t => {
+    if (!t || t.deleted || !t.name) return;
+    const n = Object.keys(t.roster || {}).length; if (!n) return;
+    const key = teamKey(t.name), stamp = `${n}:${t.updated || 0}`;
+    if (rosterBook.sent[key] === stamp) return;          // already up there as it stands
+    rosterBook.sent[key] = stamp;
+    shareOne(key, t).catch(() => { delete rosterBook.sent[key]; });
+  });
+}
+
+// One school. Read what's there, put our numbers over it, write the lot back.
+async function shareOne(key, t){
+  const {fsM, fsdb} = sync.api, ref = fsM.doc(fsdb, 'rosters', key);
+  let had = {}, theirs = {};
+  try {
+    const d = await fsM.getDoc(ref);
+    if (d.exists()){ had = d.data() || {}; try { theirs = JSON.parse(had.json || '{}') || {}; } catch (e) {} }
+  } catch (e) {}
+  const mine = t.roster || {}, merged = {...theirs};
+  // Ours wins a number we both have only if our copy is the newer one.
+  const newer = (t.updated || 0) >= (had.updated || 0);
+  Object.entries(mine).forEach(([k, v]) => { if (newer || !merged[k]) merged[k] = v; });
+  if (JSON.stringify(merged) === JSON.stringify(theirs)) return;   // nothing to add
+  await fsM.setDoc(ref, {school:t.name, by:sync.user.uid, updated:Date.now(),
+    n:Object.keys(merged).length, json:JSON.stringify(merged)});
+}
+
+// The shared roster for a school, or null. Kept once it's been read.
+async function sharedRoster(name){
+  const key = teamKey(name); if (!key) return null;
+  if (key in rosterBook.got) return rosterBook.got[key];
+  const api = sync.api || (typeof viewerApi === 'function' ? await viewerApi().catch(() => null) : null);
+  if (!api) return null;
+  try {
+    const d = await api.fsM.getDoc(api.fsM.doc(api.fsdb, 'rosters', key));
+    const r = d.exists() ? JSON.parse(d.data().json || '{}') : null;
+    return (rosterBook.got[key] = r && Object.keys(r).length ? r : null);
+  } catch (e) { return (rosterBook.got[key] = null); }
+}
+
+// Setup: a school with no roster of its own takes the shared one, the same way a saved team fills it in.
+async function fillSharedRoster(s, name){
+  const box = $(`#s-${s}-roster`), hint = $(`#s-${s}-lib`);
+  if (!box || (box.value.trim() && box.value !== box.dataset.auto)) return;   // typed by hand: leave it alone
+  const r = await sharedRoster(name);
+  if (!r) return;
+  const now = $(`#s-${s}-name`); if (!now || teamKey(now.value) !== teamKey(name)) return;   // they moved on
+  if (box.value.trim() && box.value !== box.dataset.auto) return;
+  box.value = box.dataset.auto = rosterToText(r);
+  if (hint) hint.textContent = `Filled from the shared roster book: ${plural2(Object.keys(r).length, 'player')}.`;
+}
 /* ================================================================
    The address bar follows the page.
 

@@ -102,7 +102,7 @@ function dlgScore(id){
       ${schoolPicker(`qs-${s}-name`, x ? x.teams[s].name : (pre && pre.side === s ? pre.name : ''), s === 'A' ? 'Visiting school' : 'Home school')}</div>
     <div class="fld qs-pts"><label class="eyebrow" for="qs-${s}-pts">Score</label>
       <input class="inp" id="qs-${s}-pts" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" value="${x ? +x[s] || 0 : ''}" placeholder="0"></div></div>
-    <div class="row qs-rec">${recFields('qs', s, x && x.teams[s])}</div>`;
+`;
   // On a school's page the admin is signed in beside the records, not through the tracker's sync.
   const upThere = !!sync.user || (ui.admin && !!teamRecs.api);
   const note = upThere ? 'Shows on everyone’s scoreboard as soon as you save.'
@@ -131,7 +131,7 @@ function saveScore(id){
   // A saved team brings its short name and color; otherwise keep what this score had, or make one up.
   const team = (s, name, was) => { const t = findTeam(name), same = was && was.name === name;
     return {name, abbr:(t && t.abbr) || (same && was.abbr) || shortName(name), color:(t && t.color) || (same && was.color) || '#4A4B4D',
-      rec:recValue('qs', s, 'rec'), hrec:recValue('qs', s, 'hrec')}; };
+      rec:recValue('qs', s, 'rec', was && was.rec), hrec:recValue('qs', s, 'hrec', was && was.hrec)}; };
   const pts = s => { const el = $(`#qs-${s}-pts`); return clamp(parseInt(el.value || el.dataset.was || '0', 10) || 0, 0, 199); };
   const perBtn = $('#qs-per [aria-pressed="true"]'), per = perBtn ? perBtn.dataset.qsPer : '1', c = parseClock($('#qs-clk').value);
   const dv = $('#qs-date').value, date = /^\d{4}-\d\d-\d\d$/.test(dv) ? dv : ymd(new Date());
@@ -287,13 +287,10 @@ function recordText(t, s, current, thru, score){
   const where = s === 'A' ? 'Away' : 'Home', ha = hrec ? `${hrec} ${where}` : '';
   return rec || ha ? [rec, ha].filter(Boolean).join(', ') : '';
 }
-// The two record boxes for a team, in Setup (pre "s") or a quick score (pre "qs").
-function recFields(pre, s, t){
-  const where = s === 'A' ? 'Away' : 'Home';
-  return `<div class="fld"><label class="eyebrow" for="${pre}-${s}-rec">Record, optional</label><input class="inp" id="${pre}-${s}-rec" maxlength="9" autocomplete="off" value="${esc(t && t.rec || '')}" placeholder="1-2"></div>
-    <div class="fld"><label class="eyebrow" for="${pre}-${s}-hrec">${where} record</label><input class="inp" id="${pre}-${s}-hrec" maxlength="9" autocomplete="off" value="${esc(t && t.hrec || '')}" placeholder="0-1"></div>`;
-}
-const recValue = (pre, s, k) => { const el = $(`#${pre}-${s}-${k}`); return el ? el.value.trim().slice(0, 9) : ''; };
+// Records used to be typed in here. They are worked out now from the season's own results, so there is
+// nothing to ask for (2026-09-26) — a record already saved on a game is kept, it just can't be edited.
+function recFields(){ return ''; }
+const recValue = (pre, s, k, was) => { const el = $(`#${pre}-${s}-${k}`); return el ? el.value.trim().slice(0, 9) : (was || ''); };
 
 /* ---------- the strip ---------- */
 // What a strip card or a scoreboard row needs from a game or a quick score: status, score, line score, stats.

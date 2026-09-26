@@ -59,6 +59,7 @@ function syncTeams(delay = 700){
     const {fsM, fsdb} = sync.api;
     fsM.setDoc(fsM.doc(fsdb, 'pressbox', teamsDocId()), {owner:sync.user.uid, updated:Date.now(), public:false, kind:'teams', json:JSON.stringify(teamLib())})
       .catch(e => { sync.err = friendlySync(e); sync.state = 'error'; renderSync(); });
+    shareRosters();          // the rosters themselves belong to the schools: everyone gets them
   }, delay);
 }
 // Team by team, whichever copy was saved last wins.
@@ -131,12 +132,13 @@ document.addEventListener('click', e => {
 document.addEventListener('input', e => {
   const el = e.target; if (!el.id || !/^s-[AH]-name$/.test(el.id)) return;
   const s = el.id[2], t = findTeam(el.value), hint = $(`#s-${s}-lib`);
-  if (!t){ if (hint) hint.textContent = ''; return; }
+  // Nothing saved for this school here — someone else may still have put its roster up.
+  if (!t){ if (hint) hint.textContent = ''; fillSharedRoster(s, el.value); return; }
   $(`#s-${s}-mascot`).value = t.mascot || '';
   $(`#s-${s}-abbr`).value = t.abbr || '';
   $(`#s-${s}-color`).value = t.color || '#1F4E9C';
   const box = $(`#s-${s}-roster`), n = Object.keys(t.roster || {}).length;
-  if (!n) hint.textContent = 'Filled from your saved teams.';
+  if (!n){ hint.textContent = 'Filled from your saved teams.'; fillSharedRoster(s, el.value); }
   else if (!box.value.trim() || box.value === box.dataset.auto){ box.value = box.dataset.auto = rosterToText(t.roster); hint.textContent = `Filled from your saved teams: ${plural2(n, 'player')}.`; }
   else hint.innerHTML = `Saved roster has ${plural2(n, 'player')}. <button type="button" class="linkbtn" data-useroster="${s}">Use it</button>`;
 });

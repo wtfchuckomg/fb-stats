@@ -77,6 +77,7 @@ PARTS_JS = [
     '35-bracket.js',
     '36-turbo.js',    # importing a TurboStats gamecast as real plays    # ?bracket=4A: where the playoff bracket stands, seeded the KSHSAA way
     '37-avhome.js',      # AVCTLstats.com's front page: leaders and the four divisions
+    '39-rosters.js',     # the shared roster book, read by every scorer
     '38-address.js',    # the address bar follows the page
     '7-sample.js',       # the sample game, then boot. Always last.
 ]

@@ -101,7 +101,6 @@ function dlgSetup(isNew){
       <div class="fld"><label class="eyebrow" for="s-${s}-abbr">Short</label><input class="inp" id="s-${s}-abbr" maxlength="5" value="${esc(src.teams[s].abbr)}" placeholder="${s === 'A' ? 'VIS' : 'HOME'}"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-key">Letter</label><input class="inp" id="s-${s}-key" maxlength="1" autocapitalize="characters" value="${esc(src.teams[s].key || '')}" placeholder="${esc((String(src.teams[s].abbr || (s === 'A' ? 'V' : 'H'))[0] || '').toUpperCase())}" title="The letter you type for this team in shorthand"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-color">Color</label><input type="color" id="s-${s}-color" value="${esc(src.teams[s].color)}"></div></div>
-      <div class="row">${recFields('s', s, src.teams[s])}</div>
       <div class="fld"><label class="eyebrow" for="s-${s}-roster">Roster, optional · one player per line, number then name · home/road numbers: 7/82</label>
       <textarea class="inp" id="s-${s}-roster" rows="4" placeholder="7 Cole Brandt&#10;22 Mason Ortiz">${esc(rosterTxt(s))}</textarea><div class="hint" id="s-${s}-lib"></div>
       <div class="hint" id="s-${s}-shared">${sharedHint(s, src.teams[s].name)}</div></div></div>`;
@@ -126,7 +125,7 @@ function saveSetup(isNew){
     const name = v(`s-${s}-name`) || def;
     return {name, mascot:v(`s-${s}-mascot`), abbr:(v(`s-${s}-abbr`) || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(),
       key:(v(`s-${s}-key`).match(/[A-Za-z]/) || [''])[0].toUpperCase(), color:$(`#s-${s}-color`).value, roster:parseRoster($(`#s-${s}-roster`).value),
-      rec:recValue('s', s, 'rec'), hrec:recValue('s', s, 'hrec')};
+      rec:recValue('s', s, 'rec', src.teams[s].rec), hrec:recValue('s', s, 'hrec', src.teams[s].hrec)};
   };
   const kick = $('#s-kick [aria-pressed="true"]');
   // Only the format is saved; its kickoff, touchback, safety and overtime spots come from FORMATS.
