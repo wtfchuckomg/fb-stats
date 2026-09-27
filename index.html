@@ -134,7 +134,7 @@ a.abtn{display:inline-block;text-decoration:none}
 .navlink:hover{border-bottom-color:rgba(255,255,255,.45)}
 .navlink.on{border-bottom-color:var(--red)}
 /* the Butler County menu: a white panel dropping from the bar, notched under the name, like ESPN's league menus */
-.navbar{position:relative;z-index:40}
+.navbar{position:static;z-index:40}
 .navdrop{background:none;border-top:0;border-left:0;border-right:0;padding-left:0;padding-right:0;gap:7px;cursor:pointer}
 .navdrop svg{width:10px;height:6px;transition:transform .15s}
 .navdrop[aria-expanded="true"] svg{transform:rotate(180deg)}
@@ -764,7 +764,7 @@ button.h-btn{cursor:pointer}
 .foreign button.done{background:transparent;color:#8A5300;box-shadow:inset 0 0 0 1px #D8B98A}
 
 /* ---------- game strip ---------- */
-.strip{position:sticky;top:0;z-index:30;background:var(--card);box-shadow:0 1px 0 var(--line),0 2px 6px rgba(18,18,19,.08);overflow:hidden}
+.strip{position:static;z-index:30;background:var(--card);box-shadow:0 1px 0 var(--line),0 2px 6px rgba(18,18,19,.08);overflow:hidden}
 .strip-in{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;padding:12px 16px}
 .st-side{position:relative;display:flex;align-items:center;gap:14px;min-width:0}
 .st-side::before{content:"";position:absolute;top:-40px;bottom:-40px;left:-60px;width:300px;pointer-events:none;
@@ -1356,7 +1356,7 @@ html[data-skin="liquid"] .bcard,html[data-skin="liquid"] .hcard,html[data-skin="
 html[data-skin="liquid"] .navbar,html[data-skin="liquid"] .scores,html[data-skin="liquid"] .navmenu,html[data-skin="liquid"] .gtabs{
   background:var(--lg-glass);border:0;-webkit-backdrop-filter:blur(16px) saturate(190%) brightness(1.06);backdrop-filter:blur(16px) saturate(190%) brightness(1.06);
   box-shadow:inset 0 1px 0 var(--lg-rim-hi),inset 0 -1px 0 var(--lg-rim-lo),inset 0 0 0 .5px var(--lg-rim-lo),var(--lg-float)}
-html[data-skin="liquid"] .navbar{top:8px;margin:10px auto 0;width:min(1180px,calc(100% - 24px));border-radius:999px}
+html[data-skin="liquid"] .navbar{position:static;margin:10px auto 0;width:min(1180px,calc(100% - 24px));border-radius:999px}
 html[data-skin="liquid"] .navmenu{border-radius:18px;background:var(--lg-menu)}   /* read, not looked through: more solid than the bar */
 /* State › Leagues is a long list over busy tables: glass inside the glass bar shows the page through it, so its
    panels take the cards' solid ground. */
@@ -1394,7 +1394,7 @@ html[data-skin="liquid"] .ctbl tbody tr:nth-child(even) td{background:var(--lg-z
    play entry floats at the bottom of the window. Phones keep entry in place, since a bar pinned to the bottom
    of a phone slides under the keyboard. ---------- */
 @media (min-width:761px){
-  html[data-skin="liquid"] body:not(.viewer) #sb{position:sticky;top:72px;z-index:30;margin:10px auto;width:min(1180px,calc(100% - 24px));border-radius:26px;overflow:hidden;
+  html[data-skin="liquid"] body:not(.viewer) #sb{position:static;margin:10px auto;width:min(1180px,calc(100% - 24px));border-radius:26px;overflow:hidden;
     background:var(--lg-glass);-webkit-backdrop-filter:blur(16px) saturate(190%) brightness(1.06);backdrop-filter:blur(16px) saturate(190%) brightness(1.06);
     box-shadow:inset 0 1px 0 var(--lg-rim-hi),inset 0 -1px 0 var(--lg-rim-lo),var(--lg-float)}
 }
