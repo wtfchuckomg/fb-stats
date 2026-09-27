@@ -1261,7 +1261,9 @@
   "city": "",
   "w": 400,
   "h": 196,
-  "aliases": [],
+  "aliases": [
+   "Topeka Highland Park"
+  ],
   "abbr": "HP"
  },
  {
@@ -2673,7 +2675,9 @@
   "city": "",
   "w": 281,
   "h": 400,
-  "aliases": [],
+  "aliases": [
+   "Topeka Seaman"
+  ],
   "abbr": "Seaman"
  },
  {
@@ -3184,13 +3188,15 @@
   "abbr": "TW"
  },
  {
-  "name": "Topeka",
-  "slug": "topeka",
+  "name": "Topeka High",
+  "slug": "topeka-high",
   "file": "Topeka.png",
   "city": "",
   "w": 299,
   "h": 400,
-  "aliases": [],
+  "aliases": [
+   "Topeka"
+  ],
   "abbr": "Topeka"
  },
  {
