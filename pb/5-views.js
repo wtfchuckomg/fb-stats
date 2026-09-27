@@ -463,6 +463,20 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && e.target.id === 'qk'){ e.preventDefault(); return recordQuick(); }
   if (e.key === 'Enter' && e.target.matches && e.target.matches('#pad input.inp')){ e.preventDefault(); record(); }
 });
+// Anything that owns the space bar already: a box being typed in, or a control that space activates —
+// pressing it there would both work the control and move the clock.
+const typingIn = el => !!el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT|BUTTON|A|SUMMARY|OPTION)$/.test(el.tagName));
+// Space starts and stops the clock, so a scorer watching the field can hit it without looking. Only when
+// they aren't typing a play: in the entry box a space is a space. Without preventDefault the page scrolls.
+document.addEventListener('keydown', e => {
+  if (e.key !== ' ' && e.code !== 'Space') return;
+  if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+  if (ui.viewer || ui.dlg || typingIn(e.target)) return;
+  if (!g || !g.clk || !R || !R.st || R.st.final || R.st.q > 4) return;   // no clock to move
+  e.preventDefault();
+  setClock(clockNow(), !g.clk.run);
+  renderBoard();
+});
 // Shorthand keys insert text without pulling focus (and the phone keyboard) away from the entry box.
 document.addEventListener('mousedown', e => { if (e.target.closest && e.target.closest('.qkey')) e.preventDefault(); });
 document.addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('cheat')) ui.cheat = e.target.open; }, true);
