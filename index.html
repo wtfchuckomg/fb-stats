@@ -3200,14 +3200,22 @@ function parseQuick(raw, st){
     if (sp) p.d = Math.max(0, pos(sp) - st.kickFrom);
     else if (after[0] != null && !leadIsRet) p.d = Math.abs(+after[0]);
     const nx = (sp || leadIsRet ? after : after.slice(1)).filter(n => !ydNums.includes(+n));
-    const ryTold = ydNums.find(n => !spots.some(x => x.n === n));   // yards said out loud: "for 15", "15 yards"
+    // Yards said out loud: "for 15", "15 yards". The number already taken as the kick's own distance is not
+    // the return — "kicks off 55 yards returned by 28 for 21" is a 21-yard return, not a 55-yard one.
+    const ydLeft = p.d != null && !sp && !leadIsRet && ydNums.length > 1 ? ydNums.slice(1) : ydNums;
+    const ryTold = ydLeft.find(n => !spots.some(x => x.n === n));
     // "1 caught the kickoff at the 8": with no number after the word, the one before it is the returner.
     const retNo = nx[0] != null ? nx[0] : (caught && before[0] != null ? before[0] : null);
     if (before[0] != null && retNo !== before[0]) p.k = before[0];
     // "ko-C25": no kick details, just where the receiving team's drive starts.
     if (sp && !endSp && !nx.length && !caught && ryTold == null && !has('tb', 'oob', 'onside', 'fc')){ delete p.d; p.bs = sp.side === Rk ? sp.n : FL - sp.n; return flag(p); }
     if (has('tb')) p.res = 'tb';
-    else if (has('oob') && retNo == null && !endSp && ryTold == null) p.res = 'oob';
+    else if (has('oob') && retNo == null && !endSp){
+      // Nobody returned it and nobody's spot is given: it went out of bounds, and any yards said are how far
+      // it was kicked. "15 kicks off 45 yards out of bounds" used to read as a 45-yard return.
+      p.res = 'oob';
+      if (p.d == null && ryTold != null) p.d = Math.abs(+ryTold);
+    }
     else if (has('onside')){
       p.res = 'onside';
       // Who fell on it: "rec 44", "recovered by R44". A number on its own after an onside kick is the recoverer,
