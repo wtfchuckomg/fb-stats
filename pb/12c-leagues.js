@@ -1,8 +1,10 @@
 /* ================================================================
-   Leagues — every 11-man league with a 4A, 5A or 6A school in it,
-   under State › Leagues. Each has three pages: its standings (the
-   main one), player stats and team stats, the same pages the AVCTL
-   has. A few 2A and 3A schools come along with their leagues.
+   Leagues — every league with a 4A, 5A or 6A school in it, and the
+   leagues of the four Butler County schools that aren't in the AVCTL
+   (Bluestem, Douglass, Remington, and Flinthills, whose league is
+   8-man), under State › Leagues. Each has three pages: its standings
+   (the main one), player stats and team stats, the same pages the
+   AVCTL has. Smaller schools come along with their leagues.
    The alignment is KPreps' (its league pages, 2026); the names are
    this site's, so logos and records match. .github/kp/leagues.py
    prints this table again if a league realigns. The AVCTL keeps its
@@ -14,14 +16,18 @@
    ================================================================ */
 const LEAGUES = [
   {slug:'centennial-league', name:"Centennial League", teams:["Emporia", "Hayden", "Junction City", "Manhattan", "Topeka High", "Washburn Rural"]},
+  {slug:'central-plains-league', name:"Central Plains League", teams:["Belle Plaine", "Chaparral", "Cheney", "Conway Springs", "Douglass", "Garden Plain", "Kingman", "Medicine Lodge", "Wichita Trinity"]},
   {slug:'eastern-kansas-league', name:"Eastern Kansas League", teams:["Bishop Miege", "Blue Valley", "Blue Valley North", "Blue Valley Northwest", "Blue Valley Southwest", "Blue Valley West", "St James", "St Thomas Aquinas"]},
   {slug:'frontier-league', name:"Frontier League", teams:["Baldwin", "Bonner Springs", "Eudora", "Louisburg", "Ottawa", "Paola", "Tonganoxie"]},
   {slug:'great-west-activities-conference', name:"Great West Activities Conference", teams:["Cimarron", "Colby", "Goodland", "Holcomb", "Hugoton", "Scott City", "Ulysses"]},
   {slug:'greater-wichita-athletic-league', name:"Greater Wichita Athletic League", teams:["Bishop Carroll", "Kapaun Mt Carmel", "North", "Southeast (Wichita)", "Wichita East", "Wichita Heights", "Wichita Northwest", "Wichita South", "Wichita West"]},
+  {slug:'heart-of-america', name:"Heart of America", teams:["Hutch Trinity", "Inman", "Marion", "Moundridge", "Remington", "Sedgwick", "Sterling"]},
   {slug:'meadowlark-conference', name:"Meadowlark Conference", teams:["Atchison", "Harmon", "Highland Park", "KC Sumner", "Schlagle", "Washington", "Wyandotte"]},
   {slug:'north-central-kansas-league', name:"North Central Kansas League", teams:["Abilene", "Chapman", "Clay Center", "Concordia", "Marysville", "Rock Creek", "Wamego"]},
+  {slug:'south-central-border-league', name:"South Central Border League", teams:["Cedar Vale-Dexter", "Central Burden", "Flinthills", "Oxford", "Sedan", "South Sumner", "Udall", "West Elk"]},
   {slug:'southeast-kansas-league', name:"Southeast Kansas League", teams:["Chanute", "Field Kindley", "Fort Scott", "Independence", "Labette County"]},
   {slug:'sunflower-league', name:"Sunflower League", teams:["Gardner-Edgerton", "Lawrence", "Lawrence Free State", "Mill Valley", "Olathe East", "Olathe North", "Olathe Northwest", "Olathe South", "Olathe West", "Shawnee Mission East", "Shawnee Mission North", "Shawnee Mission Northwest", "Shawnee Mission South", "Shawnee Mission West"]},
+  {slug:'tri-valley-league', name:"Tri-Valley League", teams:["Bluestem", "Caney Valley", "Cherryvale", "Eureka", "Fredonia", "Humboldt", "Neodesha"]},
   {slug:'united-kansas-conference', name:"United Kansas Conference", teams:["Basehor-Linwood", "De Soto", "Lansing", "Leavenworth", "Piper", "Seaman", "Shawnee Heights", "Spring Hill", "Topeka West", "Turner"]},
   {slug:'western-athletic-conference', name:"Western Athletic Conference", teams:["Dodge City", "Garden City", "Great Bend", "Hays", "Liberal"]},
 ];
