@@ -1528,7 +1528,7 @@ if (SITE_AV) (function(){
    editing or deleting any play corrects everything after it.
    Positions are yards from the possessing team's own goal line.
    ================================================================ */
-const NFHS = {kickFrom:40, safetyKickFrom:20, touchback:20, tryFrom:3, oobFreeKick:25, fgExtra:17};
+const NFHS = {kickFrom:40, safetyKickFrom:20, touchback:20, tryFrom:3, oobFreeKick:25, oobKickPen:5, fgExtra:17};
 const other = s => s === 'H' ? 'A' : 'H';
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const ord = n => n + (['th','st','nd','rd'][n] || 'th');
@@ -2026,6 +2026,9 @@ function replay(g, upto = g.plays.length){
 
   function kickoff(p){
     const K = st.poss, R = other(K), kf = st.kickFrom, k = pl(K, p.k), tk = S.team[K];
+    // A free kick out of bounds is a foul on the kicking team, and it goes in its penalty total whichever
+    // way the receiving team takes the ball — 25 yards from the kicking line, or where it went out.
+    const oobFoul = () => { tk.pen++; tk.penY += NFHS.oobKickPen; tags.push(['flag', 'Flag']); };
     // A kickoff typed with no distance ("ko") takes it from the spot typed next.
     const unknown = p.d == null && !['tb', 'oob', 'onside'].includes(p.res);
     let d = +p.d || 0;
@@ -2034,7 +2037,11 @@ function replay(g, upto = g.plays.length){
     if (!unknown && p.res !== 'oob'){ bump(k, 'koy', d); tk.koY += d; }
     const what = st.kickKind === 'free' ? 'free kick' : 'kickoff';
     let txt = unknown || (p.res === 'oob' && !p.d) ? `${nm(K, p.k)} ${what}` : `${nm(K, p.k)} ${what} ${plural(d, 'yard')}`;
-    if (p.bs != null){ newSeries(R, clamp(+p.bs, 1, (FL - 1))); leg('kick', K, kf, FL - st.spot); return `${nm(K, p.k)} ${what}. ${ab(R)} ball at the ${yl(R, st.spot)}.`; }
+    if (p.bs != null){
+      if (p.res === 'oob') oobFoul();
+      newSeries(R, clamp(+p.bs, 1, (FL - 1))); leg('kick', K, kf, FL - st.spot);
+      return `${nm(K, p.k)} ${what}${p.res === 'oob' ? ', out of bounds (5-yard penalty)' : ''}. ${ab(R)} ball at the ${yl(R, st.spot)}.`;
+    }
     if (unknown){ newSeries(R, FL - kf); return txt + '.'; }
     if (p.res === 'onside') leg('run', K, kf, kf + d);
     else if (p.res === 'tb') leg('kick', K, kf, Math.max(kf + d, FL + 5));
@@ -2046,7 +2053,8 @@ function replay(g, upto = g.plays.length){
         return txt + (at <= 0 ? ', into the end zone. Touchback.' : ` to the ${yl(R, s)}.`);
       }
       case 'tb': bump(k, 'ktb'); tk.koTB++; newSeries(R, RU.tb); return txt + `, touchback. ${ab(R)} ball at the ${yl(R, RU.tb)}.`;
-      case 'oob': { const s = FL - (kf + NFHS.oobFreeKick); newSeries(R, s); return txt + `, out of bounds. ${ab(R)} ball at the ${yl(R, s)}.`; }
+      case 'oob': { oobFoul(); const s = FL - (kf + NFHS.oobFreeKick); newSeries(R, s);
+        return txt + `, out of bounds (5-yard penalty). ${ab(R)} ball at the ${yl(R, s)}.`; }
       case 'onside': { const s = kf + d; bump(pl(K, p.ret), 'fr'); newSeries(K, s); tags.push(['to', 'Onside']);
         return txt + `, onside, recovered by ${p.ret ? nm(K, p.ret) : ab(K)} at the ${yl(K, s)}.`; }
       case 'muff': { const s = kf + d; if (p.ret != null) bump(pl(K, p.ret), 'fr'); newSeries(K, s); tags.push(['to', 'Muff']);
