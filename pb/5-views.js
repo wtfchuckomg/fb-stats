@@ -52,6 +52,7 @@ function summaryText(){
   });
   out += '\nPLAY-BY-PLAY\n'; let q = null;
   R.log.forEach(e => {
+    if (e.t === 'set') return;   // where the ball is, not a play
     if (e.q !== q){ out += `\n${qName(e.q).toUpperCase()}\n`; q = e.q; }
     out += `${e.clk != null ? lp(mmss(e.clk), 5) : '     '}  ${e.sit} — ${e.wiped ? `[${e.wiped}] ` : ''}${e.text}\n`;
   });

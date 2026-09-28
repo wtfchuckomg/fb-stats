@@ -117,18 +117,23 @@ function playsList(oldFirst = false){
     const end = d.open || d.i1 == null ? R.log.length - 1 : d.i1;
     for (let i = d.i0; i <= end; i++) driveOf[i] = d;
   });
+  // "WIN ball at WIN 23" says where the ball is, it isn't a play: only the scorer sees those lines, to fix one.
+  // Play numbers count the lines that are shown.
+  const shown = e => !(ui.viewer && e.t === 'set'), num = [];
+  let c = 0; R.log.forEach(e => { if (shown(e)) num[e.i] = ++c; });
   let h = '', lastQ = null, lastD = null;
   const n = R.log.length;
   for (let j = 0; j < n; j++){
     const k = oldFirst ? j : n - 1 - j;
     const e = R.log[k], open = ui.open === e.i, d = driveOf[e.i] || null;
+    if (!shown(e)) continue;
     if (e.q !== lastQ){ h += `<div class="qhd">${qName(e.q)}</div>`; lastQ = e.q; lastD = null; }
     if (d && d !== lastD) h += driveHead(d);
     lastD = d;
     // Viewers get outcomes only: no typed shorthand, no bookkeeping tags.
     const tags = ui.viewer ? e.tags.filter(([, t]) => t !== 'Spot') : e.tags;
     h += `<button type="button" class="pl ${open ? 'open' : ''}" data-row="${e.i}">
-      <div><div class="pl-clk">${e.clk != null ? mmss(e.clk) : '—'}</div><span class="pl-no">Play ${e.i + 1}</span></div>
+      <div><div class="pl-clk">${e.clk != null ? mmss(e.clk) : '—'}</div><span class="pl-no">Play ${num[e.i]}</span></div>
       <div><div class="pl-sit">${esc(e.sit)}${e.src && !ui.viewer ? ` <code class="qsrc">${esc(e.src)}</code>` : ''}</div>
       <div class="pl-txt">${e.wiped ? `<s>${esc(e.wiped)}</s> ` : ''}${esc(e.text)}${tags.length ? `<span class="tags">${tagHtml(tags)}</span>` : ''}</div></div></button>`;
     if (open){
