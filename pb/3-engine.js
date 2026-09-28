@@ -112,6 +112,16 @@ function replay(g, upto = g.plays.length){
     worn:{A:{}, H:{}}};
   let S = {team:{A:zeros(TEAM_KEYS), H:zeros(TEAM_KEYS)}, pl:{A:{}, H:{}}};
   let scoring = [], drives = [], clk = null, tags = [], trace = [], curI = 0;   // curI: the play being replayed
+  // A spot foul by the team carrying the ball, behind where the run ended, ends the run at the spot of the foul
+  // (NFHS Statisticians' Manual, Penalties, Provision 1): the runner is credited to there and no farther, and
+  // whether the ball reaches the line to gain is settled after the flag is marked off, not at the spot.
+  // flagNow is this play's flag while it's replayed; cut is set once a run has been ended at the foul.
+  let flagNow = null, cut = null;
+  const foulCut = (side, from, to) => {
+    const f = flagNow;
+    if (!f || f.side !== side || !(f.foul > from && f.foul < to)) return to;
+    cut = cut || {}; return f.foul;
+  };
   const log = [];
 
   const ab = s => T[s].abbr || s;
@@ -234,6 +244,7 @@ function replay(g, upto = g.plays.length){
   // Offense keeps the ball and reaches `end`: touchdown, safety, first down, next down or turnover on downs.
   function progress(end, fdKind, tdDesc, scorer){
     const O = st.poss, D = other(O), t = S.team[O];
+    if (cut){ cut.kind = fdKind; st.spot = end; return ''; }
     if (end >= FL){ if (fdKind){ t.fd++; t['fd' + fdKind]++; } return touchdown(O, tdDesc, scorer); }
     if (end <= 0) return safety(D);
     if (end >= st.ltg){
@@ -248,7 +259,8 @@ function replay(g, upto = g.plays.length){
     st.down++; st.spot = end; return '';
   }
   function conversion(end){
-    const t = S.team[st.poss], made = end >= st.ltg;
+    const t = S.team[st.poss], made = !cut && end >= st.ltg;
+    if (cut) cut.conv = st.down;
     if (st.down === 3){ t.d3a++; if (made) t.d3m++; }
     if (st.down === 4){ t.d4a++; if (made) t.d4m++; }
   }
@@ -353,7 +365,10 @@ function replay(g, upto = g.plays.length){
     // still leave the ball past it, and the offence keeps the first down it had already run to.
     const auto = !offFoul && pen.a;
     if (auto || st.spot >= st.ltg){
-      S.team[st.poss].fd++; S.team[st.poss].fdX++;
+      const kind = !auto && cut && cut.kind ? cut.kind : 'X';
+      S.team[st.poss].fd++; S.team[st.poss]['fd' + kind]++;
+      if (cut && cut.conv === 3) S.team[st.poss].d3m++;
+      if (cut && cut.conv === 4) S.team[st.poss].d4m++;
       newSeries(st.poss, st.spot); tags.push(['fd', '1st down']);
       return txt + `${auto ? ', automatic first down' : ''}. First down.`;
     }
@@ -375,7 +390,7 @@ function replay(g, upto = g.plays.length){
     // A lateral is one play with two carriers: each is credited with the yards he made, and the carry
     // belongs to the man who started with the ball (the statisticians' rule).
     const lat = p.lat && p.lat.r != null ? {r:String(p.lat.r), y:+p.lat.y || 0} : null;
-    const first = clamp(+p.y || 0, -st.spot, FL - st.spot);
+    const first = lat ? clamp(+p.y || 0, -st.spot, FL - st.spot) : foulCut(O, st.spot, st.spot + clamp(+p.y || 0, -st.spot, FL - st.spot)) - st.spot;
     const g = lat ? clamp(first + lat.y, -st.spot, FL - st.spot) : first, end = st.spot + g, td = end >= FL;
     const r2 = lat ? pl(O, lat.r) : null, gained2 = g - first;
     leg('run', O, st.spot, end);
@@ -438,7 +453,8 @@ function replay(g, upto = g.plays.length){
     if (p.res === 'x'){
       conversion(st.spot);
       t.passInt++; bump(qb, 'pint');
-      const dp = pl(D, p.ib), at = clamp(st.spot + (+p.at || 0), 0, (FL + 10)), ry = st.ot ? 0 : (+p.ry || 0);
+      const dp = pl(D, p.ib), at = clamp(st.spot + (+p.at || 0), 0, (FL + 10)), ry0 = st.ot ? 0 : (+p.ry || 0);
+      const ry = foulCut(D, FL - at, FL - at + ry0) - (FL - at);
       leg('pass', O, st.spot, at);
       bump(dp, 'dint'); bump(dp, 'dintY', ry); S.team[D].intN++; S.team[D].intY += ry;
       tags.push(['to', 'INT']);
@@ -464,7 +480,7 @@ function replay(g, upto = g.plays.length){
       newSeries(D, fin); return txt + (ry ? ` to the ${yl(D, fin)}.` : '.');
     }
     // complete
-    const rec = pl(O, p.to), g = clamp(+p.y || 0, -st.spot, FL - st.spot), end = st.spot + g, td = end >= FL;
+    const rec = pl(O, p.to), g = foulCut(O, st.spot, st.spot + clamp(+p.y || 0, -st.spot, FL - st.spot)) - st.spot, end = st.spot + g, td = end >= FL;
     leg('pass', O, st.spot, end);
     t.passC++; t.passY += g; bump(qb, 'pc'); bump(qb, 'py', g); long(qb, 'plg', g);
     bump(rec, 're'); bump(rec, 'rey', g); long(rec, 'relg', g);
@@ -482,7 +498,7 @@ function replay(g, upto = g.plays.length){
 
   // A kicked ball the receiving team R fields at `at` (R frame) and returns.
   function kickReturn(R, kind, p, at){
-    const K = other(R), ret = pl(R, p.ret), ry = +p.ry || 0, fin = at + ry;
+    const K = other(R), ret = pl(R, p.ret), ry = foulCut(R, at, at + (+p.ry || 0)) - at, fin = at + ry;
     if (ry) leg('run', R, at, fin);
     const k1 = kind === 'kr' ? 'kr' : 'pr';
     bump(ret, k1); bump(ret, k1 + 'y', ry); long(ret, k1 + 'lg', ry);
@@ -719,7 +735,7 @@ function replay(g, upto = g.plays.length){
     return t;
   }
   function apply(p){
-    clk = p.clk ?? null; tags = []; trace = [];
+    clk = p.clk ?? null; tags = []; trace = []; flagNow = null; cut = null;
     const pen = p.pen && PLAY[p.t] ? p.pen : null;
     if (pen && (pen.enf === 'prev' || pen.enf === 'off')){
       const wiped = dry(p);
@@ -727,6 +743,7 @@ function replay(g, upto = g.plays.length){
       return {text:'No play. ' + penalize(pen, false), wiped};
     }
     st.fresh = false;
+    flagNow = pen && pen.enf === 'end' && pen.foul != null && !p.fum && !p.lat ? pen : null;
     const beforePoss = st.poss, beforeDown = st.down, beforeLtg = st.ltg;
     // A team that fouls on the play it scores on doesn't keep the score: holding downfield brings the touchdown
     // back. The game as it stood before the play is kept so it can be put back if that happens — cloned in one
