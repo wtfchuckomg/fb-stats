@@ -116,7 +116,9 @@
   "city": "",
   "w": 400,
   "h": 400,
-  "aliases": [],
+  "aliases": [
+   "Argonia-Attica"
+  ],
   "abbr": "AA"
  },
  {
@@ -2982,7 +2984,9 @@
   "city": "",
   "w": 400,
   "h": 271,
-  "aliases": [],
+  "aliases": [
+   "Beloit St. Johns-Tipton"
+  ],
   "abbr": "SJ"
  },
  {
