@@ -91,6 +91,7 @@ function markFor(t, size){
   const fs = Math.max(8, Math.round(size * (txt.length > 3 ? .28 : .36)));
   const mono = hide => `<span class="tmono" aria-hidden="true"${hide ? ' hidden' : ''} style="--tc:${esc(t.color)};width:${size}px;height:${size}px;font-size:${fs}px">${esc(txt)}</span>`;
   if (!url) return mono(false);
-  return `<img class="tlogo" src="${esc(url)}" data-alts="${esc(alts.join('|'))}" alt="" width="${size}" height="${size}" style="width:${size}px;height:${size}px"`
+  // Only when it's near the screen: the week strip carries every game in the state (300+ logos) and shows five.
+  return `<img class="tlogo" loading="lazy" decoding="async" src="${esc(url)}" data-alts="${esc(alts.join('|'))}" alt="" width="${size}" height="${size}" style="width:${size}px;height:${size}px"`
     + ` onerror="logoMiss(this)">${mono(true)}`;
 }

@@ -333,7 +333,7 @@ function showSchoolSug(el){
   // A name we don't have that looks like one we do: say so while they're still typing, before they add anything.
   const close = q.length >= 3 && !known ? similarSchools(q, 3) : [];
   const list = [...close.map(name => ({name, close:true})), ...schoolMatches(q).filter(m => !close.includes(m.name))].slice(0, 400);
-  const row = (m, i) => `<div class="sch-opt${m.close ? ' close' : ''}" role="option" id="${esc(el.id)}-o${i}" data-pick="${esc(m.name)}" aria-selected="false">${schoolMark(m.name, 24).replace('<img ', '<img loading="lazy" ')}
+  const row = (m, i) => `<div class="sch-opt${m.close ? ' close' : ''}" role="option" id="${esc(el.id)}-o${i}" data-pick="${esc(m.name)}" aria-selected="false">${schoolMark(m.name, 24)}
     <span class="sch-opt-nm">${esc(m.name)}</span>${m.close ? '<span class="sch-opt-note">Close match</span>' : m.also ? `<span class="sch-opt-note">${esc(m.also)}</span>` : mine.has(logoSlug(m.name)) ? '<span class="sch-opt-note">Added by you</span>' : ''}</div>`;
   let html = close.length ? `<div class="sch-head" role="presentation">Did you mean${close.length === 1 ? '' : ' one of these'}?</div>` : '';
   html += list.map(row).join('');
