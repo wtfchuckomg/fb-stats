@@ -5794,11 +5794,17 @@ function summary(x){
   // lands, without waiting on the database. It draws again, with the line score and the leaders, when the live
   // copy arrives a moment later. A quick score with its own score in it is the real thing, not a snapshot:
   // some documents were saved with a stale snapshot inside them, and the score they carry is the one that counts.
-  if (x.snap && !(x.kind === 'score' && (x.A != null || x.H != null)))
+  if (x.snap && !(x.kind === 'score' && (x.A != null || x.H != null))){
+    // A finished game in the stats file has its line score and every player's numbers there already, in the
+    // shape the card reads, so it doesn't wait on the database for them either.
+    const n = x.snap.fin && typeof fileNumbers === 'function' ? fileNumbers(x.id) : null;
+    const pl = s => Object.fromEntries(n[s].pl.map(p => [p.name, {...p, n:p.name}]));
     return {quick:x.kind === 'score', snap:true, fin:!!x.snap.fin, live:!!x.snap.live,
     pre:!x.snap.fin && !x.snap.live, ff:false, q:x.snap.q || 0, score:x.snap.score || {A:0, H:0},
     status:x.snap.status || (x.snap.fin ? 'Final' : x.snap.live ? 'Live' : dayShort(gameDay(x))),
-    poss:null, lines:null, S:null, men:rulesOf(x).men};
+    poss:null, men:rulesOf(x).men,
+    ...(n ? {lines:{A:n.A.lines, H:n.H.lines}, qPlayed:4, S:{pl:{A:pl('A'), H:pl('H')}}} : {lines:null, S:null})};
+  }
   // A gamecast nobody ever kept, with the final filled in from KPreps, reads like a score: there are no plays
   // to replay, and without this it would sit at "Pregame" for good with the result already in hand.
   if (x.kind === 'score' || (x.kp && !hasStats(x))){
@@ -6147,7 +6153,7 @@ async function startScoreboard(){
   document.title = `${SITE_AV ? '' : boardName() + ' '}Scoreboard · ${SITE_TITLE}`;
   const want = new URLSearchParams(location.search).get(boardParam()) || '';
   ui.week = /^\d{4}-\d\d-\d\d$/.test(want) ? weekKey(fromYmd(want).getTime()) : boardDefaultWeek();
-  loadLogos(); loadFiles(); renderScoreboard();
+  loadLogos(); loadFiles(); loadStatsFile(); renderScoreboard();
   // The admin's own devices (the Game Tracker marks them at sign-in) sign in here too, for the Hide buttons.
   let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
   try {
@@ -6945,7 +6951,7 @@ async function startCounty(){
   if (GROUP.includes(pickTeam) || (STATE_STATS && pickTeam)) county.team = pickTeam;
   const pickSeason = +new URLSearchParams(location.search).get('season');   // &season=2025
   if (pickSeason) county.season = pickSeason;
-  loadLogos(); renderCounty();
+  loadLogos(); loadStatsFile(); renderCounty();
   try {
     // The admin's own devices (the Game Tracker marks them at sign-in) sign in here too, to set the minimums.
     let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
@@ -6970,16 +6976,28 @@ const statsGame = e => ({id:e.id, date:e.date || '', wk:e.wk, updated:e.updated 
 
 // The season's numbers come from stats.json — worked out once instead of in every visitor's browser — and
 // anything saved since that file was written comes live on top, so a box score pasted a minute ago is in.
+// The file is asked for the moment a page starts (loadStatsFile), not after the database library has loaded:
+// that library takes a second or more on a phone, and the file needs nothing from it.
+let statsFile = null;
+function loadStatsFile(){
+  return statsFile || (statsFile = fetch(DATA + '/stats.json', {cache:'no-cache'})
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(d => {
+      if (!d || !Array.isArray(d.games) || !d.games.length) throw new Error('empty');
+      if (!county.games) county.games = d.games.map(statsGame);   // live copies that beat the file stay
+      county.err = ''; statsArrived(); return d.built || 0;
+    })
+    .catch(() => 0));      // no file: ask for every game, the way this used to work
+}
+// A finished game's numbers from the stats file, by id: the board draws its line score and leaders from these
+// before the database answers.
+function fileNumbers(id){
+  const x = (county.games || []).find(y => y.id === id);
+  return x && x.numbers ? x.numbers : null;
+}
 async function loadStats(api){
   const {fsM, fsdb} = api;
-  let built = 0;
-  try {
-    const r = await fetch(DATA + '/stats.json', {cache:'no-cache'});
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    if (!d || !Array.isArray(d.games) || !d.games.length) throw new Error('empty');
-    county.games = d.games.map(statsGame); built = d.built || 0; county.err = ''; statsArrived();
-  } catch (e) { built = 0; }      // no file: ask for every game, the way this used to work
+  const built = await loadStatsFile();
   const col = fsM.collection(fsdb, 'pressbox'), pub = fsM.where('public', '==', true);
   listenStats(fsM, built ? fsM.query(col, pub, fsM.where('updated', '>', built)) : fsM.query(col, pub), () => {
     // Refused (the public + updated index isn't there yet): read every game instead, so nothing is stale.
@@ -10278,7 +10296,7 @@ const shortPlayer = n => { const w = playerName(n).split(/\s+/); return w.length
 async function startPreview(id){
   ui.viewer = true; ui.preview = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
-  loadLogos(); loadRatings(); renderPreview();
+  loadLogos(); loadRatings(); loadStatsFile(); renderPreview();
   try {
     const api = await viewerApi();
     scoresReady({fsM:api.fsM, fsdb:api.fsdb});   // the scores strip, every shared game and the records
@@ -10679,7 +10697,7 @@ async function startPlayerPage(){
   $('#board').hidden = false;
   ppage.name = (PAGE_Q.get('player') || '').trim();
   ppage.team = (PAGE_Q.get('team') || '').trim();
-  loadLogos();
+  loadLogos(); loadStatsFile();
   renderPlayer();
   shareAddress();
   try {
@@ -11353,7 +11371,7 @@ async function startAvHome(){
   ui.viewer = true; ui.avhome = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
   document.title = SITE_NAME;
-  loadLogos(); loadFiles(); renderAvHome();
+  loadLogos(); loadFiles(); loadStatsFile(); renderAvHome();
   try {
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
     const [appM, fsM] = await Promise.all([import(base + 'app.js'), import(base + 'firestore.js')]);

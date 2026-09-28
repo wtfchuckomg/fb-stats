@@ -18,7 +18,7 @@ async function startAvHome(){
   ui.viewer = true; ui.avhome = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
   document.title = SITE_NAME;
-  loadLogos(); loadFiles(); renderAvHome();
+  loadLogos(); loadFiles(); loadStatsFile(); renderAvHome();
   try {
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
     const [appM, fsM] = await Promise.all([import(base + 'app.js'), import(base + 'firestore.js')]);

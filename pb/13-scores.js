@@ -299,11 +299,17 @@ function summary(x){
   // lands, without waiting on the database. It draws again, with the line score and the leaders, when the live
   // copy arrives a moment later. A quick score with its own score in it is the real thing, not a snapshot:
   // some documents were saved with a stale snapshot inside them, and the score they carry is the one that counts.
-  if (x.snap && !(x.kind === 'score' && (x.A != null || x.H != null)))
+  if (x.snap && !(x.kind === 'score' && (x.A != null || x.H != null))){
+    // A finished game in the stats file has its line score and every player's numbers there already, in the
+    // shape the card reads, so it doesn't wait on the database for them either.
+    const n = x.snap.fin && typeof fileNumbers === 'function' ? fileNumbers(x.id) : null;
+    const pl = s => Object.fromEntries(n[s].pl.map(p => [p.name, {...p, n:p.name}]));
     return {quick:x.kind === 'score', snap:true, fin:!!x.snap.fin, live:!!x.snap.live,
     pre:!x.snap.fin && !x.snap.live, ff:false, q:x.snap.q || 0, score:x.snap.score || {A:0, H:0},
     status:x.snap.status || (x.snap.fin ? 'Final' : x.snap.live ? 'Live' : dayShort(gameDay(x))),
-    poss:null, lines:null, S:null, men:rulesOf(x).men};
+    poss:null, men:rulesOf(x).men,
+    ...(n ? {lines:{A:n.A.lines, H:n.H.lines}, qPlayed:4, S:{pl:{A:pl('A'), H:pl('H')}}} : {lines:null, S:null})};
+  }
   // A gamecast nobody ever kept, with the final filled in from KPreps, reads like a score: there are no plays
   // to replay, and without this it would sit at "Pregame" for good with the result already in hand.
   if (x.kind === 'score' || (x.kp && !hasStats(x))){

@@ -38,7 +38,7 @@ async function startScoreboard(){
   document.title = `${SITE_AV ? '' : boardName() + ' '}Scoreboard · ${SITE_TITLE}`;
   const want = new URLSearchParams(location.search).get(boardParam()) || '';
   ui.week = /^\d{4}-\d\d-\d\d$/.test(want) ? weekKey(fromYmd(want).getTime()) : boardDefaultWeek();
-  loadLogos(); loadFiles(); renderScoreboard();
+  loadLogos(); loadFiles(); loadStatsFile(); renderScoreboard();
   // The admin's own devices (the Game Tracker marks them at sign-in) sign in here too, for the Hide buttons.
   let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
   try {

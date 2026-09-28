@@ -36,7 +36,7 @@ async function startCounty(){
   if (GROUP.includes(pickTeam) || (STATE_STATS && pickTeam)) county.team = pickTeam;
   const pickSeason = +new URLSearchParams(location.search).get('season');   // &season=2025
   if (pickSeason) county.season = pickSeason;
-  loadLogos(); renderCounty();
+  loadLogos(); loadStatsFile(); renderCounty();
   try {
     // The admin's own devices (the Game Tracker marks them at sign-in) sign in here too, to set the minimums.
     let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
@@ -61,16 +61,28 @@ const statsGame = e => ({id:e.id, date:e.date || '', wk:e.wk, updated:e.updated 
 
 // The season's numbers come from stats.json — worked out once instead of in every visitor's browser — and
 // anything saved since that file was written comes live on top, so a box score pasted a minute ago is in.
+// The file is asked for the moment a page starts (loadStatsFile), not after the database library has loaded:
+// that library takes a second or more on a phone, and the file needs nothing from it.
+let statsFile = null;
+function loadStatsFile(){
+  return statsFile || (statsFile = fetch(DATA + '/stats.json', {cache:'no-cache'})
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(d => {
+      if (!d || !Array.isArray(d.games) || !d.games.length) throw new Error('empty');
+      if (!county.games) county.games = d.games.map(statsGame);   // live copies that beat the file stay
+      county.err = ''; statsArrived(); return d.built || 0;
+    })
+    .catch(() => 0));      // no file: ask for every game, the way this used to work
+}
+// A finished game's numbers from the stats file, by id: the board draws its line score and leaders from these
+// before the database answers.
+function fileNumbers(id){
+  const x = (county.games || []).find(y => y.id === id);
+  return x && x.numbers ? x.numbers : null;
+}
 async function loadStats(api){
   const {fsM, fsdb} = api;
-  let built = 0;
-  try {
-    const r = await fetch(DATA + '/stats.json', {cache:'no-cache'});
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    if (!d || !Array.isArray(d.games) || !d.games.length) throw new Error('empty');
-    county.games = d.games.map(statsGame); built = d.built || 0; county.err = ''; statsArrived();
-  } catch (e) { built = 0; }      // no file: ask for every game, the way this used to work
+  const built = await loadStatsFile();
   const col = fsM.collection(fsdb, 'pressbox'), pub = fsM.where('public', '==', true);
   listenStats(fsM, built ? fsM.query(col, pub, fsM.where('updated', '>', built)) : fsM.query(col, pub), () => {
     // Refused (the public + updated index isn't there yet): read every game instead, so nothing is stale.

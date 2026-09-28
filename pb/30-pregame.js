@@ -279,7 +279,7 @@ const shortPlayer = n => { const w = playerName(n).split(/\s+/); return w.length
 async function startPreview(id){
   ui.viewer = true; ui.preview = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
-  loadLogos(); loadRatings(); renderPreview();
+  loadLogos(); loadRatings(); loadStatsFile(); renderPreview();
   try {
     const api = await viewerApi();
     scoresReady({fsM:api.fsM, fsdb:api.fsdb});   // the scores strip, every shared game and the records

@@ -14,7 +14,7 @@ async function startPlayerPage(){
   $('#board').hidden = false;
   ppage.name = (PAGE_Q.get('player') || '').trim();
   ppage.team = (PAGE_Q.get('team') || '').trim();
-  loadLogos();
+  loadLogos(); loadStatsFile();
   renderPlayer();
   shareAddress();
   try {
