@@ -113,15 +113,16 @@ function replay(g, upto = g.plays.length){
   let S = {team:{A:zeros(TEAM_KEYS), H:zeros(TEAM_KEYS)}, pl:{A:{}, H:{}}};
   let scoring = [], drives = [], clk = null, tags = [], trace = [], curI = 0;   // curI: the play being replayed
   // A spot foul by the team carrying the ball, behind where the run ended, ends the run at the spot of the foul
-  // (NFHS Statisticians' Manual, Penalties, Provision 1): the runner is credited to there and no farther, and
-  // whether the ball reaches the line to gain is settled after the flag is marked off, not at the spot.
-  // flagNow is this play's flag while it's replayed; cut is set once a run has been ended at the foul.
-  let flagNow = null, cut = null;
+  // (NFHS Statisticians' Manual, Penalties, Provision 1): the runner is credited to there and no farther.
+  // flagNow is this play's flag while it's replayed.
+  let flagNow = null, defer = null;
   const foulCut = (side, from, to) => {
     const f = flagNow;
-    if (!f || f.side !== side || !(f.foul > from && f.foul < to)) return to;
-    cut = cut || {}; return f.foul;
+    return f && f.side === side && f.foul > from && f.foul < to ? f.foul : to;
   };
+  // With a flag marked off after the play, the down is settled once the flag is, not where the run ended: a first
+  // down the run reached can still be walked back short of the line, and a 4th down replayed isn't lost on downs.
+  // defer notes what the play itself did (its kind of first down, whether it reached the line, the down it was).
   const log = [];
 
   const ab = s => T[s].abbr || s;
@@ -244,9 +245,9 @@ function replay(g, upto = g.plays.length){
   // Offense keeps the ball and reaches `end`: touchdown, safety, first down, next down or turnover on downs.
   function progress(end, fdKind, tdDesc, scorer){
     const O = st.poss, D = other(O), t = S.team[O];
-    if (cut){ cut.kind = fdKind; st.spot = end; return ''; }
     if (end >= FL){ if (fdKind){ t.fd++; t['fd' + fdKind]++; } return touchdown(O, tdDesc, scorer); }
     if (end <= 0) return safety(D);
+    if (defer){ defer.kind = fdKind; defer.reached = end >= st.ltg; st.spot = end; return ''; }
     if (end >= st.ltg){
       if (fdKind){ t.fd++; t['fd' + fdKind]++; }
       newSeries(O, end); tags.push(['fd', '1st down']); return ' First down.';
@@ -259,8 +260,8 @@ function replay(g, upto = g.plays.length){
     st.down++; st.spot = end; return '';
   }
   function conversion(end){
-    const t = S.team[st.poss], made = !cut && end >= st.ltg;
-    if (cut) cut.conv = st.down;
+    const t = S.team[st.poss], made = !defer && end >= st.ltg;
+    if (defer) defer.conv = st.down;
     if (st.down === 3){ t.d3a++; if (made) t.d3m++; }
     if (st.down === 4){ t.d4a++; if (made) t.d4m++; }
   }
@@ -365,10 +366,11 @@ function replay(g, upto = g.plays.length){
     // still leave the ball past it, and the offence keeps the first down it had already run to.
     const auto = !offFoul && pen.a;
     if (auto || st.spot >= st.ltg){
-      const kind = !auto && cut && cut.kind ? cut.kind : 'X';
-      S.team[st.poss].fd++; S.team[st.poss]['fd' + kind]++;
-      if (cut && cut.conv === 3) S.team[st.poss].d3m++;
-      if (cut && cut.conv === 4) S.team[st.poss].d4m++;
+      // The run's own first down if it got there and is still there after the walk-off; otherwise the flag's.
+      const mine = !!(defer && defer.reached && defer.kind);
+      S.team[st.poss].fd++; S.team[st.poss]['fd' + (mine ? defer.kind : 'X')]++;
+      if (defer && defer.reached && defer.conv === 3) S.team[st.poss].d3m++;
+      if (defer && defer.reached && defer.conv === 4) S.team[st.poss].d4m++;
       newSeries(st.poss, st.spot); tags.push(['fd', '1st down']);
       return txt + `${auto ? ', automatic first down' : ''}. First down.`;
     }
@@ -735,15 +737,25 @@ function replay(g, upto = g.plays.length){
     return t;
   }
   function apply(p){
-    clk = p.clk ?? null; tags = []; trace = []; flagNow = null; cut = null;
-    const pen = p.pen && PLAY[p.t] ? p.pen : null;
+    clk = p.clk ?? null; tags = []; trace = []; flagNow = null; defer = null;
+    let pen = p.pen && PLAY[p.t] ? p.pen : null;
     if (pen && (pen.enf === 'prev' || pen.enf === 'off')){
       const wiped = dry(p);
       if (pen.enf === 'off'){ tags.push(['flag', 'Flag']); return {text:'Offsetting penalties. Replay the down.', wiped}; }
       return {text:'No play. ' + penalize(pen, false), wiped};
     }
     st.fresh = false;
+    // A defensive foul on a rush (NFHS Penalties, Provisions 2 and 3). A run that gained ground: marked off from
+    // where it ended, wherever the foul was. A run for no gain never happened — no rush charged, marked off from
+    // the line. A run that lost ground is left as it was: games imported as gains only add up with the flag marked
+    // from where the run ended (Shawnee Mission North at Free State moves a touchdown otherwise).
+    if (pen && pen.enf === 'end' && p.t === 'run' && st.phase === 'play' && pen.side !== st.poss && pen.ball == null && !p.fum && !p.lat){
+      const {foul, ...fromEnd} = pen, y = +p.y || 0;
+      if (y === 0) return {text:'No play. ' + penalize(fromEnd, false), wiped:dry(p)};
+      if (y > 0) pen = fromEnd;
+    }
     flagNow = pen && pen.enf === 'end' && pen.foul != null && !p.fum && !p.lat ? pen : null;
+    defer = pen && pen.enf === 'end' && !p.fum && !p.lat ? {} : null;
     const beforePoss = st.poss, beforeDown = st.down, beforeLtg = st.ltg;
     // A team that fouls on the play it scores on doesn't keep the score: holding downfield brings the touchdown
     // back. The game as it stood before the play is kept so it can be put back if that happens — cloned in one
