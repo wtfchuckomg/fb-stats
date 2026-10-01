@@ -8946,7 +8946,7 @@ function rosterFromGames(name){
     }
     if (!(x.kind !== 'score' && ((x.plays && x.plays.length) || x.box))) return;
     if (x.box){
-      const b = boxData(x); if (!b) return;
+      const b = boxData(x); if (!b || !b.pl) return;   // a snapshot game only says there was a box score
       Object.keys(b.pl[r.side] || {}).forEach(n => { if (n !== 'team' && !out.has(n)) out.set(n, {num:'', name:n}); });
       return;
     }
