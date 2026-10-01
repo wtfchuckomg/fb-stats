@@ -342,7 +342,7 @@ function teamPageHtml(nameIn){
     // Before kickoff the record's spot links to the game's pregame page; a final (or a game someone is tracking) takes it over.
     const runNow = m.fin ? `${now.w}-${now.l}${now.t ? '-' + now.t : ''}`
       : !m.live && !stats ? `<a class="tp-go" href="?preview=${encodeURIComponent(x.id)}">Preview</a>` : '';
-    return `<tr><td class="wk">${esc(weekLabel(wk))}</td><td class="opp"><em>${side === 'A' ? 'at' : 'vs'}</em><a href="?team=${encodeURIComponent(o.name)}">${markFor(o, 24)}${esc(o.name)}</a></td>
+    return `<tr><td class="wk">${esc(weekLabel(wk))}</td><td class="opp"><em>${side === 'A' ? 'at' : 'vs'}</em><a href="?team=${encodeURIComponent(schoolName(o.name))}">${markFor(o, 24)}${esc(schoolName(o.name))}</a></td>
       <td class="res">${cell}</td><td class="tp-run">${runNow}</td><td class="lnk">${go}</td></tr>${form}`;
   }).join('');
   // Earlier seasons, from KPreps: a year to pick, and that year's games in place of this season's.
@@ -362,7 +362,7 @@ function teamPageHtml(nameIn){
     const res = played ? `<b class="${g.us > g.them ? 'w' : g.us < g.them ? 'l' : ''}">${g.us > g.them ? 'W' : g.us < g.them ? 'L' : 'T'}</b> ${g.us}-${g.them}${g.ot ? ' (OT)' : ''}` : '&#8212;';
     const opp = schoolName(g.opp) || g.opp;
     return `<tr><td class="wk">${esc(g.date || '')}</td>
-      <td class="opp"><em>${g.at === 'away' ? 'at' : 'vs'}</em><a href="?team=${encodeURIComponent(opp)}">${markFor({name:opp, abbr:shortName(opp), color:'#4A4B4D'}, 24)}${esc(opp)}</a></td>
+      <td class="opp"><em>${g.at === 'away' ? 'at' : 'vs'}</em><a href="?team=${encodeURIComponent(schoolName(opp))}">${markFor({name:opp, abbr:shortName(opp), color:'#4A4B4D'}, 24)}${esc(schoolName(opp))}</a></td>
       <td class="res">${res}</td><td class="lnk tp-run">${played ? `${run.w}-${run.l}${run.t ? '-' + run.t : ''}` : ''}</td></tr>`;
   }).join('') : '';
 
