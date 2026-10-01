@@ -11502,7 +11502,17 @@ async function turboGame(feed, id){
     roster:{A:roster.A, H:roster.H},
     date:turboDate(gi.date), clk:{s:12 * 60, run:false, at:0}, plays
   };
+  game.id = turboGameId(id, game.date, game.teams.A.name, game.teams.H.name);
   return {game, skipped};
+}
+// A crew can keep one gamecast link all season (Winfield's does), and the link then serves whichever game is newest.
+// So a game is named by the link and its date, and the next one goes beside the last instead of over it: Augusta at
+// Winfield replaced Winfield at Mulvane that way (2026-09-26). Importing the same game again updates it, including
+// one brought in before this under the link alone.
+function turboGameId(id, date, A, H){
+  const old = db.games[`tg-${id}`];
+  if (old && old.date === date && old.teams && sameSchool(old.teams.A.name, A) && sameSchool(old.teams.H.name, H)) return `tg-${id}`;
+  return `tg-${id}-${date}`;
 }
 // "09/18/26" the way the site keeps a date.
 function turboDate(s){
