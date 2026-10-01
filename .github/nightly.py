@@ -65,24 +65,29 @@ async () => {
   });
   // Every player the stats know, with his jersey number from the rosters scorers have shared: one page and one
   // link card each (players.py).
-  const rosters = {};
+  const rosters = {}, rosterNames = {};
   const rs = await fsM.getDocs(fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true), fsM.where('kind', '==', 'roster')));
   rs.forEach(d => {
     const v = d.data(); if (!v || v.deleted || !v.json) return;
     try {
       const r = JSON.parse(v.json), k = canonSchool(r.name), cur = rosters[k] || (rosters[k] = {});
+      const book = rosterNames[r.name] || (rosterNames[r.name] = []);
       Object.entries(r.roster || {}).forEach(([no, nm]) => {
-        const n = playerName(nm).toLowerCase();
+        const full = playerName(nm), n = full.toLowerCase();
         if (n && !cur[n]) cur[n] = String(no).split('/')[0];
+        if (full && !book.includes(full)) book.push(full);
       });
     } catch (e) {}
   });
+  // The same short-name rule the stats pages use, so "Smith" gets Jason Smith's page and not one of his own.
+  rosterBook.map = new Map(Object.entries(rosterNames));
+  const played = playedNames(stats);
   const P_KEYS = ['pc', 'pa', 'py', 'ptd', 'ru', 'ry', 'rtd', 're', 'rey', 'retd'];
   const pmap = {};
   stats.forEach(s => ['A', 'H'].forEach(side => {
     const sd = s.numbers[side];
     (sd.pl || []).forEach(row => {
-      const nm = playerName(row.name);
+      const nm = fullNameOf(sd.name, row.name, played.get(canonSchool(sd.name)));
       if (!nm || nm.startsWith('#') || nm === 'TEAM') return;
       const k = canonSchool(sd.name), key = k + '|' + nm.toLowerCase();
       const p = pmap[key] || (pmap[key] = Object.assign({name:nm, team:sd.name, no:(rosters[k] || {})[nm.toLowerCase()] || ''},
@@ -90,7 +95,7 @@ async () => {
       P_KEYS.forEach(x => { p[x] += +row[x] || 0; });
     });
   }));
-  return {built:started, season, stats, cards, players:Object.values(pmap), broken, read:snap.size};
+  return {built:started, season, stats, cards, players:Object.values(pmap), rosters:rosterNames, broken, read:snap.size};
 }
 """
 
@@ -113,6 +118,8 @@ def main():
     compact = lambda o: json.dumps(o, separators=(',', ':'), ensure_ascii=False)
     (REPO / 'season.json').write_text(compact({'built': out['built'], 'games': out['season']}))
     (REPO / 'stats.json').write_text(compact({'built': out['built'], 'games': out['stats']}))
+    # Every school's roster names, for reading a box score's short names ("Smith", "J. Smith") on the stats pages.
+    (REPO / 'rosters.json').write_text(compact({'built': out['built'], 'schools': out.get('rosters') or {}}))
     print(f"read {out['read']} shared documents: {len(out['season'])} games, {len(out['stats'])} with stats")
 
     import previews

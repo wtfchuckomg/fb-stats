@@ -42,12 +42,13 @@ function shareAddress(){
 function playerGames(){
   const key = String(ppage.name || '').trim().toLowerCase(), team = ppage.team;
   if (!key || !county.games) return [];
-  const out = [];
-  countyGames().forEach(x => {
+  const out = [], games = countyGames(), played = playedNames(games);
+  games.forEach(x => {
     const n = gameNumbers(x); if (!n) return;
     ['A', 'H'].forEach(s => {
       if (!sameTeamName(n[s].name, team)) return;
-      const row = (n[s].pl || []).find(p => playerName(p.name).toLowerCase() === key);
+      // A line a box score gave as "Smith" or "J. Smith" is his when he's the one player it can be.
+      const row = (n[s].pl || []).find(p => fullNameOf(n[s].name, p.name, played.get(canonSchool(n[s].name))).toLowerCase() === key);
       if (row) out.push({x, s, o:s === 'A' ? 'H' : 'A', n, row});
     });
   });

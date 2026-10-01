@@ -6984,6 +6984,7 @@ const statsGame = e => ({id:e.id, date:e.date || '', wk:e.wk, updated:e.updated 
 // that library takes a second or more on a phone, and the file needs nothing from it.
 let statsFile = null;
 function loadStatsFile(){
+  loadRosterNames();
   return statsFile || (statsFile = fetch(DATA + '/stats.json', {cache:'no-cache'})
     .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(d => {
@@ -7022,6 +7023,57 @@ function listenStats(fsM, q, onRefused){
     if (onRefused) return onRefused(e);
     if (!county.games){ county.err = 'Can’t load the stats right now. Reload to try again.'; renderCounty(); }
   });
+}
+
+/* ---------- short names ---------- */
+// The full names on each school's shared rosters: rosters.json, written by the nightly rebuild, plus any roster
+// this page already has from the database (team and player pages watch them).
+const rosterBook = {map:null, busy:false};
+function loadRosterNames(){
+  if (rosterBook.map || rosterBook.busy || typeof fetch !== 'function') return;
+  rosterBook.busy = true;
+  fetch(DATA + '/rosters.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
+    .then(d => { rosterBook.map = new Map(Object.entries((d && d.schools) || {})); statsArrived(); })
+    .catch(() => { rosterBook.map = new Map(); });
+}
+function rosterNamesOf(team){
+  const k = canonSchool(team), out = [];
+  (rosterBook.map || new Map()).forEach((names, school) => { if (canonSchool(school) === k) out.push(...names); });
+  ((typeof sharedRosters !== 'undefined' && sharedRosters.list) || []).forEach(r => {
+    if (canonSchool(r.name) === k) Object.values(r.roster || {}).forEach(v => { const n = playerName(v); if (n) out.push(n); });
+  });
+  return out;
+}
+// "J." or "J" in front of a last name is an initial, not a first name.
+const isInitial = w => /^[a-z]\.?$/i.test(w);
+const isFullName = n => { const w = String(n).trim().split(/\s+/); return w.length > 1 && !isInitial(w[0]) && !String(n).startsWith('#'); };
+// Who has touched the ball this season, team by team: the full names with numbers in these games.
+function playedNames(games){
+  const by = new Map();
+  games.forEach(x => {
+    const n = gameNumbers(x); if (!n) return;
+    ['A', 'H'].forEach(s => {
+      const k = canonSchool(n[s].name); if (!by.has(k)) by.set(k, new Set());
+      (n[s].pl || []).forEach(p => { const nm = playerName(p.name); if (isFullName(nm)) by.get(k).add(nm); });
+    });
+  });
+  return by;
+}
+// A name a box score gave short — "Smith", "J. Smith" — as the one player on that team it can be (Chuck, 2026-10-01).
+// The candidates are the team's roster and the full names with numbers this season; the last name has to match,
+// and the first initial too when one is given. Only one fits: him. Several fit: the one who has touched the ball,
+// if only one of them has. Otherwise the name stays as written, and a first name or an initial settles it.
+function fullNameOf(team, raw, played){
+  const nm = playerName(raw).trim(), w = nm.split(/\s+/);
+  if (!nm || nm.startsWith('#') || isFullName(nm)) return nm;
+  const init = w.length > 1 ? w[0][0].toLowerCase() : '', last = (w.length > 1 ? w.slice(1) : w).join(' ').toLowerCase();
+  const pool = new Map();
+  [...rosterNamesOf(team), ...(played || [])].forEach(f => { if (isFullName(f) && !pool.has(f.toLowerCase())) pool.set(f.toLowerCase(), f); });
+  const fits = [...pool.values()].filter(f => { const p = f.split(/\s+/);
+    return p.slice(1).join(' ').toLowerCase() === last && (!init || p[0][0].toLowerCase() === init); });
+  if (fits.length === 1) return fits[0];
+  const touched = fits.filter(f => played && [...played].some(q => q.toLowerCase() === f.toLowerCase()));
+  return touched.length === 1 ? touched[0] : nm;
 }
 
 /* ---------- the numbers ---------- */
@@ -7073,6 +7125,7 @@ function countyStats(games){
   // Whose side counts: in Butler County only its ten schools, by their proper names; statewide every school, one row
   // each however its name was typed (the first spelling seen names the row).
   const names = {}, sideOf = n => STATE_STATS ? (names[canonSchool(n)] || (names[canonSchool(n)] = n)) : groupOf(n);
+  const played = playedNames(games);
   for (const x of games){
     const g = gameNumbers(x); if (!g) continue;
     ['A', 'H'].forEach(s => {
@@ -7092,21 +7145,14 @@ function countyStats(games){
         if (!C_KEYS.some(k => +row[k])) return;
         // A number the game had no name for (baked into the stats file as "#8"): the school's saved roster may know it.
         // A class that rode along with the name ("Cole Brandt SR") is dropped here too.
-        const nmr = /^#\d+$/.test(row.name) && playerName(fillName(g[s].name, row.name.slice(1), s)) || playerName(row.name);
+        // A name given short ("Smith", "J. Smith") becomes the one player it can be (fullNameOf).
+        const nmr = /^#\d+$/.test(row.name) && playerName(fillName(g[s].name, row.name.slice(1), s)) || fullNameOf(g[s].name, row.name, played.get(canonSchool(g[s].name)));
         const key = `${c}|${nmr.toLowerCase()}`;
         const P = players[key] || (players[key] = Object.assign({name:nmr, team:c, gp:0}, zeros(C_KEYS)));
         P.gp++; C_KEYS.forEach(k => { P[k] += +row[k] || 0; });
       });
     });
   }
-  // A bare last name from one box score ("Vega") joins the one full name on that team with it ("Pete Vega").
-  Object.values(players).forEach(P => {
-    if (P.name.includes(' ') || P.name.startsWith('#')) return;
-    const k = P.name.toLowerCase(), full = Object.values(players).filter(Q => Q !== P && Q.team === P.team && Q.name.includes(' ') && lastName(Q.name) === k);
-    if (full.length !== 1) return;
-    const Q = full[0]; Q.gp += P.gp; C_KEYS.forEach(n => { Q[n] += P[n]; });
-    delete players[`${P.team}|${k}`];
-  });
   // One player spelled two ways in different box scores ("Kirchhoff-Jones", "Kirchoff-Jones"): same team, same first
   // name, last names one letter apart. The one with more games keeps the spelling.
   const oneOff = (a, b) => {
@@ -10729,12 +10775,13 @@ function shareAddress(){
 function playerGames(){
   const key = String(ppage.name || '').trim().toLowerCase(), team = ppage.team;
   if (!key || !county.games) return [];
-  const out = [];
-  countyGames().forEach(x => {
+  const out = [], games = countyGames(), played = playedNames(games);
+  games.forEach(x => {
     const n = gameNumbers(x); if (!n) return;
     ['A', 'H'].forEach(s => {
       if (!sameTeamName(n[s].name, team)) return;
-      const row = (n[s].pl || []).find(p => playerName(p.name).toLowerCase() === key);
+      // A line a box score gave as "Smith" or "J. Smith" is his when he's the one player it can be.
+      const row = (n[s].pl || []).find(p => fullNameOf(n[s].name, p.name, played.get(canonSchool(n[s].name))).toLowerCase() === key);
       if (row) out.push({x, s, o:s === 'A' ? 'H' : 'A', n, row});
     });
   });
