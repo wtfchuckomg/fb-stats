@@ -4483,9 +4483,9 @@ function playsList(oldFirst = false){
     const end = d.open || d.i1 == null ? R.log.length - 1 : d.i1;
     for (let i = d.i0; i <= end; i++) driveOf[i] = d;
   });
-  // "WIN ball at WIN 23" says where the ball is, it isn't a play: only the scorer sees those lines, to fix one.
-  // Play numbers count the lines that are shown.
-  const shown = e => !(ui.viewer && e.t === 'set'), num = [];
+  // "WIN ball at WIN 23" says where the ball is, it isn't a play. Fans never see those lines; the scorer sees only
+  // the ones he typed (they carry his text), to fix one — not the ones an import put in. Play numbers count what's shown.
+  const shown = e => !(e.t === 'set' && (ui.viewer || !e.src)), num = [];
   let c = 0; R.log.forEach(e => { if (shown(e)) num[e.i] = ++c; });
   let h = '', lastQ = null, lastD = null;
   const n = R.log.length;
