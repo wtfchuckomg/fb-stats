@@ -21,6 +21,9 @@ concurrency:
 jobs:
   rebuild:
     runs-on: ubuntu-latest
+    # 2026-10-02 the KPreps read hung for six hours, GitHub killed the job, and the rebuild it had already done was
+    # never saved. Each KPreps step now has its own cap and can fail without stopping the save.
+    timeout-minutes: 120
     steps:
       - name: Is it 3 a.m. in Kansas?
         id: when
@@ -36,23 +39,33 @@ jobs:
         run: python3 .github/nightly.py
       - name: Read this season's results from KPreps
         if: steps.when.outputs.go == '1'
+        timeout-minutes: 20
+        continue-on-error: true
         env:
           KP_YEARS: '2026'
         run: python3 .github/kp/crawl.py
       - name: Write the finals the site reads
         if: steps.when.outputs.go == '1'
+        timeout-minutes: 20
+        continue-on-error: true
         run: python3 .github/kp/scores.py
       - name: Write every logo school's schedule
         if: steps.when.outputs.go == '1'
+        timeout-minutes: 20
+        continue-on-error: true
         run: python3 .github/kp/schedule.py
       - name: Fit the ratings
         if: steps.when.outputs.go == '1'
+        timeout-minutes: 20
+        continue-on-error: true
         run: python3 .github/kp/ratings.py
       - name: Write each school's seasons for the site
         if: steps.when.outputs.go == '1'
+        timeout-minutes: 20
+        continue-on-error: true
         run: python3 .github/kp/history.py
       - name: Save and publish any changes
-        if: steps.when.outputs.go == '1'
+        if: steps.when.outputs.go == '1' && !cancelled()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
