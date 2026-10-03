@@ -90,7 +90,7 @@ const DISTRICTS = {
   ],
   '8M-II':[
     ["Colony-Crest", "Madison", "Marmaton Valley", "Flinthills", "Sedan", "St Paul"],
-    ["Attica-Argonia", "Cunningham", "Hutch Central Christian", "Fairfield", "Norwich", "Pretty Prairie", "Wichita Independent"],
+    ["Attica-Argonia", "Cunningham", "Hutch Central Christian", "Fairfield", "Norwich", "Pretty Prairie"],   // Wichita Independent isn't playing in 2026
     ["Burlingame", "Goessel", "Hartford", "Lebo", "Rural Vista", "Wakefield", "Waverly"],
     ["Axtell", "Frankfort", "Hanover", "Linn", "BV Randolph", "Troy"],
     ["Hodgman County", "Kinsley", "Macksville", "Meade", "Minneola", "Skyline"],
