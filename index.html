@@ -7114,6 +7114,29 @@ function rosterNamesOf(team){
   });
   return out;
 }
+// A nickname on a roster, in quotes or brackets: A’Keem "King" Anderson. The full name ("A’Keem Anderson"), the nickname
+// with the last name ("King Anderson") and the two together are one player (Chuck, 2026-10-07).
+const nickParts = n => { const m = String(n || '').trim().match(/^(\S+)\s+["“”'‘’(]([^"“”‘’()]+)["“”'‘’)]\s+(.+)$/);
+  return m ? {first:m[1], nick:m[2].trim(), last:m[3], plain:`${m[1]} ${m[3]}`, short:`${m[2].trim()} ${m[3]}`} : null; };
+// Names compared the way people type them: any apostrophe is an apostrophe, case and spacing don't matter.
+const nameKey = n => String(n || '').replace(/[’‘`´]/g, "'").replace(/\s+/g, ' ').trim().toLowerCase();
+// Every way a team's roster names a player with a nickname, pointing at the roster's own spelling. Kept per team and
+// rebuilt only when the rosters change: it's asked for once per stat line.
+const nickCache = {map:undefined, list:undefined, by:new Map()};
+function nickBook(team){
+  // Built again whenever either source is replaced: the file arriving, or a roster saved (a new list each time).
+  const list = typeof sharedRosters !== 'undefined' ? sharedRosters.list : null;
+  if (nickCache.map !== rosterBook.map || nickCache.list !== list){ nickCache.map = rosterBook.map; nickCache.list = list; nickCache.by = new Map(); }
+  const k = canonSchool(team);
+  if (!nickCache.by.has(k)){
+    const book = new Map();
+    // Any roster name, however its apostrophes were typed; and a nicknamed one by each of its forms.
+    rosterNamesOf(team).forEach(f => { if (!isFullName(f)) return; book.set(nameKey(f), f);
+      const n = nickParts(f); if (n) [n.plain, n.short].forEach(v => book.set(nameKey(v), f)); });
+    nickCache.by.set(k, book);
+  }
+  return nickCache.by.get(k);
+}
 // "J." or "J" in front of a last name is an initial, not a first name.
 const isInitial = w => /^[a-z]\.?$/i.test(w);
 const isFullName = n => { const w = String(n).trim().split(/\s+/); return w.length > 1 && !isInitial(w[0]) && !String(n).startsWith('#'); };
@@ -7135,12 +7158,14 @@ function playedNames(games){
 // if only one of them has. Otherwise the name stays as written, and a first name or an initial settles it.
 function fullNameOf(team, raw, played){
   const nm = playerName(raw).trim(), w = nm.split(/\s+/);
-  if (!nm || nm.startsWith('#') || isFullName(nm)) return nm;
+  if (!nm || nm.startsWith('#')) return nm;
+  const nick = nickBook(team).get(nameKey(nm)); if (nick) return nick;   // "King Anderson" is A’Keem "King" Anderson
+  if (isFullName(nm)) return nm;
   const init = w.length > 1 ? w[0][0].toLowerCase() : '', last = (w.length > 1 ? w.slice(1) : w).join(' ').toLowerCase();
   const pool = new Map();
   [...rosterNamesOf(team), ...(played || [])].forEach(f => { if (isFullName(f) && !pool.has(f.toLowerCase())) pool.set(f.toLowerCase(), f); });
-  const fits = [...pool.values()].filter(f => { const p = f.split(/\s+/);
-    return p.slice(1).join(' ').toLowerCase() === last && (!init || p[0][0].toLowerCase() === init); });
+  const fits = [...pool.values()].filter(f => { const n = nickParts(f), p = (n ? n.plain : f).split(/\s+/);
+    return nameKey(p.slice(1).join(' ')) === nameKey(last) && (!init || p[0][0].toLowerCase() === init || (n && n.nick[0].toLowerCase() === init)); });
   if (fits.length === 1) return fits[0];
   const touched = fits.filter(f => played && [...played].some(q => q.toLowerCase() === f.toLowerCase()));
   return touched.length === 1 ? touched[0] : nm;
