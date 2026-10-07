@@ -6505,10 +6505,10 @@ function parseBox(txt){
     return score[0] > score[1] ? 'A' : score[1] > score[0] ? 'H' : null;
   };
   const sections = [];
-  let sec = null, curQ = 0;
-  for (const l of rows){
+  let sec = null, curQ = 0, teamAbove = null;   // teamAbove: a team's name on its own line, over its stat lines
+  for (let l of rows){
     const m = l.match(SEC);
-    if (m){ sec = {kind:m[1].toUpperCase(), head:m[2] || '', body:m[3]}; sections.push(sec); continue; }
+    if (m){ sec = {kind:m[1].toUpperCase(), head:m[2] || '', body:m[3], side:teamAbove}; sections.push(sec); continue; }
     // A stat section can run onto the next line ("Hutchinson — McCuan 12-56; …").
     if (sec && /\d+\s*-\s*\(?-?\d+/.test(l)){ sec.body += ' ' + l; continue; }
     if (out.names.length < 2){
@@ -6528,8 +6528,19 @@ function parseBox(txt){
         sec = null; continue;
       }
     }
+    // "1st Quarter" as a heading, or in front of the play itself: "1st Quarter: McPherson: Becker 2 run (Hoover kick)".
     const qh = l.match(QTR);
-    if (qh){ curQ = qh[2] ? 5 : QN[qh[1].toLowerCase()]; sec = null; continue; }
+    if (qh){
+      curQ = qh[2] ? 5 : QN[qh[1].toLowerCase()]; sec = null;
+      const rest = l.slice(qh[0].length).replace(/^\s*[:—–.-]\s*/, '').trim();
+      if (!rest) continue;
+      l = rest;
+    }
+    // A team's name alone on a line: the stat lines under it are that team's ("McPherson", then "Rushing: Becker 8-81 …").
+    if (out.names.length === 2 && !/\d/.test(l) && l.length <= 40){
+      const own = sideOf(l.replace(/[:—–.-]+$/, '').trim());
+      if (own){ teamAbove = own; sec = null; continue; }
+    }
     const sc = out.names.length === 2 && l.match(/^([A-Za-z][A-Za-z.'& ]{0,24}?)\s*[—–:-]\s+(.+)$/);
     const side = sc && sideOf(sc[1]);
     if (side){
@@ -6595,6 +6606,8 @@ function parseBox(txt){
     const re = new RegExp(`(?:^\\s*|[.;:)]\\s*)(${alts.map(escRe).join('|')})\\s*(?:[—–:,]|\\s-)\\s*`, 'gi'), hits = [...body.matchAll(re)];
     return hits.map((h, i) => [sideOf(h[1]), body.slice(h.index + h[0].length, i + 1 < hits.length ? hits[i + 1].index : undefined)]).filter(x => x[0]);
   };
+  // A section with no team names in it belongs to the team named on the line above it, if there was one.
+  const teamsOf = sc => { const t = splitTeams(sc.body); return t.length ? t : sc.side ? [[sc.side, sc.body]] : []; };
   const kicked = new Set(), missed = new Set();   // kickers a section has already counted
   for (const sc of sections){
     const K = sc.kind.toUpperCase();
@@ -6606,7 +6619,7 @@ function parseBox(txt){
     if (!kind){ out.warn.push(`${sc.kind[0]}${sc.kind.slice(1).toLowerCase()} lines aren’t read yet, so they’re left out.`); continue; }
     // "Mulvane — 333 total yards, 62 plays, 243 rushing, 90 passing, 17 first downs, 2-10 penalties"
     if (kind === 'team'){
-      for (const [s, part] of splitTeams(sc.body)){
+      for (const [s, part] of teamsOf(sc)){
         // The full block a game book prints, one phrase to a semicolon:
         // "First downs 14, rushing 6, passing 6, penalty 2; third downs 4-11; rushing 34-141; passing 15-29-1;
         //  sacks-yards lost 3-14; punts 4-27.5; penalties 9-73; time of possession 25:03."
@@ -6650,7 +6663,7 @@ function parseBox(txt){
     // "MISSED FIELD GOALS: Newton — Oswald 39 (blocked), 45." Each distance is an attempt and no make;
     // a blocker who is named gets the block.
     if (kind === 'miss'){
-      const teamed = splitTeams(sc.body);
+      const teamed = teamsOf(sc);
       // Often written with no team and no distance at all — "Missed field goals: McFadden".
       for (const [s0, part] of (teamed.length ? teamed : [[null, sc.body]])){
         part.split(/;\s*|,\s*(?=[A-Za-z])|\.\s+/).map(x => x.trim().replace(/\.$/, '')).filter(Boolean).forEach(item => {
@@ -6674,7 +6687,7 @@ function parseBox(txt){
     const order = kind === 'pass' ? named
       : KIND_COLS[kind] ? (named.map(w => COL_WORDS[w] || w).filter(w => w) .length ? named.map(w => COL_WORDS[w] || w) : KIND_COLS[kind].order)
       : null;
-    for (const [s, part] of splitTeams(sc.body)){
+    for (const [s, part] of teamsOf(sc)){
       // Players are split by semicolons, or by commas when the next thing is another player ("Chattam 16-133, Bergeson
       // 10-124"); a comma before "TD" or "3 TD" stays with its player.
       part.split(/;\s*|\.\s+(?=totals?\b)/i).flatMap(x => x.split(/,\s*(?=[A-Za-z][A-Za-z.'’ -]*\s\(?-?\d+\)?\s*-\s*\(?-?\d)/))
@@ -6692,7 +6705,11 @@ function parseBox(txt){
         }
         if (KIND_COLS[kind]){
           const {keys} = KIND_COLS[kind], f = {};
-          order.forEach((c, i) => { if (c && v[i] != null) f[c] = v[i]; });
+          // A kicking line that says what its numbers are — "Hoover 6-7 XP", "Oswald 1-2 FG, 4-4 PAT" — is read by
+          // those words; one that doesn't goes by the columns.
+          const said = kind === 'kick' ? [...item.matchAll(/(\d+)\s*-\s*(\d+)\s*(xp|pat|extra points?|fg|field goals?)\b/gi)] : [];
+          if (said.length) said.forEach(([, made, tried, w]) => { const fg = /^f/i.test(w); f[fg ? 'fg' : 'xp'] = +made; f[fg ? 'fga' : 'xpa'] = +tried; });
+          else order.forEach((c, i) => { if (c && v[i] != null) f[c] = v[i]; });
           // Tackles are printed as total-solo-assists; the book keeps solo and assists and adds them back up.
           if (kind === 'def'){
             if (f.tk == null && f.tot != null) f.tk = f.ast != null ? Math.max(0, f.tot - f.ast) : f.tot;
