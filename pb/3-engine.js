@@ -28,7 +28,7 @@ const PENALTIES = [
 ].map(([name,y,s,f]) => ({name, y, s, a: f === 'a', l: f === 'l'}));
 
 const TEAM_KEYS = 'fd fdR fdP fdX rushN rushY passC passA passY passTD passInt sk skY pen penY fum fumL pnt pntY pntTB pntBlk prN prY krN krY koN koY koTB intN intY d3a d3m d4a d4m plays top'.split(' ');
-const PL_KEYS = 'pc pa py ptd pint plg psk pskY ru ry rtd rlg re rey retd relg tk ast tfl sk dint dintY fr ff pbu bk fum fgm fga fglg xpm xpa ko koy ktb pu puy pulg pi20 ptb kr kry krtd krlg pr pry prtd prlg tds two pts'.split(' ');
+const PL_KEYS = 'pc pa py ptd pint plg psk pskY ru ry rtd rlg re rey retd relg tk ast tfl sk dint dintY fr ff pbu bk fum fuml ofr fgm fga fglg xpm xpa ko koy ktb pu puy pulg pi20 ptb kr kry krtd krlg pr pry prtd prlg tds two pts'.split(' ');
 const zeros = keys => Object.fromEntries(keys.map(k => [k, 0]));
 
 // 11-man plays NFHS on a 100-yard field. Kansas 8-man plays an 80-yard field
@@ -271,7 +271,7 @@ function replay(g, upto = g.plays.length){
     const rs = other(cs);
     // Recovered somewhere else than where it came loose: "fum rec 6 at B6".
     if (f.at) pos = clamp(f.at.side === cs ? f.at.n : FL - f.at.n, 0, FL);
-    bump(pl(cs, cn), 'fum'); S.team[cs].fum++; S.team[cs].fumL++;
+    bump(pl(cs, cn), 'fum'); bump(pl(cs, cn), 'fuml'); S.team[cs].fum++; S.team[cs].fumL++;
     bump(pl(rs, f.by), 'fr'); if (f.ff) bump(pl(rs, f.ff), 'ff');
     tags.push(['to', 'Fumble']);
     let txt = ` FUMBLE${f.ff ? ` forced by ${nm(rs, f.ff)}` : ''}, recovered by ${f.by ? nm(rs, f.by) : ab(rs)} at the ${yl(cs, pos)}`;
@@ -288,7 +288,7 @@ function replay(g, upto = g.plays.length){
   // end zone it is a touchback and their ball; out over the fumbling team's own goal line it is a safety.
   function fumbleOut(cs, cn, end){
     const rs = other(cs);
-    bump(pl(cs, cn), 'fum'); S.team[cs].fum++; S.team[cs].fumL++;
+    bump(pl(cs, cn), 'fum'); bump(pl(cs, cn), 'fuml'); S.team[cs].fum++; S.team[cs].fumL++;
     tags.push(['to', 'Fumble']);
     if (end <= HALF) return ` FUMBLE, out of bounds in the end zone.` + safety(rs);
     const txt = ' FUMBLE, out of bounds through the end zone.';
@@ -301,8 +301,8 @@ function replay(g, upto = g.plays.length){
   function fumbleTwice(cs, cn, pos, f){
     const f2 = f.then, h1 = f.lost ? other(cs) : cs, O = st.poss;
     const p1 = f.at ? clamp(f.at.side === cs ? f.at.n : FL - f.at.n, 0, FL) : pos;   // cs frame
-    bump(pl(cs, cn), 'fum'); S.team[cs].fum++; if (f.lost) S.team[cs].fumL++;
-    bump(pl(h1, f.by), 'fr'); if (f.ff) bump(pl(h1, f.ff), 'ff');
+    bump(pl(cs, cn), 'fum'); S.team[cs].fum++; if (f.lost){ S.team[cs].fumL++; bump(pl(cs, cn), 'fuml'); }
+    bump(pl(h1, f.by), f.lost ? 'fr' : 'ofr'); if (f.ff) bump(pl(other(cs), f.ff), 'ff');
     tags.push(['to', 'Fumble']);
     if (f.lost && st.drive && st.drive.team === cs) closeDrive('Fumble', p1);
     let txt = ` ${f.lost ? 'FUMBLE' : 'Fumble'}, recovered by ${f.by ? nm(h1, f.by) : ab(h1)} at the ${yl(cs, p1)}`;
@@ -320,6 +320,8 @@ function replay(g, upto = g.plays.length){
   // The offense gets its own fumble back; a teammate's advance moves the ball but isn't the carrier's yardage.
   function fumbleKept(cs, cn, f, end){
     bump(pl(cs, cn), 'fum'); S.team[cs].fum++;
+    if (f.by) bump(pl(cs, f.by), 'ofr'); else if (f.self) bump(pl(cs, cn), 'ofr');   // his own side's recovery
+    if (f.ff) bump(pl(other(cs), f.ff), 'ff');
     const adv = end != null ? +f.ry || 0 : 0;
     if (adv) leg('run', cs, end, clamp(end + adv, 0, FL));
     return ` Fumble, recovered by ${f.by ? nm(cs, f.by) : f.self ? nm(cs, cn) : ab(cs)}${adv ? `, ${adv > 0 ? 'advanced ' + plural(adv, 'yard') : 'lost ' + plural(-adv, 'yard')} to the ${yl(cs, clamp(end + adv, 0, FL))}` : ''}.`;

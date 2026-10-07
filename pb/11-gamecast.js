@@ -159,6 +159,8 @@ const BOX_CATS = [
   ['Passing', ['C/Att', 'Yds', 'TD', 'Int', 'Lng', 'Sack'], p => p.pa || p.psk, p => [`${p.pc}/${p.pa}`, p.py, p.ptd, p.pint, p.plg, p.psk], 'py'],
   ['Rushing', ['Car', 'Yds', 'Avg', 'TD', 'Lng'], p => p.ru, p => [p.ru, p.ry, avg(p.ry, p.ru), p.rtd, p.rlg], 'ry'],
   ['Receiving', ['Rec', 'Yds', 'Avg', 'TD', 'Lng'], p => p.re, p => [p.re, p.rey, avg(p.rey, p.re), p.retd, p.relg], 'rey'],
+  // Fumbles (Chuck, 2026-10-07, ESPN's table): fumbles, lost, and recoveries — the defense's and his own side's.
+  ['Fumbles', ['Fum', 'Lost', 'Rec'], p => p.fum || p.fuml || p.fr || p.ofr, p => [p.fum || 0, p.fuml || 0, (p.fr || 0) + (p.ofr || 0)], p => (p.fum || 0) * 10 + (p.fr || 0) + (p.ofr || 0)],
   ['Defense', ['Tot', 'Solo', 'Ast', 'TFL', 'Sack', 'Int', 'PBU', 'FF', 'FR'], p => p.tk || p.ast || p.sk || p.dint || p.pbu || p.ff || p.fr || p.bk,
     p => [p.tk + p.ast, p.tk, p.ast, fy(p.tfl), fy(p.sk), p.dint, p.pbu, p.ff, p.fr], p => p.tk + p.ast],
   ['Kicking', ['FG', 'Lng', 'XP', 'KO', 'TB', 'Pts'], p => p.fga || p.xpa || p.ko, p => [`${p.fgm}/${p.fga}`, p.fglg || '—', `${p.xpm}/${p.xpa}`, p.ko, p.ktb, p.fgm * 3 + p.xpm], 'fga'],

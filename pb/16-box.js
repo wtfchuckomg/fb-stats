@@ -44,6 +44,7 @@ const COL_WORDS = {
   sacks:'sk', sack:'sk', sk:'sk', tfl:'tfl', tfls:'tfl', 'tackles for loss':'tfl',
   int:'int', ints:'int', interception:'int', interceptions:'int', picks:'int', pick:'int',
   pbu:'pbu', pd:'pbu', bu:'pbu', ff:'ff', forced:'ff', fr:'fr', recovered:'fr', recoveries:'fr', blk:'blk', blocked:'blk',
+  fum:'fum', fumbles:'fum', fumble:'fum', lost:'lost', rec:'rec',
   fg:'fg', fgm:'fg', fgs:'fg', fga:'fga', xp:'xp', xpm:'xp', pat:'xp', pats:'xp', xpa:'xpa', points:'pts', pts:'pts',
   punts:'no', punt:'no', no:'no', number:'no', num:'no', returns:'no', ret:'no', rets:'no', att:'no',
   yards:'yds', yds:'yds', yard:'yds', yd:'yds', average:'avg', avg:'avg', ave:'avg',
@@ -51,6 +52,8 @@ const COL_WORDS = {
 };
 // The same column name means a different stat in each section, and this is the order when a heading doesn't say.
 const KIND_COLS = {
+  // "Fumbles: El Dorado — Conrad 2-1": fumbles, lost, recovered (any he fell on, his side's or the other's).
+  fum:  {order:['fum', 'lost', 'rec'], keys:{fum:'fum', lost:'fuml', rec:'fr', fr:'fr'}},
   def:  {order:['tot', 'tk', 'ast', 'sk', 'tfl', 'int'], keys:{tk:'tk', ast:'ast', sk:'sk', tfl:'tfl', int:'dint', pbu:'pbu', ff:'ff', fr:'fr', blk:'bk'}},
   kick: {order:['fg', 'fga', 'xp', 'pts'], keys:{fg:'fgm', fga:'fga', xp:'xpm', xpa:'xpa', lng:'fglg'}},
   punt: {order:['no', 'yds', 'avg', 'i20'], keys:{no:'pu', yds:'puy', lng:'pulg', i20:'pi20', tb:'ptb'}},
@@ -206,7 +209,7 @@ function parseBox(txt){
     const kind = /^RUSH/.test(K) ? 'rush' : /^PASS/.test(K) ? 'pass' : /^REC/.test(K) ? 'rec'
       : /^PUNT RET/.test(K) ? 'pret' : /^KICK(OFF)? RET/.test(K) ? 'kret'
       : /^MISSED|^BLOCKED KICKS|^FIELD GOAL ATTEMPTS/.test(K) ? 'miss'
-      : /^DEF|^TACKL|^SACK|^FUMBLE/.test(K) ? 'def' : /^KICKING|^FIELD GOAL/.test(K) ? 'kick'
+      : /^FUMBLE/.test(K) ? 'fum' : /^DEF|^TACKL|^SACK/.test(K) ? 'def' : /^KICKING|^FIELD GOAL/.test(K) ? 'kick'
       : /^PUNTING/.test(K) ? 'punt' : /^INTERCEPT/.test(K) ? 'int' : /^TEAM/.test(K) ? 'team' : '';
     if (!kind){ out.warn.push(`${sc.kind[0]}${sc.kind.slice(1).toLowerCase()} lines aren’t read yet, so they’re left out.`); continue; }
     // "Mulvane — 333 total yards, 62 plays, 243 rushing, 90 passing, 17 first downs, 2-10 penalties"
@@ -286,7 +289,8 @@ function parseBox(txt){
         .map(x => x.trim().replace(/\.$/, '')).filter(Boolean).forEach(item => {
         const tot = item.match(/^totals?:?\s*(.*)$/i);
         if (tot){ const v = nums(tot[1]); if (kind === 'rush' && v.length >= 2) Object.assign(out.team[s], {rushN:v[0], rushY:v[1]}); return; }
-        const m = item.match(/^(.+?)\s+(\(?-?\d+\)?(?:\s*-\s*\(?-?\d+\)?)+)(.*)$/);
+        // A fumbles line can be one number ("Conrad 1"); every other kind has at least two ("Becker 8-81").
+        const m = item.match(kind === 'fum' ? /^(.+?)\s+(\(?-?\d+\)?(?:\s*-\s*\(?-?\d+\)?)*)(.*)$/ : /^(.+?)\s+(\(?-?\d+\)?(?:\s*-\s*\(?-?\d+\)?)+)(.*)$/);
         if (!m) return;
         const v = nums(m[2]), p = player(s, m[1]), td = tds(m[3]);
         if (kind === 'rush'){ add(p, 'ru', v[0] || 0); add(p, 'ry', v[1] || 0); add(p, 'rtd', td); }
@@ -302,6 +306,8 @@ function parseBox(txt){
           const said = kind === 'kick' ? [...item.matchAll(/(\d+)\s*-\s*(\d+)\s*(xp|pat|extra points?|fg|field goals?)\b/gi)] : [];
           if (said.length) said.forEach(([, made, tried, w]) => { const fg = /^f/i.test(w); f[fg ? 'fg' : 'xp'] = +made; f[fg ? 'fga' : 'xpa'] = +tried; });
           else order.forEach((c, i) => { if (c && v[i] != null) f[c] = v[i]; });
+          // "Fumbles lost: El Dorado — Conrad 1": each one he lost is one he fumbled.
+          if (kind === 'fum' && /^\s*lost\b/i.test(sc.body)){ f.lost = v[0] || 0; f.fum = Math.max(f.lost, 0); delete f.rec; }
           // Tackles are printed as total-solo-assists; the book keeps solo and assists and adds them back up.
           if (kind === 'def'){
             if (f.tk == null && f.tot != null) f.tk = f.ast != null ? Math.max(0, f.tot - f.ast) : f.tot;
@@ -363,6 +369,9 @@ function parseBox(txt){
   ['A', 'H'].forEach(s => {
     const t = out.team[s], ps = Object.values(out.pl[s]), sum = k => ps.reduce((a, p) => a + (p[k] || 0), 0);
     if (t.rushN == null){ t.rushN = sum('ru'); t.rushY = sum('ry'); }
+    // Fumbles and fumbles lost, from the players' lines when the team block didn't give them.
+    if (t.fum == null && sum('fum')) t.fum = sum('fum');
+    if (t.fumL == null && sum('fuml')) t.fumL = sum('fuml');
     // Only where the paste's own team block didn't say: a game book's totals beat adding the players up.
     [['passC', 'pc'], ['passA', 'pa'], ['passY', 'py'], ['passTD', 'ptd'], ['passInt', 'pint']]
       .forEach(([k, pk]) => { if (t[k] == null) t[k] = sum(pk); });
