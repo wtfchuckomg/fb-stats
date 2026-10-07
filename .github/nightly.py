@@ -26,6 +26,9 @@ sys.path.insert(0, str(REPO / '.github'))
 BUILD = r"""
 async () => {
   const {fsM, fsdb} = await viewerApi();
+  // The logo library knows each school's own name ("Haysville Campus" is Campus): wait for it, up to 15 seconds.
+  if (!logoLib.list){ loadLogos(); await new Promise(res => { const t0 = Date.now(), t = setInterval(() => {
+    if (logoLib.list || Date.now() - t0 > 15000){ clearInterval(t); res(); } }, 100); }); }
   const started = Date.now();
   const snap = await fsM.getDocs(fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true)));
   const list = [];
@@ -90,7 +93,7 @@ async () => {
       const nm = fullNameOf(sd.name, row.name, played.get(canonSchool(sd.name)));
       if (!nm || nm.startsWith('#') || nm === 'TEAM') return;
       const k = canonSchool(sd.name), key = k + '|' + nm.toLowerCase();
-      const p = pmap[key] || (pmap[key] = Object.assign({name:nm, team:sd.name, no:(rosters[k] || {})[nm.toLowerCase()] || ''},
+      const p = pmap[key] || (pmap[key] = Object.assign({name:nm, team:schoolName(sd.name), no:(rosters[k] || {})[nm.toLowerCase()] || ''},
         Object.fromEntries(P_KEYS.map(x => [x, 0]))));
       P_KEYS.forEach(x => { p[x] += +row[x] || 0; });
     });

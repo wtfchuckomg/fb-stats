@@ -541,6 +541,13 @@ table.pl-tbl{table-layout:fixed;width:100%}
 .pl-opp{display:inline-flex;align-items:center;gap:7px;color:inherit;text-decoration:none}
 .pl-opp:hover b,.pl-opp:hover .pl-res{text-decoration:underline}
 .pl-res{font-weight:700}
+/* the game log's own columns: date, opponent and result keep their room so nothing runs into the next */
+table.pl-log th:nth-child(1){width:118px} table.pl-log th:nth-child(2){width:230px} table.pl-log th:nth-child(3){width:124px}
+table.pl-log td.nm{overflow:hidden;text-overflow:ellipsis}
+/* the stats tables pin their name column; three name columns pinned to one spot stacked and drew lines over each other */
+table.pl-log .nm{position:static;border-right:0} table.pl-log th:nth-child(3),table.pl-log td:nth-child(3){border-right:1px solid var(--line)}
+table.pl-log td.nm .cn-in,table.pl-log td.nm .pl-opp{min-width:0;overflow:hidden}
+@media (max-width:640px){table.pl-log th:nth-child(1){width:88px} table.pl-log th:nth-child(2){width:150px} table.pl-log th:nth-child(3){width:96px}}
 .pl-res.w{color:var(--good)} .pl-res.l{color:var(--bad)}
 .h-btn.on{background:var(--blue);color:var(--blue-ink)}
 @media (max-width:640px){.pl-name{font-size:24px}.pl-head{gap:12px}}

@@ -8,6 +8,8 @@
    ================================================================ */
 const PLAYER_PAGE = PAGE_Q.has('player');
 const ppage = {view:'stats', season:null, name:'', team:''};
+// The school as this site names it, whatever the link said: "Haysville Campus" is Campus.
+const pTeam = () => schoolName(ppage.team);
 
 async function startPlayerPage(){
   ui.viewer = true; ui.player = true; document.body.classList.add('viewer', 'bpage');
@@ -30,7 +32,7 @@ async function startPlayerPage(){
 // posting it shows his card. Only once that page exists: a player added tonight keeps ?player= until the rebuild.
 function shareAddress(){
   if (location.hostname !== 'stats.kansasmediarankings.com' || location.pathname.startsWith('/p/')) return;
-  const k = `${logoSlug(ppage.team)}-${logoSlug(ppage.name)}`;
+  const k = `${logoSlug(pTeam())}-${logoSlug(ppage.name)}`;
   fetch(`${DATA}/p/${k}/`, {method:'HEAD'}).then(r => {
     if (!r.ok || location.pathname.startsWith('/p/')) return;
     if (!document.querySelector('base')){ const b = document.createElement('base'); b.href = '/'; document.head.prepend(b); }
@@ -90,7 +92,7 @@ function pSeasonTable(title, cols, bySeason, career){
     ${cols.map(c => `<td class="num">${esc(pCell(c, t))}</td>`).join('')}</tr>`;
   return `<div class="pl-sec"><h3>${esc(title)}</h3>
     <div class="tbl-wrap"><table class="ctbl pl-tbl"><thead><tr><th class="nm">SEASON</th><th class="nm">TEAM</th>${cols.map(c => `<th class="num">${c[0]}</th>`).join('')}</tr></thead>
-    <tbody>${bySeason.map(([y, t]) => row(String(y), ppage.team, t)).join('')}
+    <tbody>${bySeason.map(([y, t]) => row(String(y), pTeam(), t)).join('')}
       ${bySeason.length > 1 ? row('Career', '', career, 'pl-career') : ''}</tbody></table></div></div>`;
 }
 
@@ -107,20 +109,25 @@ function pLogRow(r, cols){
     <td class="nm"><div class="cn-in"><a class="pl-opp" href="?game=${encodeURIComponent(r.x.id)}">${res}</a></div></td>
     ${cols.map(c => `<td class="num">${esc(pCell(c, Object.assign(zeros(C_KEYS), r.row)))}</td>`).join('')}</tr>`;
 }
-function pLogTable(secs, rows){
-  const cols = secs.flatMap(([, , c]) => c);
-  const groups = `<tr class="cgrp"><th class="nm"></th><th class="nm"></th><th class="nm"></th>${secs.map(([t, , c]) => `<th colspan="${c.length}">${t.toUpperCase()}</th>`).join('')}</tr>`;
-  const tot = pTot(rows);
-  return `<div class="tbl-wrap"><table class="ctbl pl-tbl"><thead>${secs.length > 1 ? groups : ''}
-      <tr><th class="nm">DATE</th><th class="nm">OPP</th><th class="nm">RESULT</th>${cols.map(c => `<th class="num">${c[0]}</th>`).join('')}</tr></thead>
-    <tbody>${rows.map(r => pLogRow(r, cols)).join('')}
-      <tr class="pl-career"><td class="nm"><div class="cn-in"><b>Total</b></div></td><td class="nm"></td><td class="nm"></td>
-        ${cols.map(c => `<td class="num">${esc(pCell(c, tot))}</td>`).join('')}</tr></tbody></table></div>`;
+// The game log, a table to each category (Chuck, 2026-10-07): Passing, Rushing, Receiving, Kicking … each with the
+// games he did something that way in, and its own total.
+function pLogTables(secs, rows){
+  return secs.map(([title, keep, cols]) => {
+    const mine = rows.filter(r => keep(Object.assign(zeros(C_KEYS), r.row)));
+    if (!mine.length) return '';
+    const tot = pTot(mine);
+    return `<div class="pl-sec"><h3>${esc(title)}</h3>
+      <div class="tbl-wrap"><table class="ctbl pl-tbl pl-log"><thead>
+        <tr><th class="nm">DATE</th><th class="nm">OPP</th><th class="nm">RESULT</th>${cols.map(c => `<th class="num">${c[0]}</th>`).join('')}</tr></thead>
+      <tbody>${mine.map(r => pLogRow(r, cols)).join('')}
+        <tr class="pl-career"><td class="nm"><b>Total</b></td><td class="nm"></td><td class="nm"></td>
+          ${cols.map(c => `<td class="num">${esc(pCell(c, tot))}</td>`).join('')}</tr></tbody></table></div></div>`;
+  }).join('');
 }
 
 // His jersey number, from the roster saved for the school.
 function pNumber(){
-  const r = rosterFor(ppage.team);
+  const r = rosterFor(pTeam());
   if (!r || !r.players) return '';
   const hit = r.players.find(p => playerName(p.name).toLowerCase() === ppage.name.toLowerCase());
   return hit && hit.num ? String(hit.num).split('/')[0] : '';
@@ -129,14 +136,15 @@ function pNumber(){
 function renderPlayer(){
   if (!ui.player) return;
   const box = $('#board');
-  document.title = `${ppage.name} · ${ppage.team} · ${SITE_TITLE}`;
+  document.title = `${ppage.name} · ${pTeam()} · ${SITE_TITLE}`;
   const rows = playerGames();
   const seasons = [...new Set(rows.map(r => seasonOf(r.x)))].sort((a, b) => b - a);
   if (ppage.season == null || !seasons.includes(ppage.season)) ppage.season = seasons[0] || new Date().getFullYear();
   const no = pNumber();
-  const head = `<section class="bcard bhead"><div class="pl-head">${markFor({name:ppage.team, abbr:shortName(ppage.team), color:'#4A4B4D'}, 64)}
+  const T = pTeam();
+  const head = `<section class="bcard bhead"><div class="pl-head">${markFor({name:T, abbr:shortName(T), color:'#4A4B4D'}, 64)}
       <div><h1 class="pl-name">${esc(ppage.name)}</h1>
-        <p class="pl-sub">${no ? `#${esc(no)} · ` : ''}<a href="?team=${encodeURIComponent(ppage.team)}">${esc(ppage.team)}</a></p></div></div>
+        <p class="pl-sub">${no ? `#${esc(no)} · ` : ''}<a href="?team=${encodeURIComponent(T)}">${esc(T)}</a></p></div></div>
     <div class="tp-links">${[['stats', 'Stats'], ['log', 'Game Log']].map(([k, l]) =>
       `<button type="button" class="h-btn${ppage.view === k ? ' on' : ''}" data-pview="${k}">${l}</button>`).join('')}</div></section>`;
   const note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
@@ -154,8 +162,8 @@ function renderPlayer(){
       const logSecs = secs.filter(([t]) => t !== 'Scoring');      // scoring is the same touchdowns over again
       const pick = seasons.length > 1 ? `<select class="c-sel" id="pseason" aria-label="Season">${seasons.map(y =>
         `<option value="${y}"${y === ppage.season ? ' selected' : ''}>${y}</option>`).join('')}</select>` : '';
-      body = `<section class="bcard ccard"><div class="ccard-hd"><h2>${ppage.season} Game Log</h2>${pick}</div>
-        ${mine.length ? pLogTable(logSecs.length ? logSecs : secs, mine) : `<p class="bempty" style="padding:4px 20px 10px">No games for ${ppage.season}.</p>`}</section>`;
+      body = `<section class="bcard ccard pl-stats"><div class="ccard-hd"><h2>${ppage.season} Game Log</h2>${pick}</div>
+        ${mine.length ? pLogTables(logSecs.length ? logSecs : secs, mine) : `<p class="bempty" style="padding:4px 20px 10px">No games for ${ppage.season}.</p>`}</section>`;
     } else {
       let bySeason = seasons.slice().sort((a, b) => a - b).map(y => [y, pTot(rows.filter(r => seasonOf(r.x) === y))]);
       if (old25 && !bySeason.some(([y]) => y === 2025)) bySeason = [[2025, old25], ...bySeason].sort((a, b) => a[0] - b[0]);
