@@ -66,8 +66,11 @@ function scoreLine(d){
   if (/\bsafety\b/i.test(main)) return {how:'Safety', pts:2};
   // The try is in the last parentheses, or a trailing "Vega kick)" when the "(" went missing.
   const i = d.lastIndexOf('('), pat = i >= 0 ? d.slice(i + 1) : /\bkick\)?\s*$/i.test(d) ? 'kick' : '';
-  // "(Smith run)", "(Jones pass from Smith)" and "(Jones to Goentzel)" are two-point tries.
-  const extra = /fail|no good|miss|block|incomplete|no try|stopped|short/i.test(pat) ? 0 : /kick|good/i.test(pat) ? 1 : /\b(run|rush|pass|catch|to)\b/i.test(pat) ? 2 : 0;
+  // "(Smith run)", "(Jones pass from Smith)", "(Jones to Goentzel)" and "(conversion good)" are two-point tries; a kick
+  // is one point however it's written ("(Vega kick)", "(kick good)").
+  const failed = /fail|no good|miss|block|incomplete|no try|stopped|short|fumbl|bad snap|abort/i.test(pat);
+  const extra = failed ? 0 : /kick|\bpat\b/i.test(pat) ? 1 : /conversion|two[- ]?p(?:oin)?t|\b2[- ]?p(?:oin)?t/i.test(pat) ? 2
+    : /good/i.test(pat) ? 1 : /\b(run|rush|pass|catch|to)\b/i.test(pat) ? 2 : 0;
   return {how:'TD', pts:6 + extra};
 }
 
