@@ -86,7 +86,9 @@ function passOrder(v){
 
 function parseBox(txt){
   const out = {ok:false, error:'', names:[], lines:{A:[], H:[]}, total:{A:0, H:0}, scoring:[], pl:{A:{}, H:{}}, team:{A:{}, H:{}}, warn:[]};
-  const rows = String(txt || '').replace(/\r/g, '').split('\n').map(l => l.replace(/[ \t]+/g, ' ').trim()).filter(Boolean);
+  // A loss can be written out: "Sanderson 2-(minus 6)" is "2-(-6)".
+  const rows = String(txt || '').replace(/\r/g, '').replace(/\(\s*minus\s+(\d+)\s*\)/gi, '(-$1)').replace(/-\s*minus\s+(\d+)/gi, '-(-$1)')
+    .split('\n').map(l => l.replace(/[ \t]+/g, ' ').trim()).filter(Boolean);
   // "RUSHING: Andover — …", "RUSHING – Winfield: …", "RUSHING—Winfield, …", "PASSING (cmp-att-yds-td-int): …",
   // "Passing: (cmp-att-yds-td-int): Douglass – …"
   const SEC = /^(RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|MISSED FIELD GOALS|MISSED FGS?|FIELD GOAL ATTEMPTS|BLOCKED KICKS|INTERCEPTIONS|TACKLES|DEFENSE|DEFENSIVE|PUNTING|PUNT RETURNS|KICKOFF RETURNS|KICK RETURNS|FUMBLES|SACKS|TEAM STATS|TEAM STATISTICS)\b\s*[:—–-]?\s*(\([^)]*\))?\s*[:—–-]?\s*(.*)$/i;
@@ -264,6 +266,7 @@ function parseBox(txt){
         part.split(/;\s*|,\s*(?=[A-Za-z])|\.\s+/).map(x => x.trim().replace(/\.$/, '')).filter(Boolean).forEach(item => {
           // "McFadden 39", "McFadden, 36", "McFadden – 36 (blocked)": a name, then however it is separated
           // from the distances, if there are any.
+          if (/^(none|n\/?a|no(?:ne)? missed)$/i.test(item.replace(/[—–-]+/g, '').trim())) return;   // "Missed field goals — None."
           const m = item.match(/^([A-Za-z][A-Za-z.'’ -]*?)\s*[,;:–—-]?\s*(\d[\s\S]*)?$/);
           if (!m || !m[1].trim()) return;
           const who = m[1].trim(), s = s0 || whoseName(who);
@@ -292,7 +295,11 @@ function parseBox(txt){
         // A fumbles line can be one number ("Conrad 1"); every other kind has at least two ("Becker 8-81").
         const m = item.match(kind === 'fum' ? /^(.+?)\s+(\(?-?\d+\)?(?:\s*-\s*\(?-?\d+\)?)*)(.*)$/ : /^(.+?)\s+(\(?-?\d+\)?(?:\s*-\s*\(?-?\d+\)?)+)(.*)$/);
         if (!m) return;
-        const v = nums(m[2]), p = player(s, m[1]), td = tds(m[3]);
+        const v = nums(m[2]);
+        // Passing yards written after a space: "Telles 16-24-0 354" is cmp-att-int and then the yards.
+        let rest = m[3];
+        if (kind === 'pass'){ const y = rest.match(/^\s+(-?\d+)\b(?!\s*(?:td|tds|int|ints)\b)/i); if (y){ v.push(+y[1]); rest = rest.slice(y[0].length); } }
+        const p = player(s, m[1]), td = tds(rest);
         if (kind === 'rush'){ add(p, 'ru', v[0] || 0); add(p, 'ry', v[1] || 0); add(p, 'rtd', td); }
         if (kind === 'rec'){ add(p, 're', v[0] || 0); add(p, 'rey', v[1] || 0); add(p, 'retd', td); }
         if (kind === 'pass'){
