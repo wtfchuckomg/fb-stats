@@ -45,14 +45,19 @@ async function startStandings(){
 function avRecord(name, peer){
   const div = avctlDiv(name);
   const same = peer || (o => avctlDiv(o) === div);
-  const r = {gp:0, w:0, l:0, t:0, pf:0, pa:0, dgp:0, dw:0, dl:0, dt:0, dpf:0, dpa:0, hw:0, hl:0, ht:0, aw:0, al:0, at:0};
+  const r = {gp:0, w:0, l:0, t:0, pf:0, pa:0, dgp:0, dw:0, dl:0, dt:0, dpf:0, dpa:0, hw:0, hl:0, ht:0, aw:0, al:0, at:0,
+    beat:new Set(), lostTo:new Set()};   // league opponents beaten and lost to, for head-to-head
   schoolRows(name).forEach(row => {
     const f = finalOf(row.x); if (!f.fin) return;
     const us = f.score[row.side], them = f.score[row.opp];
     const i = us > them ? 'w' : us < them ? 'l' : 't';
     r.gp++; r.pf += us; r.pa += them; r[i]++;
     r[(row.side === 'H' ? 'h' : 'a') + i]++;
-    if (same(row.x.teams[row.opp].name)){ r.dgp++; r.dpf += us; r.dpa += them; r['d' + i]++; }
+    if (same(row.x.teams[row.opp].name)){
+      r.dgp++; r.dpf += us; r.dpa += them; r['d' + i]++;
+      const o = canonSchool(row.x.teams[row.opp].name);
+      if (i === 'w') r.beat.add(o); else if (i === 'l') r.lostTo.add(o);
+    }
   });
   return r;
 }
@@ -63,10 +68,28 @@ const allPct = r => r.w + r.l + r.t ? (r.w + r.t / 2) / (r.w + r.l + r.t) : .5;
 // overall percentage, and the name.
 const standOrder = (a, b) => avPct(b.r) - avPct(a.r) || (a.r.dl - b.r.dl) || (b.r.dw - a.r.dw)
   || allPct(b.r) - allPct(a.r) || a.name.localeCompare(b.name);
+// Teams level in the league are put in order (Chuck, 2026-10-07: "Collegiate beat El Dorado"): head-to-head among
+// them when they've all played each other, then league point differential, then the overall percentage and the name.
+// There's no official tiebreaker for a league title, so co-champions still show the same record.
+function standSort(rows){
+  rows = rows.slice().sort(standOrder);
+  const key = o => `${avPct(o.r).toFixed(4)}|${o.r.dl}|${o.r.dw}`, k = o => canonSchool(o.name), out = [];
+  for (let i = 0; i < rows.length;){
+    let j = i; while (j < rows.length && key(rows[j]) === key(rows[i])) j++;
+    const g = rows.slice(i, j), met = (a, b) => a.r.beat.has(k(b)) || a.r.lostTo.has(k(b));
+    const all = g.length > 1 && g.every(a => g.every(b => a === b || met(a, b)));
+    const h2h = o => { let w = 0, n = 0; g.forEach(b => { if (b === o) return;
+      if (o.r.beat.has(k(b))){ w++; n++; } else if (o.r.lostTo.has(k(b))) n++; }); return n ? w / n : .5; };
+    out.push(...g.sort((a, b) => (all ? h2h(b) - h2h(a) : 0) || ((b.r.dpf - b.r.dpa) - (a.r.dpf - a.r.dpa))
+      || allPct(b.r) - allPct(a.r) || a.name.localeCompare(b.name)));
+    i = j;
+  }
+  return out;
+}
 const avRec = (w, l, t) => `${w}-${l}${t ? '-' + t : ''}`;
 
 function standingsRows(div){
-  return AVCTL_DIV[div].map(name => ({name, r:avRecord(name), rec:shownRecord(name)})).sort(standOrder);
+  return standSort(AVCTL_DIV[div].map(name => ({name, r:avRecord(name), rec:shownRecord(name)})));
 }
 
 // One standings table: the league games first, then the whole season — the way a league table reads.

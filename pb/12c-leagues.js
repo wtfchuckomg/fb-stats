@@ -62,6 +62,6 @@ function lgStandingsHtml(){
   const head = leagueNav('standings');
   if (stand.err) return head + `<section class="bcard"><p class="bempty">${esc(stand.err)}</p></section>`;
   if (!allGames.list) return head + '<section class="bcard"><p class="bempty">Loading the league…</p></section>';
-  const rows = LG.teams.map(name => ({name, r:avRecord(name, o => !!lgOf(o)), rec:shownRecord(name)})).sort(standOrder);
+  const rows = standSort(LG.teams.map(name => ({name, r:avRecord(name, o => !!lgOf(o)), rec:shownRecord(name)})));
   return head + standingsCard('Standings', rows);
 }
