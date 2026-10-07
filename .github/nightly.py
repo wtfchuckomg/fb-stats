@@ -70,7 +70,8 @@ async () => {
   // link card each (players.py).
   const rosters = {}, rosterNames = {};
   const rs = await fsM.getDocs(fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true), fsM.where('kind', '==', 'roster')));
-  rs.forEach(d => {
+  // The admin's copies first: any admin edit overrides anything (Chuck, 2026-10-07), so his numbers are the ones kept.
+  [...rs.docs].sort((a, b) => (b.data().owner === ADMIN_UID) - (a.data().owner === ADMIN_UID)).forEach(d => {
     const v = d.data(); if (!v || v.deleted || !v.json) return;
     try {
       const r = JSON.parse(v.json), k = canonSchool(r.name), cur = rosters[k] || (rosters[k] = {});
