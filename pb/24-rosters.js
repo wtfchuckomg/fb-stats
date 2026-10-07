@@ -26,12 +26,17 @@ function rostersFor(name){
   return (sharedRosters.list || []).filter(r => canonSchool(r.name) === k && Object.keys(r.roster).length && !(sync.user && r.owner === sync.user.uid))
     .sort((a, b) => (b.updated || 0) - (a.updated || 0));
 }
+// The admin's own copy of a school's roster wins whenever there is one, newest first: a roster fixed on the school's
+// page has to be the one shown, even when another copy has more lines. Wichita Collegiate (2026-10-07): a scorer's
+// 32-line copy listed Landon Langston twice, as #11 and #13, and hid Chuck's corrected 31 with him as 11/13.
+const adminCopy = list => list.filter(r => r.owner === ADMIN_UID).sort((a, b) => (b.updated || 0) - (a.updated || 0))[0] || null;
 // The roster a new game starts with: the fullest copy there is — this device's saved team, a roster saved on the
 // school's page, or another scorer's — newest on a tie. Your own shared copies count too (a page's roster is yours).
 function bestRoster(name){
   const k = name && canonSchool(name); if (!k) return null;
   const all = (sharedRosters.list || []).filter(r => canonSchool(r.name) === k && Object.keys(r.roster || {}).length)
-    .map(r => ({roster:r.roster, updated:r.updated || 0, from:'shared'}));
+    .map(r => ({roster:r.roster, updated:r.updated || 0, from:'shared', owner:r.owner}));
+  const boss = adminCopy(all); if (boss) return boss;
   const mine = (typeof savedTeams === 'function' ? savedTeams() : []).find(t => canonSchool(t.name) === k && Object.keys(t.roster || {}).length);
   if (mine) all.push({roster:mine.roster, updated:mine.updated || 0, from:'saved'});
   return all.sort((a, b) => Object.keys(b.roster).length - Object.keys(a.roster).length || b.updated - a.updated)[0] || null;
@@ -54,10 +59,11 @@ function fillSetupRoster(s){
 function rosterFor(name){
   const k = name && canonSchool(name); if (!k) return null;
   const all = (sharedRosters.list || []).filter(r => canonSchool(r.name) === k && Object.keys(r.roster || {}).length)
-    .map(r => ({roster:r.roster, updated:r.updated || 0}));
+    .map(r => ({roster:r.roster, updated:r.updated || 0, owner:r.owner}));
   const mine = (typeof savedTeams === 'function' ? savedTeams() : []).find(t => canonSchool(t.name) === k && Object.keys(t.roster || {}).length);
   if (mine) all.push({roster:mine.roster, updated:mine.updated || 0});
-  const best = all.map(r => Object.assign(r, {count:Object.keys(r.roster).length}))
+  const boss = adminCopy(all);
+  const best = boss ? Object.assign(boss, {count:Object.keys(boss.roster).length}) : all.map(r => Object.assign(r, {count:Object.keys(r.roster).length}))
     .sort((a, b) => b.count - a.count || b.updated - a.updated)[0];
   if (!best) return null;
   return {players:Object.entries(best.roster).map(([num, v]) => ({num:String(num), name:playerName(v)}))
