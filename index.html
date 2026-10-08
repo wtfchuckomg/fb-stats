@@ -7109,7 +7109,7 @@ function loadRosterNames(){
 function rosterNamesOf(team){
   const k = canonSchool(team), out = [];
   (rosterBook.map || new Map()).forEach((names, school) => { if (canonSchool(school) === k) out.push(...names); });
-  ((typeof sharedRosters !== 'undefined' && sharedRosters.list) || []).forEach(r => {
+  ((typeof sharedRosters !== 'undefined' && sharedRosters.list) || []).slice().sort((a, b) => (b.owner === ADMIN_UID) - (a.owner === ADMIN_UID)).forEach(r => {
     if (canonSchool(r.name) === k) Object.values(r.roster || {}).forEach(v => { const n = playerName(v); if (n) out.push(n); });
   });
   return out;
@@ -7131,11 +7131,38 @@ function nickBook(team){
   if (!nickCache.by.has(k)){
     const book = new Map();
     // Any roster name, however its apostrophes were typed; and a nicknamed one by each of its forms.
-    rosterNamesOf(team).forEach(f => { if (!isFullName(f)) return; book.set(nameKey(f), f);
-      const n = nickParts(f); if (n) [n.plain, n.short].forEach(v => book.set(nameKey(v), f)); });
+    const list = rosterNamesOf(team).filter(f => isFullName(f));
+    list.forEach(f => { book.set(nameKey(f), f); const n = nickParts(f); if (n) [n.plain, n.short].forEach(v => book.set(nameKey(v), f)); });
+    book.list = list;   // the roster names in order, the admin's first
     nickCache.by.set(k, book);
   }
   return nickCache.by.get(k);
+}
+// First names that are the same name (Chuck, 2026-10-07: "a William Quinn and a Will Quinn"): one the start of the
+// other ("Will", "William"; "Max", "Maximus"; "Gio", "Giovanny"), or a nickname that isn't ("Charlie", "Charles").
+const FIRST_NICKS = {charlie:['charles'], chuck:['charles'], bill:['william'], billy:['william'], bob:['robert'], bobby:['robert'],
+  robbie:['robert'], mike:['michael'], mikey:['michael'], jimmy:['james'], jamie:['james'], tony:['anthony'], drew:['andrew'],
+  jake:['jacob'], gabe:['gabriel'], zeke:['ezekiel'], nate:['nathan', 'nathaniel'], danny:['daniel'], johnny:['john', 'jonathan'],
+  joe:['joseph'], joey:['joseph'], tommy:['thomas'], timmy:['timothy'], ricky:['richard'], rick:['richard'], steve:['steven', 'stephen'],
+  dave:['david'], davey:['david'], teddy:['theodore', 'edward'], hank:['henry'], harry:['henry', 'harold'], jerry:['gerald', 'jerome'],
+  larry:['lawrence'], ronnie:['ronald'], pete:['peter'], xander:['alexander'], zack:['zachary'], manny:['emmanuel', 'manuel']};
+function sameFirst(a, b){
+  if (!a || !b || a === b) return false;
+  const [s, l] = a.length <= b.length ? [a, b] : [b, a];
+  return (s.length >= 3 && l.startsWith(s)) || (FIRST_NICKS[s] || []).includes(l) || (FIRST_NICKS[l] || []).includes(s);
+}
+// A full name and the other spellings of it on the same team: the roster's own (the admin's first), or else the
+// longest first name. Left alone when the short name could be two different people (Chris: Christopher, Christian).
+function sameNameAs(team, nm, played){
+  const split = f => { const n = nickParts(f), w = (n ? n.plain : f).split(/\s+/); return {first:nameKey(w[0]), last:nameKey(w.slice(1).join(' '))}; };
+  const me = split(nm), roster = nickBook(team).list || [], seen = new Map();
+  [...roster, ...(played || [])].forEach(f => { if (isFullName(f) && !seen.has(nameKey(f))) seen.set(nameKey(f), f); });
+  const group = [...seen.values()].filter(f => { const o = split(f); return o.last === me.last && sameFirst(o.first, me.first); });
+  if (!group.length) return nm;
+  const firsts = [...new Set(group.map(f => split(f).first).filter(f => f.length > me.first.length))];
+  if (firsts.length > 1 && firsts.some((a, i) => firsts.some((b, j) => i !== j && !sameFirst(a, b)))) return nm;
+  const all = [nm, ...group];
+  return roster.find(r => all.some(f => nameKey(f) === nameKey(r))) || all.sort((a, b) => split(b).first.length - split(a).first.length)[0];
 }
 // "J." or "J" in front of a last name is an initial, not a first name.
 const isInitial = w => /^[a-z]\.?$/i.test(w);
@@ -7159,13 +7186,14 @@ function playedNames(games){
 function fullNameOf(team, raw, played){
   const nm = playerName(raw).trim(), w = nm.split(/\s+/);
   if (!nm || nm.startsWith('#')) return nm;
-  const nick = nickBook(team).get(nameKey(nm)); if (nick) return nick;   // "King Anderson" is A’Keem "King" Anderson
-  if (isFullName(nm)) return nm;
+  const nick = nickBook(team).get(nameKey(nm));   // "King Anderson" is A’Keem "King" Anderson
+  if (isFullName(nm)) return sameNameAs(team, nick || nm, played);   // and "William Quinn" is Will Quinn
   const init = w.length > 1 ? w[0][0].toLowerCase() : '', last = (w.length > 1 ? w.slice(1) : w).join(' ').toLowerCase();
   const pool = new Map();
   [...rosterNamesOf(team), ...(played || [])].forEach(f => { if (isFullName(f) && !pool.has(f.toLowerCase())) pool.set(f.toLowerCase(), f); });
   const fits = [...pool.values()].filter(f => { const n = nickParts(f), p = (n ? n.plain : f).split(/\s+/);
     return nameKey(p.slice(1).join(' ')) === nameKey(last) && (!init || p[0][0].toLowerCase() === init || (n && n.nick[0].toLowerCase() === init)); });
+  if (nick) return nick;
   if (fits.length === 1) return fits[0];
   const touched = fits.filter(f => played && [...played].some(q => q.toLowerCase() === f.toLowerCase()));
   return touched.length === 1 ? touched[0] : nm;
