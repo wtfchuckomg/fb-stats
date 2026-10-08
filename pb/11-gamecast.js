@@ -172,7 +172,11 @@ function viewBoxTab(){
   const val = (p, key) => typeof key === 'function' ? key(p) || 0 : p[key] || 0;
   const pick = (s, keep, key) => Object.values(R.S.pl[s]).filter(keep).sort((a, b) => (a.n === 'team') - (b.n === 'team') || val(b, key) - val(a, key));
   let h = '';
-  for (const [title, heads, keep, row, key] of BOX_CATS){
+  // A pasted box score has no longest gains and no sacks to show (Chuck, 2026-10-08): those columns go, a gamecast keeps them.
+  const gone = g.box ? ['Lng', 'Sack'] : [];
+  for (const [title, heads0, keep, row0, key] of BOX_CATS){
+    const keepCol = heads0.map(x => !gone.includes(x));
+    const heads = heads0.filter((x, i) => keepCol[i]), row = p => row0(p).filter((v, i) => keepCol[i]);
     const lists = {A:pick('A', keep, key), H:pick('H', keep, key)};
     if (!lists.A.length && !lists.H.length) continue;
     const table = s => `<div><div class="bx-team">${teamMark(s, 22)}${ui.viewer ? `<a class="tlink" href="?team=${encodeURIComponent(T[s].name)}">${esc(T[s].name)}</a>` : esc(T[s].name)}</div>${lists[s].length

@@ -4547,7 +4547,11 @@ function viewBoxTab(){
   const val = (p, key) => typeof key === 'function' ? key(p) || 0 : p[key] || 0;
   const pick = (s, keep, key) => Object.values(R.S.pl[s]).filter(keep).sort((a, b) => (a.n === 'team') - (b.n === 'team') || val(b, key) - val(a, key));
   let h = '';
-  for (const [title, heads, keep, row, key] of BOX_CATS){
+  // A pasted box score has no longest gains and no sacks to show (Chuck, 2026-10-08): those columns go, a gamecast keeps them.
+  const gone = g.box ? ['Lng', 'Sack'] : [];
+  for (const [title, heads0, keep, row0, key] of BOX_CATS){
+    const keepCol = heads0.map(x => !gone.includes(x));
+    const heads = heads0.filter((x, i) => keepCol[i]), row = p => row0(p).filter((v, i) => keepCol[i]);
     const lists = {A:pick('A', keep, key), H:pick('H', keep, key)};
     if (!lists.A.length && !lists.H.length) continue;
     const table = s => `<div><div class="bx-team">${teamMark(s, 22)}${ui.viewer ? `<a class="tlink" href="?team=${encodeURIComponent(T[s].name)}">${esc(T[s].name)}</a>` : esc(T[s].name)}</div>${lists[s].length
@@ -6646,12 +6650,11 @@ function parseBox(txt){
     const re = new RegExp(`(?:^\\s*|[.;:)]\\s*)(${alts.map(escRe).join('|')})\\s*(?:[—–:,]|\\s-)\\s*`, 'gi'), hits = [...body.matchAll(re)];
     return hits.map((h, i) => [sideOf(h[1]), body.slice(h.index + h[0].length, i + 1 < hits.length ? hits[i + 1].index : undefined)]).filter(x => x[0]);
   };
+  // No scoring summary at all: the stat lines are the only place touchdowns can come from.
+  const noSummary = !out.scoring.some(e => e.how === 'TD');
   // A section with no team names in it belongs to the team named on the line above it, if there was one.
   const teamsOf = sc => { const t = splitTeams(sc.body); return t.length ? t : sc.side ? [[sc.side, sc.body]] : []; };
   const kicked = new Set(), missed = new Set();   // kickers a section has already counted
-  // Players whose own line said how many touchdowns they had ("8-81, 2 TD", "4-101-3", a passing TD column). The scoring
-  // summary credits everyone else — a player at a time, so one marked line can't keep another man's scores off.
-  const told = {rtd:new Set(), retd:new Set(), ptd:new Set()};
   for (const sc of sections){
     const K = sc.kind.toUpperCase();
     const kind = /^RUSH/.test(K) ? 'rush' : /^PASS/.test(K) ? 'pass' : /^REC/.test(K) ? 'rec'
@@ -6746,24 +6749,23 @@ function parseBox(txt){
         let rest = m[3];
         if (kind === 'pass'){ const y = rest.match(/^\s+(-?\d+)\b(?!\s*(?:td|tds|int|ints)\b)/i); if (y){ v.push(+y[1]); rest = rest.slice(y[0].length); } }
         const p = player(s, m[1]), td = tds(rest);
-        // Rushing and receiving: the number, the yards, and a third number is touchdowns — "4-101-3" is four carries or
-        // catches for 101 yards and three scores (Chuck, 2026-10-08) — unless the heading names its columns otherwise.
+        // Rushing and receiving: the number and the yards. With no scoring summary to take touchdowns from, a third
+        // number is touchdowns — "4-101-3" is four carries or catches for 101 yards and three scores (Chuck,
+        // 2026-10-08). A box with a summary reads as it always has: its touchdowns come from the summary.
         if (kind === 'rush' || kind === 'rec'){
           const RC = {att:'n', atts:'n', car:'n', carries:'n', rushes:'n', no:'n', rec:'n', recs:'n', receptions:'n', catches:'n',
             yds:'y', yards:'y', yd:'y', yard:'y', td:'td', tds:'td', lng:'lng', long:'lng', lg:'lng'};
-          const cols = named.length ? named.map(w => RC[w] || w) : ['n', 'y', 'td'], f = {};
+          const cols = named.length ? named.map(w => RC[w] || w) : noSummary ? ['n', 'y', 'td'] : ['n', 'y'], f = {};
           cols.forEach((c, i) => { if (v[i] != null) f[c] = v[i]; });
           // No more touchdowns than carries or catches: "1-(1-2)" is a typo, not two scores.
           if (f.td != null && (f.td < 0 || f.td > Math.max(f.n || 0, 0))) delete f.td;
           const [n, y, t, lg] = kind === 'rush' ? ['ru', 'ry', 'rtd', 'rlg'] : ['re', 'rey', 'retd', 'relg'];
           add(p, n, f.n || 0); add(p, y, f.y || 0); add(p, t, td || f.td || 0);
-          if ((td || f.td || 0) > 0) told[t].add(p);   // a 0 is a blank column, not a claim: the summary may still credit him
           if (f.lng != null) p[lg] = Math.max(+p[lg] || 0, f.lng);
         }
         if (kind === 'pass'){
           const f = {}; (order.length ? order : passOrder(v)).forEach((k, i) => { f[k] = v[i] || 0; });
           add(p, 'pc', f.cmp || f.c || 0); add(p, 'pa', f.att || f.a || 0); add(p, 'py', f.yds || f.y || 0); add(p, 'ptd', f.td || 0); add(p, 'pint', f.int || f.i || 0);
-          if ((f.td || 0) > 0) told.ptd.add(p);
         }
         if (KIND_COLS[kind]){
           const {keys} = KIND_COLS[kind], f = {};
@@ -6797,23 +6799,13 @@ function parseBox(txt){
   const RETS = String.raw`(?:fumble|interception|int|kickoff|kick|punt|blocked\s+(?:punt|kick|field\s+goal|fg))`;
   const RET = [new RegExp(String.raw`^(.+?)\s+${YD}\s+${RETS}\s+return\b`, 'i'), new RegExp(String.raw`^${YD}\s+${RETS}\s+return\s+(?:by\s+)?(.+)$`, 'i')];
   ['A', 'H'].forEach(s => {
-    // A section none of whose lines gave touchdowns takes them all from the summary, adding the man if need be. One
-    // where some lines did fills in only the players already listed in it whose lines didn't — a summary's
-    // spelling ("Crumine" for Crumrine) must not add a second man with the scores.
-    const mine = Object.values(out.pl[s]), marked = k => mine.some(p => told[k].has(p));
-    const listed = raw => { const name = display(s, raw.trim()), keys = Object.keys(out.pl[s]).filter(n => n !== 'team');
-      const exact = keys.find(n => n.toLowerCase() === name.toLowerCase()); if (exact) return out.pl[s][exact];
-      const same = keys.filter(n => lastName(n) === lastName(name)); return same.length === 1 ? out.pl[s][same[0]] : null; };
-    const credit = (raw, k) => {
-      if (!marked(k)) return add(player(s, raw), k, 1);
-      const p = listed(raw); if (p && !told[k].has(p)) add(p, k, 1);
-    };
+    const has = k => Object.values(out.pl[s]).some(p => p[k]), noR = !has('rtd'), noRe = !has('retd'), noP = !has('ptd');
     out.scoring.filter(e => e.side === s && e.how === 'TD').map(e => e.desc.split('(')[0].trim()).forEach(d => {
       const r = RUN.map(re => d.match(re)).find(Boolean);
-      if (r){ credit(r[1], 'rtd'); return; }
+      if (r){ if (noR) add(player(s, r[1]), 'rtd', 1); return; }
       for (const [re, ri, qi] of PASS){
         const m = d.match(re);
-        if (m){ credit(m[ri], 'retd'); credit(m[qi], 'ptd'); return; }
+        if (m){ if (noRe) add(player(s, m[ri]), 'retd', 1); if (noP) add(player(s, m[qi]), 'ptd', 1); return; }
       }
       // Return touchdowns ("Higgins 4 fumble return", "22 yd punt return Smith"); no stat line carries these.
       const t = RET.map(re => d.match(re)).find(Boolean);
