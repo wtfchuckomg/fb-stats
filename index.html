@@ -7131,12 +7131,38 @@ function nickBook(team){
   if (!nickCache.by.has(k)){
     const book = new Map();
     // Any roster name, however its apostrophes were typed; and a nicknamed one by each of its forms.
-    const list = rosterNamesOf(team).filter(f => isFullName(f));
+    const list = [...new Set(rosterNamesOf(team).filter(f => isFullName(f)))];
     list.forEach(f => { book.set(nameKey(f), f); const n = nickParts(f); if (n) [n.plain, n.short].forEach(v => book.set(nameKey(v), f)); });
     book.list = list;   // the roster names in order, the admin's first
     nickCache.by.set(k, book);
   }
   return nickCache.by.get(k);
+}
+// A name one letter off a roster name on the same team is that player, under the roster's spelling — the rosters are
+// copied from the schools (Chuck, 2026-10-08): Konor → Konnor Bretthauer, Izreal → Izrael Telles, Caluido → Caludio
+// Mussback. One letter missing, extra or wrong, or two side by side swapped. A name that is itself on the roster is
+// never moved, so two players whose names are a letter apart stay two.
+function oneLetterOff(a, b){
+  if (a === b || Math.abs(a.length - b.length) > 1) return false;
+  let i = 0; while (i < a.length && a[i] === b[i]) i++;
+  if (a.length === b.length){
+    if (a.slice(i + 1) === b.slice(i + 1)) return true;                                         // one wrong
+    return a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2);         // two swapped
+  }
+  const [lo, sh] = a.length > b.length ? [a, b] : [b, a];
+  return lo.slice(i + 1) === sh.slice(i);                                                        // one missing
+}
+function rosterSpelling(team, nm, played){
+  const roster = nickBook(team).list || [], k = nameKey(nm);
+  if (roster.some(r => nameKey(r) === k)) return nm;
+  const near = key => roster.filter(r => { const n = nickParts(r); return [r, n && n.plain].some(f => f && nameKey(f).length >= 8 && oneLetterOff(nameKey(f), key)); });
+  const one = near(k); if (one.length === 1) return one[0];
+  if (one.length) return nm;
+  // Or two steps, a letter at a time, through another spelling seen this season: "Ja'Myais Galdwell" → "Ja'Myais
+  // Caldwell" → the roster's Ja'Myias Caldwell. Never through a name that is itself on the roster.
+  const via = new Set();
+  (played || []).forEach(p => { const pk = nameKey(p); if (pk.length >= 8 && oneLetterOff(pk, k) && !roster.some(r => nameKey(r) === pk)) near(pk).forEach(r => via.add(r)); });
+  return via.size === 1 ? [...via][0] : nm;
 }
 // First names that are the same name (Chuck, 2026-10-07: "a William Quinn and a Will Quinn"): one the start of the
 // other ("Will", "William"; "Max", "Maximus"; "Gio", "Giovanny"), or a nickname that isn't ("Charlie", "Charles").
@@ -7187,7 +7213,7 @@ function fullNameOf(team, raw, played){
   const nm = playerName(raw).trim(), w = nm.split(/\s+/);
   if (!nm || nm.startsWith('#')) return nm;
   const nick = nickBook(team).get(nameKey(nm));   // "King Anderson" is A’Keem "King" Anderson
-  if (isFullName(nm)) return sameNameAs(team, nick || nm, played);   // and "William Quinn" is Will Quinn
+  if (isFullName(nm)) return sameNameAs(team, nick || rosterSpelling(team, nm, played), played);   // and "William Quinn" is Will Quinn
   const init = w.length > 1 ? w[0][0].toLowerCase() : '', last = (w.length > 1 ? w.slice(1) : w).join(' ').toLowerCase();
   const pool = new Map();
   [...rosterNamesOf(team), ...(played || [])].forEach(f => { if (isFullName(f) && !pool.has(f.toLowerCase())) pool.set(f.toLowerCase(), f); });
