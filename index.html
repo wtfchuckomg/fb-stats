@@ -6534,7 +6534,8 @@ function parseBox(txt){
   // "RUSHING: Andover — …", "RUSHING – Winfield: …", "RUSHING—Winfield, …", "PASSING (cmp-att-yds-td-int): …",
   // "Passing: (cmp-att-yds-td-int): Douglass – …"
   const SEC = /^(RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|MISSED FIELD GOALS|MISSED FGS?|FIELD GOAL ATTEMPTS|BLOCKED KICKS|INTERCEPTIONS|TACKLES|DEFENSE|DEFENSIVE|PUNTING|PUNT RETURNS|KICKOFF RETURNS|KICK RETURNS|FUMBLES|SACKS|TEAM STATS|TEAM STATISTICS)\b\s*[:—–-]?\s*(\([^)]*\))?\s*[:—–-]?\s*(.*)$/i;
-  const QTR = /^(?:(first|second|third|fourth|1st|2nd|3rd|4th)\s+(?:quarter|qtr)|(ot|overtime))\b/i;
+  // "First Quarter", "1st Qtr", "3rd Q", "3Q", "Q3", "OT".
+  const QTR = /^(?:(first|second|third|fourth|1st|2nd|3rd|4th)\s*(?:quarter|qtr|q)|([1-4])\s*(?:qtr|q)|q\s*([1-4])|(ot|overtime))\b/i;
   const QN = {first:1, '1st':1, second:2, '2nd':2, third:3, '3rd':3, fourth:4, '4th':4};
   // Which team a label like "And", "Hutch" or "Andover" means.
   const sideOf = label => {
@@ -6570,7 +6571,7 @@ function parseBox(txt){
     // "1st Quarter" as a heading, or in front of the play itself: "1st Quarter: McPherson: Becker 2 run (Hoover kick)".
     const qh = l.match(QTR);
     if (qh){
-      curQ = qh[2] ? 5 : QN[qh[1].toLowerCase()]; sec = null;
+      curQ = qh[4] ? 5 : qh[2] || qh[3] ? +(qh[2] || qh[3]) : QN[qh[1].toLowerCase()]; sec = null;
       const rest = l.slice(qh[0].length).replace(/^\s*[:—–.-]\s*/, '').trim();
       if (!rest) continue;
       l = rest;
