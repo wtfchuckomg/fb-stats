@@ -89,8 +89,12 @@ function ourLine(A, H){
   // and slugfests lower than they come out. Counting only half its distance from the group's average takes the
   // miss on the total from 13.33 points to 12.91 in 11-man, 15.42 to 14.74 in 8-man and 17.70 to 16.95 in
   // 6-man — every group, walking the seasons forward a week at a time. The margin is left exactly as it was.
+  // In 11-man the total's own opinion comes from the log fit (see LOG_K in .github/kp/ratings.py): a team that
+  // never scores stops looking average against a soft defense.
+  const lg = g.log, logged = lg && h.lo != null && a.lo != null;
+  const raw = logged ? lg.scale * (Math.exp(lg.mu + h.lo + a.ld + lg.hfa / 2) + Math.exp(lg.mu + a.lo + h.ld - lg.hfa / 2) - 2 * lg.k) : hp + ap;
   const base = 2 * g.mu, marg = hp - ap;
-  const total = base + (hp + ap - base) * TOTAL_PULL;
+  const total = base + (raw - base) * TOTAL_PULL;
   const hs = (total + marg) / 2, as = (total - marg) / 2;
   return {home:hs, away:as, spread:round1(marg), total:round1(total), hs:Math.round(hs), as:Math.round(as), thin:Math.min(a.gp, h.gp) < 6};
 }

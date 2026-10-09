@@ -34,6 +34,13 @@ OLDER = .3        # each season before that counts this much again
 # was tried here as well and made every group worse — the fit already prices the schedule in, because each
 # team's rating is worked out alongside its opponents'.
 FORM = 8.0
+# The total, 11-man only, comes from a second fit on log(points + 14) rather than points. On straight points a
+# team that never scores looks close to average against a soft defense: its shutouts against good teams are
+# blamed on those teams, and a score can't go below zero to show how far below it really is. Circle at El Dorado
+# priced at 55 when neither had scored 30 in years. Walked forward over 2024-2026 (2,382 games) the total missed
+# by 13.29 points; on the log fit, times 1.10 to undo the log's lean toward the low side, 13.00 — better in every
+# season. 8-man and 6-man got worse on it (14.22 to 14.78, 18.67 to 19.08), so they keep the straight fit.
+LOG_K, LOG_SCALE, LOG_GROUPS = 14, 1.10, ('11-man',)
 W_YEAR = None     # worked out per season below
 slug = lambda s: re.sub(r'^-+|-+$', '', re.sub(r'[^a-z0-9]+', '-', (s or '').lower().strip()))
 
@@ -210,6 +217,11 @@ def main():
         m = fit(mine, season=YEAR_NOW, played_weeks=weeks_in, cls=cls)
         form = form_of(m, [g for g in mine if g['year'] == YEAR_NOW])
         out['groups'][name] = {'mu': round(m['mu'], 2), 'hfa': round(m['hfa'], 2), 'games': len(mine)}
+        lg = None
+        if name in LOG_GROUPS:
+            lg = fit([dict(g, hp=math.log(g['hp'] + LOG_K), ap=math.log(g['ap'] + LOG_K)) for g in mine],
+                     season=YEAR_NOW, played_weeks=weeks_in)
+            out['groups'][name]['log'] = {'mu': round(lg['mu'], 4), 'hfa': round(lg['hfa'], 4), 'k': LOG_K, 'scale': LOG_SCALE}
         for n in m['off']:
             off, dfn = m['off'][n], m['def'][n]
             f = form.get(n)
@@ -220,7 +232,8 @@ def main():
                 lift = (off - dfn) * b / 2
                 off, dfn = off + lift, dfn - lift
             out['teams'][n] = {'name': teams.get(n, n), 'group': name, 'off': round(off, 2), 'def': round(dfn, 2),
-                               'rating': round(off - dfn, 2), 'gp': m['gp'].get(n, 0), **({'bump': b} if b else {})}
+                               'rating': round(off - dfn, 2), 'gp': m['gp'].get(n, 0), **({'bump': b} if b else {}),
+                               **({'lo': round(lg['off'].get(n, 0), 4), 'ld': round(lg['def'].get(n, 0), 4)} if lg else {})}
         top = sorted([r for r in out['teams'].values() if r['group'] == name], key=lambda r: -r['rating'])[:8]
         print(f"{name}: {len(mine)} games · home field {m['hfa']:.2f} · average points {m['mu']:.1f}")
         for r in top:
