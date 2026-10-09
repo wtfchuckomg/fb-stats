@@ -30,7 +30,7 @@ const sameSchool = (a, b) => { const x = logoSlug(a), y = logoSlug(b); return !!
 // "Will Quinn 79 run (Vega kick); 3:45" — and sometimes at the front instead.
 function pullTime(d){
   const s = String(d).trim();
-  let m = s.match(/[;,–—-]?\s*\(?(\d{1,2}:\d{2})\)?\s*(?:left|remaining|to go)?\s*[.]?\s*$/);
+  let m = s.match(/[;,–—-]?\s*\(?(\d{1,2}:\d{2})(?:\.\d+)?\)?\s*(?:left|remaining|to go)?\s*[.]?\s*$/);
   if (m) return {desc:s.slice(0, m.index).replace(/[;,\s–—-]+$/, '').trim(), time:m[1]};
   m = s.match(/^\(?(\d{1,2}:\d{2})\)?\s*[;,—–-]?\s*/);
   if (m) return {desc:s.slice(m[0].length).trim(), time:m[1]};
@@ -87,8 +87,11 @@ function passOrder(v){
 function parseBox(txt){
   const out = {ok:false, error:'', names:[], lines:{A:[], H:[]}, total:{A:0, H:0}, scoring:[], pl:{A:{}, H:{}}, team:{A:{}, H:{}}, warn:[]};
   // A loss can be written out: "Sanderson 2-(minus 6)" is "2-(-6)".
-  const rows = String(txt || '').replace(/\r/g, '').replace(/\(\s*minus\s+(\d+)\s*\)/gi, '(-$1)').replace(/-\s*minus\s+(\d+)/gi, '-(-$1)')
-    .split('\n').map(l => l.replace(/[ \t]+/g, ' ').trim()).filter(Boolean);
+  const raw = String(txt || '').replace(/\r/g, '').replace(/\(\s*minus\s+(\d+)\s*\)/gi, '(-$1)').replace(/-\s*minus\s+(\d+)/gi, '-(-$1)')
+    .split('\n').filter(l => l.trim());
+  const rows = raw.map(l => l.replace(/[ \t]+/g, ' ').trim());
+  // A line pasted from a table keeps its tabs here, one cell apiece.
+  const cellsOf = raw.map(l => /\t/.test(l.trim()) ? l.split('\t').map(x => x.trim()).filter(Boolean) : null);
   // "RUSHING: Andover — …", "RUSHING – Winfield: …", "RUSHING—Winfield, …", "PASSING (cmp-att-yds-td-int): …",
   // "Passing: (cmp-att-yds-td-int): Douglass – …"
   const SEC = /^(RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|MISSED FIELD GOALS|MISSED FGS?|FIELD GOAL ATTEMPTS|BLOCKED KICKS|INTERCEPTIONS|TACKLES|DEFENSE|DEFENSIVE|PUNTING|PUNT RETURNS|KICKOFF RETURNS|KICK RETURNS|FUMBLES|SACKS|TEAM STATS|TEAM STATISTICS)\b\s*[:—–-]?\s*(\([^)]*\))?\s*[:—–-]?\s*(.*)$/i;
@@ -102,11 +105,56 @@ function parseBox(txt){
       return !n ? 0 : n === k ? 3 : ini === k ? 2 : n.startsWith(k) || k.startsWith(n) ? 1 : 0; });
     return score[0] > score[1] ? 'A' : score[1] > score[0] ? 'H' : null;
   };
+  // Which team comes first in a line naming both, "Newton  Eisenhower": the words the two names don't share.
+  const firstSide = text => {
+    const t = text.toLowerCase(), words = s => (out.names[s === 'A' ? 0 : 1] || '').toLowerCase().split(/[\s-]+/).filter(w => w.length > 2);
+    const pos = s => { const other = words(s === 'A' ? 'H' : 'A'), at = words(s).filter(w => !other.includes(w)).map(w => t.indexOf(w)).filter(i => i >= 0);
+      return at.length ? Math.min(...at) : Infinity; };
+    return pos('H') < pos('A') ? 'H' : 'A';
+  };
+  // A team stats table's row labels, in the words the team stats reader knows: "Rushing-yards" is "rushing",
+  // "Comp-att-int" is "passing", "Punts-avg." is "punts".
+  const tableLabel = t => {
+    t = t.replace(/[-\s]+(?:yards|yds|yd|avg|average)\b\.?/gi, '').replace(/[.:]+$/, '').trim();
+    return /^(?:pass(?:ing)?\s+)?c(?:omp)?(?:letions)?[-\s]*a(?:tt)?(?:empts)?[-\s]*i(?:nt)?/i.test(t) || /^pass(?:es|ing)?$/i.test(t) ? 'passing'
+      : /^rush(?:es|ing)?(?:\s+att(?:empts)?)?$/i.test(t) ? 'rushing' : /^(?:3rd|third) downs?/i.test(t) ? 'third downs'
+      : /^(?:4th|fourth) downs?/i.test(t) ? 'fourth downs' : /^sack/i.test(t) ? 'sacks' : /^int(?:erceptions?)?\s+ret/i.test(t) ? 'interception returns'
+      : /^punt(?:s|ing)?(?:\s+no)?$/i.test(t) ? 'punts' : /^time of poss/i.test(t) ? 'time of possession' : t;
+  };
   const sections = [];
   let sec = null, curQ = 0, teamAbove = null;   // teamAbove: a team's name on its own line, over its stat lines
-  for (let l of rows){
+  let tbl = null;   // reading a two-column team stats table
+  for (let [ri, l] of rows.entries()){
+    // "Team statistics", then "Newton  Eisenhower", then a row a stat: "First downs  13  14", "Rushing-yards  41-140  33-156".
+    if (tbl){
+      const cells = cellsOf[ri];
+      const r = cells && cells.length >= 3 ? [null, cells.slice(0, -2).join(' '), ...cells.slice(-2)]
+        : l.match(/^([A-Za-z\d].*?)\s+(-?[\d(][\d().:-]*|n\/a)\s+(-?[\d(][\d().:-]*|n\/a)$/i);
+      if (r && /[A-Za-z]/.test(r[1])){
+        // "by Run 6 14" under "First Downs 14 22" belongs to the first downs.
+        const by = r[1].match(/^(?:by\s+)?(run|rush(?:ing)?|pass(?:ing)?|penalt(?:y|ies))$/i), at = tbl.fd;
+        tbl.order.forEach((s, i) => {
+          if (by && at != null) sec.parts[s][at] += `, ${by[1].toLowerCase().replace(/^run$/, 'rushing')} ${r[i + 2]}`;
+          else { const what = tableLabel(r[1]); if (/^first downs?$/i.test(what)) tbl.fd = sec.parts[s].length; sec.parts[s].push(`${what} ${r[i + 2]}`); }
+        });
+        tbl.head = true; continue;
+      }
+      if (!tbl.head && !/\d/.test(l)){
+        tbl.head = true;
+        const first = cells && cells.length === 2 ? firstSide(cells[0] + ' ' + ' '.repeat(99) + cells[1]) : firstSide(l);
+        tbl.order = first === 'H' ? ['H', 'A'] : ['A', 'H'];
+        continue;
+      }
+      // Not a table after all ("Andover — First downs 14, …" under the heading): read it the usual way.
+      if (!sec.parts.A.length && !sec.parts.H.length) delete sec.parts;
+      tbl = null;
+    }
     const m = l.match(SEC);
-    if (m){ sec = {kind:m[1].toUpperCase(), head:m[2] || '', body:m[3], side:teamAbove}; sections.push(sec); continue; }
+    if (m){
+      sec = {kind:m[1].toUpperCase(), head:m[2] || '', body:m[3], side:teamAbove}; sections.push(sec);
+      if (/^TEAM/.test(sec.kind) && !m[3].trim() && out.names.length === 2){ tbl = {order:['A', 'H'], head:false}; sec.parts = {A:[], H:[]}; }
+      continue;
+    }
     // A stat section can run onto the next line ("Hutchinson — McCuan 12-56; …").
     if (sec && /\d+\s*-\s*\(?-?\d+/.test(l)){ sec.body += ' ' + l; continue; }
     if (out.names.length < 2){
@@ -207,7 +255,10 @@ function parseBox(txt){
   // No scoring summary at all: the stat lines are the only place touchdowns can come from.
   const noSummary = !out.scoring.some(e => e.how === 'TD');
   // A section with no team names in it belongs to the team named on the line above it, if there was one.
-  const teamsOf = sc => { const t = splitTeams(sc.body); return t.length ? t : sc.side ? [[sc.side, sc.body]] : []; };
+  const teamsOf = sc => {
+    if (sc.parts) return ['A', 'H'].filter(s => sc.parts[s].length).map(s => [s, sc.parts[s].join('; ')]);
+    const t = splitTeams(sc.body); return t.length ? t : sc.side ? [[sc.side, sc.body]] : [];
+  };
   const kicked = new Set(), missed = new Set();   // kickers a section has already counted
   for (const sc of sections){
     const K = sc.kind.toUpperCase();
