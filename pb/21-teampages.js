@@ -482,17 +482,28 @@ async function removeTeamGame(){
 // Save a score fixed on a team page: the game's own document, which the admin's account owns (it loaded the schedule).
 async function saveTeamScore(clear){
   const ed = tpage.editing, x0 = ed && ((allGames.list || []).find(y => y.id === ed.id) || schedById(ed.id));
-  if (!x0 || !teamRecs.api) return toast('Couldn’t save that score. Sign in on the Game Tracker, then try again.');
   const mine = parseInt(($('#tp-s-mine') || {}).value, 10), theirs = parseInt(($('#tp-s-opp') || {}).value, 10);
   if (!clear && (isNaN(mine) || isNaN(theirs))) return toast('Enter both scores');
-  const x = JSON.parse(JSON.stringify(x0)), opp = ed.side === 'A' ? 'H' : 'A';
-  delete x.snap;   // the overnight file's result for this game, now out of date
-  if (clear) Object.assign(x, {A:0, H:0, per:'pre', clk:''});
-  else Object.assign(x, {[ed.side]:clamp(mine, 0, 199), [opp]:clamp(theirs, 0, 199), per:($('#tp-s-ot') || {}).checked ? 'fot' : 'final', clk:''});
+  const opp = ed && ed.side === 'A' ? 'H' : 'A';
+  const ot = ($('#tp-s-ot') || {}).checked;
+  tpage.editing = null; tpage.sdraft = null;
+  saveFinal(x0, clear ? null : {[ed.side]:mine, [opp]:theirs}, ot);
+}
+// Save a final typed by the admin — from a team page's schedule or straight onto a scoreboard card — into the
+// game's own document. `sc` is {A, H}, or null for "not played yet". True once it's on its way.
+async function saveFinal(x0, sc, ot){
+  if (!x0 || !teamRecs.api){ toast('Couldn’t save that score. Sign in on the Game Tracker, then try again.'); return false; }
+  const x = JSON.parse(JSON.stringify(x0));
+  delete x.snap; delete x.kp;   // the overnight file's result, or KPreps', for this game: now out of date
+  if (!sc) Object.assign(x, {A:0, H:0, per:'pre', clk:''});
+  else Object.assign(x, {A:clamp(sc.A, 0, 199), H:clamp(sc.H, 0, 199), per:ot ? 'fot' : 'final', clk:''});
   x.updated = Date.now();
-  const before = allGames.list;
-  allGames.list = allGames.list.some(y => y.id === x.id) ? allGames.list.map(y => y.id === x.id ? x : y) : [...allGames.list, x];
-  tpage.editing = null; tpage.sdraft = null; indexGames(); recordsChanged();
+  // Shown at once, here and on the scoreboards; put back if the save is turned down.
+  const before = allGames.list, wasLive = scores.docs && scores.docs[x.id];
+  allGames.list = (allGames.list || []).some(y => y.id === x.id) ? allGames.list.map(y => y.id === x.id ? x : y) : [...(allGames.list || []), x];
+  if (scores.docs && scores.ready === gameWeek(x)) scores.docs[x.id] = x;
+  const undo = () => { allGames.list = before; if (scores.docs){ if (wasLive) scores.docs[x.id] = wasLive; else delete scores.docs[x.id]; } indexGames(); recordsChanged(); };
+  indexGames(); recordsChanged();
   const {fsM, fsdb} = teamRecs.api;
   try {
     // Another scorer may already have saved this game under the same name. The admin can correct it, but only
@@ -504,16 +515,16 @@ async function saveTeamScore(clear){
       if (was.exists() && !was.data().deleted){
         let y = {}; try { y = JSON.parse(was.data().json || '{}') || {}; } catch (e) {}
         if ((y.plays && y.plays.length) || y.box || (y.kind && y.kind !== 'score')){
-          allGames.list = before; indexGames(); recordsChanged();
-          return toast('Someone is keeping stats on this game, so their score stands.');
+          undo(); toast('Someone is keeping stats on this game, so their score stands.'); return false;
         }
         if (was.data().owner) owner = was.data().owner;
       }
     } catch (e) {}
     await fsM.setDoc(fsM.doc(fsdb, 'pressbox', x.id), {owner, updated:x.updated, public:true, week:gameWeek(x), kind:'score',
-      title:`${x.teams.A.abbr} at ${x.teams.H.abbr}`, json:JSON.stringify(x)});
-    toast(clear ? 'Back to not played' : 'Score saved');
-  } catch (e) { toast('Couldn’t save that score. Sign in on the Game Tracker, then try again.'); }
+      title:`${x.teams.A.abbr || shortName(x.teams.A.name)} at ${x.teams.H.abbr || shortName(x.teams.H.name)}`, json:JSON.stringify(x)});
+    toast(sc ? 'Score saved' : 'Back to not played');
+    return true;
+  } catch (e) { undo(); toast('Couldn’t save that score. Sign in on the Game Tracker, then try again.'); return false; }
 }
 
 document.addEventListener('click', e => {

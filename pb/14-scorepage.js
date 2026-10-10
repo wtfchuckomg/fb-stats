@@ -105,6 +105,12 @@ function preLeaders(x){
 }
 function boardGame(x){
   const m = summary(x), T = x.teams, lead = leadOf(m), id = encodeURIComponent(x.id);
+  // The admin types a final straight into the T column of a game nobody is keeping stats on.
+  const canType = ui.admin && x.kind === 'score' && !hasStats(x), typing = canType && board.edit && board.edit.id === x.id;
+  const tCell = s => typing ? `<div class="bt-t"><input class="inp b-in" id="bs-${s}" inputmode="numeric" maxlength="3" autocomplete="off"
+        value="${esc(board.edit[s] != null ? board.edit[s] : m.pre ? '' : String(m.score[s]))}" aria-label="${esc(schoolName(T[s].name))} final"></div>`
+    : canType ? `<button type="button" class="bt-t b-type" data-bscore="${esc(x.id)}" data-side="${s}" title="Type the final">${m.pre ? '' : m.score[s]}</button>`
+    : `<div class="bt-t">${m.pre ? '' : m.score[s]}</div>`;
   // Quarters played so far (every one, once it's final; OT when there was one); a quick score has no line score.
   // Four quarters, plus a column for each overtime the game went to.
   const idx = m.lines ? lineCols({q:m.q, lines:m.lines}) : [];
@@ -116,7 +122,7 @@ function boardGame(x){
     const rec = recordText(T[s], s, !m.fin, gameWeek(x), m.score), sub = rec ? `(${rec})` : [T[s].mascot, s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
     return `<div class="bt${cls}"><div class="bt-team">${markFor(T[s], 29)}<div class="bt-id">
         <div class="bt-name"><span><a class="tlink" href="?team=${encodeURIComponent(schoolName(T[s].name))}">${esc(schoolName(T[s].name))}</a></span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub${rec ? ' rec' : ''}">${esc(sub)}</div></div></div>
-      <div class="bt-q">${cells((i, n) => m.lines[s][i] == null ? 'X' : m.typed ? m.lines[s][i] : (i < 4 && m.fin && i >= (m.qPlayed || 0)) ? 'X' : n < played ? m.lines[s][i] : '')}</div><div class="bt-t">${m.pre ? '' : m.score[s]}</div><i class="sc-win"></i></div>`;
+      <div class="bt-q">${cells((i, n) => m.lines[s][i] == null ? 'X' : m.typed ? m.lines[s][i] : (i < 4 && m.fin && i >= (m.qPlayed || 0)) ? 'X' : n < played ? m.lines[s][i] : '')}</div>${tCell(s)}<i class="sc-win"></i></div>`;
   };
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
   // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
@@ -124,11 +130,13 @@ function boardGame(x){
   // The admin can hide any game from the scoreboards, or bring a hidden one back.
   const off = ui.admin && isHidden(x);
   const hide = ui.admin ? `${off ? '<span class="b-hidtag">Hidden</span>' : ''}<button type="button" class="bhide" data-hide="${esc(x.id)}"${x.opp ? ' data-opp="1"' : ''}>${off ? 'Show' : 'Hide'}</button>` : '';
-  return `<article class="bgame${m.live ? ' live' : ''}${off ? ' bhid' : ''}">
+  const typeActs = typing ? `<label class="b-ot"><input type="checkbox" id="bs-ot"${board.edit.ot ? ' checked' : ''}> OT/F</label>
+    <button type="button" class="bbtn" data-bsave>Save final</button><button type="button" class="bhide" data-bcancel>Cancel</button>` : '';
+  return `<article class="bgame${m.live ? ' live' : ''}${off ? ' bhid' : ''}${typing ? ' btyping' : ''}">
     <div class="b-main"><div class="b-hd"><span class="b-st">${status}</span><div class="bt-q b-qh">${cells(i => i < 4 ? i + 1 : 'OT')}</div><span class="b-th">T</span><i></i></div>
       ${team('A')}${team('H')}</div>
     <div class="b-lead">${m.pre ? preLeaders(x) : m.S ? boardLeaders(x, m.S) : ''}</div>
-    <div class="b-acts"><span class="b-st2">${status}</span>${acts}${hide}</div></article>`;
+    <div class="b-acts"><span class="b-st2">${status}</span>${typing ? typeActs : acts + hide}</div></article>`;
 }
 
 /* ---------- the page ---------- */
@@ -166,11 +174,13 @@ function renderScoreboard(){
       ${day.games.map(boardGame).join('')}</section>`).join('');
   }
   const old = box.querySelector('.bweeks'), keep = old ? old.scrollLeft : 0;
+  const act = document.activeElement, focusId = act && box.contains(act) && act.id && act.id.startsWith('bs-') ? act.id : null;
   const adminNote = ui.admin ? `<p class="badmin">Signed in as the admin: Hide takes a game off both scoreboards, the scores strip and BUCO Stats for everyone.${ui.state ? ' Games between other schools stay hidden (they still count toward records) until you Show one.' : ''}</p>` : '';
   box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>${boardName()} Scoreboard</h1></div>${adminNote}
     <div class="bweeks-wrap"><button type="button" class="bw-arrow" data-bscroll="-1" aria-label="Earlier weeks">${chev('M9 1L1 9l8 8')}</button>
       <div class="bweeks">${tabs}</div>
       <button type="button" class="bw-arrow" data-bscroll="1" aria-label="Later weeks">${chev('M1 1l8 8-8 8')}</button></div></section>${body}`;
+  if (focusId){ const f = $('#' + focusId); if (f){ f.focus(); if (f.setSelectionRange && f.type !== 'checkbox') f.setSelectionRange(f.value.length, f.value.length); } }
   // A redraw keeps the week tabs where they were; a new week brings its tab into view.
   const wk = box.querySelector('.bweeks');
   if (board.seen === key) wk.scrollLeft = keep;
@@ -183,8 +193,43 @@ document.addEventListener('click', e => {
   if (w){ ui.week = w.dataset.bweek; history.pushState(null, '', `?${boardParam()}=${ui.week}`); renderScores(); return renderScoreboard(); }
   const h = e.target.closest('[data-hide]');
   if (h) return toggleHide(h.dataset.hide, !!h.dataset.opp);
+  const ty = e.target.closest('[data-bscore]');
+  if (ty){
+    const x = weekGames(ui.week, ui.admin, true).find(y => y.id === ty.dataset.bscore);
+    board.edit = {id:ty.dataset.bscore, A:null, H:null, ot:!!x && x.per === 'fot'};
+    renderScoreboard(); const f = $('#bs-' + (ty.dataset.side || 'A')); if (f){ f.focus(); f.select(); }
+    return;
+  }
+  if (e.target.closest('[data-bsave]')) return saveBoardFinal();
+  if (e.target.closest('[data-bcancel]')){ board.edit = null; return renderScoreboard(); }
   const a = e.target.closest('[data-bscroll]');
   if (a){ const wk = $('#board .bweeks'); wk.scrollBy({left:+a.dataset.bscroll * wk.clientWidth * .7, behavior:'smooth'}); }
+});
+// The final typed on a card: both boxes filled, then saved the same way as from a team page.
+function saveBoardFinal(){
+  const ed = board.edit; if (!ed) return;
+  const v = s => parseInt(($('#bs-' + s) || {}).value, 10), A = v('A'), H = v('H');
+  if (isNaN(A) || isNaN(H)) return toast('Enter both scores');
+  const x = weekGames(ui.week, ui.admin, true).find(y => y.id === ed.id), ot = ($('#bs-ot') || {}).checked;
+  board.edit = null;
+  saveFinal(x, {A, H}, ot);
+  renderScoreboard();
+}
+// What's typed survives a redraw (the board redraws itself every few seconds while a game is live).
+document.addEventListener('input', e => {
+  if (!ui.board || !board.edit) return;
+  const id = e.target.id || '';
+  if (/^bs-[AH]$/.test(id)) board.edit[id.slice(3)] = e.target.value;
+  if (id === 'bs-ot') board.edit.ot = e.target.checked;
+});
+document.addEventListener('keydown', e => {
+  if (!ui.board || !board.edit || !/^bs-[AH]$/.test((e.target && e.target.id) || '')) return;
+  // Enter or Tab from the visitors' box goes to the home box; Enter there saves.
+  const other = $(e.target.id === 'bs-A' ? '#bs-H' : '#bs-A');
+  if ((e.key === 'Enter' || (e.key === 'Tab' && !e.shiftKey)) && e.target.id === 'bs-A' && other){ e.preventDefault(); other.focus(); other.select(); return; }
+  if (e.key === 'Tab' && e.shiftKey && e.target.id === 'bs-H' && other){ e.preventDefault(); other.focus(); other.select(); return; }
+  if (e.key === 'Enter'){ e.preventDefault(); saveBoardFinal(); }
+  if (e.key === 'Escape'){ board.edit = null; renderScoreboard(); }
 });
 // Live games' clocks keep moving between updates.
 setInterval(() => { if (ui.board && !document.hidden && $('#board .bgame.live')) renderScoreboard(); }, 5000);
