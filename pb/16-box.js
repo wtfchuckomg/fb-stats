@@ -106,16 +106,20 @@ function parseBox(txt){
     return score[0] > score[1] ? 'A' : score[1] > score[0] ? 'H' : null;
   };
   // Which team comes first in a line naming both, "Newton  Eisenhower": the words the two names don't share.
-  const firstSide = text => {
-    const t = text.toLowerCase(), words = s => (out.names[s === 'A' ? 0 : 1] || '').toLowerCase().split(/[\s-]+/).filter(w => w.length > 2);
-    const pos = s => { const other = words(s === 'A' ? 'H' : 'A'), at = words(s).filter(w => !other.includes(w)).map(w => t.indexOf(w)).filter(i => i >= 0);
-      return at.length ? Math.min(...at) : Infinity; };
-    return pos('H') < pos('A') ? 'H' : 'A';
+  const namePos = (text, s) => {
+    const t = text.toLowerCase(), words = x => (out.names[x === 'A' ? 0 : 1] || '').toLowerCase().split(/[\s-]+/).filter(w => w.length > 2);
+    const other = words(s === 'A' ? 'H' : 'A'), at = words(s).filter(w => !other.includes(w)).map(w => t.indexOf(w)).filter(i => i >= 0);
+    return at.length ? Math.min(...at) : Infinity;
   };
+  const firstSide = text => namePos(text, 'H') < namePos(text, 'A') ? 'H' : 'A';
   // A team stats table's row labels, in the words the team stats reader knows: "Rushing-yards" is "rushing",
   // "Comp-att-int" is "passing", "Punts-avg." is "punts".
+  // A note on the columns, "Kickoffs (no.-yds-avg.)", says the numbers are a count and yards, not touchbacks.
   const tableLabel = t => {
-    t = t.replace(/[-\s]+(?:yards|yds|yd|avg|average)\b\.?/gi, '').replace(/[.:]+$/, '').trim();
+    const cols = (t.match(/\(([^)]*)\)/) || [])[1] || '', yds = /\by(?:ar)?ds\b/i.test(cols);
+    t = t.replace(/\([^)]*\)/g, ' ').replace(/[-\s]+(?:yards|yds|yd|avg|average)\b\.?/gi, '').replace(/[.:]+$/, '').replace(/\s+/g, ' ').trim();
+    if (yds && /^kickoffs?$/i.test(t)) return 'kickoff yards';
+    if (yds && /^punt(?:s|ing)?$/i.test(t)) return 'punt yards';
     return /^(?:pass(?:ing)?\s+)?c(?:omp)?(?:letions)?[-\s]*a(?:tt)?(?:empts)?[-\s]*i(?:nt)?/i.test(t) || /^pass(?:es|ing)?$/i.test(t) ? 'passing'
       : /^rush(?:es|ing)?(?:\s+att(?:empts)?)?$/i.test(t) ? 'rushing' : /^(?:3rd|third) downs?/i.test(t) ? 'third downs'
       : /^(?:4th|fourth) downs?/i.test(t) ? 'fourth downs' : /^sack/i.test(t) ? 'sacks' : /^int(?:erceptions?)?\s+ret/i.test(t) ? 'interception returns'
@@ -148,6 +152,13 @@ function parseBox(txt){
       // Not a table after all ("Andover — First downs 14, …" under the heading): read it the usual way.
       if (!sec.parts.A.length && !sec.parts.H.length) delete sec.parts;
       tbl = null;
+    }
+    // "Statistic  Remington  Inman": a table of team stats with no heading over it, its columns in that order.
+    const hc = cellsOf[ri];
+    if (out.names.length === 2 && hc && hc.length >= 2 && !/\d/.test(l) && namePos(l, 'A') < Infinity && namePos(l, 'H') < Infinity){
+      sec = {kind:'TEAM STATS', head:'', body:'', side:null, parts:{A:[], H:[]}}; sections.push(sec);
+      tbl = {order:firstSide(l) === 'H' ? ['H', 'A'] : ['A', 'H'], head:true};
+      continue;
     }
     const m = l.match(SEC);
     if (m){
@@ -292,6 +303,8 @@ function parseBox(txt){
           if ((m = n(/sacks?\b[^\d]*(\d+)\s*-\s*(\d+)/i))){ put('sk', m[0]); put('skY', m[1]); return; }
           if ((m = n(/interception returns?\s+(\d+)\s*-\s*(-?\d+)/i))){ put('intN', m[0]); put('intY', m[1]); return; }
           if ((m = n(/fumbles?\s*-\s*lost\s+(\d+)\s*-\s*(\d+)/i))){ put('fum', m[0]); put('fumL', m[1]); return; }
+          if ((m = n(/kickoff yards\s+(\d+)\s*-\s*(-?\d+)/i))){ put('koN', m[0]); put('koY', m[1]); return; }
+          if ((m = n(/punt yards\s+(\d+)\s*-\s*(-?\d+)/i))){ put('pnt', m[0]); put('pntY', m[1]); return; }
           if ((m = n(/kickoffs?\b[^\d]*(\d+)\s*-\s*(\d+)/i)) && !/return/i.test(chunk)){ put('koN', m[0]); put('koTB', m[1]); return; }
           if ((m = n(/kickoff returns?\s+(\d+)\s*-\s*(-?\d+)/i))){ put('krN', m[0]); put('krY', m[1]); return; }
           if ((m = n(/punt returns?\s+(\d+)\s*-\s*(-?\d+)/i))){ put('prN', m[0]); put('prY', m[1]); return; }
