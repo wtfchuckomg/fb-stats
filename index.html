@@ -8358,7 +8358,8 @@ const schoolRows = name => Object.values((allGames.idx && allGames.idx.get(canon
 const finMemo = new Map();
 function finalOf(x){
   // A snapshot game carries its result, so nothing is replayed to find it again.
-  if (x.snap) return {fin:x.snap.fin, live:x.snap.live, score:x.snap.score, status:x.snap.status, q:x.snap.q};
+  // A score typed in since (a quick score with its own numbers) wins over the file's — the same rule the scoreboard uses.
+  if (x.snap && !(x.kind === 'score' && (x.A != null || x.H != null))) return {fin:x.snap.fin, live:x.snap.live, score:x.snap.score, status:x.snap.status, q:x.snap.q};
   const k = `${x.id}:${x.updated || 0}`;
   let v = finMemo.get(k);
   if (!v){ const m = summary(x); v = {fin:m.fin, live:m.live, score:m.score, status:m.status, q:m.q}; finMemo.set(k, v); }
@@ -8710,6 +8711,7 @@ async function saveTeamScore(clear){
   const mine = parseInt(($('#tp-s-mine') || {}).value, 10), theirs = parseInt(($('#tp-s-opp') || {}).value, 10);
   if (!clear && (isNaN(mine) || isNaN(theirs))) return toast('Enter both scores');
   const x = JSON.parse(JSON.stringify(x0)), opp = ed.side === 'A' ? 'H' : 'A';
+  delete x.snap;   // the overnight file's result for this game, now out of date
   if (clear) Object.assign(x, {A:0, H:0, per:'pre', clk:''});
   else Object.assign(x, {[ed.side]:clamp(mine, 0, 199), [opp]:clamp(theirs, 0, 199), per:($('#tp-s-ot') || {}).checked ? 'fot' : 'final', clk:''});
   x.updated = Date.now();
