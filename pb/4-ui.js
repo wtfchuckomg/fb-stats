@@ -435,8 +435,10 @@ function renderPad(){
   if (ui.viewer) return;              // the live look-in is read-only
   if (g.box){ $('#pad').innerHTML = boxPad(); return; }   // entered from a box score: nothing to record
   const ctx = ui.ctx, st = ctx.st, pad = $('#pad');
-  // While editing, the pad stays on that play's type even if earlier edits changed the situation.
-  const types = ui.editing != null && !ui.ins ? [ui.type] : typesFor(st);
+  // While editing, the play can become another kind (a pass that was really a run), and its own kind stays on
+  // offer even if earlier edits changed the situation. A timeout isn't a play to turn one into.
+  const was = ui.editing != null && !ui.ins && g.plays[ui.editing] ? g.plays[ui.editing].t : null;
+  const types = was ? [...new Set([was, ...typesFor(st).filter(t => t !== 'to')])] : typesFor(st);
   if (!types.length){
     pad.innerHTML = `<div class="final-card"><span class="eyebrow">Final</span><b class="num">${esc(ab('A'))} ${st.score.A} · ${esc(ab('H'))} ${st.score.H}</b>
       <p class="hint">Everything is saved on this device. Export has the box score and play-by-play to copy.</p>
@@ -461,7 +463,7 @@ function renderPad(){
     ${bar}
     ${openKickHtml()}
     <div class="pad-hd"><span class="eyebrow">${editing ? 'Situation before this play' : 'Next play'}</span><span class="sit">${esc(ctx.sit)}</span></div>
-    <div class="types" role="group" aria-label="Play type">${types.map(t => `<button type="button" class="type" data-type="${t}" aria-pressed="${t === ui.type}" ${editing && !ui.ins && t !== ui.type ? 'disabled' : ''}>${label(t)}</button>`).join('')}</div>
+    <div class="types" role="group" aria-label="Play type">${types.map(t => `<button type="button" class="type" data-type="${t}" aria-pressed="${t === ui.type}">${label(t)}</button>`).join('')}</div>
     <div class="form">${formHtml()}${editing ? row(fN('clkTxt', 'Clock at the snap', '')) : ''}</div>
     ${noRecord ? '' : '<div class="preview" id="preview"></div>'}
     ${noRecord ? '' : `<div class="actions"><button class="btn primary" id="rec">${ui.ins ? 'Add play' : editing ? 'Save changes' : 'Record play'}</button>

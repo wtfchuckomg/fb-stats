@@ -382,7 +382,19 @@ document.addEventListener('click', e => {
   if (d.tab){ ui.tab = d.tab; renderView(); return address(true); }        // a tab is a page: it gets its own link
   if (d.pbp){ ui.pbp = d.pbp; renderView(); return address(false); }        // a filter on the page you're on
   if (d.pbsort){ pbpSortPick = d.pbsort; try { localStorage.setItem('pressbox.pbpSort', d.pbsort); } catch (e) {} return renderView(); }
-  if (d.type){ ui.type = d.type; ui.draft = null; return renderPad(); }
+  if (d.type){
+    // Editing a play into another kind keeps what the two have in common: the yards, the tacklers, a fumble or
+    // flag, the clock, and the ball carrier (a pass's receiver, or its passer, becomes the runner, and back).
+    const old = ui.editing != null && ui.draft && ui.draft.t !== d.type ? ui.draft : null;
+    ui.type = d.type; ui.draft = null;
+    if (old){
+      const nu = ui.draft = blank(d.type, ui.ctx.st);
+      ['y', 'yn', 'tk', 'fumOn', 'fum', 'penOn', 'pen', 'clkTxt'].forEach(k => { if (k in old && (k in nu || k === 'clkTxt')) nu[k] = old[k]; });
+      if (d.type === 'run' && old.t === 'pass') nu.r = (old.res === 'c' && old.to) || old.qb || '';
+      if (d.type === 'pass' && old.t === 'run'){ nu.to = old.r || ''; nu.res = 'c'; }
+    }
+    return renderPad();
+  }
   if (d.seg){ setK(ui.draft, d.seg, d.v); return renderPad(); }
   if (d.tog){ setK(ui.draft, d.tog, !getK(ui.draft, d.tog)); return renderPad(); }
   if (d.chip){ setK(ui.draft, d.chip, d.v); return renderPad(); }

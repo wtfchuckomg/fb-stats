@@ -2795,8 +2795,10 @@ function renderPad(){
   if (ui.viewer) return;              // the live look-in is read-only
   if (g.box){ $('#pad').innerHTML = boxPad(); return; }   // entered from a box score: nothing to record
   const ctx = ui.ctx, st = ctx.st, pad = $('#pad');
-  // While editing, the pad stays on that play's type even if earlier edits changed the situation.
-  const types = ui.editing != null && !ui.ins ? [ui.type] : typesFor(st);
+  // While editing, the play can become another kind (a pass that was really a run), and its own kind stays on
+  // offer even if earlier edits changed the situation. A timeout isn't a play to turn one into.
+  const was = ui.editing != null && !ui.ins && g.plays[ui.editing] ? g.plays[ui.editing].t : null;
+  const types = was ? [...new Set([was, ...typesFor(st).filter(t => t !== 'to')])] : typesFor(st);
   if (!types.length){
     pad.innerHTML = `<div class="final-card"><span class="eyebrow">Final</span><b class="num">${esc(ab('A'))} ${st.score.A} · ${esc(ab('H'))} ${st.score.H}</b>
       <p class="hint">Everything is saved on this device. Export has the box score and play-by-play to copy.</p>
@@ -2821,7 +2823,7 @@ function renderPad(){
     ${bar}
     ${openKickHtml()}
     <div class="pad-hd"><span class="eyebrow">${editing ? 'Situation before this play' : 'Next play'}</span><span class="sit">${esc(ctx.sit)}</span></div>
-    <div class="types" role="group" aria-label="Play type">${types.map(t => `<button type="button" class="type" data-type="${t}" aria-pressed="${t === ui.type}" ${editing && !ui.ins && t !== ui.type ? 'disabled' : ''}>${label(t)}</button>`).join('')}</div>
+    <div class="types" role="group" aria-label="Play type">${types.map(t => `<button type="button" class="type" data-type="${t}" aria-pressed="${t === ui.type}">${label(t)}</button>`).join('')}</div>
     <div class="form">${formHtml()}${editing ? row(fN('clkTxt', 'Clock at the snap', '')) : ''}</div>
     ${noRecord ? '' : '<div class="preview" id="preview"></div>'}
     ${noRecord ? '' : `<div class="actions"><button class="btn primary" id="rec">${ui.ins ? 'Add play' : editing ? 'Save changes' : 'Record play'}</button>
@@ -4173,7 +4175,19 @@ document.addEventListener('click', e => {
   if (d.tab){ ui.tab = d.tab; renderView(); return address(true); }        // a tab is a page: it gets its own link
   if (d.pbp){ ui.pbp = d.pbp; renderView(); return address(false); }        // a filter on the page you're on
   if (d.pbsort){ pbpSortPick = d.pbsort; try { localStorage.setItem('pressbox.pbpSort', d.pbsort); } catch (e) {} return renderView(); }
-  if (d.type){ ui.type = d.type; ui.draft = null; return renderPad(); }
+  if (d.type){
+    // Editing a play into another kind keeps what the two have in common: the yards, the tacklers, a fumble or
+    // flag, the clock, and the ball carrier (a pass's receiver, or its passer, becomes the runner, and back).
+    const old = ui.editing != null && ui.draft && ui.draft.t !== d.type ? ui.draft : null;
+    ui.type = d.type; ui.draft = null;
+    if (old){
+      const nu = ui.draft = blank(d.type, ui.ctx.st);
+      ['y', 'yn', 'tk', 'fumOn', 'fum', 'penOn', 'pen', 'clkTxt'].forEach(k => { if (k in old && (k in nu || k === 'clkTxt')) nu[k] = old[k]; });
+      if (d.type === 'run' && old.t === 'pass') nu.r = (old.res === 'c' && old.to) || old.qb || '';
+      if (d.type === 'pass' && old.t === 'run'){ nu.to = old.r || ''; nu.res = 'c'; }
+    }
+    return renderPad();
+  }
   if (d.seg){ setK(ui.draft, d.seg, d.v); return renderPad(); }
   if (d.tog){ setK(ui.draft, d.tog, !getK(ui.draft, d.tog)); return renderPad(); }
   if (d.chip){ setK(ui.draft, d.chip, d.v); return renderPad(); }
