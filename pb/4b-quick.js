@@ -350,15 +350,25 @@ function parseQuick(raw, st){
 
   // "muffed by 44, recovered by 22": who dropped it, and who fell on it. Anything before the word is
   // the kick itself, so the distance is never mistaken for a jersey number.
+  // A team-lettered number names the team too: "rec h10" is the home team's #10. "at v10" after the word is
+  // where it was muffed and fallen on, never a player.
   const muffOf = list => {
     const i = list.findIndex(t => ['muff', 'muffed', 'muffs'].includes(t));
     if (i < 0) return null;
-    const tail = list.slice(i + 1), ri = tail.findIndex(t => ['rec', 'recovered', 'recovers'].includes(t));
-    const nums = (ri >= 0 ? tail.slice(0, ri) : tail).filter(isNum);
-    const by = nums[0];
+    const tail = [], raw = list.slice(i + 1);
+    let spot = null;
+    for (let k = 0; k < raw.length; k++){
+      if (['at', 'on', 'inside'].includes(raw[k]) && raw[k + 1] && spotOf(raw[k + 1])){ spot = spotOf(raw[++k]); continue; }
+      tail.push(raw[k]);
+    }
+    const who = t => { const x = spotOf(t); return x ? {n:String(x.n), side:x.side} : isNum(t) ? {n:t, side:null} : null; };
+    const ri = tail.findIndex(t => ['rec', 'recovered', 'recovers'].includes(t));
+    const pre = (ri >= 0 ? tail.slice(0, ri) : tail).map(who).filter(Boolean);
     // "…muff-44-22" with no word between them: the second number is whoever fell on it.
-    const ret = ri >= 0 ? tail.slice(ri + 1).filter(isNum)[0] : nums[1];
-    return {i, by:by != null ? by : null, ret:ret != null ? ret : null, before:list.slice(0, i).filter(isNum)};
+    const rec = ri >= 0 ? tail.slice(ri + 1).map(who).filter(Boolean)[0] : pre[1];
+    const recSide = (rec && rec.side) || (ri >= 0 ? tail.slice(ri + 1).map(T).find(Boolean) : null) || null;
+    return {i, by:pre[0] ? pre[0].n : null, ret:rec ? rec.n : null, recSide, spot,
+      before:list.slice(0, i).filter(isNum), beforeToks:list.slice(0, i)};
   };
 
   /* ---- kickoffs ---- */
@@ -393,7 +403,9 @@ function parseQuick(raw, st){
       let n = i + 1; while (n < rawRest.length && ['the', 'it'].includes(rawRest[n])) n++;
       if (RET.includes(rawRest[n])) retNums.push(+t);
     });
-    const tagged = rest.map(spotOf).filter(Boolean);
+    const muff = muffOf(rest);
+    const tagged = (muff ? muff.beforeToks : rest).map(spotOf).filter(Boolean);
+    if (muff && muff.spot) tagged.unshift(muff.spot);
     const spots = tagged.concat(bare.filter(n => !tagged.some(x => x.side === Rk && x.n === n)).map(n => ({side:Rk, n})));
     const caught = rawToks.some(t => CAUGHT.includes(t));
     const before = toks.slice(0, kickWord).filter(isNum);
@@ -403,7 +415,6 @@ function parseQuick(raw, st){
       const k = left.indexOf(+t); if (k >= 0){ left.splice(k, 1); return false; }
       return true;
     });
-    const muff = muffOf(rest);
     if (muff) after.length = 0, muff.before.forEach(n => after.push(n));   // only the kick's own numbers left
     const sp = spots[0] || null, endSp = spots[1] || null;   // where it was caught, and where the return ended
     const pos = x => x.side === Rk ? FL - x.n : x.n;         // a yard line as the kicking team sees it
@@ -421,7 +432,7 @@ function parseQuick(raw, st){
     const retNo = nx[0] != null ? nx[0] : (caught && before[0] != null ? before[0] : null);
     if (before[0] != null && retNo !== before[0]) p.k = before[0];
     // "ko-C25": no kick details, just where the receiving team's drive starts.
-    if (sp && !endSp && !nx.length && !caught && ryTold == null && !has('tb', 'oob', 'onside', 'fc')){ delete p.d; p.bs = sp.side === Rk ? sp.n : FL - sp.n; return flag(p); }
+    if (sp && !endSp && !nx.length && !caught && !muff && ryTold == null && !has('tb', 'oob', 'onside', 'fc')){ delete p.d; p.bs = sp.side === Rk ? sp.n : FL - sp.n; return flag(p); }
     if (has('tb')) p.res = 'tb';
     else if (has('oob') && retNo == null && !endSp){
       // Nobody returned it and nobody's spot is given: it went out of bounds, and any yards said are how far
@@ -456,7 +467,7 @@ function parseQuick(raw, st){
       if (recSide === Rk) p.res = 'spot';                 // the receiving team fell on it: a plain short kick
       else if (recNo != null) p.ret = String(recNo);
     }
-    else if (muff){ p.res = 'muff'; if (muff.by != null) p.by = muff.by; if (muff.ret != null) p.ret = muff.ret; }
+    else if (muff){ p.res = 'muff'; if (muff.by != null) p.by = muff.by; if (muff.ret != null) p.ret = muff.ret; if (muff.recSide === Rk) p.mr = true; }
     else if (has('fc')){ p.res = 'fc'; if (retNo != null) p.ret = retNo; }
     else if (retNo != null || endSp || ryTold != null){
       p.res = 'ret';
@@ -559,7 +570,7 @@ function parseQuick(raw, st){
     const after = (muffP ? muffP.before : rest.filter(isNum)).filter(t => {
       const k = skip.indexOf(+t); if (k < 0) return true; skip.splice(k, 1); return false;
     });
-    const sp = rest.map(spotOf).find(Boolean);   // "punt to I25" or a distance
+    const sp = muffP ? muffP.spot || muffP.beforeToks.map(spotOf).find(Boolean) : rest.map(spotOf).find(Boolean);   // "punt to I25" or a distance
     // A punt can lose ground: one off the side of the foot that never crosses the line is minus yardage on the
     // punter (NCAA Section 6, Article 6). So a spot behind the line, or a typed "-5", keeps its sign.
     if (sp) p.d = (FL - toR(sp)) - st.spot;
@@ -577,7 +588,7 @@ function parseQuick(raw, st){
     const landR = p.d != null ? FL - (st.spot + p.d) : null;  // where the receiving team fielded it
     // "out of bounds" with a return on the line is the returner going out, not the kick: the return still counts.
     const retSaid = retNo != null || retYds != null || retEnd != null || ri >= 0;
-    if (muffP){ p.res = 'muff'; if (muffP.by != null) p.by = muffP.by; if (muffP.ret != null) p.ret = muffP.ret; }
+    if (muffP){ p.res = 'muff'; if (muffP.by != null) p.by = muffP.by; if (muffP.ret != null) p.ret = muffP.ret; if (muffP.recSide === D) p.mr = true; }
     else if (has('fc')){ p.res = 'fc'; const r = retNo ?? nx[0]; if (r != null) p.ret = r; }
     else if (has('oob') && !retSaid) p.res = 'oob';
     else if (has('down', 'downed')) p.res = 'down';

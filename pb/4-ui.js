@@ -261,12 +261,14 @@ function buildPlay(d){
       Object.assign(p, {k:j(d.k), d:n(d.d), res:d.res});
       if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:n(d.ry) || 0, tk:js(d.tk)});
       if (d.res === 'fc') p.ret = j(d.ret);
+      if (d.res === 'muff') Object.assign(p, {by:j(d.by), ret:j(d.ret), mr:d.mr === true || d.mr === 'true' || undefined});
       if (d.res === 'blk') Object.assign(p, d.saf ? {by:j(d.by), saf:true} : {by:j(d.by), b:n(d.b) || 0, ret:j(d.ret), ry:n(d.ry) || 0});
       break;
     case 'ko':
       Object.assign(p, {k:j(d.k), d:n(d.d) || 0, res:d.res});
       if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:n(d.ry) || 0, tk:js(d.tk)});
       if (d.res === 'fc' || d.res === 'onside') p.ret = j(d.ret);
+      if (d.res === 'muff') Object.assign(p, {by:j(d.by), ret:j(d.ret), mr:d.mr === true || d.mr === 'true' || undefined});
       break;
     case 'fg':
       Object.assign(p, {k:j(d.k), d:n(d.d), res:d.res});

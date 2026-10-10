@@ -553,7 +553,10 @@ function replay(g, upto = g.plays.length){
         return txt + `, out of bounds (5-yard penalty). ${ab(R)} ball at the ${yl(R, s)}.`; }
       case 'onside': { const s = kf + d; bump(pl(K, p.ret), 'fr'); newSeries(K, s); tags.push(['to', 'Onside']);
         return txt + `, onside, recovered by ${p.ret ? nm(K, p.ret) : ab(K)} at the ${yl(K, s)}.`; }
-      case 'muff': { const s = kf + d; if (p.ret != null) bump(pl(K, p.ret), 'fr'); newSeries(K, s); tags.push(['to', 'Muff']);
+      case 'muff': {
+        if (p.mr){ const s = at <= 0 ? RU.tb : at; newSeries(R, s);   // the receiving team fell on its own muff
+          return txt + ` to the ${yl(R, s)}, MUFFED${p.by ? ` by ${nm(R, p.by)}` : ''}, recovered by ${p.ret != null ? nm(R, p.ret) : ab(R)} at the ${yl(R, s)}.`; }
+        const s = kf + d; if (p.ret != null) bump(pl(K, p.ret), 'fr'); newSeries(K, s); tags.push(['to', 'Muff']);
         return txt + ` to the ${at <= 0 ? `${ab(R)} end zone` : yl(R, at)}, MUFFED${p.by ? ` by ${nm(R, p.by)}` : ''}, `
           + `recovered by ${p.ret != null ? nm(K, p.ret) : ab(K)} at the ${yl(K, s)}.`; }
       case 'fc': case 'down': {
@@ -600,6 +603,12 @@ function replay(g, upto = g.plays.length){
     leg('kick', O, st.spot, p.res === 'tb' || at <= 0 ? Math.max(st.spot + d, FL + 5) : st.spot + d);
     let txt = `${nm(O, p.k)} punt ${d < 0 ? `for a loss of ${plural(-d, 'yard')}` : plural(d, 'yard')}`;
     if (p.res === 'tb' || at <= 0){ bump(k, 'ptb'); t.pntTB++; newSeries(R, RU.tb); return txt + `, touchback. ${ab(R)} ball at the ${yl(R, RU.tb)}.`; }
+    if (p.res === 'muff' && p.mr){
+      // The receiving team fell on its own muff: its ball where it happened, and no change of possession.
+      newSeries(R, at);
+      return txt + ` to the ${yl(R, at)}, MUFFED${p.by ? ` by ${nm(R, p.by)}` : ''}, recovered by `
+        + `${p.ret != null ? nm(R, p.ret) : ab(R)} at the ${yl(R, at)}.`;
+    }
     if (p.res === 'muff'){
       // The receiving team never had it: the kicking team keeps the ball where it fell on it.
       if (p.ret != null) bump(pl(O, p.ret), 'fr');
