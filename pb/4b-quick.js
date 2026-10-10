@@ -23,12 +23,18 @@ const TD_WORDS = ['td', 'dtd', 'deftd', 'pick6', 'touchdown'];
 const FILLER = ['for', 'yds', 'yards', 'yd', 'to', 'ran', 'run', 'rush', 'pass', 'complete', 'comp', 'caught', 'gain', 'the', 'a'];
 
 // Team letters come from the short names in Setup: NOR → N, SOU → S.
+// Two-letter words a sentence uses, so never a school's first two letters ("in" is not Inman).
+const TWO_TAKEN = ['an', 'as', 'at', 'be', 'by', 'do', 'go', 'he', 'if', 'in', 'is', 'it', 'me', 'my', 'no', 'of', 'on', 'or', 'ot', 'so', 'to', 'up', 'us', 'we', 'yd', 'td', 'fg', 'xp', 'ko', 'tb', 'fc', 'pi', 'pf', 'uc', 'ur', 'ig', 'fs', 'fm', 'hc', 'rn',
+  'af', 'db', 'ez', 'kn', 'np', 'rt', 'sk', 'tm', 'ip', 'os', 'ng', 'ff', 'fr', 'bk', 'pr', 'kr', 'qb', 'rb', 'wr', 'te', 'lb', 'cb'];
 function quickTeams(){
   const ab = s => String(g.teams[s].abbr || (s === 'A' ? 'V' : 'H')).toLowerCase();
   const a = ab('A'), h = ab('H');
   // The letter the hints show: the one typed in Setup, else the short name's first letter.
-  const pick = s => (String(g.teams[s].key || '').toLowerCase().match(/[a-z]/) || [''])[0];
+  const pick = s => (String(g.teams[s].key || '').toLowerCase().match(/[a-z]{1,2}/) || [''])[0];
   let ka = pick('A') || a[0], kh = pick('H') || h[0];
+  // Two schools on the same letter (Augusta and Abilene) go by their first two: au and ab.
+  if (ka === kh && !pick('A') && !pick('H') && a.length > 1 && h.length > 1 && a.slice(0, 2) !== h.slice(0, 2)
+    && !TWO_TAKEN.includes(a.slice(0, 2)) && !TWO_TAKEN.includes(h.slice(0, 2))){ ka = a.slice(0, 2); kh = h.slice(0, 2); }
   if (ka === kh){ ka = pick('A') || 'v'; kh = ka === 'h' ? 'v' : 'h'; }
   const map = {};
   // Anything that names one team and not the other can be typed: "wichita collegiate" is w, c, wc or collegiate.
@@ -41,8 +47,9 @@ function quickTeams(){
   };
   ['A', 'H'].forEach(s => {
     const words = String(g.teams[s].name || '').toLowerCase().split(/[^a-z]+/i).filter(Boolean);
-    add(ab(s), s); add(ab(s)[0], s);
-    words.forEach(w => { add(w, s); add(w[0], s); });
+    const two = w => { if (w.length > 2 && !TWO_TAKEN.includes(w.slice(0, 2))) add(w.slice(0, 2), s); };
+    add(ab(s), s); add(ab(s)[0], s); two(ab(s));
+    words.forEach(w => { add(w, s); add(w[0], s); two(w); });
   });
   Object.keys(map).forEach(k => { if (!map[k]) delete map[k]; });
   map[ka] = 'A'; map[kh] = 'H';                       // the two the hints name always win

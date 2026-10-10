@@ -100,7 +100,7 @@ function dlgSetup(isNew){
       <div class="fld"><label class="eyebrow" for="s-${s}-name">School</label>${schoolPicker(`s-${s}-name`, src.teams[s].name, s === 'A' ? 'Visiting school' : 'Home school')}</div>
       <div class="fld"><label class="eyebrow" for="s-${s}-mascot">Mascot</label><input class="inp" id="s-${s}-mascot" value="${esc(src.teams[s].mascot || '')}" placeholder="e.g. Bulldogs"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-abbr">Short</label><input class="inp" id="s-${s}-abbr" maxlength="5" value="${esc(src.teams[s].abbr)}" placeholder="${s === 'A' ? 'VIS' : 'HOME'}"></div>
-      <div class="fld"><label class="eyebrow" for="s-${s}-key">Letter</label><input class="inp" id="s-${s}-key" maxlength="1" autocapitalize="characters" value="${esc(src.teams[s].key || '')}" placeholder="${esc((String(src.teams[s].abbr || (s === 'A' ? 'V' : 'H'))[0] || '').toUpperCase())}" title="The letter you type for this team in shorthand"></div>
+      <div class="fld"><label class="eyebrow" for="s-${s}-key">Letter</label><input class="inp" id="s-${s}-key" maxlength="2" autocapitalize="characters" value="${esc(src.teams[s].key || '')}" placeholder="${esc(keyHint(src, s))}" title="The letter (or two) you type for this team in shorthand"></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-color">Color</label><input type="color" id="s-${s}-color" value="${esc(src.teams[s].color)}"></div></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-roster">Roster, optional · one player per line, number then name · home/road numbers: 7/82</label>
       <textarea class="inp" id="s-${s}-roster" rows="4" placeholder="7 Cole Brandt&#10;22 Mason Ortiz">${esc(rosterTxt(s))}</textarea><div class="hint" id="s-${s}-lib"></div>
@@ -318,6 +318,11 @@ function startInsert(i){
 }
 // With no time typed, a play put in later takes the clock of the play before it (the clock isn't known).
 const insClock = i => { for (let k = i - 1; k >= 0; k--) if (g.plays[k].clk != null) return g.plays[k].clk; return undefined; };
+// The letter Setup suggests for a team: its short name's first, or the first two when both teams share one.
+function keyHint(src, s){
+  const ab = t => String(src.teams[t].abbr || (t === 'A' ? 'V' : 'H')).toUpperCase(), me = ab(s), you = ab(s === 'A' ? 'H' : 'A');
+  return me[0] === you[0] && me.length > 1 && you.length > 1 && me.slice(0, 2) !== you.slice(0, 2) ? me.slice(0, 2) : me[0] || '';
+}
 function startEdit(i){
   const p = g.plays[i]; ui.editing = i; ui.ins = false; ui.ctx = replay(g, i); ui.type = p.t; ui.open = null;
   // A play typed in shorthand is edited by retyping its line; others use the form.
