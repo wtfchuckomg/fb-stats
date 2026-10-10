@@ -8697,9 +8697,12 @@ async function removeTeamGame(){
   const {fsM, fsdb} = teamRecs.api;
   try {
     // Keep what the document held. A game read from the season file is only a summary, so read the real one.
-    let keep = x0.snap ? '' : JSON.stringify(x0);
-    if (!keep){ try { const d = await fsM.getDoc(fsM.doc(fsdb, 'pressbox', id)); keep = (d.exists() && d.data().json) || ''; } catch (e) {} }
-    await fsM.setDoc(fsM.doc(fsdb, 'pressbox', id), {owner:ADMIN_UID, updated:Date.now(), public:true, week:gameWeek(x0), kind:'score',
+    let keep = x0.snap ? '' : JSON.stringify(x0), owner = ADMIN_UID;
+    try {
+      const d = await fsM.getDoc(fsM.doc(fsdb, 'pressbox', id));
+      if (d.exists()){ if (!keep) keep = d.data().json || ''; if (d.data().owner) owner = d.data().owner; }   // its owner stays, or the write is refused
+    } catch (e) {}
+    await fsM.setDoc(fsM.doc(fsdb, 'pressbox', id), {owner, updated:Date.now(), public:true, week:gameWeek(x0), kind:'score',
       title, deleted:true, json:keep});
     toast(`Removed ${title}`);
   } catch (e) { toast('Couldn’t remove that game. Sign in on the Game Tracker, then try again.'); }
@@ -8707,7 +8710,7 @@ async function removeTeamGame(){
 // Save a score fixed on a team page: the game's own document, which the admin's account owns (it loaded the schedule).
 async function saveTeamScore(clear){
   const ed = tpage.editing, x0 = ed && ((allGames.list || []).find(y => y.id === ed.id) || schedById(ed.id));
-  if (!x0 || !teamRecs.api) return;
+  if (!x0 || !teamRecs.api) return toast('Couldn’t save that score. Sign in on the Game Tracker, then try again.');
   const mine = parseInt(($('#tp-s-mine') || {}).value, 10), theirs = parseInt(($('#tp-s-opp') || {}).value, 10);
   if (!clear && (isNaN(mine) || isNaN(theirs))) return toast('Enter both scores');
   const x = JSON.parse(JSON.stringify(x0)), opp = ed.side === 'A' ? 'H' : 'A';
@@ -8719,7 +8722,11 @@ async function saveTeamScore(clear){
   tpage.editing = null; tpage.sdraft = null; indexGames(); recordsChanged();
   const {fsM, fsdb} = teamRecs.api;
   try {
-    await fsM.setDoc(fsM.doc(fsdb, 'pressbox', x.id), {owner:ADMIN_UID, updated:x.updated, public:true, week:gameWeek(x), kind:'score',
+    // Another scorer may already have saved this game under the same name. The admin can correct it, but only
+    // with its owner left as it was; writing the admin's own name over theirs is refused.
+    let owner = ADMIN_UID;
+    try { const was = await fsM.getDoc(fsM.doc(fsdb, 'pressbox', x.id)); if (was.exists() && was.data().owner) owner = was.data().owner; } catch (e) {}
+    await fsM.setDoc(fsM.doc(fsdb, 'pressbox', x.id), {owner, updated:x.updated, public:true, week:gameWeek(x), kind:'score',
       title:`${x.teams.A.abbr} at ${x.teams.H.abbr}`, json:JSON.stringify(x)});
     toast(clear ? 'Back to not played' : 'Score saved');
   } catch (e) { toast('Couldn’t save that score. Sign in on the Game Tracker, then try again.'); }
