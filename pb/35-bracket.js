@@ -69,7 +69,7 @@ const DISTRICTS = {
     ["Chaparral", "Cimarron", "Kingman", "Southwestern Heights", "Lakin"],
   ],
   '1A':[
-    ["Northeast", "Eureka", "Olpe", "St Mary's Colgan", "Uniontown"],
+    ["Northeast-Arma", "Eureka", "Olpe", "St Mary's Colgan", "Uniontown"],
     ["Mission Valley", "Rossville", "St Marys", "Wabaunsee"],
     ["Maur Hill-Mount", "Atchison County", "Doniphan West", "McLouth", "Jefferson County North"],
     ["Valley Heights", "Centralia", "Jackson Heights", "Onaga", "Valley Falls"],

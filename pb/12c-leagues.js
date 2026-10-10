@@ -20,7 +20,7 @@ const LEAGUES = [
   {slug:'eastern-kansas-league', name:"Eastern Kansas League", teams:["Bishop Miege", "Blue Valley", "Blue Valley North", "Blue Valley Northwest", "Blue Valley Southwest", "Blue Valley West", "St James", "St Thomas Aquinas"]},
   {slug:'frontier-league', name:"Frontier League", teams:["Baldwin", "Bonner Springs", "Eudora", "Louisburg", "Ottawa", "Paola", "Tonganoxie"]},
   {slug:'great-west-activities-conference', name:"Great West Activities Conference", teams:["Cimarron", "Colby", "Goodland", "Holcomb", "Hugoton", "Scott City", "Ulysses"]},
-  {slug:'greater-wichita-athletic-league', name:"Greater Wichita Athletic League", teams:["Bishop Carroll", "Kapaun Mt Carmel", "North", "Southeast (Wichita)", "Wichita East", "Wichita Heights", "Wichita Northwest", "Wichita South", "Wichita West"]},
+  {slug:'greater-wichita-athletic-league', name:"Greater Wichita Athletic League", teams:["Bishop Carroll", "Kapaun Mt Carmel", "North", "Wichita Southeast", "Wichita East", "Wichita Heights", "Wichita Northwest", "Wichita South", "Wichita West"]},
   {slug:'heart-of-america', name:"Heart of America", teams:["Hutch Trinity", "Inman", "Marion", "Moundridge", "Remington", "Sedgwick", "Sterling"]},
   {slug:'meadowlark-conference', name:"Meadowlark Conference", teams:["Atchison", "Harmon", "Highland Park", "KC Sumner", "Schlagle", "Washington", "Wyandotte"]},
   {slug:'north-central-kansas-league', name:"North Central Kansas League", teams:["Abilene", "Chapman", "Clay Center", "Concordia", "Marysville", "Rock Creek", "Wamego"]},

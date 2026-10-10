@@ -768,6 +768,7 @@ const LOGO_MAP = {
 "nickerson": "https://stats.kansasmediarankings.com/logos/Nickerson.png",
 "north": "https://stats.kansasmediarankings.com/logos/North.png",
 "northeast": "https://stats.kansasmediarankings.com/logos/Northeast.png",
+"northeast-arma": "https://stats.kansasmediarankings.com/logos/Northeast.png",
 "northern-heights": "https://stats.kansasmediarankings.com/logos/Northern%20Heights.png",
 "northern-valley": "https://stats.kansasmediarankings.com/logos/Northern%20Valley.png",
 "norton": "https://stats.kansasmediarankings.com/logos/Norton.png",

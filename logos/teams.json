@@ -2053,14 +2053,19 @@
   "abbr": "North"
  },
  {
-  "name": "Northeast",
-  "slug": "northeast",
+  "name": "Northeast-Arma",
+  "slug": "northeast-arma",
   "file": "Northeast.png",
   "city": "",
   "w": 400,
   "h": 378,
-  "aliases": [],
-  "abbr": "Northeast"
+  "aliases": [
+   "Northeast",
+   "Northeast Arma",
+   "Arma Northeast",
+   "Northeast-Arma Vikings"
+  ],
+  "abbr": "NEA"
  },
  {
   "name": "Northern Heights",
@@ -2883,14 +2888,17 @@
   "abbr": "SEC"
  },
  {
-  "name": "Southeast (Wichita)",
-  "slug": "southeast-wichita",
+  "name": "Wichita Southeast",
+  "slug": "wichita-southeast",
   "file": "Southeast (Wichita).png",
   "city": "",
   "w": 400,
   "h": 276,
   "aliases": [
-   "Wichita Southeast"
+   "Southeast (Wichita)",
+   "Southeast Wichita",
+   "Southeast-Wichita",
+   "Wichita SE"
   ],
   "abbr": "SEW"
  },
