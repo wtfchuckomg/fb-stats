@@ -468,7 +468,11 @@ async function removeTeamGame(){
     let keep = x0.snap ? '' : JSON.stringify(x0), owner = ADMIN_UID;
     try {
       const d = await fsM.getDoc(fsM.doc(fsdb, 'pressbox', id));
-      if (d.exists()){ if (!keep) keep = d.data().json || ''; if (d.data().owner) owner = d.data().owner; }   // its owner stays, or the write is refused
+      if (d.exists()){
+        let y = {}; try { y = JSON.parse(d.data().json || '{}') || {}; } catch (e) {}
+        if (!d.data().deleted && ((y.plays && y.plays.length) || y.box)) return toast('Someone is keeping stats on this game, so it stays.');
+        if (!keep) keep = d.data().json || ''; if (d.data().owner) owner = d.data().owner;   // its owner stays, or the write is refused
+      }
     } catch (e) {}
     await fsM.setDoc(fsM.doc(fsdb, 'pressbox', id), {owner, updated:Date.now(), public:true, week:gameWeek(x0), kind:'score',
       title, deleted:true, json:keep});
@@ -486,14 +490,26 @@ async function saveTeamScore(clear){
   if (clear) Object.assign(x, {A:0, H:0, per:'pre', clk:''});
   else Object.assign(x, {[ed.side]:clamp(mine, 0, 199), [opp]:clamp(theirs, 0, 199), per:($('#tp-s-ot') || {}).checked ? 'fot' : 'final', clk:''});
   x.updated = Date.now();
+  const before = allGames.list;
   allGames.list = allGames.list.some(y => y.id === x.id) ? allGames.list.map(y => y.id === x.id ? x : y) : [...allGames.list, x];
   tpage.editing = null; tpage.sdraft = null; indexGames(); recordsChanged();
   const {fsM, fsdb} = teamRecs.api;
   try {
     // Another scorer may already have saved this game under the same name. The admin can correct it, but only
     // with its owner left as it was; writing the admin's own name over theirs is refused.
+    // If that scorer is keeping stats on it — plays or a box score — their game stands and the typed score isn't saved.
     let owner = ADMIN_UID;
-    try { const was = await fsM.getDoc(fsM.doc(fsdb, 'pressbox', x.id)); if (was.exists() && was.data().owner) owner = was.data().owner; } catch (e) {}
+    try {
+      const was = await fsM.getDoc(fsM.doc(fsdb, 'pressbox', x.id));
+      if (was.exists() && !was.data().deleted){
+        let y = {}; try { y = JSON.parse(was.data().json || '{}') || {}; } catch (e) {}
+        if ((y.plays && y.plays.length) || y.box || (y.kind && y.kind !== 'score')){
+          allGames.list = before; indexGames(); recordsChanged();
+          return toast('Someone is keeping stats on this game, so their score stands.');
+        }
+        if (was.data().owner) owner = was.data().owner;
+      }
+    } catch (e) {}
     await fsM.setDoc(fsM.doc(fsdb, 'pressbox', x.id), {owner, updated:x.updated, public:true, week:gameWeek(x), kind:'score',
       title:`${x.teams.A.abbr} at ${x.teams.H.abbr}`, json:JSON.stringify(x)});
     toast(clear ? 'Back to not played' : 'Score saved');
