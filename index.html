@@ -714,7 +714,8 @@ button.h-btn{cursor:pointer}
 .bt.lose .bt-t{color:var(--muted)}
 .b-type{background:none;border:0;border-radius:8px;cursor:text;min-width:48px;min-height:34px;padding:0 4px;margin:-4px -4px -4px 0}
 .b-type:hover,.b-type:focus-visible{background:var(--line);outline:none}
-.b-in{width:64px;height:36px;padding:0 8px;text-align:right;font:700 20px/1 var(--sans);font-variant-numeric:tabular-nums}
+.b-type:empty{border:1.5px dashed var(--line);min-width:44px;min-height:30px;margin:-3px 0}
+.bt-t .b-in{width:64px;min-width:0;max-width:64px;flex:none;height:36px;padding:0 8px;text-align:right;font:700 20px/1 var(--sans);font-variant-numeric:tabular-nums}
 .b-ot{display:flex;align-items:center;gap:6px;font:600 12px/1 var(--sans);color:var(--muted)}
 .bt .sc-win{visibility:hidden}
 .bt.won .sc-win{visibility:visible}
