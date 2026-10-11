@@ -2404,7 +2404,8 @@ function renderBoard(){
   // Like ESPN's: school and mascot, the record under it, beside the score. Once it's final the loser is grayed, an
   // arrow points at the winner, and the timeouts go.
   const won = st.final && st.score.A !== st.score.H ? (st.score.A > st.score.H ? 'A' : 'H') : null;
-  const fullName = t => t.mascot && !String(t.name).toLowerCase().endsWith(t.mascot.toLowerCase()) ? `${t.name} ${t.mascot}` : t.name;
+  // The site's own name for the school ("Campus", not "Haysville Campus"), whatever the game was saved under.
+  const fullName = t => { const n = schoolName(t.name); return t.mascot && !String(n).toLowerCase().endsWith(t.mascot.toLowerCase()) ? `${n} ${t.mascot}` : n; };
   const side = s => {
     const has = !st.final && st.poss === s && st.phase !== 'kick';
     return `<div class="st-side ${s === 'H' ? 'home' : 'away'}${won && won !== s ? ' lose' : ''}" style="--tc:${esc(T[s].color)}">
@@ -4515,7 +4516,7 @@ function cardLinescore(){
   const st = R.st, T = g.teams, cols = lineCols(st);
   return `<section class="card"><div class="tbl-wrap"><table class="ls">
     <thead><tr><th></th>${cols.map(i => `<th>${colLabel(i)}</th>`).join('')}<th>T</th></tr></thead>
-    <tbody>${['A', 'H'].map(s => `<tr><td><span class="tm">${teamMark(s, 22)}${esc(T[s].name)}</span></td>${cols.map(i => `<td>${qCell(st, s, i)}</td>`).join('')}<td class="tot">${st.score[s]}</td></tr>`).join('')}</tbody>
+    <tbody>${['A', 'H'].map(s => `<tr><td><span class="tm">${teamMark(s, 22)}${esc(schoolName(T[s].name))}</span></td>${cols.map(i => `<td>${qCell(st, s, i)}</td>`).join('')}<td class="tot">${st.score[s]}</td></tr>`).join('')}</tbody>
   </table></div></section>`;
 }
 function scoringList(){
@@ -4607,7 +4608,7 @@ function viewBoxTab(){
     const heads = heads0.filter((x, i) => keepCol[i]), row = p => row0(p).filter((v, i) => keepCol[i]);
     const lists = {A:pick('A', keep, key), H:pick('H', keep, key)};
     if (!lists.A.length && !lists.H.length) continue;
-    const table = s => `<div><div class="bx-team">${teamMark(s, 22)}${ui.viewer ? `<a class="tlink" href="?team=${encodeURIComponent(T[s].name)}">${esc(T[s].name)}</a>` : esc(T[s].name)}</div>${lists[s].length
+    const table = s => `<div><div class="bx-team">${teamMark(s, 22)}${ui.viewer ? `<a class="tlink" href="?team=${encodeURIComponent(schoolName(T[s].name))}">${esc(schoolName(T[s].name))}</a>` : esc(schoolName(T[s].name))}</div>${lists[s].length
       ? `<div class="tbl-wrap"><table class="st"><thead><tr><th>${title}</th>${heads.map(x => `<th>${x}</th>`).join('')}</tr></thead>
         <tbody>${lists[s].map(p => `<tr><td>${plName(s, p.n)}</td>${row(p).map(v => `<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`
       : `<div class="muted" style="font-size:13px;padding:6px 0">No ${title.toLowerCase()} stats</div>`}</div>`;
@@ -5343,7 +5344,7 @@ async function startViewer(id){
     g = game; $('#tabs').hidden = false;
     refresh(); viewerTools(id);
     const [hi, lo] = R.st.score.H > R.st.score.A ? ['H', 'A'] : ['A', 'H'];   // the higher score first, like the link's preview
-    document.title = `${g.teams[hi].name} ${R.st.score[hi]}, ${g.teams[lo].name} ${R.st.score[lo]} · ${SITE_TITLE}`;
+    document.title = `${schoolName(g.teams[hi].name)} ${R.st.score[hi]}, ${schoolName(g.teams[lo].name)} ${R.st.score[lo]} · ${SITE_TITLE}`;
   }, gone);
 }
 // Firebase for a watcher's page, set up once and shared (a school's gamecast moves from game to game).

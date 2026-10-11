@@ -243,7 +243,7 @@ async function startViewer(id){
     g = game; $('#tabs').hidden = false;
     refresh(); viewerTools(id);
     const [hi, lo] = R.st.score.H > R.st.score.A ? ['H', 'A'] : ['A', 'H'];   // the higher score first, like the link's preview
-    document.title = `${g.teams[hi].name} ${R.st.score[hi]}, ${g.teams[lo].name} ${R.st.score[lo]} · ${SITE_TITLE}`;
+    document.title = `${schoolName(g.teams[hi].name)} ${R.st.score[hi]}, ${schoolName(g.teams[lo].name)} ${R.st.score[lo]} · ${SITE_TITLE}`;
   }, gone);
 }
 // Firebase for a watcher's page, set up once and shared (a school's gamecast moves from game to game).

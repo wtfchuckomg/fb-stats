@@ -35,7 +35,8 @@ function renderBoard(){
   // Like ESPN's: school and mascot, the record under it, beside the score. Once it's final the loser is grayed, an
   // arrow points at the winner, and the timeouts go.
   const won = st.final && st.score.A !== st.score.H ? (st.score.A > st.score.H ? 'A' : 'H') : null;
-  const fullName = t => t.mascot && !String(t.name).toLowerCase().endsWith(t.mascot.toLowerCase()) ? `${t.name} ${t.mascot}` : t.name;
+  // The site's own name for the school ("Campus", not "Haysville Campus"), whatever the game was saved under.
+  const fullName = t => { const n = schoolName(t.name); return t.mascot && !String(n).toLowerCase().endsWith(t.mascot.toLowerCase()) ? `${n} ${t.mascot}` : n; };
   const side = s => {
     const has = !st.final && st.poss === s && st.phase !== 'kick';
     return `<div class="st-side ${s === 'H' ? 'home' : 'away'}${won && won !== s ? ' lose' : ''}" style="--tc:${esc(T[s].color)}">

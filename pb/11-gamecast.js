@@ -87,7 +87,7 @@ function cardLinescore(){
   const st = R.st, T = g.teams, cols = lineCols(st);
   return `<section class="card"><div class="tbl-wrap"><table class="ls">
     <thead><tr><th></th>${cols.map(i => `<th>${colLabel(i)}</th>`).join('')}<th>T</th></tr></thead>
-    <tbody>${['A', 'H'].map(s => `<tr><td><span class="tm">${teamMark(s, 22)}${esc(T[s].name)}</span></td>${cols.map(i => `<td>${qCell(st, s, i)}</td>`).join('')}<td class="tot">${st.score[s]}</td></tr>`).join('')}</tbody>
+    <tbody>${['A', 'H'].map(s => `<tr><td><span class="tm">${teamMark(s, 22)}${esc(schoolName(T[s].name))}</span></td>${cols.map(i => `<td>${qCell(st, s, i)}</td>`).join('')}<td class="tot">${st.score[s]}</td></tr>`).join('')}</tbody>
   </table></div></section>`;
 }
 function scoringList(){
@@ -179,7 +179,7 @@ function viewBoxTab(){
     const heads = heads0.filter((x, i) => keepCol[i]), row = p => row0(p).filter((v, i) => keepCol[i]);
     const lists = {A:pick('A', keep, key), H:pick('H', keep, key)};
     if (!lists.A.length && !lists.H.length) continue;
-    const table = s => `<div><div class="bx-team">${teamMark(s, 22)}${ui.viewer ? `<a class="tlink" href="?team=${encodeURIComponent(T[s].name)}">${esc(T[s].name)}</a>` : esc(T[s].name)}</div>${lists[s].length
+    const table = s => `<div><div class="bx-team">${teamMark(s, 22)}${ui.viewer ? `<a class="tlink" href="?team=${encodeURIComponent(schoolName(T[s].name))}">${esc(schoolName(T[s].name))}</a>` : esc(schoolName(T[s].name))}</div>${lists[s].length
       ? `<div class="tbl-wrap"><table class="st"><thead><tr><th>${title}</th>${heads.map(x => `<th>${x}</th>`).join('')}</tr></thead>
         <tbody>${lists[s].map(p => `<tr><td>${plName(s, p.n)}</td>${row(p).map(v => `<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`
       : `<div class="muted" style="font-size:13px;padding:6px 0">No ${title.toLowerCase()} stats</div>`}</div>`;
