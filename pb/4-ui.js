@@ -215,13 +215,13 @@ const first = (side, role) => recent(side, role)[0] || '';
 function penBlank(side, enf){ return {side, name:'Holding', y:10, a:false, l:false, n:'', enf}; }
 function blank(t, st){
   const O = st.poss, D = other(O);
-  const fum = {lost:'lost', by:'', ff:'', ry:''};
+  const fum = {lost:'lost', by:'', ff:'', ry:'', td:false, atOn:false, at:{side:'', n:''}, twice:false, then:{lost:'lost', by:'', ry:''}};
   const base = {t, fumOn:false, fum, penOn:false, pen:penBlank(D, 'prev')};
   switch (t){
-    case 'run': return {...base, r:'', y:'', yn:'gain', tk:['', '']};
+    case 'run': return {...base, r:'', y:'', yn:'gain', tk:['', ''], latOn:false, lat:{r:'', y:''}};
     case 'pass': return {...base, qb:first(O, 'qb'), res:'c', to:'', y:'', yn:'gain', tk:['', ''], pbu:'', ib:'', at:'', ry:'', by:['', ''], sy:''};
-    case 'punt': return {...base, k:first(O, 'punt'), d:'', res:'ret', ret:'', ry:'', tk:['', ''], by:'', b:''};
-    case 'ko': return {...base, k:first(O, 'kick'), d:'', res:'ret', ret:'', ry:'', tk:['', '']};
+    case 'punt': return {...base, k:first(O, 'punt'), d:'', res:'ret', ret:'', ry:'', tk:['', ''], by:'', b:'', mr:'', own:'', oob:false};
+    case 'ko': return {...base, k:first(O, 'kick'), d:'', res:'ret', ret:'', ry:'', tk:['', ''], by:'', mr:'', oob:false};
     case 'fg': return {...base, k:first(O, 'kick'), d:'', res:'good', by:'', b:'', ret:'', ry:''};
     case 'try': return {t, kind:'kick', res:'good', k:first(O, 'kick'), r:'', qb:first(O, 'qb'), to:''};
     case 'pen': return {t, pen:penBlank(O, 'acc')};
@@ -232,7 +232,14 @@ function blank(t, st){
 function toDraft(p, st){
   const d = blank(p.t, st), str = v => v == null ? '' : String(v);
   for (const k of Object.keys(p)){
-    if (k === 'fum'){ d.fumOn = true; d.fum = {lost:p.fum.lost ? 'lost' : 'kept', by:str(p.fum.by), ff:str(p.fum.ff), ry:str(p.fum.ry || '')}; }
+    if (k === 'fum'){
+      const f = p.fum, t = f.then, how = x => x.ez ? 'ez' : x.lost ? 'lost' : 'kept';
+      d.fumOn = true;
+      d.fum = {...d.fum, lost:how(f), by:str(f.by), ff:str(f.ff), ry:str(f.ry || ''), td:!!f.td, atOn:!!f.at,
+        at:f.at ? {side:f.at.side, n:str(f.at.n)} : {side:'', n:''}, twice:!!t,
+        then:t ? {lost:how(t), by:str(t.by), ry:str(t.ry || '')} : d.fum.then};
+    }
+    else if (k === 'lat'){ d.latOn = true; d.lat = {r:str(p.lat.r), y:str(p.lat.y)}; }
     else if (k === 'pen'){ d.pen = {...p.pen, n:str(p.pen.n)}; if (p.t !== 'pen') d.penOn = true; }
     else if (k === 'y'){ d.y = p.y ? String(Math.abs(p.y)) : ''; d.yn = p.y < 0 ? 'loss' : 'gain'; }
     else if (k === 'tk' || k === 'by' && Array.isArray(p.by)){ const a = p[k].map(String); d[k] = [a[0] || '', a[1] || '']; }
@@ -248,9 +255,14 @@ function buildPlay(d){
   const j = v => String(v ?? '').replace(/\D/g, '') || undefined;
   const js = a => (a || []).map(j).filter(Boolean);
   const yy = () => (d.yn === 'loss' ? -1 : 1) * (n(d.y) || 0);
+  const sn = v => Number(String(v ?? '').replace(/[^\d.-]/g, '')) || 0;   // yards that can be minus
+  const yes = v => v === true || v === 'true';
   const p = {t:d.t};
   switch (d.t){
-    case 'run': Object.assign(p, {r:j(d.r), y:yy(), tk:js(d.tk)}); break;
+    case 'run':
+      Object.assign(p, {r:j(d.r), y:yy(), tk:js(d.tk)});
+      if (yes(d.latOn) && d.lat && j(d.lat.r)) p.lat = {r:j(d.lat.r), y:sn(d.lat.y)};
+      break;
     case 'pass':
       Object.assign(p, {qb:j(d.qb), res:d.res});
       if (d.res === 'c') Object.assign(p, {to:j(d.to), y:yy(), tk:js(d.tk)});
@@ -260,16 +272,17 @@ function buildPlay(d){
       break;
     case 'punt':
       Object.assign(p, {k:j(d.k), d:n(d.d), res:d.res});
-      if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:n(d.ry) || 0, tk:js(d.tk)});
+      if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:n(d.ry) || 0, tk:js(d.tk), oob:yes(d.oob) || undefined});
       if (d.res === 'fc') p.ret = j(d.ret);
-      if (d.res === 'muff') Object.assign(p, {by:j(d.by), ret:j(d.ret), mr:d.mr === true || d.mr === 'true' || undefined});
-      if (d.res === 'blk') Object.assign(p, d.saf ? {by:j(d.by), saf:true} : {by:j(d.by), b:n(d.b) || 0, ret:j(d.ret), ry:n(d.ry) || 0});
+      if (d.res === 'muff') Object.assign(p, {by:j(d.by), ret:j(d.ret), mr:yes(d.mr) || undefined});
+      if (d.res === 'blk') Object.assign(p, d.saf ? {by:j(d.by), saf:true}
+        : yes(d.own) ? {by:j(d.by), b:n(d.b) || 0, ret:j(d.ret), own:true} : {by:j(d.by), b:n(d.b) || 0, ret:j(d.ret), ry:n(d.ry) || 0});
       break;
     case 'ko':
       Object.assign(p, {k:j(d.k), d:n(d.d) || 0, res:d.res});
-      if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:n(d.ry) || 0, tk:js(d.tk)});
+      if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:n(d.ry) || 0, tk:js(d.tk), oob:yes(d.oob) || undefined});
       if (d.res === 'fc' || d.res === 'onside') p.ret = j(d.ret);
-      if (d.res === 'muff') Object.assign(p, {by:j(d.by), ret:j(d.ret), mr:d.mr === true || d.mr === 'true' || undefined});
+      if (d.res === 'muff') Object.assign(p, {by:j(d.by), ret:j(d.ret), mr:yes(d.mr) || undefined});
       break;
     case 'fg':
       Object.assign(p, {k:j(d.k), d:n(d.d), res:d.res});
@@ -284,7 +297,16 @@ function buildPlay(d){
     case 'pen': p.pen = cleanPen(d.pen); break;
     case 'note': p.text = d.text; break;
   }
-  if (fumbleAllowed(d) && d.fumOn) p.fum = {lost:d.fum.lost === 'lost', by:j(d.fum.by), ff:j(d.fum.ff), ry:n(d.fum.ry) || 0};
+  if (fumbleAllowed(d) && d.fumOn){
+    // Lost, kept, or out of bounds beyond a goal line with nobody on it; then where, a score, a second fumble.
+    const F = d.fum, one = x => x.lost === 'ez' ? {lost:true, ez:true, ry:0} : {lost:x.lost === 'lost', by:j(x.by), ry:sn(x.ry)};
+    p.fum = {...one(F), ff:j(F.ff)};
+    if (!p.fum.ez){
+      if (p.fum.lost && yes(F.td)) p.fum.td = true;
+      if (yes(F.atOn) && F.at && F.at.side && String(F.at.n).trim() !== '') p.fum.at = {side:F.at.side, n:n(F.at.n) || 0};
+      if (yes(F.twice) && F.then){ p.fum.then = one(F.then); p.fum.endLost = p.fum.lost !== p.fum.then.lost; }
+    }
+  }
   if (['run', 'pass', 'punt', 'ko', 'fg'].includes(d.t) && d.penOn) p.pen = cleanPen(d.pen);
   return JSON.parse(JSON.stringify(p));
 }
@@ -319,11 +341,20 @@ const tog = (k, label, cls = '') => `<button type="button" class="tog ${cls}" da
 const row = (...a) => `<div class="row">${a.join('')}</div>`;
 
 function fumbleFields(){
-  const st = ui.ctx.st, d = ui.draft, carrier = d.t === 'punt' || d.t === 'ko' || (d.t === 'pass' && d.res === 'x') ? other(st.poss) : st.poss;
-  const lost = d.fum.lost === 'lost', recSide = lost ? other(carrier) : carrier;
-  return `<div class="sub">${fSeg('fum.lost', 'Fumble', [['lost', `Lost to ${ab(other(carrier))}`], ['kept', `${ab(carrier)} kept it`]])}
-    ${row(fJ('fum.by', 'Recovered by', recSide), fJ('fum.ff', 'Forced by', other(carrier)), lost ? fN('fum.ry', 'Return yards', '0') : '')}
-    <p class="hint">Enter the play's yards to where the ball was recovered.</p></div>`;
+  const st = ui.ctx.st, d = ui.draft, F = d.fum, carrier = d.t === 'punt' || d.t === 'ko' || (d.t === 'pass' && d.res === 'x') ? other(st.poss) : st.poss;
+  const how = (holder, k) => fSeg(k, k === 'fum.lost' ? 'Fumble' : 'Fumbled again', [['lost', `Lost to ${ab(other(holder))}`], ['kept', `${ab(holder)} kept it`], ['ez', 'Out of the end zone']]);
+  const lost = F.lost === 'lost', recSide = lost ? other(carrier) : carrier;
+  let h = how(carrier, 'fum.lost');
+  if (F.lost === 'ez') return `<div class="sub">${h}<p class="hint">Out of bounds beyond a goal line with nobody on it: a touchback through their end zone, a safety out of your own.</p></div>`;
+  h += row(fJ('fum.by', 'Recovered by', recSide), fJ('fum.ff', 'Forced by', other(carrier)), fN('fum.ry', lost ? 'Return yards' : 'Advanced', '0'));
+  h += `<div class="checks">${tog('fum.atOn', 'Recovered somewhere else')}${lost ? tog('fum.td', 'Returned for a TD') : ''}${tog('fum.twice', 'Fumbled again')}</div>`;
+  if (F.atOn) h += row(fSeg('fum.at.side', 'Recovered at', [['A', ab('A')], ['H', ab('H')]]), fN('fum.at.n', 'Yard line', ''));
+  if (F.twice){
+    const h1 = lost ? other(carrier) : carrier, T = F.then;
+    h += `<div class="sub">${how(h1, 'fum.then.lost')}${T.lost === 'ez' ? ''
+      : row(fJ('fum.then.by', 'Recovered by', T.lost === 'lost' ? other(h1) : h1), fN('fum.then.ry', T.lost === 'lost' ? 'Return yards' : 'Advanced', '0'))}</div>`;
+  }
+  return `<div class="sub">${h}<p class="hint">Enter the play's yards to where the ball came loose.</p></div>`;
 }
 const ENF_HINT = {
   prev:'The play is wiped out and its stats don’t count. Yards are marked off from the previous spot.',
@@ -345,13 +376,23 @@ function flagFields(standalone){
 function extras(){
   const d = ui.draft;
   let h = '<div class="more"><div class="checks">';
+  if (d.t === 'run') h += tog('latOn', 'Lateral');
   if (fumbleAllowed(d)) h += tog('fumOn', 'Fumble');
   h += tog('penOn', 'Flag on the play', 'flagtog') + '</div>';
+  // A lateral: the first carrier keeps the yards up to the pitch, the second gets the rest. A fumble after it is his.
+  if (d.t === 'run' && d.latOn) h += `<div class="sub">${row(fJ('lat.r', 'Lateral to', ui.ctx.st.poss, 'rush'), fN('lat.y', 'His yards', '0'))}</div>`;
   if (fumbleAllowed(d) && d.fumOn) h += fumbleFields();
   if (d.penOn) h += flagFields(false);
   return h + '</div>';
 }
 
+// A muffed kick: who dropped it, which team fell on it, and who. The kicking team's recovery is a turnover; the
+// receiving team's own is just their ball where it happened.
+function muffFields(K, Rr, hint){
+  const mine = String(ui.draft.mr) === 'true';
+  return row(fJ('by', 'Muffed by', Rr), fJ('ret', 'Recovered by', mine ? Rr : K))
+    + fSeg('mr', 'Recovering team', [['', `${ab(K)} (kicking team)`], ['true', `${ab(Rr)} (receiving team)`]]) + `<p class="hint">${hint}</p>`;
+}
 function formHtml(){
   const st = ui.ctx.st, d = ui.draft, O = st.poss, D = other(O);
   switch (d.t){
@@ -367,18 +408,22 @@ function formHtml(){
     }
     case 'punt': {
       let h = row(fJ('k', 'Punter', O, 'punt'), d.res === 'tb' || d.res === 'blk' ? '' : fN('d', 'Punt yards', '0'));
-      h += fSeg('res', 'Result', [['ret', 'Returned'], ['fc', 'Fair catch'], ['down', 'Downed'], ['oob', 'Out of bounds'], ['tb', 'Touchback'], ['blk', 'Blocked']]);
-      if (d.res === 'ret') h += row(fJ('ret', 'Returner', D, 'ret'), fN('ry', 'Return yards', '0')) + row(fJ('tk.0', 'Tackle', O, 'def'), fJ('tk.1', 'Assist', O));
+      h += fSeg('res', 'Result', [['ret', 'Returned'], ['fc', 'Fair catch'], ['down', 'Downed'], ['oob', 'Out of bounds'], ['tb', 'Touchback'], ['muff', 'Muffed'], ['blk', 'Blocked']]);
+      if (d.res === 'ret') h += row(fJ('ret', 'Returner', D, 'ret'), fN('ry', 'Return yards', '0')) + row(fJ('tk.0', 'Tackle', O, 'def'), fJ('tk.1', 'Assist', O)) + `<div class="checks">${tog('oob', 'Returner went out of bounds')}</div>`;
       if (d.res === 'fc') h += row(fJ('ret', 'Caught by', D, 'ret'));
+      if (d.res === 'muff') h += muffFields(O, D, 'Punt yards to where it was muffed.');
       if (d.res === 'blk') h += row(fJ('by', 'Blocked by', D), `<div class="fld">${tog('saf', 'Out of the end zone: safety')}</div>`)
-        + (d.saf ? '' : row(fN('b', 'Recovered, yds behind line', '0'), fJ('ret', 'Recovered by', D), fN('ry', 'Return yards', '0')));
+        + (d.saf ? '' : fSeg('own', 'Recovering team', [['', `${ab(D)} (blocking team)`], ['true', `${ab(O)} (punting team)`]])
+          + (String(d.own) === 'true' ? row(fN('b', 'Recovered, yds behind line', '0'), fJ('ret', 'Recovered by', O))
+            : row(fN('b', 'Recovered, yds behind line', '0'), fJ('ret', 'Recovered by', D), fN('ry', 'Return yards', '0'))));
       return h + extras();
     }
     case 'ko': {
       const K = st.poss, Rr = other(K);
       let h = row(fJ('k', 'Kicker', K, 'kick'), d.res === 'tb' || d.res === 'oob' ? '' : fN('d', 'Kick yards', '0'));
-      h += fSeg('res', 'Result', [['ret', 'Returned'], ['tb', 'Touchback'], ['fc', 'Fair catch'], ['down', 'Downed'], ['oob', 'Out of bounds'], ['onside', 'Onside recovery']]);
-      if (d.res === 'ret') h += row(fJ('ret', 'Returner', Rr, 'ret'), fN('ry', 'Return yards', '0')) + row(fJ('tk.0', 'Tackle', K, 'def'), fJ('tk.1', 'Assist', K));
+      h += fSeg('res', 'Result', [['ret', 'Returned'], ['tb', 'Touchback'], ['fc', 'Fair catch'], ['down', 'Downed'], ['oob', 'Out of bounds'], ['onside', 'Onside recovery'], ['muff', 'Muffed']]);
+      if (d.res === 'ret') h += row(fJ('ret', 'Returner', Rr, 'ret'), fN('ry', 'Return yards', '0')) + row(fJ('tk.0', 'Tackle', K, 'def'), fJ('tk.1', 'Assist', K)) + `<div class="checks">${tog('oob', 'Returner went out of bounds')}</div>`;
+      if (d.res === 'muff') h += muffFields(K, Rr, 'Kick yards to where it was muffed.');
       if (d.res === 'fc') h += row(fJ('ret', 'Caught by', Rr, 'ret'));
       if (d.res === 'onside') h += row(fJ('ret', 'Recovered by', K));
       h += `<p class="hint">Kick yards count from the ${esc(R.yl(K, st.kickFrom))}. Out of bounds gives ${esc(ab(Rr))} the ball 25 yards beyond the kicking line (its ${ui.ctx.FL - rulesOf(g).kickFrom - NFHS.oobFreeKick} on a normal kickoff).</p>`;
