@@ -702,12 +702,15 @@ function parseQuick(raw, st){
       const fin = FL - clamp(caught, 0, FL) + p.ry;                  // where it came loose, in the intercepting team's frame
       if (fin >= FL) return bad('That return already reached the end zone, so there was no fumble on it. Leave off the fum part.');
       let ry = fum.ry;
+      // Recovered somewhere other than where it came loose ("rec W28 at C45"): the return runs from there.
+      const recPos = fum.at ? (fum.at.side === rec ? fum.at.n : FL - fum.at.n) : (lost ? FL - fin : fin);
       if (fum.endSpot){
         const e = fum.endSpot, endPos = e.side == null ? HALF : e.side === rec ? e.n : FL - e.n;
-        ry = endPos - (lost ? FL - fin : fin);
+        ry = endPos - recPos;
       }
-      if (fum.tdLine) ry = lost ? fin : FL - fin;
-      p.fum = {lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self || (fum.selfRec && fum.by == null) ? {self:true} : {}), ...(fum.ez ? {ez:true} : {}), ry};
+      if (fum.tdLine) ry = FL - recPos;
+      p.fum = {lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self || (fum.selfRec && fum.by == null) ? {self:true} : {}), ...(fum.ez ? {ez:true} : {}),
+        ...(fum.at ? {at:fum.at} : {}), ry};
     }
     return flag(p);
   }
