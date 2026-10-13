@@ -72,8 +72,9 @@ function scoreLine(d){
   // "(Smith run)", "(Jones pass from Smith)", "(Jones to Goentzel)" and "(conversion good)" are two-point tries; a kick
   // is one point however it's written ("(Vega kick)", "(kick good)").
   const failed = /fail|no good|miss|block|incomplete|no try|stopped|short|fumbl|bad snap|abort/i.test(pat);
+  // "(run good)" and "(pass good)" are two points even with no name on them; a bare "(good)" is a kick.
   const extra = failed ? 0 : /kick|\bpat\b/i.test(pat) ? 1 : /conversion|two[- ]?p(?:oin)?t|\b2[- ]?p(?:oin)?t/i.test(pat) ? 2
-    : /good/i.test(pat) ? 1 : /\b(run|rush|pass|catch|to)\b/i.test(pat) ? 2 : 0;
+    : /\b(run|rush|pass|catch|to)\b/i.test(pat) ? 2 : /good/i.test(pat) ? 1 : 0;
   return {how:'TD', pts:6 + extra};
 }
 
