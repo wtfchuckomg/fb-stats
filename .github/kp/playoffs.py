@@ -137,6 +137,7 @@ def main():
     if want:
         kp = fetch_kpreps(want, kp)
         kp_file.write_text(json.dumps(kp, separators=(',', ':')))
+    kp = [g for g in kp if g['c'] not in SKIP_CLASSES]
     ppi = json.loads((HERE / 'playoffs-ppi.json').read_text())
     games = []   # (year, class, round, winner, winner's points, loser, loser's points, overtime)
     # The archive prints the winner first; a few of its games have no score for the loser (them: null).
