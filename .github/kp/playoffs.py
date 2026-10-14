@@ -134,6 +134,7 @@ def main():
         kp_file.write_text(json.dumps(kp, separators=(',', ':')))
     ppi = json.loads((HERE / 'playoffs-ppi.json').read_text())
     games = []   # (year, class, round, winner, winner's points, loser, loser's points, overtime)
+    # The archive prints the winner first; a few of its games have no score for the loser (them: null).
     # 2019 already had today's five rounds; the archive just named them its own way.
     Y2019 = {'First Round': 'Round 1', 'Second Round': 'Regional', 'Quarterfinals': 'Sectional', 'Semifinals': 'Sub-State', 'Championship': 'State'}
     for g in ppi:
@@ -155,7 +156,7 @@ def main():
                 continue
             o = site(opp)
             per.setdefault(s, {}).setdefault((y, c), []).append({'r': rnd, 'o': o or opp, 'p': 1 if o else 0, 'us': us, 'them': them,
-                                                                   'w': 1 if us > them else 0 if us < them else None, **({'ot': 1} if ot else {})})
+                                                                   'w': 1 if won else 0, **({'ot': 1} if ot else {})})
     out = ROOT / 'playoffs'
     out.mkdir(exist_ok=True)
     order = {'Round 0': 0, 'Round 1': 1, 'First Round': 1, 'Regional': 2, 'Second Round': 2, 'Sectional': 3, 'Quarterfinals': 3,
