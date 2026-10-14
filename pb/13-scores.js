@@ -370,6 +370,7 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
   const q = new URLSearchParams(location.search);
   // The site's plain address is Home; the Game Tracker is ?tracker (or ?edit=<id>).
   const here = q.has('tracker') || q.has('edit') ? 'tracker'
+    : q.has('brackets') ? 'phist'
     : q.has('league') ? 'leagues'
     : q.has('avctl') ? 'avscores' : q.has('standings') ? 'standings' : q.has('avstats') ? 'avstats'
     : q.has('scores') ? 'scores' : q.has('state') ? 'state' : q.has('statestats') ? 'sstats'
