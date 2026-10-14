@@ -64,8 +64,10 @@ function phBracketHtml(B){
     });
   });
   const fin = B.rounds[R - 1].games[0], champ = fin && fin.a;
-  if (champ) cells.push(`<div class="ph-h" style="grid-column:${R * 2}">Champion</div>`,
-    `<div class="ph-cell ph-champ" style="grid-column:${R * 2};grid-row:2 / span ${rows}">${phTeam(Object.assign({}, champ, {s:''}), true)}</div>`);
+  // The champion past the final, joined to it by a straight line.
+  if (champ) cells.push(`<div class="ph-conn line" style="grid-column:${R * 2};grid-row:2 / span ${rows}"></div>`,
+    `<div class="ph-h" style="grid-column:${R * 2 + 1}">Champion</div>`,
+    `<div class="ph-cell ph-champ" style="grid-column:${R * 2 + 1};grid-row:2 / span ${rows}">${phTeam(Object.assign({}, champ, {s:''}), true)}</div>`);
   const cols = Array.from({length:R}, () => 'minmax(190px,220px)').join(' 26px ') + (champ ? ' 26px minmax(160px,200px)' : '');
   return `<div class="ph-scroll"><div class="ph-grid" style="grid-template-columns:${cols};grid-template-rows:auto repeat(${rows}, minmax(64px, auto))">${cells.join('')}</div></div>`;
 }
