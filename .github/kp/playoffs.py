@@ -153,6 +153,7 @@ def main():
         a, b = (g['a'], g['ap']), (g['b'], g['bp'])
         (w, ws), (l, ls) = (a, b) if g['ap'] >= g['bp'] else (b, a)
         games.append((g['y'], g['c'], rnd, w, ws, l, ls, g['ot']))
+    games = one_name(games)
     per = {}
     for y, c, rnd, w, ws, l, ls, ot in games:
         # 1969-70 Class 5A was the Wichita City League champion against the KC league's, not a playoff run: it stays off
@@ -186,21 +187,42 @@ def near(a, b):
     return a[i + 1:] == b[i + 1:] or a[i + 1:] == b[i:] or a[i:] == b[i + 1:] or (a[i + 2:] == b[i + 2:] and a[i:i + 2] == b[i:i + 2][::-1])
 
 
+key = lambda n: site(n) or norm(n).lower()
+def same(a, b):
+    if key(a) == key(b): return True
+    if site(a) and site(b): return False   # two schools this site knows apart (Andover and Andover Central)
+    x, y = norm(a).lower().replace('-', ' ').replace('.', '').split(), norm(b).lower().replace('-', ' ').replace('.', '').split()
+    if not x or not y: return False
+    if len(x) == len(y) and all(p == q or near(p, q) for p, q in zip(x, y)): return True   # one letter off: a typo
+    short, long_ = sorted((x, y), key=len)
+    # "Kapaun" / "Wichita Kapaun", "Colgan" / "Pittsburg Colgan", and "Wichita" cut short of "Wichita Collegiate"
+    # ... and "St. Joseph" for Shawnee-St. Joseph, "Trinity" for Hutch Trinity: the end of the longer name
+    return ((x[-1] == y[-1] and (x[0] == y[0] or len(short) == 1)) or (len(short) == 1 and long_[0] == short[0])
+            or (len(short) > 1 and long_[-len(short):] == short))
+
+
+def one_name(games):
+    """Within one year and class, a school printed two ways ("Hutch Trinity" in the first round, "Trinity" after it)
+    gets one name everywhere: the one this site knows, else the longer. Only when the short form fits that one school."""
+    names = {}
+    for y, c, rnd, w, ws, l, ls, ot in games:
+        names.setdefault((y, c), set()).update((w, l))
+    fix = {}
+    for yc, ns in names.items():
+        for a in ns:
+            like = [b for b in ns if b != a and key(b) != key(a) and same(a, b)]
+            if len(like) != 1: continue
+            b = like[0]
+            if len([x for x in ns if x != b and key(x) != key(b) and same(b, x)]) != 1: continue
+            keep = max((a, b), key=lambda n: (bool(site(n)), len(n)))
+            if keep != a: fix[(yc, a)] = keep
+    return [(y, c, rnd, fix.get(((y, c), w), w), ws, fix.get(((y, c), l), l), ls, ot) for y, c, rnd, w, ws, l, ls, ot in games]
+
+
 def write_years(games, out, order):
     """playoffs/years/<year>.json: each class's bracket, its games laid out the way a bracket is drawn — worked back
     from the final, each game sits over the two that sent its teams there (an empty slot where a team had a bye).
     playoffs/years/index.json lists the classes each year has."""
-    key = lambda n: site(n) or norm(n).lower()
-    def same(a, b):
-        if key(a) == key(b): return True
-        x, y = norm(a).lower().replace('-', ' ').replace('.', '').split(), norm(b).lower().replace('-', ' ').replace('.', '').split()
-        if not x or not y: return False
-        if len(x) == len(y) and all(p == q or near(p, q) for p, q in zip(x, y)): return True   # one letter off: a typo
-        short, long_ = sorted((x, y), key=len)
-        # "Kapaun" / "Wichita Kapaun", "Colgan" / "Pittsburg Colgan", and "Wichita" cut short of "Wichita Collegiate"
-        # ... and "St. Joseph" for Shawnee-St. Joseph, "Trinity" for Hutch Trinity: the end of the longer name
-        return ((x[-1] == y[-1] and (x[0] == y[0] or len(short) == 1)) or (len(short) == 1 and long_[0] == short[0])
-                or (len(short) > 1 and long_[-len(short):] == short))
     team = lambda n, sc: {'n': site(n) or n, 's': sc, **({'p': 1} if site(n) else {})}
     by = {}
     for y, c, rnd, w, ws, l, ls, ot in games:
