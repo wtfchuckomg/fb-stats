@@ -213,10 +213,11 @@ def one_name(games):
     fix = {}
     for yc, ns in names.items():
         for a in ns:
-            like = [b for b in ns if b != a and key(b) != key(a) and same(a, b)]
+            # spellings of one school count once ("Hutchinson Trinity" and "Hutch Trinity" are both Hutch Trinity)
+            like = list({key(b): b for b in sorted(ns, key=lambda n: (not site(n), -len(n))) if b != a and key(b) != key(a) and same(a, b)}.values())
             if len(like) != 1: continue
             b = like[0]
-            if len([x for x in ns if x != b and key(x) != key(b) and same(b, x)]) != 1: continue
+            if len({key(x) for x in ns if x != b and key(x) != key(b) and same(b, x)}) != 1: continue
             keep = max((a, b), key=lambda n: (bool(site(n)), len(n)))
             if keep != a: fix[(yc, a)] = keep
     return [(y, c, rnd, fix.get(((y, c), w), w), ws, fix.get(((y, c), l), l), ls, ot) for y, c, rnd, w, ws, l, ls, ot in games]
@@ -252,7 +253,8 @@ def write_years(games, out, order):
                         cand = [x for x in pool if t and key(x['w']) == key(t)] or [x for x in pool if t and same(x['w'], t)]
                         # KPreps' rounds are right: there a team's earlier win has to come from an earlier round
                         if y in KP_YEARS: cand = [x for x in cand if order.get(x['r'], 0) < order.get(g['r'], 0)]
-                        m = max(cand, key=lambda x: order.get(x['r'], 0)) if cand else None
+                        # the latest earlier win: by round, then by the order the source printed them in
+                        m = max(cand, key=lambda x: (order.get(x['r'], 0), gs.index(x))) if cand else None
                         if m: pool.remove(m)
                         prev.append(m)
                 if not any(prev): break
@@ -260,8 +262,14 @@ def write_years(games, out, order):
             # Left over: a game for third place, played the week of the final by the two semifinal losers.
             third = [x for x in pool if x['r'] == final['r']]
             extra = [x for x in pool if x not in third]; lost += len(extra)
-            # Each column takes its round's name, counted back from the final.
-            names = (['First Round'] * max(0, len(levels) - len(names)) + names)[-len(levels):]
+            # Each column is named for its games' own round, unless the source gave two columns one name (1985 8-Man I
+            # printed its quarterfinals as "Semifinals"): then the column gets the name for its distance from the final.
+            names, used = [], set()
+            for d, lv in enumerate(reversed(levels)):
+                said = [g['r'] for g in lv if g]
+                n = max(set(said), key=said.count) if said else ''
+                if not n or n in used: n = PAD[min(d, len(PAD) - 1)]
+                used.add(n); names.insert(0, n)
             doc[c] = {'rounds': [{'name': names[i], 'games': [None if g is None else
                        {'a': team(g['w'], g['ws']), 'b': team(g['l'], g['ls']), **({'ot': 1} if g['ot'] else {})} for g in lv]}
                       for i, lv in enumerate(levels)],
@@ -276,6 +284,7 @@ def write_years(games, out, order):
     print(len(index), 'years;', lost, 'games that fit no bracket slot')
 
 
+PAD = ['State', 'Sub-State', 'Quarterfinals', 'Second Round', 'First Round']
 CLASS_ORDER = ['6A', '5A', '4A', '4A-I', '4A-II', '3A', '2-1A', '2A', '1A', '8M', '8M-I', '8M-II', '6M']
 
 
