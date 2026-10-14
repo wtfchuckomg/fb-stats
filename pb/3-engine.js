@@ -825,6 +825,7 @@ function replay(g, upto = g.plays.length){
     log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, spot:pre.spot, down:pre.down, phase:pre.phase, trace, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q, A:st.score.A, H:st.score.H});
   }
   if (g.box) boxInto(g, st, S, scoring);   // entered from a pasted box score: no plays, just its totals
+  if (g.statBox && !g.box && upto >= g.plays.length) statBoxInto(g, S);   // tracked, with the player stats from a box score
   if (g.lines && upto >= g.plays.length) applyLines(g.lines, st);   // a typed line score wins over the plays
   const open = st.drive ? [{...st.drive, res:'In progress', open:true}] : [];
   return {st, S, log, scoring, drives:drives.concat(open), sit:sit(), yl, nm, ab, FL, RU, box:!!g.box};

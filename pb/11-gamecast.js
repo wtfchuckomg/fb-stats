@@ -173,7 +173,7 @@ function viewBoxTab(){
   const pick = (s, keep, key) => Object.values(R.S.pl[s]).filter(keep).sort((a, b) => (a.n === 'team') - (b.n === 'team') || val(b, key) - val(a, key));
   let h = '';
   // A pasted box score has no longest gains and no sacks to show (Chuck, 2026-10-08): those columns go, a gamecast keeps them.
-  const gone = g.box ? ['Lng', 'Sack'] : [];
+  const gone = g.box || g.statBox ? ['Lng', 'Sack'] : [];
   for (const [title, heads0, keep, row0, key] of BOX_CATS){
     const keepCol = heads0.map(x => !gone.includes(x));
     const heads = heads0.filter((x, i) => keepCol[i]), row = p => row0(p).filter((v, i) => keepCol[i]);
@@ -185,7 +185,10 @@ function viewBoxTab(){
       : `<div class="muted" style="font-size:13px;padding:6px 0">No ${title.toLowerCase()} stats</div>`}</div>`;
     h += `<section class="card"><div class="card-hd"><h2 class="card-title">${title}</h2></div><div class="bx2">${table('A')}${table('H')}</div></section>`;
   }
-  return h || '<section class="card"><div class="empty">No player stats yet.</div></section>';
+  // The scorer can hand the player stats over to a pasted box score (a stream that cut off before the end).
+  const own = !ui.viewer && !g.box && g.plays.length ? `<section class="card"><div class="line"><button type="button" class="btn small" data-statbox-open>${g.statBox
+    ? 'Edit the pasted player stats' : 'Use a pasted box score for player stats'}</button></div></section>` : '';
+  return own + (h || '<section class="card"><div class="empty">No player stats yet.</div></section>');
 }
 
 /* ---------- Team Stats: bars in team colors ---------- */

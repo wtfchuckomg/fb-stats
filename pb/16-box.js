@@ -544,6 +544,60 @@ function boxInto(game, st, S, scoring){
   });
 }
 
+/* ---------- a gamecast whose player stats come from a pasted box score ----------
+   The stream cut off before the end (Chuck, 2026-10-13): the plays keep the score, the drives and the play-by-play,
+   and a box score pasted on top supplies every player's line and whatever team totals it prints. */
+const statBoxCache = new Map();
+function statBoxData(game){
+  const b = game.statBox, T = game.teams;
+  if (!b || !b.src || !T) return null;
+  const key = `${T.A.name}|${T.H.name}|${b.src}`;
+  if (!statBoxCache.has(key)){
+    const p = parseBox(b.src);
+    if (p.ok && !sameSchool(p.names[0], T.A.name) && sameSchool(p.names[0], T.H.name) && sameSchool(p.names[1], T.A.name)) swapBox(p);
+    statBoxCache.set(key, p.ok ? p : null);
+  }
+  return statBoxCache.get(key);
+}
+function statBoxInto(game, S){
+  const b = statBoxData(game); if (!b) return;
+  ['A', 'H'].forEach(s => {
+    S.pl[s] = {};
+    Object.entries(b.pl[s] || {}).forEach(([k, p]) => { S.pl[s][k] = Object.assign(zeros(PL_KEYS), {plg:'', rlg:'', relg:'', psk:''}, p, {n:k}); });
+    Object.assign(S.team[s], b.team[s] || {});
+  });
+}
+function statBoxPreview(src){
+  if (!String(src).trim()) return '<p class="hint" style="margin:0">Paste the whole box score, line score first.</p>';
+  const p = parseBox(src);
+  if (!p.ok) return `<p class="hint bx-warn" style="margin:0">${esc(p.error)}</p>`;
+  const n = ['A', 'H'].reduce((a, s) => a + Object.keys(p.pl[s]).filter(k => k !== 'team').length, 0);
+  const tracked = R && R.st ? `${esc(ab('A'))} ${R.st.score.A}, ${esc(ab('H'))} ${R.st.score.H}` : '';
+  return `<div class="bx-sum"><b>${esc(p.names[0])} ${p.total.A}, ${esc(p.names[1])} ${p.total.H}</b>
+    <div class="muted">${n} players with stats${tracked ? ` · the score stays as tracked: ${tracked}` : ''}</div></div>
+    ${p.warn.map(w => `<p class="hint bx-warn">${esc(w)}</p>`).join('')}`;
+}
+function dlgStatBox(){
+  const src = (g && g.statBox && g.statBox.src) || '';
+  return `${dlgHead('Player stats from a box score')}<div class="dlg-bd">
+    <p class="hint" style="margin:0">The play-by-play, drives and score stay as tracked. This box score replaces every player's stats, and the team totals it lists.</p>
+    <div class="fld"><label class="eyebrow" for="sb-txt">Box score · line score, then RUSHING, PASSING, RECEIVING …</label>
+      <textarea class="inp bx-txt" id="sb-txt" rows="12" spellcheck="false">${esc(src)}</textarea></div>
+    <div class="bx-prev" id="sb-prev">${statBoxPreview(src)}</div></div>
+    <div class="dlg-ft">${g && g.statBox ? '<button type="button" class="btn danger" data-statbox-clear style="margin-right:auto">Use the tracked stats</button>' : ''}<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" data-statbox-save>Save</button></div>`;
+}
+function saveStatBox(clear){
+  if (!g) return;
+  if (clear) delete g.statBox;
+  else {
+    const src = $('#sb-txt').value, p = parseBox(src);
+    if (!p.ok) return toast(p.error || 'Couldn’t read that box score');
+    g.statBox = {src};
+  }
+  g.updated = Date.now(); persist(); syncPush(g, 0); closeDialog(); refresh();
+  toast(clear ? 'Back to the tracked player stats' : 'Player stats now come from the box score');
+}
+
 /* ---------- the paste-a-box-score window ---------- */
 function boxPreview(p){
   if (!p.names.length) return '<p class="hint" style="margin:0">Paste the box score above. It needs at least the line score: each team, its quarter scores and the total.</p>';
@@ -622,6 +676,10 @@ document.addEventListener('click', e => {
   if ('qsBox' in d){ ui.boxFrom = d.qsBox || null; ui.boxGame = null; return openDialog('box'); }
   if ('boxNew' in d){ ui.boxFrom = ui.boxGame = null; return openDialog('box'); }
   if ('boxEdit' in d){ ui.boxGame = g.id; ui.boxFrom = null; return openDialog('box'); }
+  if ('statboxOpen' in d) return openDialog('statbox');
+  if ('statboxSave' in d) return saveStatBox(false);
+  if ('statboxClear' in d) return saveStatBox(true);
   if ('boxSave' in d) return saveBox();
 });
 document.addEventListener('input', e => { if (e.target.id === 'bx-txt' || e.target.id === 'bx-date') $('#bx-prev').innerHTML = boxPreview(parseBox($('#bx-txt').value)); });
+document.addEventListener('input', e => { if (e.target.id === 'sb-txt') $('#sb-prev').innerHTML = statBoxPreview(e.target.value); });
