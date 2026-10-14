@@ -138,6 +138,9 @@ def main():
     # 2019 already had today's five rounds; the archive just named them its own way.
     Y2019 = {'First Round': 'Round 1', 'Second Round': 'Regional', 'Quarterfinals': 'Sectional', 'Semifinals': 'Sub-State', 'Championship': 'State'}
     for g in ppi:
+        # 1969-70 Class 5A was the Wichita City League champion against the KC league's, not a playoff (Chuck, 2026-10-14).
+        if g['c'] == '5A' and g['y'] in (1969, 1970):
+            continue
         rnd = Y2019.get(g['r'], g['r']) if g['y'] == 2019 else OLD.get(g['r'], g['r'])
         games.append((g['y'], g['c'], rnd, g['w'], g['ws'], g['l'], g['ls'], g['ot']))
     last = {}
