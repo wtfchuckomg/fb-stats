@@ -117,7 +117,8 @@ def fetch_kpreps(years, games):
 
 # KSHSAA names for the rounds, counted back from the final (its manual's "playoff round designations").
 MODERN = ['State', 'Sub-State', 'Sectional', 'Regional', 'Round 1', 'Round 0']
-OLD = {'First Round': 'First Round', 'Second Round': 'Second Round', 'Quarterfinals': 'Quarterfinals', 'Semifinals': 'Semifinals',
+# Chuck, 2026-10-14: the archive's Semifinals are Sub-State, every year.
+OLD = {'First Round': 'First Round', 'Second Round': 'Second Round', 'Quarterfinals': 'Quarterfinals', 'Semifinals': 'Sub-State',
        'Championship': 'State'}
 
 
