@@ -25,7 +25,7 @@ from schedule import HERE, logo_index, slug   # the same name matching the sched
 
 ROOT = HERE.parent.parent
 UA = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15'}
-KP_YEARS = [2016, 2017, 2018] + list(range(2020, date.today().year + 1))
+KP_YEARS = list(range(2010, date.today().year + 1))   # KPreps' brackets, each team where it really sat (Chuck, 2026-10-14)
 SKIP_CLASSES = {'KCAA', 'KASC'}   # the Kansas Christian Athletic Association's own playoffs, not the KSHSAA's
 
 IDX = logo_index()
@@ -103,19 +103,23 @@ def fetch_kpreps(years, games):
     """KPreps' brackets for these years, in place of whatever was kept for them."""
     games = [g for g in games if g['y'] not in years]
     for y in years:
-        first = get(f'https://kpreps.com/kansas/playoffs/{y}/?class=6A')
-        for c in sorted(set(re.findall(rf'playoffs/{y}/\?class=([^"&]+)', first)) - SKIP_CLASSES):
-            s = first if c == '6A' else get(f'https://kpreps.com/kansas/playoffs/{y}/?class={c}')
+        base = f'https://kpreps.com/kansas/history/playoff-brackets/{y}/' if y <= 2012 else f'https://kpreps.com/kansas/playoffs/{y}/'
+        first = get(base + '?class=6A')
+        for c in sorted(set(re.findall(rf'(?:playoffs|playoff-brackets)/{y}/\?class=([^"&]+)', first)) - SKIP_CLASSES):
+            s = first if c == '6A' else get(base + f'?class={c}')
             parts = re.split(r'<div class="round(\d)Container">', s[s.find('bracketContainer'):])
             for i in range(1, len(parts), 2):
                 for m in re.finditer(r'class="top\dTeam">(.*?)</div>\s*<div class="game\dContent">(.*?)</div>\s*<div class="bottom\dTeam">(.*?)</div>',
                                      parts[i + 1], re.S):
-                    name = lambda x: H.unescape(re.sub(r'<[^>]+>', '', x)).strip()
+                    # 2010-12 write "Olathe East vs", and "Frankfort @" for the team on the road
+                    raw = lambda x: re.sub(r'\s+vs\.?$', '', H.unescape(re.sub(r'<[^>]+>', '', x)).strip())
+                    name = lambda x: re.sub(r'\s*@$', '', raw(x)).strip()
                     sc = re.search(r'(\d+)\s*-\s*(\d+)', name(m.group(2)))
                     a, b = name(m.group(1)), name(m.group(3))
                     if sc and a and b:
+                        away = 'a' if raw(m.group(1)).endswith('@') else 'b' if raw(m.group(3)).endswith('@') else None
                         games.append({'y': y, 'c': c, 'rd': int(parts[i]), 'a': a, 'ap': int(sc.group(1)), 'b': b, 'bp': int(sc.group(2)),
-                                      'ot': 'OT' in m.group(2)})
+                                      'ot': 'OT' in m.group(2), **({'away': away} if away else {})})
             time.sleep(1)
     return games
 
@@ -139,13 +143,16 @@ def main():
         kp_file.write_text(json.dumps(kp, separators=(',', ':')))
     kp = [g for g in kp if g['c'] not in SKIP_CLASSES]
     ppi = json.loads((HERE / 'playoffs-ppi.json').read_text())
-    games = []   # (year, class, round, winner, winner's points, loser, loser's points, overtime)
+    # (year, class, round, winner, winner's points, loser, loser's points, overtime, which side won: 0 the top team, 1 the bottom)
+    # From 2010 on KPreps' brackets are used, so each team keeps the spot it had; the archive prints the winner first.
+    games = []
     # The archive prints the winner first; a few of its games have no score for the loser (them: null).
     # 2019 already had today's five rounds; the archive just named them its own way.
     Y2019 = {'First Round': 'Round 1', 'Second Round': 'Regional', 'Quarterfinals': 'Sectional', 'Semifinals': 'Sub-State', 'Championship': 'State'}
     for g in ppi:
         rnd = Y2019.get(g['r'], g['r']) if g['y'] == 2019 else OLD.get(g['r'], g['r'])
-        games.append((g['y'], g['c'], rnd, TYPO.get(g['w'], g['w']), g['ws'], TYPO.get(g['l'], g['l']), g['ls'], g['ot']))
+        if g['y'] >= KP_YEARS[0]: continue
+        games.append((g['y'], g['c'], rnd, TYPO.get(g['w'], g['w']), g['ws'], TYPO.get(g['l'], g['l']), g['ls'], g['ot'], 0, None))
     last = {}
     for g in kp:
         last[(g['y'], g['c'])] = max(last.get((g['y'], g['c']), 0), g['rd'])
@@ -153,13 +160,15 @@ def main():
         rnd = MODERN[last[(g['y'], g['c'])] - g['rd']]
         a, b = (g['a'], g['ap']), (g['b'], g['bp'])
         (w, ws), (l, ls) = (a, b) if g['ap'] >= g['bp'] else (b, a)
-        games.append((g['y'], g['c'], rnd, w, ws, l, ls, g['ot']))
+        # Who was at home: KPreps puts the home team on top (every first-round game 2013-2025 checked against the
+        # schools' schedules), and 2010-12 mark a top team on the road with "@".
+        games.append((g['y'], g['c'], rnd, w, ws, l, ls, g['ot'], 0 if g['ap'] >= g['bp'] else 1, 1 if g.get('away') == 'a' else 0))
     # In 8-man, "Blue Valley" is the Randolph school (BV Randolph), not Blue Valley High in Overland Park.
-    games = [(y, c, rnd, *[('BV Randolph' if c.startswith('8M') and n == 'Blue Valley' else n) for n in (w,)], ws,
-              *[('BV Randolph' if c.startswith('8M') and n == 'Blue Valley' else n) for n in (l,)], ls, ot) for y, c, rnd, w, ws, l, ls, ot in games]
+    bv = lambda c, n: 'BV Randolph' if c.startswith('8M') and n == 'Blue Valley' else n
+    games = [(y, c, rnd, bv(c, w), ws, bv(c, l), ls, ot, top, home) for y, c, rnd, w, ws, l, ls, ot, top, home in games]
     games = one_name(games)
     per = {}
-    for y, c, rnd, w, ws, l, ls, ot in games:
+    for y, c, rnd, w, ws, l, ls, ot, *_ in games:
         # 1969-70 Class 5A was the Wichita City League champion against the KC league's, not a playoff run: it stays off
         # the schools' own playoff histories (Chuck, 2026-10-14), but the year's brackets still show that title game.
         if c == '5A' and y in (1969, 1970):
@@ -209,7 +218,7 @@ def one_name(games):
     """Within one year and class, a school printed two ways ("Hutch Trinity" in the first round, "Trinity" after it)
     gets one name everywhere: the one this site knows, else the longer. Only when the short form fits that one school."""
     names = {}
-    for y, c, rnd, w, ws, l, ls, ot in games:
+    for y, c, rnd, w, ws, l, ls, ot, *_ in games:
         names.setdefault((y, c), set()).update((w, l))
     fix = {}
     for yc, ns in names.items():
@@ -221,7 +230,7 @@ def one_name(games):
             if len({key(x) for x in ns if x != b and key(x) != key(b) and same(b, x)}) != 1: continue
             keep = max((a, b), key=lambda n: (bool(site(n)), len(n)))
             if keep != a: fix[(yc, a)] = keep
-    return [(y, c, rnd, fix.get(((y, c), w), w), ws, fix.get(((y, c), l), l), ls, ot) for y, c, rnd, w, ws, l, ls, ot in games]
+    return [(y, c, rnd, fix.get(((y, c), w), w), ws, fix.get(((y, c), l), l), ls, ot, *rest) for y, c, rnd, w, ws, l, ls, ot, *rest in games]
 
 
 def write_years(games, out, order):
@@ -230,8 +239,8 @@ def write_years(games, out, order):
     playoffs/years/index.json lists the classes each year has."""
     team = lambda n, sc: {'n': site(n) or n, 's': sc, **({'p': 1} if site(n) else {})}
     by = {}
-    for y, c, rnd, w, ws, l, ls, ot in games:
-        by.setdefault(y, {}).setdefault(c, []).append({'r': rnd, 'w': w, 'ws': ws, 'l': l, 'ls': ls, 'ot': ot})
+    for y, c, rnd, w, ws, l, ls, ot, top, home in games:
+        by.setdefault(y, {}).setdefault(c, []).append({'r': rnd, 'w': w, 'ws': ws, 'l': l, 'ls': ls, 'ot': ot, 'top': top, 'home': home})
     ydir = out / 'years'
     ydir.mkdir(exist_ok=True)
     index, lost = {}, 0
@@ -249,7 +258,7 @@ def write_years(games, out, order):
             while True:
                 prev = []
                 for g in levels[0]:
-                    for t in ((g['w'], g['l']) if g else (None, None)):
+                    for t in (((g['w'], g['l']) if not g['top'] else (g['l'], g['w'])) if g else (None, None)):
                         # the same name first; a short form or a typo only when nothing matches outright
                         cand = [x for x in pool if t and key(x['w']) == key(t)] or [x for x in pool if t and same(x['w'], t)]
                         # KPreps' rounds are right: there a team's earlier win has to come from an earlier round
@@ -271,10 +280,27 @@ def write_years(games, out, order):
                 n = max(set(said), key=said.count) if said else ''
                 if not n or n in used: n = PAD[min(d, len(PAD) - 1)]
                 used.add(n); names.insert(0, n)
-            doc[c] = {'rounds': [{'name': names[i], 'games': [None if g is None else
-                       {'a': team(g['w'], g['ws']), 'b': team(g['l'], g['ls']), **({'ot': 1} if g['ot'] else {})} for g in lv]}
+            # Seeds, where the bracket is the manual's seeded one: 6A-4A since 2019 (East, then West, eight games a side
+            # paired 1-16, 8-9, 4-13, 5-12, 2-15, 7-10, 3-14, 6-11) and 3A-1A since 2024. The higher seed sits on top
+            # and is at home in the first round.
+            seeds = {}
+            first = levels[0]
+            if ((c in ('6A', '5A', '4A') and y >= 2019) or (c in ('3A', '2A', '1A') and y >= 2024)) and len(first) == 16 and all(first):
+                for i, g in enumerate(first):
+                    hi, lo = PAIRS[i % 8]
+                    t, b = (g['w'], g['l']) if not g['top'] else (g['l'], g['w'])
+                    seeds[key(t)], seeds[key(b)] = hi, lo
+            def show(g, lead=False):
+                W, L = team(g['w'], g['ws']), team(g['l'], g['ls'])
+                for t, n in ((W, g['w']), (L, g['l'])):
+                    if seeds.get(key(n)): t['sd'] = seeds[key(n)]
+                ot = {'ot': 1} if g['ot'] else {}
+                out = {'a': L, 'b': W, 'w': 1, **ot} if g['top'] else {'a': W, 'b': L, **ot}   # w: the bottom team won
+                if lead and g['home'] is not None: out['b' if g['home'] else 'a']['h'] = 1   # at home in the first round
+                return out
+            doc[c] = {'rounds': [{'name': names[i], 'games': [None if g is None else show(g, i == 0) for g in lv]}
                       for i, lv in enumerate(levels)],
-                      **({'third': [{'a': team(g['w'], g['ws']), 'b': team(g['l'], g['ls']), **({'ot': 1} if g['ot'] else {})} for g in third]}
+                      **({'third': [show(g) for g in third]}
                          if third else {}),
                       # a game the archive printed that no slot leads to (a name spelled two ways, a missing round)
                       **({'extra': [{'r': g['r'], 'a': team(g['w'], g['ws']), 'b': team(g['l'], g['ls']), **({'ot': 1} if g['ot'] else {})}
@@ -285,6 +311,7 @@ def write_years(games, out, order):
     print(len(index), 'years;', lost, 'games that fit no bracket slot')
 
 
+PAIRS = [(1, 16), (8, 9), (4, 13), (5, 12), (2, 15), (7, 10), (3, 14), (6, 11)]
 PAD = ['State', 'Sub-State', 'Quarterfinals', 'Second Round', 'First Round']
 CLASS_ORDER = ['6A', '5A', '4A', '4A-I', '4A-II', '3A', '2-1A', '2A', '1A', '8M', '8M-I', '8M-II', '6M']
 

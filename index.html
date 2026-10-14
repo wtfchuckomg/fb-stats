@@ -674,6 +674,8 @@ button.h-btn{cursor:pointer}
 .ph-conn::after{content:"";position:absolute;left:50%;right:0;top:50%;border-top:1px solid var(--line)}
 .ph-conn.line::after{left:0}
 .ph-third{max-width:220px;margin-top:14px}
+.ph-sd{min-width:15px;font:700 10.5px/1 var(--sans);font-style:normal;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.ph-home{padding:2px 4px;border-radius:4px;background:var(--surface);font:700 9px/1 var(--sans);font-style:normal;color:var(--muted)}
 .po-titles{margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px}
 .po-titles b{padding:4px 9px;border-radius:20px;background:var(--surface);font:700 12.5px/1 var(--sans);font-variant-numeric:tabular-nums}
 .po-tbl td{vertical-align:top}
@@ -12326,9 +12328,11 @@ function phLoad(y){
 function phTeam(t, won){
   if (!t) return '<div class="ph-t empty"></div>';
   const name = esc(t.n), nm = t.p ? `<a href="?team=${encodeURIComponent(t.n)}">${name}</a>` : name;
-  return `<div class="ph-t${won ? ' won' : ''}">${markFor({name:t.n, abbr:shortName(t.n), color:'#4A4B4D'}, 18)}<span class="ph-n">${nm}</span><b>${t.s ?? '?'}</b></div>`;
+  // Its seed where the bracket was seeded, and in the first round an H for the team at home.
+  return `<div class="ph-t${won ? ' won' : ''}">${t.sd ? `<i class="ph-sd">${t.sd}</i>` : ''}${markFor({name:t.n, abbr:shortName(t.n), color:'#4A4B4D'}, 18)}<span class="ph-n">${nm}</span>${t.h ? '<i class="ph-home" title="Home">H</i>' : ''}<b>${t.s ?? '?'}</b></div>`;
 }
-const phGame = g => g ? `<div class="ph-g">${phTeam(g.a, true)}${phTeam(g.b, false)}${g.ot ? '<i>OT</i>' : ''}</div>` : '';
+// Each team where it sat in the bracket; w marks the bottom one as the winner (KPreps' brackets, 2010 on).
+const phGame = g => g ? `<div class="ph-g">${phTeam(g.a, !g.w)}${phTeam(g.b, !!g.w)}${g.ot ? '<i>OT</i>' : ''}</div>` : '';
 
 // The bracket on a grid: one row for each first-round game, and each later game spanning the rows of the two that
 // fed it, so it sits between them. Between the rounds, a connector joins each pair to the game they led to.
@@ -12347,11 +12351,11 @@ function phBracketHtml(B){
       }
     });
   });
-  const fin = B.rounds[R - 1].games[0], champ = fin && fin.a;
+  const fin = B.rounds[R - 1].games[0], champ = fin && (fin.w ? fin.b : fin.a);
   // The champion past the final, joined to it by a straight line.
   if (champ) cells.push(`<div class="ph-conn line" style="grid-column:${R * 2};grid-row:2 / span ${rows}"></div>`,
     `<div class="ph-h" style="grid-column:${R * 2 + 1}">Champion</div>`,
-    `<div class="ph-cell ph-champ" style="grid-column:${R * 2 + 1};grid-row:2 / span ${rows}">${phTeam(Object.assign({}, champ, {s:''}), true)}</div>`);
+    `<div class="ph-cell ph-champ" style="grid-column:${R * 2 + 1};grid-row:2 / span ${rows}">${phTeam(Object.assign({}, champ, {s:'', h:0}), true)}</div>`);
   const cols = Array.from({length:R}, () => 'minmax(190px,220px)').join(' 26px ') + (champ ? ' 26px minmax(160px,200px)' : '');
   return `<div class="ph-scroll"><div class="ph-grid" style="grid-template-columns:${cols};grid-template-rows:auto repeat(${rows}, minmax(64px, auto))">${cells.join('')}</div></div>`;
 }
@@ -12369,7 +12373,7 @@ function renderPlayoffHistory(){
   const doc = y && ph.docs[y], B = doc && doc.classes && doc.classes[c];
   if (!B) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${doc === false ? 'No bracket on file for this year.' : 'Loading…'}</p></section>`);
   const extra = B.extra && B.extra.length ? `<section class="bcard"><h2 class="tp-h">Other games</h2><div class="tbl-x"><table class="tp-sched"><tbody>${B.extra.map(g =>
-    `<tr><td class="wk">${esc(g.r)}</td><td>${phTeam(g.a, true)}</td><td>${phTeam(g.b, false)}</td></tr>`).join('')}</tbody></table></div></section>` : '';
+    `<tr><td class="wk">${esc(g.r)}</td><td>${phTeam(g.a, !g.w)}</td><td>${phTeam(g.b, !!g.w)}</td></tr>`).join('')}</tbody></table></div></section>` : '';
   const third = B.third && B.third.length ? `<div class="ph-third"><div class="ph-h">Third place</div>${B.third.map(phGame).join('')}</div>` : '';
   box.innerHTML = head + `<section class="bcard"><h2 class="tp-h">${y} ${esc(PH_LABEL(c))}</h2>${phBracketHtml(B)}${third}</section>` + extra;
 }
