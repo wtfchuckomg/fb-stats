@@ -317,6 +317,7 @@ function teamPlayoffs(name){
   }
   return tpage.po[k] || null;
 }
+const PO_VIEW = PAGE_Q.has('playoffs');   // the team page's Playoff history page
 const PO_CLASS = {'8M':'8-Man', '8M-I':'8-Man I', '8M-II':'8-Man II', '6M':'6-Man', '4A-I':'4A-I', '4A-II':'4A-II'};
 function poFinish(s){
   const g = s.g[s.g.length - 1];
@@ -324,13 +325,14 @@ function poFinish(s){
 }
 function playoffCard(name){
   const P = teamPlayoffs(name);
-  if (!P || !P.seasons || !P.seasons.length) return '';
+  if (!P) return `<section class="bcard"><h2 class="tp-h">Playoff History</h2><p class="bempty">${tpage.po[logoSlug(name)] === false ? 'No playoff games on file.' : 'Loading…'}</p></section>`;
+  if (!P.seasons || !P.seasons.length) return '';
   const games = P.seasons.flatMap(s => s.g), w = games.filter(g => g.w === 1).length, l = games.filter(g => g.w === 0).length;
   const titles = P.seasons.filter(s => poFinish(s) === 'State champion').map(s => s.y).sort((a, b) => a - b);
   const second = P.seasons.filter(s => poFinish(s) === 'State runner-up').length;
   const box = (v, label) => `<div class="tp-rec"><b>${v}</b><span>${label}</span></div>`;
   const opp = g => g.p ? `<a href="?team=${encodeURIComponent(g.o)}">${esc(g.o)}</a>` : esc(g.o);
-  const shown = tpage.poAll ? P.seasons : P.seasons.slice(0, 10);
+  const shown = P.seasons;
   const rows = shown.map(s => { const f = poFinish(s);
     return `<tr${f === 'State champion' ? ' class="po-champ"' : ''}><td class="po-y">${s.y}</td><td class="po-c">${esc(PO_CLASS[s.c] || s.c)}</td><td class="po-f">${esc(f)}</td>
       <td class="po-g">${s.g.map(g => `<div><b class="${g.w === 1 ? 'w' : g.w === 0 ? 'l' : ''}">${g.w === 1 ? 'W' : g.w === 0 ? 'L' : 'T'}</b> ${g.us}-${g.them}${g.ot ? ' (OT)' : ''} vs ${opp(g)}<span class="tp-rnd">${esc(g.r)}</span></div>`).join('')}</td></tr>`; }).join('');
@@ -338,7 +340,7 @@ function playoffCard(name){
     <div class="tp-recs po-recs">${box(P.seasons.length, 'Appearances')}${box(`${w}-${l}`, 'Record')}${box(titles.length, 'State titles')}${box(second, 'Runner-up')}</div>
     ${titles.length ? `<p class="po-titles">${titles.map(y => `<b>${y}</b>`).join(' ')}</p>` : ''}
     <div class="tbl-x"><table class="tp-sched po-tbl"><tbody>${rows}</tbody></table></div>
-    ${P.seasons.length > 10 ? `<div class="line"><button type="button" class="linkbtn" data-po-all>${tpage.poAll ? 'Show fewer' : `Show all ${P.seasons.length} seasons`}</button></div>` : ''}</section>`;
+    </section>`;
 }
 function teamsIndexHtml(){
   document.title = `Teams · ${SITE_TITLE}`;
@@ -371,7 +373,7 @@ function teamPageHtml(nameIn){
   const roster = rosterFor(nameIn) || rosterFromGames(nameIn);
   const lib = (logoLib.list || []).find(t => logoSlug(t.name) === k);
   const name = COUNTY.find(n => canonSchool(n) === k) || (lib && lib.name) || (tm && tm.name) || nameIn;
-  tpage.name = name; document.title = `${name} · ${SITE_TITLE}`;
+  tpage.name = name; document.title = `${name}${PO_VIEW ? ' Playoff History' : ''} · ${SITE_TITLE}`;
   const inCounty = COUNTY.some(n => canonSchool(n) === k), r = shownRecord(name);
   const mark = {name, abbr:(tm && tm.abbr) || shortName(name), color:(tm && tm.color) || '#4A4B4D'};
   // The record from the finals on the site, offered when entering one (it misses any game that isn't on the site).
@@ -457,16 +459,18 @@ function teamPageHtml(nameIn){
         const q = encodeURIComponent(av || name);
         const stats = (SITE_AV ? !!av : inCounty || rows.some(r => r.stats))
           ? `<a class="h-btn" href="${p}&amp;team=${q}">Player stats</a><a class="h-btn" href="${t}&amp;team=${q}">Team stats</a>` : '';
-        return `<div class="tp-links">${stats}${roster || ui.admin ? '<button type="button" class="h-btn" data-tp-roster>Roster</button>' : ''}</div>`;
+        // The playoff history is a page of its own (?team=…&playoffs), with a way back to the schedule.
+        const P = teamPlayoffs(name), here = `?team=${encodeURIComponent(name)}`;
+        const po = PO_VIEW ? `<a class="h-btn" href="${here}">Schedule</a>` : P && P.seasons && P.seasons.length ? `<a class="h-btn" href="${here}&amp;playoffs">Playoff history</a>` : '';
+        return `<div class="tp-links">${stats}${po}${!PO_VIEW && (roster || ui.admin) ? '<button type="button" class="h-btn" data-tp-roster>Roster</button>' : ''}</div>`;
       })() : ''}
     </section>
-    <section class="bcard"><div class="tp-h-row"><h2 class="tp-h">Schedule &amp; Results</h2>${seasonPick}</div>
+    ${PO_VIEW ? playoffCard(name) : `<section class="bcard"><div class="tp-h-row"><h2 class="tp-h">Schedule &amp; Results</h2>${seasonPick}</div>
       ${past ? `<div class="tbl-x"><table class="tp-sched"><tbody>${past}</tbody></table></div>`
         : allGames.list ? (sched ? `<div class="tbl-x"><table class="tp-sched"><tbody>${sched}</tbody></table></div>` : `<p class="bempty">No games for ${esc(name)} on the site yet.</p>`)
         : `<p class="bempty">${esc(allGames.err || 'Loading…')}</p>`}
-    </section>
-    ${playoffCard(name)}
-    ${(() => {
+    </section>`}
+    ${PO_VIEW ? '' : (() => {
       // Whoever has kept a game for this school has shared its roster; anyone setting one up can use it.
       // The admin can type one here for a school nobody has tracked.
       const r = roster;
@@ -502,7 +506,6 @@ document.addEventListener('change', e => {
 document.addEventListener('click', e => {
   const c = s => e.target.closest && e.target.closest(s);
   if (c('[data-tp-roster]')){ const el = $('#roster'); if (el) el.scrollIntoView({behavior:'smooth', block:'start'}); return; }
-  if (c('[data-po-all]')){ tpage.poAll = !tpage.poAll; return renderTeamPage(); }
   if (c('[data-tp-roster-edit]')){ tpage.rosterEdit = canonSchool(tpage.name); renderTeamPage(); const t = $('#tp-roster'); if (t) t.focus(); return; }
   if (c('[data-tp-roster-cancel]')){ tpage.rosterEdit = null; renderTeamPage(); return; }
   if (c('[data-tp-roster-save]')) return saveTeamRoster(tpage.name, ($('#tp-roster') || {}).value || '');
