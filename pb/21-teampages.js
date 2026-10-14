@@ -266,6 +266,37 @@ function renderTeamPage(){
   $('#board').innerHTML = name ? teamPageHtml(name) : teamsIndexHtml();
 }
 
+// Every 11-man school in Kansas (6A-1A, KPreps' 2026 list, in this site's names), so the Teams page has each one
+// whether or not a game of theirs is on the site yet. Printed by .github/kp/eleven.py.
+const ELEVEN_MAN = [
+  "Abilene", "Andale", "Anderson County", "Andover", "Andover Central", "Arkansas City", "Atchison", "Atchison County",
+  "Augusta", "Baldwin", "Basehor-Linwood", "Baxter Springs", "Belle Plaine", "Beloit", "Bishop Carroll", "Bishop Miege",
+  "Bishop Ward", "Blue Valley", "Blue Valley North", "Blue Valley Northwest", "Blue Valley Southwest", "Blue Valley West", "Bluestem", "Bonner Springs",
+  "Buhler", "Burlington", "Campus", "Caney Valley", "Central Heights", "Centralia", "Chanute", "Chaparral",
+  "Chapman", "Cheney", "Cherryvale", "Cimarron", "Circle", "Clay Center", "Clearwater", "Colby",
+  "Columbus", "Concordia", "Conway Springs", "Council Grove", "De Soto", "Derby", "Dodge City", "Doniphan West",
+  "Douglass", "Eisenhower", "El Dorado", "Ellinwood", "Ellsworth", "Emporia", "Eudora", "Eureka",
+  "Field Kindley", "Fort Scott", "Fredonia", "Frontenac", "Galena", "Garden City", "Garden Plain", "Gardner-Edgerton",
+  "Girard", "Goddard", "Goodland", "Great Bend", "Halstead", "Harmon", "Haven", "Hayden",
+  "Hays", "Hesston", "Hiawatha", "Highland Park", "Hillsboro", "Hoisington", "Holcomb", "Holton",
+  "Horton", "Hugoton", "Humboldt", "Hutch Trinity", "Hutchinson", "Independence", "Inman", "Iola",
+  "Jackson Heights", "Jayhawk-Linn", "Jefferson County North", "Jefferson West", "Junction City", "KC Sumner", "Kapaun Mt Carmel", "Kingman",
+  "Labette County", "Lakin", "Lansing", "Larned", "Lawrence", "Lawrence Free State", "Leavenworth", "Liberal",
+  "Louisburg", "Lyons", "Maize", "Maize South", "Manhattan", "Maranatha", "Marion", "Marysville",
+  "Maur Hill-Mount", "McLouth", "McPherson", "Medicine Lodge", "Mill Valley", "Minneapolis", "Mission Valley", "Moundridge",
+  "Mulvane", "Nemaha Central", "Neodesha", "Newton", "Nickerson", "North", "Northeast-Arma", "Norton",
+  "Olathe East", "Olathe North", "Olathe Northwest", "Olathe South", "Olathe West", "Olpe", "Onaga", "Osage City",
+  "Osawatomie", "Oskaloosa", "Ottawa", "Paola", "Parsons", "Perry-Lecompton", "Phillipsburg", "Piper",
+  "Pittsburg", "Plainville", "Pleasant Ridge", "Prairie View", "Pratt", "Remington", "Republic County", "Riley County",
+  "Riverside", "Riverton", "Rock Creek", "Rose Hill", "Rossville", "Royal Valley", "Russell", "Sabetha",
+  "Sacred Heart", "Salina Central", "Salina South", "Santa Fe Trail", "Schlagle", "Scott City", "Seaman", "Sedgwick",
+  "Shawnee Heights", "Shawnee Mission East", "Shawnee Mission North", "Shawnee Mission Northwest", "Shawnee Mission South", "Shawnee Mission West", "Silver Lake", "Smith Center",
+  "Smoky Valley", "Southeast of Saline", "Southwestern Heights", "Spring Hill", "St James", "St Mary's Colgan", "St Marys", "St Thomas Aquinas",
+  "Sterling", "Syracuse", "Thomas More Prep", "Tonganoxie", "Topeka High", "Topeka West", "Turner", "Ulysses",
+  "Uniontown", "Valley Center", "Valley Falls", "Valley Heights", "Wabaunsee", "Wamego", "Washburn Rural", "Washington",
+  "Wellington", "Wellsville", "West Franklin", "Wichita Collegiate", "Wichita East", "Wichita Heights", "Wichita Northwest", "Wichita South",
+  "Wichita Southeast", "Wichita Trinity", "Wichita West", "Winfield", "Wyandotte",
+];
 function teamsIndexHtml(){
   document.title = `Teams · ${SITE_TITLE}`;
   // The AVCTL site: the league's schools, by division.
@@ -281,6 +312,7 @@ function teamsIndexHtml(){
   const add = n => { const k = n && canonSchool(n); if (!k || county.has(k) || named.has(k)) return; named.set(k, schoolName(n)); };
   Object.keys(SCHOOL_INFO).forEach(add);
   AVCTL.forEach(add);
+  ELEVEN_MAN.forEach(add);
   (allGames.list || []).forEach(x => ['A', 'H'].forEach(sd => add(x.teams[sd] && x.teams[sd].name)));
   const others = [...named.values()].sort((a, b) => a.localeCompare(b));
   const card = (n, size) => { const r = recParts(shownRecord(n));
