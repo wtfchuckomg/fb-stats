@@ -66,7 +66,7 @@ SAME = {
 # Typos of schools that have no page here, so the same school reads the same way in every round.
 TYPO = {'Greesnsburg': 'Greensburg', 'Lurary': 'Luray', 'Lucus-Luray': 'Lucas-Luray', 'Waconada East': 'Waconda East',
         'Mdiway-Denton': 'Midway-Denton', 'Quenomo': 'Quenemo', 'Marias des Cygnes': 'Marais des Cygnes',
-        'Stanley-Blue Valley': 'Blue Valley-Stanley', 'MDCV': 'Marais des Cygnes', 'Marais des Cygnes Valley': 'Marais des Cygnes'}
+        'Stanley-Blue Valley': 'Blue Valley-Stanley', 'Midway': 'Midway-Denton', 'MDCV': 'Marais des Cygnes', 'Marais des Cygnes Valley': 'Marais des Cygnes'}
 # Headings and notes the archive ran into a team's name: "Semfinals Olathe North", "Sedgwick had bye Meade".
 JUNK = re.compile(r'^(?:sem\w*|champ\w*|quarter\w*|top bracke\s*t|bottom bracke\s*t|ot\)|\w+ had bye)\s+', re.I)
 
