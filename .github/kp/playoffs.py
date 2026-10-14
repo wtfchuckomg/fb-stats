@@ -153,6 +153,9 @@ def main():
         a, b = (g['a'], g['ap']), (g['b'], g['bp'])
         (w, ws), (l, ls) = (a, b) if g['ap'] >= g['bp'] else (b, a)
         games.append((g['y'], g['c'], rnd, w, ws, l, ls, g['ot']))
+    # In 8-man, "Blue Valley" is the Randolph school (BV Randolph), not Blue Valley High in Overland Park.
+    games = [(y, c, rnd, *[('BV Randolph' if c.startswith('8M') and n == 'Blue Valley' else n) for n in (w,)], ws,
+              *[('BV Randolph' if c.startswith('8M') and n == 'Blue Valley' else n) for n in (l,)], ls, ot) for y, c, rnd, w, ws, l, ls, ot in games]
     games = one_name(games)
     per = {}
     for y, c, rnd, w, ws, l, ls, ot in games:
