@@ -6709,11 +6709,23 @@ function parseBox(txt){
   const QTR = /^(?:(first|second|third|fourth|1st|2nd|3rd|4th)\s*(?:quarter|qtr|q)|([1-4])\s*(?:qtr|q)|q\s*([1-4])|(ot|overtime))\b/i;
   const QN = {first:1, '1st':1, second:2, '2nd':2, third:3, '3rd':3, fourth:4, '4th':4};
   // Which team a label like "And", "Hutch" or "Andover" means.
+  // A typo in either spelling ("Shawnee Misison West" over "Shawnee Mission West") still names the team when most
+  // of its words match the one team and not the other: one letter off counts as the same word.
+  const near = (a, b) => {
+    if (a === b) return true;
+    if (Math.min(a.length, b.length) < 4 || Math.abs(a.length - b.length) > 1) return false;
+    let i = 0; while (i < a.length && a[i] === b[i]) i++;
+    let j = 0; while (j < a.length - i && j < b.length - i && a[a.length - 1 - j] === b[b.length - 1 - j]) j++;
+    return Math.max(a.length, b.length) - i - j <= 1 || (a.length === b.length && i + j === a.length - 2 && a[i] === b[i + 1] && a[i + 1] === b[i]);
+  };
+  const wordsLike = (k, n) => { const kw = k.split('-'), nw = n.split('-'); return nw.filter(w => kw.some(x => near(x, w))).length / Math.max(nw.length, kw.length); };
   const sideOf = label => {
     const k = logoSlug(label); if (!k) return null;
     const score = ['A', 'H'].map((s, i) => { const n = logoSlug(out.names[i] || ''), ini = n.split('-').map(w => w[0]).join('');
       return !n ? 0 : n === k ? 3 : ini === k ? 2 : n.startsWith(k) || k.startsWith(n) ? 1 : 0; });
-    return score[0] > score[1] ? 'A' : score[1] > score[0] ? 'H' : null;
+    if (score[0] || score[1]) return score[0] > score[1] ? 'A' : score[1] > score[0] ? 'H' : null;
+    const like = ['A', 'H'].map((s, i) => out.names[i] ? wordsLike(k, logoSlug(out.names[i])) : 0);
+    return like[0] > .6 && like[1] < .5 ? 'A' : like[1] > .6 && like[0] < .5 ? 'H' : null;
   };
   // Which team comes first in a line naming both, "Newton  Eisenhower": the words the two names don't share.
   const namePos = (text, s) => {
