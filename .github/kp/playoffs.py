@@ -66,7 +66,8 @@ SAME = {
 # Typos of schools that have no page here, so the same school reads the same way in every round.
 TYPO = {'Greesnsburg': 'Greensburg', 'Lurary': 'Luray', 'Lucus-Luray': 'Lucas-Luray', 'Waconada East': 'Waconda East',
         'Mdiway-Denton': 'Midway-Denton', 'Quenomo': 'Quenemo', 'Marias des Cygnes': 'Marais des Cygnes',
-        'Stanley-Blue Valley': 'Blue Valley-Stanley', 'Midway': 'Midway-Denton', 'MDCV': 'Marais des Cygnes', 'Marais des Cygnes Valley': 'Marais des Cygnes'}
+        'Stanley-Blue Valley': 'Blue Valley', 'Blue Valley-Stanley': 'Blue Valley', 'North Center': 'North Central',
+        'School for Deaf': 'Kansas School for the Deaf', 'School for the Deaf': 'Kansas School for the Deaf', 'KSD': 'Kansas School for the Deaf', 'Midway': 'Midway-Denton', 'MDCV': 'Marais des Cygnes', 'Marais des Cygnes Valley': 'Marais des Cygnes'}
 # Headings and notes the archive ran into a team's name: "Semfinals Olathe North", "Sedgwick had bye Meade".
 JUNK = re.compile(r'^(?:sem\w*|champ\w*|quarter\w*|top bracke\s*t|bottom bracke\s*t|ot\)|\w+ had bye)\s+', re.I)
 
@@ -210,22 +211,37 @@ def write_years(games, out, order):
     for y, classes in by.items():
         doc = {}
         for c, gs in classes.items():
+            # The bracket comes from the games themselves, not from the round each was printed under (the archive swaps
+            # some: 1974 8-Man lists McCracken beating Scandia a round after Luray beat McCracken). From the final back,
+            # each team's slot is filled with the last game it won before that one.
             names = sorted({g['r'] for g in gs}, key=lambda r: order.get(r, 9))
-            rounds = [[g for g in gs if g['r'] == r] for r in names]
-            levels, extra = [rounds[-1][:1]], rounds[-1][1:]
-            for r in range(len(rounds) - 2, -1, -1):
-                pool, prev = list(rounds[r]), []
+            top = [g for g in gs if g['r'] == names[-1]]
+            wins = lambda t: sum(1 for x in gs if key(x['w']) == key(t))
+            final = max(top, key=lambda g: wins(g['w']) + wins(g['l']))   # the final, not a game for third place
+            pool, levels = [g for g in gs if g is not final], [[final]]
+            while True:
+                prev = []
                 for g in levels[0]:
                     for t in ((g['w'], g['l']) if g else (None, None)):
                         # the same name first; a short form or a typo only when nothing matches outright
-                        m = next((x for x in pool if t and key(x['w']) == key(t)), None) or next((x for x in pool if t and same(x['w'], t)), None)
+                        cand = [x for x in pool if t and key(x['w']) == key(t)] or [x for x in pool if t and same(x['w'], t)]
+                        # KPreps' rounds are right: there a team's earlier win has to come from an earlier round
+                        if y in KP_YEARS: cand = [x for x in cand if order.get(x['r'], 0) < order.get(g['r'], 0)]
+                        m = max(cand, key=lambda x: order.get(x['r'], 0)) if cand else None
                         if m: pool.remove(m)
                         prev.append(m)
-                lost += len(pool); extra += pool
+                if not any(prev): break
                 levels.insert(0, prev)
+            # Left over: a game for third place, played the week of the final by the two semifinal losers.
+            third = [x for x in pool if x['r'] == final['r']]
+            extra = [x for x in pool if x not in third]; lost += len(extra)
+            # Each column takes its round's name, counted back from the final.
+            names = (['First Round'] * max(0, len(levels) - len(names)) + names)[-len(levels):]
             doc[c] = {'rounds': [{'name': names[i], 'games': [None if g is None else
                        {'a': team(g['w'], g['ws']), 'b': team(g['l'], g['ls']), **({'ot': 1} if g['ot'] else {})} for g in lv]}
                       for i, lv in enumerate(levels)],
+                      **({'third': [{'a': team(g['w'], g['ws']), 'b': team(g['l'], g['ls']), **({'ot': 1} if g['ot'] else {})} for g in third]}
+                         if third else {}),
                       # a game the archive printed that no slot leads to (a name spelled two ways, a missing round)
                       **({'extra': [{'r': g['r'], 'a': team(g['w'], g['ws']), 'b': team(g['l'], g['ls']), **({'ot': 1} if g['ot'] else {})}
                                     for g in extra]} if extra else {})}
