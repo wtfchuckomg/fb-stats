@@ -297,6 +297,16 @@ const ELEVEN_MAN = [
   "Wellington", "Wellsville", "West Franklin", "Wichita Collegiate", "Wichita East", "Wichita Heights", "Wichita Northwest", "Wichita South",
   "Wichita Southeast", "Wichita Trinity", "Wichita West", "Winfield", "Wyandotte",
 ];
+// The playoff round a game was, from its week (KSHSAA football manual, "Playoff round designations"): 11-man's
+// week 9 is the first bracketed game, then every class plays Regional, Sectional, Sub-State and State in weeks
+// 10-13. 8-man's week 9 is still the regular season. The same weeks held every season from 2021 on.
+const ROUND_OF_WEEK = {9:'Round 1', 10:'Regional', 11:'Sectional', 12:'Sub-State', 13:'State'};
+const isEleven = name => ELEVEN_MAN.some(s => canonSchool(s) === canonSchool(name));
+function roundOf(day, school){
+  const n = weekNum(weekKey(day.getTime()));
+  return n === 9 && !isEleven(school) ? '' : ROUND_OF_WEEK[n] || '';
+}
+const roundTag = r => r ? `<span class="tp-rnd">${esc(r)}</span>` : '';
 function teamsIndexHtml(){
   document.title = `Teams · ${SITE_TITLE}`;
   // The AVCTL site: the league's schools, by division.
@@ -375,7 +385,8 @@ function teamPageHtml(nameIn){
     // Before kickoff the record's spot links to the game's pregame page; a final (or a game someone is tracking) takes it over.
     const runNow = m.fin ? `${now.w}-${now.l}${now.t ? '-' + now.t : ''}`
       : !m.live && !stats ? `<a class="tp-go" href="?preview=${encodeURIComponent(x.id)}">Preview</a>` : '';
-    return `<tr><td class="wk">${esc(weekLabel(wk))}</td><td class="opp"><em>${side === 'A' ? 'at' : 'vs'}</em><a href="?team=${encodeURIComponent(schoolName(o.name))}">${markFor(o, 24)}${esc(schoolName(o.name))}</a></td>
+    const rnd = roundOf(gameDay(x), name);
+    return `<tr><td class="wk">${esc(weekLabel(wk))}</td><td class="opp"><em>${side === 'A' ? 'at' : 'vs'}</em><a href="?team=${encodeURIComponent(schoolName(o.name))}">${markFor(o, 24)}${esc(schoolName(o.name))}</a>${roundTag(rnd)}</td>
       <td class="res">${cell}</td><td class="tp-run">${runNow}</td><td class="lnk">${go}</td></tr>${form}`;
   }).join('');
   // Earlier seasons, from KPreps: a year to pick, and that year's games in place of this season's.
@@ -393,9 +404,10 @@ function teamPageHtml(nameIn){
     const played = g.us != null;
     if (played) run[g.us > g.them ? 'w' : g.us < g.them ? 'l' : 't']++;
     const res = played ? `<b class="${g.us > g.them ? 'w' : g.us < g.them ? 'l' : ''}">${g.us > g.them ? 'W' : g.us < g.them ? 'L' : 'T'}</b> ${g.us}-${g.them}${g.ot ? ' (OT)' : ''}` : '&#8212;';
-    const opp = schoolName(g.opp) || g.opp;
+    const opp = schoolName(g.opp) || g.opp, md = String(g.date || '').match(/^(\d{1,2})\/(\d{1,2})/);
+    const rnd = md ? roundOf(new Date(+tpage.season, +md[1] - 1, +md[2]), name) : '';
     return `<tr><td class="wk">${esc(g.date || '')}</td>
-      <td class="opp"><em>${g.at === 'away' ? 'at' : 'vs'}</em><a href="?team=${encodeURIComponent(schoolName(opp))}">${markFor({name:opp, abbr:shortName(opp), color:'#4A4B4D'}, 24)}${esc(schoolName(opp))}</a></td>
+      <td class="opp"><em>${g.at === 'away' ? 'at' : 'vs'}</em><a href="?team=${encodeURIComponent(schoolName(opp))}">${markFor({name:opp, abbr:shortName(opp), color:'#4A4B4D'}, 24)}${esc(schoolName(opp))}</a>${roundTag(rnd)}</td>
       <td class="res">${res}</td><td class="lnk tp-run">${played ? `${run.w}-${run.l}${run.t ? '-' + run.t : ''}` : ''}</td></tr>`;
   }).join('') : '';
 
