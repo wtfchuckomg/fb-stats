@@ -63,6 +63,10 @@ SAME = {
     'So. Coffey Co.': 'Southern Coffey County', 'Wichita Carroll': 'Bishop Carroll', 'Desoto': 'De Soto', 'LaCross': 'La Crosse',
     'Centrallia': 'Centralia', "St. John's Beloit-Tipton": "St John's", 'Brewster-Triplains': 'Triplains-Brewster', 'N Valley': 'Northern Valley',
 }
+# Typos of schools that have no page here, so the same school reads the same way in every round.
+TYPO = {'Greesnsburg': 'Greensburg', 'Lurary': 'Luray', 'Lucus-Luray': 'Lucas-Luray', 'Waconada East': 'Waconda East',
+        'Mdiway-Denton': 'Midway-Denton', 'Quenomo': 'Quenemo', 'Marias des Cygnes': 'Marais des Cygnes',
+        'Stanley-Blue Valley': 'Blue Valley-Stanley', 'MDCV': 'Marais des Cygnes', 'Marais des Cygnes Valley': 'Marais des Cygnes'}
 # Headings and notes the archive ran into a team's name: "Semfinals Olathe North", "Sedgwick had bye Meade".
 JUNK = re.compile(r'^(?:sem\w*|champ\w*|quarter\w*|top bracke\s*t|bottom bracke\s*t|ot\)|\w+ had bye)\s+', re.I)
 
@@ -139,7 +143,7 @@ def main():
     Y2019 = {'First Round': 'Round 1', 'Second Round': 'Regional', 'Quarterfinals': 'Sectional', 'Semifinals': 'Sub-State', 'Championship': 'State'}
     for g in ppi:
         rnd = Y2019.get(g['r'], g['r']) if g['y'] == 2019 else OLD.get(g['r'], g['r'])
-        games.append((g['y'], g['c'], rnd, g['w'], g['ws'], g['l'], g['ls'], g['ot']))
+        games.append((g['y'], g['c'], rnd, TYPO.get(g['w'], g['w']), g['ws'], TYPO.get(g['l'], g['l']), g['ls'], g['ot']))
     last = {}
     for g in kp:
         last[(g['y'], g['c'])] = max(last.get((g['y'], g['c']), 0), g['rd'])
@@ -172,6 +176,15 @@ def main():
     print(len(per), 'schools,', len(games), 'games')
 
 
+def near(a, b):
+    """One letter added, dropped, changed or two swapped, in words of five letters or more."""
+    if a == b: return True
+    if min(len(a), len(b)) < 5 or abs(len(a) - len(b)) > 1: return False
+    i = 0
+    while i < min(len(a), len(b)) and a[i] == b[i]: i += 1
+    return a[i + 1:] == b[i + 1:] or a[i + 1:] == b[i:] or a[i:] == b[i + 1:] or (a[i + 2:] == b[i + 2:] and a[i:i + 2] == b[i:i + 2][::-1])
+
+
 def write_years(games, out, order):
     """playoffs/years/<year>.json: each class's bracket, its games laid out the way a bracket is drawn — worked back
     from the final, each game sits over the two that sent its teams there (an empty slot where a team had a bye).
@@ -179,11 +192,14 @@ def write_years(games, out, order):
     key = lambda n: site(n) or norm(n).lower()
     def same(a, b):
         if key(a) == key(b): return True
-        x, y = norm(a).lower().split(), norm(b).lower().split()
+        x, y = norm(a).lower().replace('-', ' ').replace('.', '').split(), norm(b).lower().replace('-', ' ').replace('.', '').split()
         if not x or not y: return False
+        if len(x) == len(y) and all(p == q or near(p, q) for p, q in zip(x, y)): return True   # one letter off: a typo
         short, long_ = sorted((x, y), key=len)
         # "Kapaun" / "Wichita Kapaun", "Colgan" / "Pittsburg Colgan", and "Wichita" cut short of "Wichita Collegiate"
-        return (x[-1] == y[-1] and (x[0] == y[0] or len(short) == 1)) or long_[:len(short)] == short
+        # ... and "St. Joseph" for Shawnee-St. Joseph, "Trinity" for Hutch Trinity: the end of the longer name
+        return ((x[-1] == y[-1] and (x[0] == y[0] or len(short) == 1)) or (len(short) == 1 and long_[0] == short[0])
+                or (len(short) > 1 and long_[-len(short):] == short))
     team = lambda n, sc: {'n': site(n) or n, 's': sc, **({'p': 1} if site(n) else {})}
     by = {}
     for y, c, rnd, w, ws, l, ls, ot in games:
@@ -201,7 +217,8 @@ def write_years(games, out, order):
                 pool, prev = list(rounds[r]), []
                 for g in levels[0]:
                     for t in ((g['w'], g['l']) if g else (None, None)):
-                        m = next((x for x in pool if t and same(x['w'], t)), None)
+                        # the same name first; a short form or a typo only when nothing matches outright
+                        m = next((x for x in pool if t and key(x['w']) == key(t)), None) or next((x for x in pool if t and same(x['w'], t)), None)
                         if m: pool.remove(m)
                         prev.append(m)
                 lost += len(pool); extra += pool
