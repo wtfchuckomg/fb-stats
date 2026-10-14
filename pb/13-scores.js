@@ -394,6 +394,7 @@ function markSite(here){
 // Which page of a menu is open, so the menu can mark it.
 function menuHere(){
   if (ui.teamPage) return 'teams';
+  if (ui.phist) return 'phist';
   if (LG) return 'leagues';
   if (ui.stand) return 'standings';
   if (ui.board) return ui.av ? 'avscores' : ui.state ? 'state' : 'scores';

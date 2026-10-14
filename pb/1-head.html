@@ -674,6 +674,25 @@ button.h-btn{cursor:pointer}
 .tp-recs{display:flex;gap:26px}
 .tp-rec{text-align:center}
 .po-recs{margin:4px 0 12px}
+.ph-scroll{overflow-x:auto;padding:4px 0 10px}
+.ph-grid{display:grid;row-gap:6px;min-width:max-content}
+.ph-h{grid-row:1;padding:0 2px 8px;font:700 11px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ph-cell{display:flex;align-items:center;min-width:0}
+.ph-g{position:relative;width:100%;border:1px solid var(--line);border-radius:10px;background:var(--card);overflow:hidden}
+.ph-g>i{position:absolute;right:34px;top:5px;font:700 9px/1 var(--sans);color:var(--muted);font-style:normal}
+.ph-t{display:flex;align-items:center;gap:7px;padding:7px 9px;font:500 13px/1.2 var(--sans);color:var(--muted)}
+.ph-t+.ph-t{border-top:1px solid var(--line)}
+.ph-t.won{color:var(--ink);font-weight:700}
+.ph-t b{margin-left:auto;font-variant-numeric:tabular-nums}
+.ph-n{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ph-n a{color:inherit;text-decoration:none}.ph-n a:hover{text-decoration:underline}
+.ph-champ .ph-t{width:100%;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:10px}
+.ph-conn{position:relative}
+.ph-conn i{position:absolute;left:0;right:50%;border:1px solid var(--line);border-left:0}
+.ph-conn.both i{top:25%;bottom:25%;border-radius:0 8px 8px 0}
+.ph-conn.top i{top:25%;bottom:50%;border-bottom:0;border-radius:0 8px 0 0}
+.ph-conn.bot i{top:50%;bottom:25%;border-top:0;border-radius:0 0 8px 0}
+.ph-conn::after{content:"";position:absolute;left:50%;right:0;top:50%;border-top:1px solid var(--line)}
 .po-titles{margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px}
 .po-titles b{padding:4px 9px;border-radius:20px;background:var(--surface);font:700 12.5px/1 var(--sans);font-variant-numeric:tabular-nums}
 .po-tbl td{vertical-align:top}

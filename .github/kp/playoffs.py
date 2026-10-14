@@ -167,7 +167,57 @@ def main():
     for s, seasons in per.items():
         rows = [{'y': y, 'c': c, 'g': sorted(gs, key=lambda x: order.get(x['r'], 9))} for (y, c), gs in sorted(seasons.items(), reverse=True)]
         (out / f'{slug(s)}.json').write_text(json.dumps({'school': s, 'seasons': rows}, separators=(',', ':')))
+    write_years(games, out, order)
     print(len(per), 'schools,', len(games), 'games')
+
+
+def write_years(games, out, order):
+    """playoffs/years/<year>.json: each class's bracket, its games laid out the way a bracket is drawn — worked back
+    from the final, each game sits over the two that sent its teams there (an empty slot where a team had a bye).
+    playoffs/years/index.json lists the classes each year has."""
+    key = lambda n: site(n) or norm(n).lower()
+    def same(a, b):
+        if key(a) == key(b): return True
+        x, y = norm(a).lower().split(), norm(b).lower().split()
+        if not x or not y: return False
+        short, long_ = sorted((x, y), key=len)
+        # "Kapaun" / "Wichita Kapaun", "Colgan" / "Pittsburg Colgan", and "Wichita" cut short of "Wichita Collegiate"
+        return (x[-1] == y[-1] and (x[0] == y[0] or len(short) == 1)) or long_[:len(short)] == short
+    team = lambda n, sc: {'n': site(n) or n, 's': sc, **({'p': 1} if site(n) else {})}
+    by = {}
+    for y, c, rnd, w, ws, l, ls, ot in games:
+        by.setdefault(y, {}).setdefault(c, []).append({'r': rnd, 'w': w, 'ws': ws, 'l': l, 'ls': ls, 'ot': ot})
+    ydir = out / 'years'
+    ydir.mkdir(exist_ok=True)
+    index, lost = {}, 0
+    for y, classes in by.items():
+        doc = {}
+        for c, gs in classes.items():
+            names = sorted({g['r'] for g in gs}, key=lambda r: order.get(r, 9))
+            rounds = [[g for g in gs if g['r'] == r] for r in names]
+            levels, extra = [rounds[-1][:1]], rounds[-1][1:]
+            for r in range(len(rounds) - 2, -1, -1):
+                pool, prev = list(rounds[r]), []
+                for g in levels[0]:
+                    for t in ((g['w'], g['l']) if g else (None, None)):
+                        m = next((x for x in pool if t and same(x['w'], t)), None)
+                        if m: pool.remove(m)
+                        prev.append(m)
+                lost += len(pool); extra += pool
+                levels.insert(0, prev)
+            doc[c] = {'rounds': [{'name': names[i], 'games': [None if g is None else
+                       {'a': team(g['w'], g['ws']), 'b': team(g['l'], g['ls']), **({'ot': 1} if g['ot'] else {})} for g in lv]}
+                      for i, lv in enumerate(levels)],
+                      # a game the archive printed that no slot leads to (a name spelled two ways, a missing round)
+                      **({'extra': [{'r': g['r'], 'a': team(g['w'], g['ws']), 'b': team(g['l'], g['ls']), **({'ot': 1} if g['ot'] else {})}
+                                    for g in extra]} if extra else {})}
+        (ydir / f'{y}.json').write_text(json.dumps({'y': y, 'classes': doc}, separators=(',', ':')))
+        index[y] = sorted(doc, key=lambda c: CLASS_ORDER.index(c) if c in CLASS_ORDER else 99)
+    (ydir / 'index.json').write_text(json.dumps({str(y): index[y] for y in sorted(index, reverse=True)}, separators=(',', ':')))
+    print(len(index), 'years;', lost, 'games that fit no bracket slot')
+
+
+CLASS_ORDER = ['6A', '5A', '4A', '4A-I', '4A-II', '3A', '2-1A', '2A', '1A', '8M', '8M-I', '8M-II', '6M']
 
 
 if __name__ == '__main__':
