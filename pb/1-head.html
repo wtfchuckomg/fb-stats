@@ -673,6 +673,18 @@ button.h-btn{cursor:pointer}
 .tp-manual{flex-basis:100%;margin:0}
 .tp-recs{display:flex;gap:26px}
 .tp-rec{text-align:center}
+.po-recs{margin:4px 0 12px}
+.po-titles{margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px}
+.po-titles b{padding:4px 9px;border-radius:20px;background:var(--surface);font:700 12.5px/1 var(--sans);font-variant-numeric:tabular-nums}
+.po-tbl td{vertical-align:top}
+.po-y{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.po-c{color:var(--muted);font-size:13.5px;white-space:nowrap}
+.po-f{font-weight:600;white-space:nowrap}
+.po-champ .po-f{color:var(--good)}
+.po-g{font-size:13.5px;line-height:1.7}
+.po-g b.w{color:var(--good)}.po-g b.l{color:var(--bad, var(--red))}
+.po-g .tp-rnd{margin-left:8px}
+.po-g a{color:inherit;text-decoration:none;font-weight:600}.po-g a:hover{text-decoration:underline}
 .tp-rec b{display:block;font:800 26px/1.1 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink-2)}
 .tp-rec span{font:600 11.5px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .tp-form{flex-basis:100%;border-top:1px solid var(--line-2);padding-top:14px}
@@ -711,7 +723,7 @@ button.h-btn{cursor:pointer}
 .tp-grid.small{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 12px}
 .tp-grid.small .tp-card{flex-direction:row;justify-content:flex-start;padding:9px 6px;border:0;text-align:left}
 .tp-grid.small .tp-card:hover b{text-decoration:underline}
-@media (max-width:640px){.tp-id h1{font-size:25px}.tp-recs{gap:18px}.tp-sched td{padding:10px 6px;font-size:14px}.tp-sched .wk{display:none}}
+@media (max-width:640px){.po-c{display:none}.po-f{white-space:normal}.tp-id h1{font-size:25px}.tp-recs{gap:18px}.tp-sched td{padding:10px 6px;font-size:14px}.tp-sched .wk{display:none}}
 
 /* the admin's Hide and Show, and a hidden game as the admin sees it: faded and marked Hidden */
 .badmin{margin:0 0 12px;font:500 13.5px/1.4 var(--sans);color:var(--muted)}

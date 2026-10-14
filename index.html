@@ -652,6 +652,18 @@ button.h-btn{cursor:pointer}
 .tp-manual{flex-basis:100%;margin:0}
 .tp-recs{display:flex;gap:26px}
 .tp-rec{text-align:center}
+.po-recs{margin:4px 0 12px}
+.po-titles{margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px}
+.po-titles b{padding:4px 9px;border-radius:20px;background:var(--surface);font:700 12.5px/1 var(--sans);font-variant-numeric:tabular-nums}
+.po-tbl td{vertical-align:top}
+.po-y{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.po-c{color:var(--muted);font-size:13.5px;white-space:nowrap}
+.po-f{font-weight:600;white-space:nowrap}
+.po-champ .po-f{color:var(--good)}
+.po-g{font-size:13.5px;line-height:1.7}
+.po-g b.w{color:var(--good)}.po-g b.l{color:var(--bad, var(--red))}
+.po-g .tp-rnd{margin-left:8px}
+.po-g a{color:inherit;text-decoration:none;font-weight:600}.po-g a:hover{text-decoration:underline}
 .tp-rec b{display:block;font:800 26px/1.1 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink-2)}
 .tp-rec span{font:600 11.5px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .tp-form{flex-basis:100%;border-top:1px solid var(--line-2);padding-top:14px}
@@ -690,7 +702,7 @@ button.h-btn{cursor:pointer}
 .tp-grid.small{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 12px}
 .tp-grid.small .tp-card{flex-direction:row;justify-content:flex-start;padding:9px 6px;border:0;text-align:left}
 .tp-grid.small .tp-card:hover b{text-decoration:underline}
-@media (max-width:640px){.tp-id h1{font-size:25px}.tp-recs{gap:18px}.tp-sched td{padding:10px 6px;font-size:14px}.tp-sched .wk{display:none}}
+@media (max-width:640px){.po-c{display:none}.po-f{white-space:normal}.tp-id h1{font-size:25px}.tp-recs{gap:18px}.tp-sched td{padding:10px 6px;font-size:14px}.tp-sched .wk{display:none}}
 
 /* the admin's Hide and Show, and a hidden game as the admin sees it: faded and marked Hidden */
 .badmin{margin:0 0 12px;font:500 13.5px/1.4 var(--sans);color:var(--muted)}
@@ -8486,7 +8498,7 @@ document.addEventListener('click', e => {
    still to come.
    ================================================================ */
 const TEAM_PAGE = (PAGE_Q.has('team') || PAGE_Q.has('teams')) && !PAGE_Q.has('stats');
-const tpage = {edit:false, draft:null, sug:null, name:'', season:'', hist:{}};
+const tpage = {edit:false, draft:null, sug:null, name:'', season:'', hist:{}, po:{}, poAll:false};
 
 /* ---------- every shared game, for the schools' schedules and their records ---------- */
 // The home page and BUCO Stats don't need it; the scoreboards, game pages, tracker and team pages do.
@@ -8787,6 +8799,39 @@ function roundOf(day, school){
   return n === 9 && !isEleven(school) ? '' : ROUND_OF_WEEK[n] || '';
 }
 const roundTag = r => r ? `<span class="tp-rnd">${esc(r)}</span>` : '';
+/* ---------- playoff history: every playoff game the school has played, 1969 on (.github/kp/playoffs.py) ---------- */
+function teamPlayoffs(name){
+  const k = logoSlug(name); if (!k) return null;
+  if (tpage.po[k] === undefined){
+    tpage.po[k] = null;
+    fetch(`${DATA}/playoffs/${k}.json`, {cache:'no-cache'}).then(x => x.ok ? x.json() : false)
+      .then(d => { tpage.po[k] = d || false; renderTeamPage(); }).catch(() => { tpage.po[k] = false; });
+  }
+  return tpage.po[k] || null;
+}
+const PO_CLASS = {'8M':'8-Man', '8M-I':'8-Man I', '8M-II':'8-Man II', '6M':'6-Man', '4A-I':'4A-I', '4A-II':'4A-II'};
+function poFinish(s){
+  const g = s.g[s.g.length - 1];
+  return g.r === 'State' ? (g.w ? 'State champion' : 'State runner-up') : g.w ? `Won ${g.r}` : `Lost in ${g.r}`;
+}
+function playoffCard(name){
+  const P = teamPlayoffs(name);
+  if (!P || !P.seasons || !P.seasons.length) return '';
+  const games = P.seasons.flatMap(s => s.g), w = games.filter(g => g.w === 1).length, l = games.filter(g => g.w === 0).length;
+  const titles = P.seasons.filter(s => poFinish(s) === 'State champion').map(s => s.y).sort((a, b) => a - b);
+  const second = P.seasons.filter(s => poFinish(s) === 'State runner-up').length;
+  const box = (v, label) => `<div class="tp-rec"><b>${v}</b><span>${label}</span></div>`;
+  const opp = g => g.p ? `<a href="?team=${encodeURIComponent(g.o)}">${esc(g.o)}</a>` : esc(g.o);
+  const shown = tpage.poAll ? P.seasons : P.seasons.slice(0, 10);
+  const rows = shown.map(s => { const f = poFinish(s);
+    return `<tr${f === 'State champion' ? ' class="po-champ"' : ''}><td class="po-y">${s.y}</td><td class="po-c">${esc(PO_CLASS[s.c] || s.c)}</td><td class="po-f">${esc(f)}</td>
+      <td class="po-g">${s.g.map(g => `<div><b class="${g.w === 1 ? 'w' : g.w === 0 ? 'l' : ''}">${g.w === 1 ? 'W' : g.w === 0 ? 'L' : 'T'}</b> ${g.us}-${g.them}${g.ot ? ' (OT)' : ''} vs ${opp(g)}<span class="tp-rnd">${esc(g.r)}</span></div>`).join('')}</td></tr>`; }).join('');
+  return `<section class="bcard"><h2 class="tp-h">Playoff History</h2>
+    <div class="tp-recs po-recs">${box(P.seasons.length, 'Appearances')}${box(`${w}-${l}`, 'Record')}${box(titles.length, 'State titles')}${box(second, 'Runner-up')}</div>
+    ${titles.length ? `<p class="po-titles">${titles.map(y => `<b>${y}</b>`).join(' ')}</p>` : ''}
+    <div class="tbl-x"><table class="tp-sched po-tbl"><tbody>${rows}</tbody></table></div>
+    ${P.seasons.length > 10 ? `<div class="line"><button type="button" class="linkbtn" data-po-all>${tpage.poAll ? 'Show fewer' : `Show all ${P.seasons.length} seasons`}</button></div>` : ''}</section>`;
+}
 function teamsIndexHtml(){
   document.title = `Teams · ${SITE_TITLE}`;
   // The AVCTL site: the league's schools, by division.
@@ -8912,6 +8957,7 @@ function teamPageHtml(nameIn){
         : allGames.list ? (sched ? `<div class="tbl-x"><table class="tp-sched"><tbody>${sched}</tbody></table></div>` : `<p class="bempty">No games for ${esc(name)} on the site yet.</p>`)
         : `<p class="bempty">${esc(allGames.err || 'Loading…')}</p>`}
     </section>
+    ${playoffCard(name)}
     ${(() => {
       // Whoever has kept a game for this school has shared its roster; anyone setting one up can use it.
       // The admin can type one here for a school nobody has tracked.
@@ -8948,6 +8994,7 @@ document.addEventListener('change', e => {
 document.addEventListener('click', e => {
   const c = s => e.target.closest && e.target.closest(s);
   if (c('[data-tp-roster]')){ const el = $('#roster'); if (el) el.scrollIntoView({behavior:'smooth', block:'start'}); return; }
+  if (c('[data-po-all]')){ tpage.poAll = !tpage.poAll; return renderTeamPage(); }
   if (c('[data-tp-roster-edit]')){ tpage.rosterEdit = canonSchool(tpage.name); renderTeamPage(); const t = $('#tp-roster'); if (t) t.focus(); return; }
   if (c('[data-tp-roster-cancel]')){ tpage.rosterEdit = null; renderTeamPage(); return; }
   if (c('[data-tp-roster-save]')) return saveTeamRoster(tpage.name, ($('#tp-roster') || {}).value || '');

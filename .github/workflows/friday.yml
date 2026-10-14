@@ -45,12 +45,15 @@ jobs:
       - name: Write each school's seasons for the site
         if: steps.when.outputs.go == '1'
         run: python3 .github/kp/history.py
+      - name: Add this season's playoff games to each school's playoff history
+        if: steps.when.outputs.go == '1'
+        run: python3 .github/kp/playoffs.py
       - name: Save and publish any changes
         if: steps.when.outputs.go == '1'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git add -A kpscores.json schedule.json ratings.json history .github/kp
+          git add -A kpscores.json schedule.json ratings.json history playoffs .github/kp
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
           git -c user.name="Friday night scores" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "Friday night: KPreps finals, ratings, history"
           git pull -q --rebase && git push -q
