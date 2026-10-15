@@ -241,6 +241,7 @@ def write_years(games, out, order):
     by = {}
     for y, c, rnd, w, ws, l, ls, ot, top, home in games:
         by.setdefault(y, {}).setdefault(c, []).append({'r': rnd, 'w': w, 'ws': ws, 'l': l, 'ls': ls, 'ot': ot, 'top': top, 'home': home})
+    firsts = read_firsts()
     ydir = out / 'years'
     ydir.mkdir(exist_ok=True)
     index, lost = {}, 0
@@ -277,9 +278,10 @@ def write_years(games, out, order):
             names, used = [], set()
             for d, lv in enumerate(reversed(levels)):
                 said = [g['r'] for g in lv if g]
-                n = max(set(said), key=said.count) if said else ''
+                n = max(said, key=said.count) if said else ''
                 if not n or n in used: n = PAD[min(d, len(PAD) - 1)]
                 used.add(n); names.insert(0, n)
+            if y in firsts: levels = place(levels, firsts[y])
             # Seeds, where the bracket is the manual's seeded one: 6A-4A since 2019 (East, then West, eight games a side
             # paired 1-16, 8-9, 4-13, 5-12, 2-15, 7-10, 3-14, 6-11) and 3A-1A since 2024. The higher seed sits on top
             # and is at home in the first round.
@@ -297,6 +299,7 @@ def write_years(games, out, order):
                 ot = {'ot': 1} if g['ot'] else {}
                 out = {'a': L, 'b': W, 'w': 1, **ot} if g['top'] else {'a': W, 'b': L, **ot}   # w: the bottom team won
                 if lead and g['home'] is not None: out['b' if g['home'] else 'a']['h'] = 1   # at home in the first round
+                if g.get('at'): out['at'] = g['at']   # a neutral site
                 return out
             doc[c] = {'rounds': [{'name': names[i], 'games': [None if g is None else show(g, i == 0) for g in lv]}
                       for i, lv in enumerate(levels)],
@@ -309,6 +312,69 @@ def write_years(games, out, order):
         index[y] = sorted(doc, key=lambda c: CLASS_ORDER.index(c) if c in CLASS_ORDER else 99)
     (ydir / 'index.json').write_text(json.dumps({str(y): index[y] for y in sorted(index, reverse=True)}, separators=(',', ':')))
     print(len(index), 'years;', lost, 'games that fit no bracket slot')
+
+
+def read_firsts():
+    """.github/kp/playoffs-firsts.json: first-round games Chuck has sent for years before KPreps, by year, each
+    "A at B" (B at home) or "A vs. B at C" (at C), in bracket order. The class headings don't matter: a game is found
+    in whichever of that year's brackets it was played (1969's "Class 1A" list carries the 8-man games too)."""
+    f = HERE / 'playoffs-firsts.json'
+    if not f.exists(): return {}
+    out = {}
+    for y, classes in json.loads(f.read_text()).items():
+        if not y.isdigit(): continue
+        rows = []
+        for line in (l for ls in classes.values() for l in ls):
+            m = re.match(r'(.+?)\s+vs\.?\s+(.+?)(?:\s+at\s+(.+))?$', line.strip(), re.I)
+            if m: rows.append({'top': m[1], 'bot': m[2], 'at': m[3], 'home': None})
+            else:
+                m = re.match(r'(.+?)\s+at\s+(.+)$', line.strip(), re.I)
+                if m: rows.append({'top': m[2], 'bot': m[1], 'at': None, 'home': 0})   # the home team on top, as KPreps draws it
+                else: print('playoffs-firsts.json: no game in', repr(line))
+        out[int(y)] = rows
+    return out
+
+
+def place(levels, rows):
+    """Turn a winner-on-top bracket into the one that was drawn: the games Chuck listed in his order, each listed
+    team where he put it, and every later game with the team from the upper half on top."""
+    def node(j, i):
+        return {'g': levels[j][i] if i < len(levels[j]) else None, 'kids': [node(j - 1, 2 * i), node(j - 1, 2 * i + 1)] if j else []}
+    def is_(a, b): return key(a) == key(b) or same(a, b)
+    def came_from(n, t):   # 0 or 1: the half a team came out of (the empty slot, for a team with a bye), else None
+        k = [x['g'] for x in n['kids']]
+        for i in (0, 1):
+            if k[i] and is_(k[i]['w'], t): return i
+        for i in (0, 1):
+            if not k[i] and k[1 - i]: return i
+        return None
+    def walk(n):
+        g, rank, listed = n['g'], 10 ** 6, False
+        for x in n['kids']: rank = min(rank, walk(x))
+        if g:
+            hit = next((i for i, r in enumerate(rows) if (is_(g['w'], r['top']) and is_(g['l'], r['bot']))
+                        or (is_(g['w'], r['bot']) and is_(g['l'], r['top']))), None)
+            if hit is not None:
+                r, rank, listed = rows[hit], min(rank, hit), True
+                g['top'] = 0 if is_(g['w'], r['top']) else 1
+                g['home'], g['at'] = r['home'], r['at']
+        k = n['kids']
+        if k:
+            if k[1]['rank'] < k[0]['rank']: k.reverse()   # the half holding the earlier-listed game goes up
+            if g and listed:
+                if came_from(n, g['l'] if g['top'] else g['w']) == 1: k.reverse()   # a listed game: its top team's half
+            elif g:
+                g['top'] = 1 if came_from(n, g['w']) == 1 else 0
+        n['rank'] = rank
+        return rank
+    root = node(len(levels) - 1, 0)
+    walk(root)
+    out = [[] for _ in levels]
+    def flat(n, j):
+        out[j].append(n['g'])
+        for x in n['kids']: flat(x, j - 1)
+    flat(root, len(levels) - 1)
+    return out
 
 
 PAIRS = [(1, 16), (8, 9), (4, 13), (5, 12), (2, 15), (7, 10), (3, 14), (6, 11)]
