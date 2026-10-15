@@ -65,7 +65,7 @@ SAME = {
     'Centrallia': 'Centralia', "St. John's Beloit-Tipton": "St John's", 'Brewster-Triplains': 'Triplains-Brewster', 'N Valley': 'Northern Valley',
 }
 # Typos of schools that have no page here, so the same school reads the same way in every round.
-TYPO = {'Shawnee - St. Joe': 'Shawnee-St. Joseph', 'Shawnee-St. Joe': 'Shawnee-St. Joseph', 'Greesnsburg': 'Greensburg', 'Lurary': 'Luray', 'Lucus-Luray': 'Lucas-Luray', 'Waconada East': 'Waconda East',
+TYPO = {'Sylvan': 'Sylvan Grove', 'Shawnee - St. Joe': 'Shawnee-St. Joseph', 'Shawnee-St. Joe': 'Shawnee-St. Joseph', 'Greesnsburg': 'Greensburg', 'Lurary': 'Luray', 'Lucus-Luray': 'Lucas-Luray', 'Waconada East': 'Waconda East',
         'Mdiway-Denton': 'Midway-Denton', 'Quenomo': 'Quenemo', 'Marias des Cygnes': 'Marais des Cygnes',
         'Stanley-Blue Valley': 'Blue Valley', 'Blue Valley-Stanley': 'Blue Valley', 'North Center': 'North Central',
         'School for Deaf': 'Kansas School for the Deaf', 'School for the Deaf': 'Kansas School for the Deaf', 'KSD': 'Kansas School for the Deaf', 'Midway': 'Midway-Denton', 'MDCV': 'Marais des Cygnes', 'Marais des Cygnes Valley': 'Marais des Cygnes'}
