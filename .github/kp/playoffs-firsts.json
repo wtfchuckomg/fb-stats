@@ -4182,5 +4182,103 @@
       "Sylvan at South Haven",
       "Northern Valley at Kensington"
     ]
+  },
+  "1996": {
+    "6A": [
+      "KC Harmon at Olathe North",
+      "Lawrence at BV Northwest",
+      "Wichita West at Manhattan",
+      "Wichita NW at Emporia",
+      "BV Northwest at Olathe North",
+      "Manhattan at Wichita NW"
+    ],
+    "5A": [
+      "Blue Valley North at Aquinas",
+      "Salina Central at Ark City",
+      "Salina South at Valley Center",
+      "Winfield at Liberal",
+      "Aquinas at Salina Central",
+      "Valley Center at Liberal"
+    ],
+    "4A": [
+      "Hiawatha at Lansing",
+      "Santa Fe Trail at Gardner-Edgerton",
+      "Louisburg at Anderson County",
+      "Fort Scott at Parsons",
+      "Wamego at Abilene",
+      "Augusta at Wellington",
+      "Smoky Valley at Andale",
+      "Goodland at Ulysses",
+      "Hiawatha at Santa Fe Trail",
+      "Fort Scott at Louisburg",
+      "Abilene at Wellington",
+      "Ulysses at Smoky Valley",
+      "Wellington at Ulysses",
+      "Santa Fe Trail at Fort Scott"
+    ],
+    "3A": [
+      "Atchison County at McLouth",
+      "Silver Lake at Riley County",
+      "Wellsville at Central Heights",
+      "Riverton at Erie",
+      "Marion at Beloit",
+      "Halstead at Belle Plaine",
+      "SW Heights at Lyons",
+      "Smith Center at WaKeeney",
+      "Riley County at Atchison County",
+      "Wellsville at Riverton",
+      "Beloit at Halstead",
+      "Lyons at Smith Center",
+      "Riley County at Wellsville",
+      "Beloit at Smith Center"
+    ],
+    "2-1A": [
+      "Frankfort at Jackson Heights",
+      "Jeff Co. North at Waverly",
+      "Chase County at Pittsburg Colgan",
+      "Sedan at Moundridge",
+      "Ell-Saline at Garden Plain",
+      "Stockton at Claflin",
+      "Bucklin at Stanton County",
+      "St. Francis at Dighton",
+      "Jeff Co. North at Frankfort",
+      "Pittsburg Colgan at Sedan",
+      "Garden Plain at Stockton",
+      "Stanton County at St. Francis",
+      "Frankfort at Pittsburg Colgan",
+      "St. Francis at Garden Plain"
+    ],
+    "8M-I": [
+      "Crest at Chetopa",
+      "Burrton at Flinthills",
+      "BV Randolph at Mankato",
+      "Bennington at Goessel",
+      "Little River at Pratt-Skyline",
+      "Ashland at Norwich",
+      "Spearville at Meade",
+      "Ingalls at Grinnell",
+      "Burrton at Crest",
+      "Goessel at BV Randolph",
+      "Norwich at Little River",
+      "Grinnell at Spearville",
+      "Little River at Spearville",
+      "Crest at BV Randolph"
+    ],
+    "8M-II": [
+      "Elwood at Baileyville",
+      "Thayer at LeRoy",
+      "Hope at Central Christian",
+      "St. John's-Beloit at Hillcrest",
+      "Kensington at Sylvan",
+      "Triplains at Morland",
+      "Healy-Utica at Hanston",
+      "Rolla at Haviland",
+      "LeRoy at Baileyville",
+      "Central Christian at St. John's-Beloit",
+      "Sylvan at Triplains",
+      "Hanston at Rolla",
+      "Rolla at Triplains",
+      "Baileyville at St. John's-Beloit"
+    ]
   }
 }
