@@ -375,46 +375,39 @@
     },
     "1981": {
       "6A": [
-        "District",
         "Regional",
         "Sub-State",
         "State"
       ],
       "5A": [
-        "District",
         "Regional",
         "Sub-State",
         "State"
       ],
       "1A": [
-        "District",
         "Regional",
         "Sub-State",
         "State"
       ],
       "4A": [
-        "District",
         "Bi-District",
         "Regional",
         "Sub-State",
         "State"
       ],
       "3A": [
-        "District",
         "Bi-District",
         "Regional",
         "Sub-State",
         "State"
       ],
       "2A": [
-        "District",
         "Bi-District",
         "Regional",
         "Sub-State",
         "State"
       ],
       "8M": [
-        "District",
         "Bi-District",
         "Regional",
         "Sub-State",
@@ -1166,14 +1159,6 @@
       "SM Northwest - Lawrence",
       "Manhattan - Wichita East",
       "Derby - Garden City",
-      "Harmon at SM South",
-      "SM West at SM North",
-      "SM Northwest at Leavenworth",
-      "Topeka High at Lawrence",
-      "Seaman at Manhattan",
-      "Wichita North vs. Wichita East at Carpenter Stadium",
-      "Wichita Southeast at Derby",
-      "Garden City at Great Bend",
       "SM West vs. SM Northwest at SM South Stadium",
       "Derby at Wichita East at Carpenter Stadium",
       "Wichita East vs. SM Northwest at SM North",
@@ -1187,14 +1172,6 @@
       "Kapaun Mt Carmel - Winfield",
       "Chanute - Emporia",
       "Olathe South - Washburn Rural",
-      "Goddard at Campus",
-      "Salina Central at Hays",
-      "El Dorado vs. Kapaun Mt Carmel at Bishop Carroll",
-      "Winfield at Arkansas City",
-      "Chanute at Pittsburg",
-      "Paola at Emporia",
-      "Blue Valley at Olathe South",
-      "Washburn Rural at Shawnee Heights",
       "Emporia at Olathe South",
       "Kapaun Mt Carmel vs. Goddard at Carroll Field",
       "Emporia vs. Kapaun Mt Carmel at Carpenter Stadium, Wichita South HS",
@@ -1212,22 +1189,6 @@
       "Osawatomie - St Thomas Aquinas",
       "Tonganoxie - Baldwin",
       "Perry-Lecompton - Hiawatha",
-      "Scott City at Ulysses",
-      "Phillipsburg at Norton",
-      "Lyons at Nickerson",
-      "Pratt at Kingman",
-      "Maize at Wellington",
-      "Andover at Circle",
-      "Wamego at Clay Center",
-      "Sacred Heart at Chapman",
-      "Eureka at Fredonia",
-      "Girard at Columbus",
-      "Louisburg at Osawatomie",
-      "De Soto at St Thomas Aquinas",
-      "Tonganoxie at Sumner",
-      "Santa Fe Trail at Baldwin",
-      "Royal Valley at Perry-Lecompton",
-      "Atchison County at Hiawatha",
       "Norton at Ulysses",
       "Nickerson at Pratt",
       "Andover at Wellington",
@@ -1253,22 +1214,6 @@
       "Silver Lake - Osage City",
       "Belle Plaine - Neodesha",
       "Central Heights - Southeast (Cherokee)",
-      "Decatur at Hoxie",
-      "Lakin at Hugoton",
-      "Osborne at Plainville",
-      "Ness City at Kinsley",
-      "Clearwater at Fairfield",
-      "Remington at Hillsboro",
-      "Southeast of Saline at Herington",
-      "Beloit at Belleville",
-      "Horton at Sabetha",
-      "Wellsville at Basehor",
-      "Silver Lake at Rossville",
-      "Chase County at Osage City",
-      "Bluestem at Belle Plaine",
-      "Caney Valley at Neodesha",
-      "Prairie View at Central Heights",
-      "Southeast (Cherokee) at Erie",
       "Lakin at Hoxie",
       "Ness City at Plainville",
       "Clearwater at Hillsboro",
@@ -1294,22 +1239,6 @@
       "Sedan - Garden Plain",
       "Cimarron - Syracuse",
       "Rawlins County - Victoria",
-      "St Mary's Colgan at Frontenac",
-      "Jayhawk-Linn at Uniontown",
-      "Crest at Pomona",
-      "Valley Falls at McLouth",
-      "Troy at Jefferson County North",
-      "Frankfort at Axtell",
-      "Clifton-Clyde at Valley Heights",
-      "Luckey at Lincoln",
-      "Centre at Moundridge",
-      "Claflin at St. John",
-      "Central-Burden at Sedan",
-      "Hutch Trinity at Garden Plain",
-      "Cimarron at Sublette",
-      "Syracuse at Elkhart",
-      "Rawlins County at St Francis",
-      "Victoria at Otis-Bison",
       "Frontenac at Jayhawk-Linn",
       "Pomona at Valley Falls",
       "Troy at Axtell",
@@ -1331,14 +1260,6 @@
       "Waverly - Cedar Vale",
       "Canton-Galva - Little River",
       "South Barber - Jetmore",
-      "Baileyville at St. George",
-      "Burlingame at Williamsburg",
-      "Hartford at Waverly",
-      "Thayer at Cedar Vale",
-      "Marquette at Canton-Galva",
-      "Little River at Central Christian",
-      "Caldwell at South Barber",
-      "Jetmore at Greeley County",
       "Baileyville vs. Waverly at Welch Stadium, Emporia State",
       "Little River at South Barber",
       "Baileyville vs. Little River at McPherson College",
@@ -1356,21 +1277,6 @@
       "Mankato - Midway-Denton",
       "Dorrance - Bennington",
       "Argonia - LeRoy",
-      "Brewster at Golden Plains",
-      "Grinnell at Wallace County",
-      "Satanta at Rolla",
-      "Ensign at Fowler",
-      "Cunningham at Skyline",
-      "Ransom at Gorham",
-      "Logan at Eastern Heights",
-      "Kensington at Lebanon",
-      "Waconda East at Glasco",
-      "Mankato at Hillcrest",
-      "Elwood at Midway-Denton",
-      "Quivira Heights at Dorrance",
-      "Bennington at St. John's Military",
-      "Argonia at South Haven",
-      "LeRoy at Hamilton",
       "Grinnell at Brewster",
       "Fowler at Satanta",
       "Cunningham at Minneola",
@@ -1401,647 +1307,7 @@
     ]
   },
   "added": {
-    "_": "Games the archive does not have: year \u2192 class \u2192 [round, game line, winner, winner points, loser points] (points null = not known yet).",
-    "1981": {
-      "6A": [
-        [
-          "District",
-          "Harmon at SM South",
-          "SM South",
-          15,
-          14
-        ],
-        [
-          "District",
-          "SM West at SM North",
-          "SM West",
-          8,
-          3
-        ],
-        [
-          "District",
-          "SM Northwest at Leavenworth",
-          "SM Northwest",
-          29,
-          0
-        ],
-        [
-          "District",
-          "Topeka High at Lawrence",
-          "Lawrence",
-          21,
-          7
-        ],
-        [
-          "District",
-          "Seaman at Manhattan",
-          "Manhattan",
-          23,
-          0
-        ],
-        [
-          "District",
-          "Wichita North vs. Wichita East at Carpenter Stadium",
-          "Wichita East",
-          3,
-          0,
-          {
-            "ot": true
-          }
-        ],
-        [
-          "District",
-          "Wichita Southeast at Derby",
-          "Derby",
-          21,
-          7
-        ],
-        [
-          "District",
-          "Garden City at Great Bend",
-          "Garden City",
-          16,
-          6
-        ]
-      ],
-      "5A": [
-        [
-          "District",
-          "Goddard at Campus",
-          "Goddard",
-          58,
-          13
-        ],
-        [
-          "District",
-          "Salina Central at Hays",
-          "Hays",
-          22,
-          6
-        ],
-        [
-          "District",
-          "El Dorado vs. Kapaun Mt Carmel at Bishop Carroll",
-          "Kapaun Mt Carmel",
-          35,
-          0
-        ],
-        [
-          "District",
-          "Winfield at Arkansas City",
-          "Winfield",
-          29,
-          0
-        ],
-        [
-          "District",
-          "Chanute at Pittsburg",
-          "Chanute",
-          20,
-          17
-        ],
-        [
-          "District",
-          "Paola at Emporia",
-          "Emporia",
-          34,
-          0
-        ],
-        [
-          "District",
-          "Blue Valley at Olathe South",
-          "Olathe South",
-          13,
-          7
-        ],
-        [
-          "District",
-          "Washburn Rural at Shawnee Heights",
-          "Washburn Rural",
-          33,
-          7
-        ]
-      ],
-      "4A": [
-        [
-          "District",
-          "Scott City at Ulysses",
-          "Ulysses",
-          20,
-          6
-        ],
-        [
-          "District",
-          "Phillipsburg at Norton",
-          "Norton",
-          27,
-          7
-        ],
-        [
-          "District",
-          "Lyons at Nickerson",
-          "Nickerson",
-          35,
-          6
-        ],
-        [
-          "District",
-          "Pratt at Kingman",
-          "Pratt",
-          20,
-          6
-        ],
-        [
-          "District",
-          "Maize at Wellington",
-          "Wellington",
-          48,
-          18
-        ],
-        [
-          "District",
-          "Andover at Circle",
-          "Andover",
-          12,
-          0
-        ],
-        [
-          "District",
-          "Wamego at Clay Center",
-          "Wamego",
-          19,
-          0,
-          {
-            "adv": "Clay Center"
-          }
-        ],
-        [
-          "District",
-          "Sacred Heart at Chapman",
-          "Sacred Heart",
-          35,
-          8
-        ],
-        [
-          "District",
-          "Eureka at Fredonia",
-          "Fredonia",
-          24,
-          0
-        ],
-        [
-          "District",
-          "Girard at Columbus",
-          "Columbus",
-          21,
-          7
-        ],
-        [
-          "District",
-          "Louisburg at Osawatomie",
-          "Osawatomie",
-          19,
-          16
-        ],
-        [
-          "District",
-          "De Soto at St Thomas Aquinas",
-          "St Thomas Aquinas",
-          27,
-          12
-        ],
-        [
-          "District",
-          "Tonganoxie at Sumner",
-          "Tonganoxie",
-          25,
-          12
-        ],
-        [
-          "District",
-          "Santa Fe Trail at Baldwin",
-          "Baldwin",
-          44,
-          42
-        ],
-        [
-          "District",
-          "Royal Valley at Perry-Lecompton",
-          "Perry-Lecompton",
-          33,
-          26
-        ],
-        [
-          "District",
-          "Atchison County at Hiawatha",
-          "Hiawatha",
-          26,
-          20
-        ]
-      ],
-      "3A": [
-        [
-          "District",
-          "Decatur at Hoxie",
-          "Hoxie",
-          20,
-          16
-        ],
-        [
-          "District",
-          "Lakin at Hugoton",
-          "Lakin",
-          33,
-          0
-        ],
-        [
-          "District",
-          "Osborne at Plainville",
-          "Plainville",
-          21,
-          0
-        ],
-        [
-          "District",
-          "Ness City at Kinsley",
-          "Kinsley",
-          7,
-          6,
-          {
-            "adv": "Ness City"
-          }
-        ],
-        [
-          "District",
-          "Clearwater at Fairfield",
-          "Clearwater",
-          37,
-          0
-        ],
-        [
-          "District",
-          "Remington at Hillsboro",
-          "Hillsboro",
-          39,
-          0
-        ],
-        [
-          "District",
-          "Southeast of Saline at Herington",
-          "Herington",
-          10,
-          9
-        ],
-        [
-          "District",
-          "Beloit at Belleville",
-          "Belleville",
-          14,
-          10
-        ],
-        [
-          "District",
-          "Horton at Sabetha",
-          "Sabetha",
-          29,
-          8
-        ],
-        [
-          "District",
-          "Wellsville at Basehor",
-          "Wellsville",
-          19,
-          15
-        ],
-        [
-          "District",
-          "Silver Lake at Rossville",
-          "Silver Lake",
-          28,
-          0
-        ],
-        [
-          "District",
-          "Chase County at Osage City",
-          "Osage City",
-          42,
-          22
-        ],
-        [
-          "District",
-          "Bluestem at Belle Plaine",
-          "Belle Plaine",
-          17,
-          0
-        ],
-        [
-          "District",
-          "Caney Valley at Neodesha",
-          "Neodesha",
-          34,
-          16
-        ],
-        [
-          "District",
-          "Prairie View at Central Heights",
-          "Central Heights",
-          12,
-          0
-        ],
-        [
-          "District",
-          "Southeast (Cherokee) at Erie",
-          "Southeast (Cherokee)",
-          9,
-          6
-        ]
-      ],
-      "2A": [
-        [
-          "District",
-          "St Mary's Colgan at Frontenac",
-          "Frontenac",
-          28,
-          7
-        ],
-        [
-          "District",
-          "Jayhawk-Linn at Uniontown",
-          "Jayhawk-Linn",
-          40,
-          14
-        ],
-        [
-          "District",
-          "Crest at Pomona",
-          "Pomona",
-          22,
-          8
-        ],
-        [
-          "District",
-          "Valley Falls at McLouth",
-          "Valley Falls",
-          3,
-          0
-        ],
-        [
-          "District",
-          "Troy at Jefferson County North",
-          "Troy",
-          26,
-          22
-        ],
-        [
-          "District",
-          "Frankfort at Axtell",
-          "Axtell",
-          19,
-          8
-        ],
-        [
-          "District",
-          "Clifton-Clyde at Valley Heights",
-          "Clifton-Clyde",
-          38,
-          0
-        ],
-        [
-          "District",
-          "Luckey at Lincoln",
-          "Lincoln",
-          40,
-          6
-        ],
-        [
-          "District",
-          "Centre at Moundridge",
-          "Moundridge",
-          43,
-          7
-        ],
-        [
-          "District",
-          "Claflin at St. John",
-          "Claflin",
-          8,
-          7
-        ],
-        [
-          "District",
-          "Central-Burden at Sedan",
-          "Sedan",
-          20,
-          10
-        ],
-        [
-          "District",
-          "Hutch Trinity at Garden Plain",
-          "Garden Plain",
-          35,
-          0
-        ],
-        [
-          "District",
-          "Cimarron at Sublette",
-          "Cimarron",
-          23,
-          8
-        ],
-        [
-          "District",
-          "Syracuse at Elkhart",
-          "Syracuse",
-          14,
-          0
-        ],
-        [
-          "District",
-          "Rawlins County at St Francis",
-          "Rawlins County",
-          40,
-          0
-        ],
-        [
-          "District",
-          "Victoria at Otis-Bison",
-          "Victoria",
-          43,
-          13
-        ]
-      ],
-      "1A": [
-        [
-          "District",
-          "Baileyville at St. George",
-          "Baileyville",
-          58,
-          8
-        ],
-        [
-          "District",
-          "Burlingame at Williamsburg",
-          "Burlingame",
-          20,
-          0
-        ],
-        [
-          "District",
-          "Hartford at Waverly",
-          "Waverly",
-          13,
-          6
-        ],
-        [
-          "District",
-          "Thayer at Cedar Vale",
-          "Cedar Vale",
-          8,
-          0
-        ],
-        [
-          "District",
-          "Marquette at Canton-Galva",
-          "Canton-Galva",
-          21,
-          12
-        ],
-        [
-          "District",
-          "Little River at Central Christian",
-          "Little River",
-          26,
-          7
-        ],
-        [
-          "District",
-          "Caldwell at South Barber",
-          "South Barber",
-          41,
-          14
-        ],
-        [
-          "District",
-          "Jetmore at Greeley County",
-          "Jetmore",
-          14,
-          7
-        ]
-      ],
-      "8M": [
-        [
-          "District",
-          "Brewster at Golden Plains",
-          "Brewster",
-          36,
-          8
-        ],
-        [
-          "District",
-          "Grinnell at Wallace County",
-          "Grinnell",
-          null,
-          null,
-          {
-            "def": true
-          }
-        ],
-        [
-          "District",
-          "Satanta at Rolla",
-          "Satanta",
-          42,
-          14
-        ],
-        [
-          "District",
-          "Ensign at Fowler",
-          "Fowler",
-          41,
-          8
-        ],
-        [
-          "District",
-          "Cunningham at Skyline",
-          "Cunningham",
-          48,
-          12
-        ],
-        [
-          "District",
-          "Ransom at Gorham",
-          "Ransom",
-          30,
-          6
-        ],
-        [
-          "District",
-          "Logan at Eastern Heights",
-          "Logan",
-          76,
-          38
-        ],
-        [
-          "District",
-          "Kensington at Lebanon",
-          "Kensington",
-          58,
-          26
-        ],
-        [
-          "District",
-          "Waconda East at Glasco",
-          "Waconda East",
-          44,
-          12
-        ],
-        [
-          "District",
-          "Mankato at Hillcrest",
-          "Mankato",
-          44,
-          6
-        ],
-        [
-          "District",
-          "Elwood at Midway-Denton",
-          "Midway-Denton",
-          70,
-          28
-        ],
-        [
-          "District",
-          "Quivira Heights at Dorrance",
-          "Dorrance",
-          18,
-          6
-        ],
-        [
-          "District",
-          "Bennington at St. John's Military",
-          "Bennington",
-          34,
-          20
-        ],
-        [
-          "District",
-          "Argonia at South Haven",
-          "Argonia",
-          null,
-          null,
-          {
-            "def": true
-          }
-        ],
-        [
-          "District",
-          "LeRoy at Hamilton",
-          "LeRoy",
-          76,
-          8
-        ]
-      ]
-    }
+    "_": "Games the archive does not have: year \u2192 class \u2192 [round, game line, winner, winner points, loser points] (points null = not known yet)."
   },
   "1982": {
     "6A": [
