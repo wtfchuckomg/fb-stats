@@ -1464,7 +1464,9 @@
       "Marysville at Hayden",
       "Fredonia at Iola",
       "Andale at Clay Center",
-      "Norton at Clearwater"
+      "Norton at Clearwater",
+      "Fredonia at Marysville",
+      "Clay Center at Norton"
     ],
     "3A": [
       "St Marys at Eudora",
@@ -1478,7 +1480,9 @@
       "St Marys at Wabaunsee",
       "Riverton at Yates Center",
       "Sterling at Belleville",
-      "Osborne at Hugoton"
+      "Osborne at Hugoton",
+      "Yates Center at St Marys",
+      "Osborne at Belleville"
     ],
     "2A": [
       "Troy at Jackson Heights",
@@ -1492,7 +1496,9 @@
       "Clifton-Clyde at Jackson Heights",
       "Northern Heights at St Mary's Colgan",
       "St John at Garden Plain",
-      "Stanton County at Ness City"
+      "Stanton County at Ness City",
+      "Jackson Heights at St Mary's Colgan",
+      "Garden Plain at Stanton County"
     ],
     "8M-II": [
       "North Central at Miltonvale",
@@ -1506,29 +1512,38 @@
       "Ell-Saline at North Central",
       "Kensington at Northern Valley",
       "Protection at South Haven",
-      "Rolla at Ingalls"
+      "Rolla at Ingalls",
+      "Northern Valley vs. Ell-Saline at Salina",
+      "Protection at Rolla"
     ],
     "6A": [
       "SM West at SM South",
       "Topeka High at Lawrence",
       "Wichita East at Manhattan at KSU Stadium",
-      "Wichita Southeast vs. Great Bend at Carpenter Stadium, Wichita South HS"
+      "Wichita Southeast vs. Great Bend at Carpenter Stadium, Wichita South HS",
+      "Lawrence vs. SM West at SM South Stadium",
+      "Wichita East vs. Wichita Southeast at Carpenter Stadium, Wichita South HS"
     ],
     "5A": [
       "Bishop Miege at Olathe South",
       "Pittsburg at Fort Scott",
       "Kapaun Mt Carmel vs. Arkansas City at Wichita Heights",
-      "Salina South vs. Bishop Carroll at Salina Central"
+      "Salina South vs. Bishop Carroll at Salina Central",
+      "Pittsburg at Bishop Miege",
+      "Kapaun Mt Carmel vs. Salina South at Wichita Heights"
     ],
     "1A": [
       "Frankfort at Waverly",
-      "South Barber vs. Colony-Crest at Garnett"
+      "South Barber vs. Colony-Crest at Garnett",
+      "Colony-Crest vs. Frankfort at Emporia State"
     ],
     "8M-I": [
       "BV Randolph at Highland",
       "Logan at Bennington",
       "Quivira Heights at Canton-Galva",
-      "Grinnell at Jetmore"
+      "Grinnell at Jetmore",
+      "Highland at Logan",
+      "Jetmore at Quivira Heights"
     ]
   }
 }
