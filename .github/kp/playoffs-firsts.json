@@ -5322,7 +5322,9 @@
       "SM East at Olathe North",
       "Lawrence at Olathe East",
       "Wichita NW at Hutchinson",
-      "Derby at Wichita Heights"
+      "Derby at Wichita Heights",
+      "Olathe North at Olathe East",
+      "Hutchinson at Derby"
     ],
     "5A": [
       "Bishop Miege at Aquinas",
@@ -5336,7 +5338,9 @@
       "Aquinas at Topeka Seaman",
       "Topeka West at Bonner Springs",
       "Salina South at Great Bend",
-      "Salina Central at Newton"
+      "Salina Central at Newton",
+      "Topeka West at Aquinas",
+      "Salina South vs. Salina Central at Salina Stadium"
     ],
     "4A": [
       "Girard at Parsons",
@@ -5366,7 +5370,9 @@
       "Eudora at Paola",
       "Topeka Hayden at Fort Scott",
       "Wellington at Marysville",
-      "Scott City at Holton"
+      "Scott City at Holton",
+      "Fort Scott at Eudora",
+      "Scott City at Wellington"
     ],
     "3A": [
       "Maur Hill at Atchison County",
@@ -5396,7 +5402,9 @@
       "Frontenac at Silver Lake",
       "SE-Saline at TMP-Marian",
       "Cherryvale at Rossville",
-      "Conway Springs at Norton"
+      "Conway Springs at Norton",
+      "Rossville at Silver Lake",
+      "TMP-Marian at Conway Springs"
     ],
     "2-1A": [
       "Centralia at Frankfort",
@@ -5426,7 +5434,9 @@
       "WaKeeney at Sacred Heart",
       "Sedan at Jeff Co. North",
       "Jackson Heights at Pittsburg Colgan",
-      "Atwood at Claflin"
+      "Atwood at Claflin",
+      "Pittsburg Colgan at Sedan",
+      "Sacred Heart at Claflin"
     ],
     "8M-I": [
       "Flinthills at Madison",
