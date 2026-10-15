@@ -27,7 +27,7 @@
   "1970": {
     "5A": [
       "Wichita North vs. Wichita Southeast at Cessna Stadium, Wichita State",
-      "SM North vs. Topeka High at Moore Bowl, Topeka"
+      "SM North at Topeka High at Moore Bowl, Topeka"
     ],
     "4A": [
       "Pittsburg at Topeka West",
@@ -382,6 +382,52 @@
       },
       "4A": {
         "State": "Memorial Stadium, KU"
+      },
+      "3A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "2-1A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "8M-I": {
+        "State": "Russell HS"
+      },
+      "8M-II": {
+        "State": "Russell HS"
+      }
+    },
+    "1987": {
+      "6A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "5A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "4A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "3A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "2-1A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "8M-I": {
+        "State": "Russell HS"
+      },
+      "8M-II": {
+        "State": "Russell HS"
+      }
+    },
+    "1988": {
+      "6A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "4A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "5A": {
+        "State": "KSU Stadium, Manhattan"
       },
       "3A": {
         "State": "KSU Stadium, Manhattan"
@@ -750,10 +796,10 @@
     "3A": [
       "Fort Scott at Osawatomie",
       "Ottawa at Shawnee Heights",
-      "Kapaun Mt Carmel vs. Valley Center at Wichita Heights",
+      "Valley Center at Kapaun Mt Carmel at Wichita Heights",
       "Chapman at Ulysses",
       "Shawnee Heights at Osawatomie",
-      "Ulysses vs. Kapaun Mt Carmel at Bishop Carroll",
+      "Ulysses at Kapaun Mt Carmel at Bishop Carroll",
       "Osawatomie at Ulysses"
     ],
     "2A": [
@@ -802,7 +848,7 @@
       "Shawnee-St. Joseph at Bonner Springs",
       "Scott City at Buhler",
       "Paola at Fort Scott",
-      "Andale vs. Kapaun Mt Carmel at Bishop Carroll",
+      "Andale at Kapaun Mt Carmel at Bishop Carroll",
       "Council Grove vs. Bonner Springs at Emporia",
       "Kapaun Mt Carmel at Scott City",
       "Fort Scott at Bonner Springs",
@@ -822,7 +868,7 @@
     "1A": [
       "Quinter vs. Natoma at Plainville",
       "Chase vs. Garden Plain at Goddard",
-      "St John's vs. Luckey at Bishop Stadium, Manhattan",
+      "St John's at Luckey at Bishop Stadium, Manhattan",
       "St Mary's Colgan vs. Highland at Pittsburg High School",
       "St Mary's Colgan vs. Garden Plain at Goddard",
       "Natoma vs. St John's"
@@ -1055,7 +1101,7 @@
       "Quivira Heights at Pretty Prairie",
       "Quinter at Clyde",
       "St John's at Logan",
-      "Clifton vs. Hutch Trinity at Hutch CC",
+      "Clifton at Hutch Trinity at Hutch CC",
       "Highland at Luckey",
       "St Mary's Colgan vs. Hope at Chapman HS",
       "Hutch Trinity at Fowler",
@@ -1079,12 +1125,12 @@
   },
   "1978": {
     "6A": [
-      "Dodge City vs. Wichita Southeast at Wichita South HS",
+      "Dodge City at Wichita Southeast at Wichita South HS",
       "Emporia at Great Bend",
       "Harmon at SM South",
       "Lawrence at Olathe",
       "SM South at Lawrence",
-      "Great Bend vs. Wichita Southeast at Cessna Stadium"
+      "Great Bend at Wichita Southeast at Cessna Stadium"
     ],
     "5A": [
       "Arkansas City at Pittsburg",
@@ -1155,7 +1201,7 @@
       "St John's vs. Brewster at Colby HS",
       "Protection vs. Canton-Galva at SE of Saline HS",
       "Pleasanton vs. St Paul at Erie HS",
-      "Clyde vs. Kansas School for the Deaf at Olathe HS",
+      "Clyde at Kansas School for the Deaf at Olathe HS",
       "Brewster vs. Clyde",
       "Pleasanton at Protection"
     ],
@@ -1186,7 +1232,7 @@
   },
   "1979": {
     "6A": [
-      "SM Northwest vs. Wichita Southeast at Wichita South HS",
+      "SM Northwest at Wichita Southeast at Wichita South HS",
       "Olathe at SM West at SM South HS",
       "Highland Park at Lawrence",
       "Wichita North at Dodge City",
@@ -1260,7 +1306,7 @@
       "White City vs. Cedar Vale at Sedan HS",
       "St Paul vs. Canton-Galva at McPherson College",
       "Linwood vs. Marais des Cygnes at Carbondale",
-      "Hope vs. Hutch Trinity at Gowans Stadium, Hutch CC",
+      "Hope at Hutch Trinity at Gowans Stadium, Hutch CC",
       "Hutch Trinity at Protection",
       "Cedar Vale vs. Canton-Galva at McPherson College",
       "Marais des Cygnes vs. Miltonvale at Clyde HS",
@@ -1279,7 +1325,7 @@
   },
   "1980": {
     "6A": [
-      "SM South vs. Wichita Southeast at Wichita South HS",
+      "SM South at Wichita Southeast at Wichita South HS",
       "Wichita East at Olathe",
       "Leavenworth at SM West at SM South HS",
       "SM Northwest at Washington",
@@ -1399,10 +1445,10 @@
       "Chanute - Emporia",
       "Olathe South - Washburn Rural",
       "Emporia at Olathe South",
-      "Kapaun Mt Carmel vs. Goddard at Carroll Field",
+      "Goddard at Kapaun Mt Carmel at Carroll Field",
       "Emporia vs. Kapaun Mt Carmel at Carpenter Stadium, Wichita South HS",
       "Goddard at Hays",
-      "Winfield vs. Kapaun Mt Carmel at Wichita Heights",
+      "Winfield at Kapaun Mt Carmel at Wichita Heights",
       "Chanute at Emporia",
       "Olathe South at Washburn Rural"
     ],
@@ -1418,7 +1464,7 @@
       "Norton at Ulysses",
       "Nickerson at Pratt",
       "Andover at Wellington",
-      "Clay Center vs. Sacred Heart at Kansas Wesleyan",
+      "Clay Center at Sacred Heart at Kansas Wesleyan",
       "Columbus at Fredonia",
       "St Thomas Aquinas at Osawatomie",
       "Tonganoxie at Baldwin",
@@ -1539,7 +1585,7 @@
     "6A": [
       "SM South vs. SM West at SM South Stadium",
       "SM Northwest at Lawrence",
-      "Manhattan vs. Wichita East at Carpenter Stadium, Wichita South HS",
+      "Manhattan at Wichita East at Carpenter Stadium, Wichita South HS",
       "Derby at Dodge City",
       "SM Northwest at SM South",
       "Wichita East at Derby",
@@ -1550,7 +1596,7 @@
       "Kapaun Mt Carmel at Independence",
       "Emporia at Pittsburg",
       "Bonner Springs at Bishop Miege",
-      "Goddard vs. Kapaun Mt Carmel at Carpenter Stadium, Wichita South HS",
+      "Goddard at Kapaun Mt Carmel at Carpenter Stadium, Wichita South HS",
       "Bishop Miege at Emporia",
       "Kapaun Mt Carmel at Bishop Miege"
     ],
@@ -1667,7 +1713,7 @@
     ],
     "2A": [
       "Troy at Jackson Heights",
-      "Centre vs. Clifton-Clyde at Clyde",
+      "Centre at Clifton-Clyde at Clyde",
       "Oskaloosa vs. Northern Heights at Emporia State",
       "St Mary's Colgan at Uniontown",
       "Oxford at Garden Plain",
@@ -1701,17 +1747,17 @@
       "SM West at SM South",
       "Topeka High at Lawrence",
       "Wichita East at Manhattan at KSU Stadium",
-      "Wichita Southeast vs. Great Bend at Carpenter Stadium, Wichita South HS",
+      "Great Bend at Wichita Southeast at Carpenter Stadium, Wichita South HS",
       "Lawrence vs. SM West at SM South Stadium",
       "Wichita East vs. Wichita Southeast at Carpenter Stadium, Wichita South HS"
     ],
     "5A": [
       "Bishop Miege at Olathe South",
       "Pittsburg at Fort Scott",
-      "Kapaun Mt Carmel vs. Arkansas City at Wichita Heights",
-      "Salina South vs. Bishop Carroll at Salina Central",
+      "Arkansas City at Kapaun Mt Carmel at Wichita Heights",
+      "Bishop Carroll at Salina South at Salina Central",
       "Pittsburg at Bishop Miege",
-      "Kapaun Mt Carmel vs. Salina South at Wichita Heights"
+      "Salina South at Kapaun Mt Carmel at Wichita Heights"
     ],
     "1A": [
       "Frankfort at Waverly",
@@ -1731,7 +1777,7 @@
     "6A": [
       "SM South vs. SM West at SM North",
       "Lawrence at Emporia",
-      "Manhattan vs. Wichita East at Wichita Heights",
+      "Manhattan at Wichita East at Wichita Heights",
       "Wichita Southeast at Dodge City",
       "Dodge City at Manhattan",
       "Lawrence vs. SM West"
@@ -1826,7 +1872,7 @@
       "SM East vs. SM West at SM South Stadium",
       "Lawrence at Washington",
       "Wichita North at Manhattan",
-      "Dodge City vs. Wichita Southeast at Carpenter Stadium, Wichita South HS",
+      "Dodge City at Wichita Southeast at Carpenter Stadium, Wichita South HS",
       "SM West at Lawrence",
       "Manhattan at Dodge City"
     ],
@@ -1915,13 +1961,13 @@
     "6A": [
       "Blue Valley vs. SM West at SM South",
       "Olathe North at Lawrence at Haskell Stadium",
-      "Junction City vs. Wichita North at Carpenter Stadium, Wichita South HS",
+      "Junction City at Wichita North at Carpenter Stadium, Wichita South HS",
       "Derby at Hutchinson",
       "Lawrence vs. SM West at SM South",
       "Hutchinson at Junction City"
     ],
     "5A": [
-      "Washburn Rural vs. KC Sumner at Wyandotte",
+      "Washburn Rural at KC Sumner at Wyandotte",
       "Field Kindley at Pittsburg",
       "Valley Center at Arkansas City",
       "Liberal at Salina Central",
@@ -1949,7 +1995,7 @@
       "Silver Lake at St Marys",
       "Humboldt at Burlington",
       "Riverton at Sedan",
-      "Sacred Heart vs. Herington at Kansas Wesleyan, Salina",
+      "Herington at Sacred Heart at Kansas Wesleyan, Salina",
       "Hillsboro at Medicine Lodge",
       "Cimarron at Southwestern Heights",
       "Smith Center at WaKeeney-Trego",
@@ -2007,16 +2053,16 @@
       "Lawrence at Olathe North",
       "Manhattan at Emporia",
       "Dodge City at Derby",
-      "KC Wyandotte vs. Lawrence at Haskell Stadium",
+      "KC Wyandotte at Lawrence at Haskell Stadium",
       "Manhattan at Dodge City"
     ],
     "5A": [
       "Bishop Miege at Washburn Rural",
       "Blue Valley at Pittsburg",
-      "Ark City vs. Wichita Kapaun at Carpenter Stadium, Wichita South HS",
+      "Ark City at Wichita Kapaun at Carpenter Stadium, Wichita South HS",
       "McPherson at Liberal",
       "Washburn Rural at Pittsburg",
-      "Wichita Kapaun vs. McPherson at McPherson College"
+      "Wichita Kapaun at McPherson at McPherson College"
     ],
     "4A": [
       "Atchison at Marysville",
@@ -2055,7 +2101,7 @@
       "Frankfort at Riley County",
       "Pomona at Lebo",
       "Frontenac vs. Hartford at Burlington",
-      "Udall vs. Sacred Heart at Kansas Wesleyan, Salina",
+      "Udall at Sacred Heart at Kansas Wesleyan, Salina",
       "Conway Springs at St. John",
       "Stockton at Atwood",
       "Victoria at Cimarron",
