@@ -231,6 +231,29 @@
       "8M": {
         "State": "Sharon"
       }
+    },
+    "1978": {
+      "6A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "5A": {
+        "State": "Arkansas City"
+      },
+      "4A": {
+        "State": "Moore Bowl, Topeka"
+      },
+      "3A": {
+        "State": "Augusta HS"
+      },
+      "2A": {
+        "State": "Leavenworth HS"
+      },
+      "1A": {
+        "State": "Colby HS"
+      },
+      "8M": {
+        "State": "Moscow HS"
+      }
     }
   },
   "notes": {
@@ -686,6 +709,98 @@
       "Sharon at Moscow",
       "Waconda East at Montezuma",
       "Montezuma at Sharon"
+    ]
+  },
+  "1978": {
+    "6A": [
+      "Dodge City vs. Wichita Southeast at Wichita South HS",
+      "Emporia at Great Bend",
+      "Harmon at SM South",
+      "Lawrence at Olathe",
+      "SM South at Lawrence",
+      "Great Bend vs. Wichita Southeast at Cessna Stadium"
+    ],
+    "5A": [
+      "Arkansas City at Pittsburg",
+      "Independence at Wellington",
+      "Bishop Carroll at McPherson",
+      "Goddard at Kapaun Mt Carmel at Bishop Carroll HS",
+      "Wellington at Bishop Carroll",
+      "Kapaun Mt Carmel at Arkansas City",
+      "Bishop Carroll at Arkansas City"
+    ],
+    "4A": [
+      "Louisburg vs. Shawnee-St. Joseph at Bishop Miege HS",
+      "Gardner at Baldwin",
+      "Perry-Lecompton at Maur Hill-Mount",
+      "Columbus at Girard",
+      "Fredonia at Chaparral",
+      "Lyons at Abilene",
+      "Concordia at WaKeeney-Trego",
+      "Pratt at Ulysses",
+      "Chaparral at Ulysses",
+      "Baldwin at Columbus",
+      "Shawnee-St. Joseph at Maur Hill-Mount",
+      "Abilene at Concordia",
+      "Chaparral at Abilene",
+      "Baldwin vs. Shawnee-St. Joseph at Bishop Miege HS"
+    ],
+    "3A": [
+      "Belle Plaine at Sedan",
+      "Halstead at Douglass",
+      "Medicine Lodge at Ellinwood",
+      "Marion at Hesston",
+      "Silver Lake at Herington",
+      "Sacred Heart at Wabaunsee",
+      "Osborne at Hoxie",
+      "Rawlins County at Hugoton",
+      "Hoxie at Rawlins County",
+      "Ellinwood at Belle Plaine",
+      "Douglass at Marion",
+      "Wabaunsee vs. Silver Lake at Topeka Seaman HS",
+      "Douglass vs. Belle Plaine",
+      "Silver Lake vs. Hoxie"
+    ],
+    "2A": [
+      "Centralia at Hanover",
+      "Troy at Baileyville",
+      "Wathena at McLouth at Oskaloosa HS",
+      "Rossville at Jackson Heights",
+      "Luckey at Moundridge",
+      "Garden Plain at St Mary's Colgan",
+      "Meade at Sterling",
+      "La Crosse at Spearville",
+      "Hanover at Rossville",
+      "McLouth vs. Baileyville at Seneca",
+      "St Mary's Colgan at Moundridge",
+      "Sterling at Spearville",
+      "Hanover vs. McLouth at Leavenworth HS",
+      "Spearville at Moundridge"
+    ],
+    "1A": [
+      "Waverly at Pleasanton at Fort Scott HS",
+      "St Paul at Olpe",
+      "Kansas School for the Deaf at Hope at Assaria",
+      "Canton-Galva at Cedar Vale",
+      "Argonia at Protection",
+      "Clyde at Sylvan",
+      "Mankato vs. St John's at Beloit HS",
+      "Brewster at Ransom",
+      "St John's vs. Brewster at Colby HS",
+      "Protection vs. Canton-Galva at SE of Saline HS",
+      "Pleasanton vs. St Paul at Erie HS",
+      "Clyde vs. Kansas School for the Deaf at Olathe HS",
+      "Brewster vs. Clyde",
+      "Pleasanton at Protection"
+    ],
+    "8M": [
+      "Jennings vs. McCracken at Fort Hays State",
+      "Courtland at LeRoy",
+      "Bucklin at Moscow",
+      "Jewell at Eastern Heights",
+      "Moscow vs. McCracken at Fort Hays State",
+      "Eastern Heights at LeRoy",
+      "LeRoy at Moscow"
     ]
   }
 }
