@@ -5112,5 +5112,103 @@
       "Baileyville at Argonia",
       "Hanston at Brewster"
     ]
+  },
+  "2000": {
+    "6A": [
+      "SM South at Olathe North",
+      "Lawrence at SM North",
+      "Manhattan at Wichita Southeast at Carpenter Stadium, Wichita South HS",
+      "Wichita West at Hutchinson",
+      "Hutchinson at Manhattan",
+      "SM North at Olathe North"
+    ],
+    "5A": [
+      "KC Turner at Pittsburg",
+      "Aquinas at Topeka Seaman",
+      "Salina South at Salina Central",
+      "Wichita Kapaun at Bishop Carroll",
+      "Bishop Carroll at Salina South at Salina Central",
+      "Pittsburg at Aquinas"
+    ],
+    "4A": [
+      "Labette County at Chanute",
+      "Fort Scott at Spring Hill",
+      "Eudora at Basehor-Linwood",
+      "Holton at Hiawatha",
+      "Clay Center at Ottawa",
+      "Wellington at El Dorado",
+      "Chapman at Andale",
+      "Pratt at Ulysses",
+      "Fort Scott at Labette County",
+      "Hiawatha at Eudora",
+      "Ottawa at Wellington",
+      "Andale at Ulysses",
+      "Ulysses at Wellington",
+      "Hiawatha at Fort Scott"
+    ],
+    "3A": [
+      "Nemaha Valley at Oskaloosa",
+      "Rock Creek vs. Northern Heights at Emporia State",
+      "Jayhawk-Linn at Frontenac",
+      "Southeast (Cherokee) at Neodesha",
+      "Riley County at Hillsboro",
+      "Wichita Collegiate at Conway Springs",
+      "Ellinwood at Smith Center",
+      "Norton at SW Heights",
+      "Oskaloosa at Rock Creek",
+      "Neodesha at Frontenac",
+      "Wichita Collegiate at Riley County",
+      "SW Heights at Smith Center",
+      "Smith Center at Wichita Collegiate at Friends University, Wichita",
+      "Frontenac at Rock Creek"
+    ],
+    "2-1A": [
+      "Washington at Centralia",
+      "Jefferson County North at Rossville",
+      "Waverly at Pittsburg Colgan",
+      "Garden Plain at Moundridge",
+      "Sacred Heart at Hutch Trinity",
+      "Stockton at Claflin",
+      "St. Francis at Quinter",
+      "Stanton County at Sublette",
+      "Rossville at Centralia",
+      "Pittsburg Colgan at Garden Plain",
+      "Claflin at Sacred Heart",
+      "Stanton County at St. Francis",
+      "Centralia at Pittsburg Colgan",
+      "St. Francis at Claflin"
+    ],
+    "8M-I": [
+      "St. Paul at Pleasanton",
+      "Madison at Norwich",
+      "Little River at Centre",
+      "Hanover at Axtell",
+      "Mankato at Tribune",
+      "Jetmore at Quivira Heights",
+      "St. John at South Barber",
+      "Ashland at South Gray",
+      "Madison at St. Paul",
+      "Little River at Hanover",
+      "Tribune at Jetmore",
+      "South Barber at Ashland",
+      "South Barber at Tribune",
+      "St. Paul at Little River"
+    ],
+    "8M-II": [
+      "Midway-Denton at Linn",
+      "Hope at White City",
+      "LeRoy at Cedar Vale",
+      "Argonia at Haviland",
+      "Sylvan at St. John's",
+      "Eastern Heights at Northern Valley",
+      "Brewster vs. Weskan at Sharon Springs",
+      "Moscow at Hanston",
+      "Midway-Denton at Hope",
+      "LeRoy at Argonia",
+      "St. John's at Northern Valley",
+      "Hanston at Brewster",
+      "Northern Valley at Hanston",
+      "Argonia at Midway-Denton"
+    ]
   }
 }
