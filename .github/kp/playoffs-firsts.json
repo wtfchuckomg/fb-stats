@@ -195,6 +195,21 @@
     "1976": {
       "5A": {
         "State": "SM South Stadium"
+      },
+      "4A": {
+        "State": "Junction City"
+      },
+      "3A": {
+        "State": "Shawnee-St. Joseph"
+      },
+      "2A": {
+        "State": "Garden Plain"
+      },
+      "1A": {
+        "State": "Olpe"
+      },
+      "8M": {
+        "State": "Montezuma"
       }
     }
   },
@@ -381,6 +396,42 @@
         "District Qualifying",
         "District",
         "Regional",
+        "State"
+      ]
+    },
+    "1976": {
+      "5A": [
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "2A": [
+        "District Qualifying",
+        "District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "1A": [
+        "District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M": [
+        "Regional Qualifying",
+        "Regional",
+        "Sub-State",
         "State"
       ]
     }
@@ -613,6 +664,90 @@
       "Montezuma at Cunningham",
       "Jewell at Cunningham at Pratt Skyline HS",
       "Luray vs. Lebanon at Mankato"
+    ]
+  },
+  "1976": {
+    "5A": [
+      "SM North at Wichita Southeast at Cessna Stadium, Wichita State",
+      "Wichita East at SM West at SM South Stadium"
+    ],
+    "4A": [
+      "Bishop Ward at Olathe",
+      "Field Kindley at Emporia",
+      "Derby at Liberal",
+      "Winfield at Junction City",
+      "Emporia at Derby",
+      "Junction City at Bishop Ward",
+      "Emporia at Junction City"
+    ],
+    "3A": [
+      "Augusta at Haven",
+      "Andale at Kapaun Mt Carmel at Wichita South HS",
+      "Fort Scott at Girard at Pitt State",
+      "Osawatomie at Abilene",
+      "Parsons at Fredonia",
+      "Wellington at Pratt",
+      "Chapman at Holton",
+      "Bonner Springs at Shawnee-St. Joseph",
+      "Haven at Wellington",
+      "Kapaun Mt Carmel at Parsons",
+      "Abilene at Holton",
+      "Shawnee-St. Joseph at Fort Scott",
+      "Shawnee-St. Joseph at Abilene",
+      "Kapaun Mt Carmel at Wellington",
+      "Kapaun Mt Carmel at Shawnee-St. Joseph"
+    ],
+    "2A": [
+      "WaKeeney at Oakley",
+      "Hugoton at Elkhart",
+      "Sacred Heart at Ellinwood",
+      "Herington at Sterling at Sterling College",
+      "Caney Valley at Douglass",
+      "Marmaton Valley at Silver Lake",
+      "Prairie View at St Marys",
+      "WaKeeney at Norton",
+      "Ellinwood at Osborne",
+      "Hanover at Beloit",
+      "Silver Lake at Valley Falls",
+      "St Marys vs. Pomona at Ottawa HS",
+      "Herington at Peabody",
+      "Caney Valley at Belle Plaine",
+      "Hugoton at Garden Plain",
+      "Beloit at WaKeeney",
+      "Belle Plaine at Herington",
+      "Pomona at Silver Lake",
+      "Garden Plain at Ellinwood",
+      "Garden Plain at Herington",
+      "Silver Lake at Beloit",
+      "Beloit at Garden Plain"
+    ],
+    "1A": [
+      "Brewster at Ashland",
+      "St Xavier at Olpe",
+      "Axtell at Highland",
+      "St John's at Clyde",
+      "Thayer at St Mary's Colgan",
+      "Fowler at Quinter at Ellis HS",
+      "Hope at Pretty Prairie",
+      "Little River at Bennington at Minneapolis HS",
+      "Ashland at Fowler",
+      "Pretty Prairie at Little River",
+      "Olpe at St Mary's Colgan",
+      "Clyde at Highland",
+      "Pretty Prairie at Ashland",
+      "Highland at Olpe",
+      "Ashland at Olpe"
+    ],
+    "8M": [
+      "Waconda East at LeRoy",
+      "Moscow at Norwich at Kingman HS",
+      "Waconda East at Bogue",
+      "Luray at Lebanon",
+      "Williamsburg at Sharon",
+      "Moscow at Montezuma",
+      "Montezuma at Sharon",
+      "Bogue vs. Luray at Russell HS",
+      "Bogue at Montezuma"
     ]
   }
 }
