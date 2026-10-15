@@ -254,6 +254,29 @@
       "8M": {
         "State": "Moscow HS"
       }
+    },
+    "1979": {
+      "6A": {
+        "State": "Haskell Institute, Lawrence"
+      },
+      "5A": {
+        "State": "Liberal"
+      },
+      "4A": {
+        "State": "Russell"
+      },
+      "3A": {
+        "State": "Fort Hays State"
+      },
+      "2A": {
+        "State": "Hanover"
+      },
+      "1A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "8M": {
+        "State": "Stockton HS"
+      }
     }
   },
   "notes": {
@@ -829,5 +852,98 @@
         "SM North": "Region II"
       }
     }
+  },
+  "1979": {
+    "6A": [
+      "SM Northwest vs. Wichita Southeast at Wichita South HS",
+      "Olathe at SM West at SM South HS",
+      "Highland Park at Lawrence",
+      "Wichita North at Dodge City",
+      "Wichita Southeast vs. Wichita North at Wichita South HS",
+      "Lawrence at Olathe"
+    ],
+    "5A": [
+      "Bishop Carroll at Liberal",
+      "Emporia at Goddard",
+      "Shawnee Heights at Arkansas City",
+      "Bishop Ward at Independence",
+      "Liberal at Goddard",
+      "Arkansas City at Bishop Ward",
+      "Arkansas City at Liberal"
+    ],
+    "4A": [
+      "Wellington at Ulysses",
+      "Chaparral at Pratt",
+      "Fredonia at Andover",
+      "Girard at Baldwin",
+      "Prairie View at Maur Hill-Mount",
+      "Perry-Lecompton at Clay Center",
+      "De Soto at Marysville",
+      "Russell at Beloit",
+      "Russell at Wellington",
+      "Pratt at Fredonia",
+      "Clay Center at Maur Hill-Mount",
+      "Marysville at Baldwin",
+      "Pratt at Russell",
+      "Maur Hill-Mount at Baldwin",
+      "Maur Hill-Mount at Russell"
+    ],
+    "3A": [
+      "Kinsley at Hoxie",
+      "Oakley at Smith Center",
+      "Hillsboro at Ellinwood",
+      "Wabaunsee at Sacred Heart",
+      "Silver Lake at Chase County",
+      "Basehor-Linwood at Rossville",
+      "Belle Plaine at Caney Valley",
+      "Sedan at Halstead",
+      "Smith Center at Hoxie",
+      "Sacred Heart at Ellinwood",
+      "Halstead at Belle Plaine",
+      "Rossville at Chase County",
+      "Smith Center vs. Rossville at Topeka Seaman HS",
+      "Sacred Heart at Halstead"
+    ],
+    "2A": [
+      "Sublette at Meade",
+      "Stockton vs. La Crosse at Great Bend HS",
+      "Douglass at South Barber",
+      "Olpe at Garden Plain",
+      "St Mary's Colgan at Jayhawk-Linn",
+      "Frontenac vs. Uniontown at Fort Scott HS",
+      "McLouth at Hanover",
+      "Troy at Baileyville",
+      "Meade vs. La Crosse",
+      "Garden Plain at Douglass",
+      "St Mary's Colgan at Frontenac",
+      "Hanover at Troy",
+      "Frontenac at Hanover",
+      "La Crosse at Douglass",
+      "Douglass at Hanover"
+    ],
+    "1A": [
+      "Sylvan Grove at Quinter",
+      "Highland at St John's",
+      "St. George vs. Miltonvale at Clyde HS",
+      "Protection at Argonia",
+      "White City vs. Cedar Vale at Sedan HS",
+      "St Paul vs. Canton-Galva at McPherson College",
+      "Linwood vs. Marais des Cygnes at Carbondale",
+      "Hope vs. Hutch Trinity at Gowans Stadium, Hutch CC",
+      "Hutch Trinity at Protection",
+      "Cedar Vale vs. Canton-Galva at McPherson College",
+      "Marais des Cygnes vs. Miltonvale at Clyde HS",
+      "St John's vs. Sylvan Grove at Lincoln HS",
+      "Sylvan Grove at Hutch Trinity at Gowans Stadium, Hutch CC",
+      "Miltonvale vs. Canton-Galva at McPherson College"
+    ],
+    "8M": [
+      "Lenora vs. McCracken at Fort Hays State",
+      "Hanston at Kensington",
+      "Skyline vs. LeRoy at Burlington HS",
+      "Minneola at Norwich",
+      "Kensington vs. McCracken at Fort Hays State",
+      "Skyline at Minneola"
+    ]
   }
 }

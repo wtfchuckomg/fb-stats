@@ -299,8 +299,8 @@ def write_years(games, out, order):
             # one are play-ins.
             # 1975 and before (Chuck, 2026-10-16): District, Regional, Semifinals, State, counted back from the final;
             # games before the first full round are District Qualifying, or Regional Qualifying with no districts.
-            # The same through 1978, the years Chuck has gone through, with the semifinal called Sub-State from 1976.
-            elif y <= 1978:
+            # The same through 1979, the years Chuck has gone through, with the semifinal called Sub-State from 1976.
+            elif y <= 1979:
                 main = next((j for j, lv in enumerate(levels) if all(lv)), 0)
                 back = ['State', 'Semifinals' if y <= 1975 else 'Sub-State', 'Regional', 'District'][:len(levels) - main][::-1]
                 names = [('District' if 'District' in back else 'Regional') + ' Qualifying'] * main + back
