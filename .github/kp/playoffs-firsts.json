@@ -1915,42 +1915,42 @@
     },
     "1995": {
       "6A": [
-        "Regional",
+        "Sectional",
         "Sub-State",
         "State"
       ],
       "5A": [
-        "Regional",
+        "Sectional",
         "Sub-State",
         "State"
       ],
       "4A": [
-        "Bi-District",
         "Regional",
+        "Sectional",
         "Sub-State",
         "State"
       ],
       "3A": [
-        "Bi-District",
         "Regional",
+        "Sectional",
         "Sub-State",
         "State"
       ],
       "2-1A": [
-        "Bi-District",
         "Regional",
+        "Sectional",
         "Sub-State",
         "State"
       ],
       "8M-I": [
-        "Bi-District",
         "Regional",
+        "Sectional",
         "Sub-State",
         "State"
       ],
       "8M-II": [
-        "Bi-District",
         "Regional",
+        "Sectional",
         "Sub-State",
         "State"
       ]
