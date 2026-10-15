@@ -83,6 +83,13 @@ def norm(n):
     return n
 
 
+def site_in(n, c):
+    """site(), except where a small school shares a big one's name: the 2-1A/3A/8-man "Washington" is Washington
+    County (Chuck), not KC Washington."""
+    if norm(n) == 'Washington' and c not in ('6A', '5A'): return site('Washington County')
+    return site(n)
+
+
 def site(n):
     """The site's name for a school, or None for one it has no page for (closed, merged, out of state)."""
     n = JUNK.sub('', n.replace('’', "'").strip())
@@ -197,10 +204,10 @@ def main():
             continue
         r, depth = named.get(i, (rnd, order.get(rnd, 9)))
         for me, us, opp, them, won in ((w, ws, l, ls, True), (l, ls, w, ws, False)):
-            s = site(me)
+            s = site_in(me, c)
             if not s:
                 continue
-            o = site(opp)
+            o = site_in(opp, c)
             per.setdefault(s, {}).setdefault((y, c), []).append({'r': r, 'o': o or opp, 'p': 1 if o else 0, 'us': us, 'them': them,
                                                                    'w': 1 if won else 0, **({'ot': 1} if ot else {}), '_d': depth,
                                                                    **({'def': 1} if (y, c, key(w), key(l)) in DEFS else {})})
@@ -257,7 +264,7 @@ def write_years(games, out, order):
     """playoffs/years/<year>.json: each class's bracket, its games laid out the way a bracket is drawn — worked back
     from the final, each game sits over the two that sent its teams there (an empty slot where a team had a bye).
     playoffs/years/index.json lists the classes each year has."""
-    team = lambda n, sc: {'n': site(n) or n, 's': sc, **({'p': 1} if site(n) else {})}
+    team = lambda n, sc: {'n': site_in(n, c) or n, 's': sc, **({'p': 1} if site_in(n, c) else {})}   # c: the class being drawn
     by = {}
     named = {}   # game number → (its column's name, how far it is from the first column)
     for i, (y, c, rnd, w, ws, l, ls, ot, top, home) in enumerate(games):

@@ -593,6 +593,47 @@
         "Sub-State",
         "State"
       ]
+    },
+    "1985": {
+      "6A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ]
     }
   },
   "1972": {
@@ -1732,6 +1773,80 @@
     "1A": [
       "Marais des Cygnes at Baileyville",
       "Madison vs. Cedar Vale at Burden Central Stadium"
+    ]
+  },
+  "1985": {
+    "6A": [
+      "SM East vs. SM West at SM South Stadium",
+      "Lawrence at Washington",
+      "Wichita North at Manhattan",
+      "Dodge City vs. Wichita Southeast at Carpenter Stadium, Wichita South HS",
+      "SM West at Lawrence",
+      "Manhattan at Dodge City"
+    ],
+    "5A": [
+      "Bishop Miege at Washburn Rural",
+      "Pittsburg at Independence",
+      "Kapaun Mt Carmel at Valley Center",
+      "Bishop Carroll at Salina Central",
+      "Washburn Rural at Pittsburg",
+      "Bishop Carroll at Kapaun Mt Carmel"
+    ],
+    "4A": [
+      "St Thomas Aquinas at Santa Fe Trail",
+      "Maur Hill-Mount at Marysville",
+      "Spring Hill at Paola",
+      "Neodesha at Fredonia",
+      "Clay Center at Beloit",
+      "Augusta at Mulvane",
+      "Haven at Larned",
+      "Norton at Goodland",
+      "St Thomas Aquinas at Fredonia",
+      "Mulvane at Norton"
+    ],
+    "3A": [
+      "Nemaha Valley at Jefferson County North",
+      "St Marys at Wellsville",
+      "Burlington at Humboldt",
+      "Sedan at Riverton",
+      "Southeast of Saline at Clifton-Clyde",
+      "Medicine Lodge at Hillsboro",
+      "Lakin at Lyons",
+      "WaKeeney-Trego at Plainville",
+      "Sedan at Wellsville",
+      "Plainville at Clifton-Clyde"
+    ],
+    "2-1A": [
+      "Highland at Lyndon",
+      "Centralia at Washington County",
+      "Pomona at Olpe",
+      "St Mary's Colgan at St Paul",
+      "Udall at Caldwell",
+      "Moundridge at Claflin",
+      "Victoria at Dighton",
+      "Meade at Stanton County",
+      "St Mary's Colgan at Centralia",
+      "Caldwell at Victoria"
+    ],
+    "8M-I": [
+      "LeRoy at Axtell",
+      "Mankato at Otis-Bison",
+      "Pretty Prairie at Coldwater",
+      "Jetmore at Wallace County",
+      "Otis-Bison at Axtell",
+      "Jetmore at Coldwater"
+    ],
+    "8M-II": [
+      "Midway-Denton at Wakefield",
+      "North Central at Glasco",
+      "Dexter at Tescott",
+      "South Haven vs. Haviland at Mullinville Stadium",
+      "Lucas-Luray at Eastern Heights",
+      "Lenora at Brewster",
+      "Bazine at Grinnell",
+      "Montezuma at Rolla",
+      "Tescott at Midway-Denton",
+      "Lenora at Rolla"
     ]
   }
 }
