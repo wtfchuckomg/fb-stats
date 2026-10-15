@@ -680,47 +680,6 @@
         "Sub-State",
         "State"
       ]
-    },
-    "1986": {
-      "6A": [
-        "Regional",
-        "Sub-State",
-        "State"
-      ],
-      "5A": [
-        "Regional",
-        "Sub-State",
-        "State"
-      ],
-      "8M-I": [
-        "Regional",
-        "Sub-State",
-        "State"
-      ],
-      "4A": [
-        "Bi-District",
-        "Regional",
-        "Sub-State",
-        "State"
-      ],
-      "3A": [
-        "Bi-District",
-        "Regional",
-        "Sub-State",
-        "State"
-      ],
-      "2-1A": [
-        "Bi-District",
-        "Regional",
-        "Sub-State",
-        "State"
-      ],
-      "8M-II": [
-        "Bi-District",
-        "Regional",
-        "Sub-State",
-        "State"
-      ]
     }
   },
   "1972": {
@@ -1950,6 +1909,36 @@
       "Tescott vs. Haviland",
       "Eastern Heights vs. Lenora",
       "Bazine vs. Rolla"
+    ]
+  },
+  "1986": {
+    "6A": [
+      "Lawrence vs. SM West at SM South",
+      "Hutchinson at Junction City"
+    ],
+    "5A": [
+      "Pittsburg at Washburn Rural",
+      "Arkansas City at Salina Central"
+    ],
+    "4A": [
+      "Marysville at Baxter Springs",
+      "Norton at Beloit"
+    ],
+    "3A": [
+      "Sabetha at Sedan",
+      "Hillsboro at Smith Center"
+    ],
+    "2-1A": [
+      "Marais des Cygnes vs. St Paul at Chanute",
+      "Stockton at Central Burden"
+    ],
+    "8M-I": [
+      "LeRoy at Northern Valley",
+      "Greensburg at Wallace County"
+    ],
+    "8M-II": [
+      "Dexter at Midway-Denton",
+      "Tipton at Chase"
     ]
   }
 }
