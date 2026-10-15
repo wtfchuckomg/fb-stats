@@ -24,7 +24,7 @@ const LEAGUES = [
   {slug:'flint-hills-league', name:"Flint Hills League", teams:["Council Grove", "Mission Valley", "Osage City", "Wabaunsee", "West Franklin"]},
   {slug:'frontier-league', name:"Frontier League", teams:["Baldwin", "Bonner Springs", "Eudora", "Louisburg", "Ottawa", "Paola", "Tonganoxie"]},
   {slug:'great-west-activities-conference', name:"Great West Activities Conference", teams:["Cimarron", "Colby", "Goodland", "Holcomb", "Hugoton", "Scott City", "Ulysses"]},
-  {slug:'greater-wichita-athletic-league', name:"Greater Wichita Athletic League", teams:["Bishop Carroll", "Kapaun Mt Carmel", "Wichita North", "Wichita East", "Wichita Heights", "Wichita Northwest", "Wichita South", "Wichita Southeast", "Wichita West"]},
+  {slug:'greater-wichita-athletic-league', name:"Greater Wichita Athletic League", teams:["Bishop Carroll", "Kapaun Mt Carmel", "Wichita East", "Wichita Heights", "Wichita North", "Wichita Northwest", "Wichita South", "Wichita Southeast", "Wichita West"]},
   {slug:'heart-of-america', name:"Heart of America", teams:["Hutch Trinity", "Inman", "Marion", "Moundridge", "Remington", "Sedgwick", "Sterling"]},
   {slug:'hi-plains-league', name:"Hi-Plains League", teams:["Lakin", "Southwestern Heights", "Syracuse"]},
   {slug:'kaw-valley-conference', name:"Kaw Valley Conference", teams:["Bishop Ward", "Maranatha"]},
@@ -39,6 +39,8 @@ const LEAGUES = [
   {slug:'sunflower-league', name:"Sunflower League", teams:["Gardner-Edgerton", "Lawrence", "Lawrence Free State", "Mill Valley", "Olathe East", "Olathe North", "Olathe Northwest", "Olathe South", "Olathe West", "Shawnee Mission East", "Shawnee Mission North", "Shawnee Mission Northwest", "Shawnee Mission South", "Shawnee Mission West"]},
   {slug:'three-rivers-league', name:"Three Rivers League", teams:["Central Heights", "Jayhawk-Linn", "Northeast-Arma", "Uniontown"]},
   {slug:'tri-valley-league', name:"Tri-Valley League", teams:["Bluestem", "Caney Valley", "Cherryvale", "Eureka", "Fredonia", "Humboldt", "Neodesha"]},
+  {slug:'twin-valley-league', name:"Twin Valley League", teams:["Centralia", "Doniphan West", "Onaga", "Valley Heights"]},
+  {slug:'twin-valley-league-8-man', name:"Twin Valley League (8-Man)", teams:["Axtell", "BV Randolph", "Clifton-Clyde", "Frankfort", "Hanover", "Linn", "Washington County"]},
   {slug:'united-kansas-conference', name:"United Kansas Conference", teams:["Basehor-Linwood", "De Soto", "Lansing", "Leavenworth", "Piper", "Seaman", "Shawnee Heights", "Spring Hill", "Topeka West", "Turner"]},
   {slug:'western-athletic-conference', name:"Western Athletic Conference", teams:["Dodge City", "Garden City", "Great Bend", "Hays", "Liberal"]},
 ];

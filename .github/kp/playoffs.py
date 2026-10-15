@@ -292,13 +292,19 @@ def write_years(games, out, order):
                 used.add(n); names.insert(0, n)
             # what the rounds were called at the time, where Chuck has said (1971: District, Regional, State)
             if len(called.get(str(y), {}).get(c, [])) == len(levels): names = called[str(y)][c]
-            # 1975 on, until KPreps' own names (Chuck, 2026-10-15): Play-in, First Round, (Second Round,) Quarterfinals,
-            # Semifinals, Finals — Sub-State and State from 1976 — counted back from the final; rounds before the first
-            # full one are play-ins.
-            elif 1975 <= y < KP_YEARS[0]:
+            # 1976 on, until KPreps' own names (Chuck, 2026-10-15): Play-in, First Round, (Second Round,) Quarterfinals,
+            # Sub-State (first called that in 1976), State — counted back from the final; rounds before the first full
+            # one are play-ins.
+            # 1975 and before (Chuck, 2026-10-16): District, Regional, Semifinals, State, counted back from the final;
+            # games before the first full round are District Qualifying, or Regional Qualifying with no districts.
+            elif y <= 1975:
+                main = next((j for j, lv in enumerate(levels) if all(lv)), 0)
+                back = ['State', 'Semifinals', 'Regional', 'District'][:len(levels) - main][::-1]
+                names = [('District' if 'District' in back else 'Regional') + ' Qualifying'] * main + back
+            elif 1976 <= y < KP_YEARS[0]:
                 main = next((j for j, lv in enumerate(levels) if all(lv)), 0)
                 # 1976 is the first year the semifinal was called Sub-State (Chuck)
-                back = ['Finals', 'Semifinals', 'Quarterfinals'] if y == 1975 else ['State', 'Sub-State', 'Quarterfinals']
+                back = ['State', 'Sub-State', 'Quarterfinals']
                 rest = len(levels) - main - len(back)
                 names = ['Play-in'] * main + ['First Round', 'Second Round', 'Third Round'][:max(rest, 0)] + back[:len(levels) - main][::-1]
             # where a later round was played (Chuck's list: 1969's title games)

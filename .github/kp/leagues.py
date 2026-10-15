@@ -22,6 +22,8 @@ BIG = {'6A', '5A', '4A', '3A', '2A'}
 # The four Butler County schools that aren't in the AVCTL, as KPreps writes them: their leagues get a page
 # whatever the class. COUNTY in pb/17-stats.js is the same list, in this site's names.
 COUNTY = {'leon-bluestem', 'douglass', 'whitewater-remington', 'flinthills'}
+# Leagues Chuck asked for by name, whatever their class (2026-10-16: the Twin Valley League, 11-man and 8-man).
+ASKED = {'Twin Valley League', 'Twin Valley League (8-Man)'}
 
 
 def get(url):
@@ -46,7 +48,7 @@ def main():
         for s_ in re.findall(r'teams/football/\?id=\d+&(?:amp;)?t=([a-z0-9\-]+)', page):
             if s_ not in members:
                 members.append(s_)
-        if '--all' in sys.argv or any(classes.get(s_) in BIG for s_ in members) or COUNTY & set(members):
+        if '--all' in sys.argv or any(classes.get(s_) in BIG for s_ in members) or COUNTY & set(members) or name in ASKED:
             found.append((name, members))
         time.sleep(.6)
     # KPreps tags a name "(8-Man)" or "(6-Man)" only to tell it from an 11-man league of the same name. The tag
