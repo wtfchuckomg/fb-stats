@@ -2136,5 +2136,81 @@
       "Rolla at Northern Valley",
       "Wakefield at Attica"
     ]
+  },
+  "1988": {
+    "6A": [
+      "SM East - KC Schlagle",
+      "Lawrence - Olathe South",
+      "Manhattan - Emporia",
+      "Dodge City - Wichita Southeast"
+    ],
+    "5A": [
+      "Bishop Miege - Washburn Rural",
+      "Pittsburg - Ottawa",
+      "Ark City - Buhler",
+      "Goddard - McPherson"
+    ],
+    "4A": [
+      "Atchison - Marysville",
+      "Aquinas - Topeka Hayden",
+      "Baldwin - Osawatomie",
+      "Girard - Riverton",
+      "Clay Center - Abilene",
+      "Augusta - Andale",
+      "Wellington - Chaparral",
+      "Scott City - Norton",
+      "Aquinas at Atchison",
+      "Girard at Baldwin",
+      "Augusta at Clay Center",
+      "Wellington at Scott City"
+    ],
+    "3A": [
+      "Sabetha - Pleasant Ridge",
+      "Silver Lake - Northern Heights",
+      "Wellsville - Uniontown",
+      "Galena - Sedan",
+      "Smoky Valley - Herington",
+      "Halstead - Lyons",
+      "Smith Center - Oakley",
+      "Lakin - Medicine Lodge",
+      "Sabetha at Silver Lake",
+      "Wellsville at Galena",
+      "Smoky Valley at Halstead",
+      "Lakin at Smith Center"
+    ],
+    "2-1A": [
+      "Jeff Co. North - Onaga",
+      "Riley County - Frankfort",
+      "Valley Falls - Waverly",
+      "Madison - Pittsburg Colgan",
+      "Moundridge - West Elk",
+      "Conway Springs - St. John",
+      "Stockton - Atwood",
+      "Victoria - Cimarron",
+      "Jefferson County North at Riley County",
+      "Valley Falls at Madison",
+      "Conway Springs at Moundridge",
+      "Victoria at Stockton"
+    ],
+    "8M-I": [
+      "Midway-Denton - Marmaton Valley",
+      "Centre - Bennington",
+      "Otis-Bison - Pretty Prairie",
+      "Greensburg - Jetmore"
+    ],
+    "8M-II": [
+      "Elwood - Westmoreland",
+      "Tescott - Jewell",
+      "Hamilton - Dexter",
+      "Attica - Burrton",
+      "Tipton - Lucas-Luray",
+      "Northern Valley - Golden Plains",
+      "Brewster - Ransom",
+      "Hanston - Copeland",
+      "Elwood at Tescott",
+      "Hamilton at Attica",
+      "Tipton at Northern Valley",
+      "Hanston at Brewster"
+    ]
   }
 }
