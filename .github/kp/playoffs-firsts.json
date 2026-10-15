@@ -300,6 +300,29 @@
       "8M": {
         "State": "Minneola HS"
       }
+    },
+    "1983": {
+      "6A": {
+        "State": "Memorial Stadium, Lawrence"
+      },
+      "5A": {
+        "State": "Memorial Stadium, Lawrence"
+      },
+      "4A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "3A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "2A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "8M-I": {
+        "State": "Russell HS"
+      },
+      "8M-II": {
+        "State": "Russell HS"
+      }
     }
   },
   "notes": {
