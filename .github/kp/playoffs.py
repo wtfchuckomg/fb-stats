@@ -390,7 +390,7 @@ def read_firsts():
                 if m: rows.append({'top': m[2], 'bot': m[1], 'at': None, 'home': 0})   # the home team on top, as KPreps draws it
                 elif re.match(r'(.+?)\s+[-–]\s+(.+)$', line.strip()):   # "A - B": only where they sat
                     m = re.match(r'(.+?)\s+[-–]\s+(.+)$', line.strip())
-                    rows.append({'top': m[1], 'bot': m[2], 'at': None, 'home': None})
+                    rows.append({'top': m[1], 'bot': m[2], 'at': None, 'home': None, 'place': True})
                 else: print('playoffs-firsts.json: no game in', repr(line))
         out[int(y)] = rows
     return out
@@ -428,12 +428,16 @@ def place(levels, rows):
         for x in n['kids']: rank = min(rank, walk(x))
         k, r = n['kids'], None
         if g:
-            r = next((r for r in rows if (is_(g['w'], r['top']) and is_(g['l'], r['bot']))
-                      or (is_(g['w'], r['bot']) and is_(g['l'], r['top']))), None)
+            hits = [r for r in rows if (is_(g['w'], r['top']) and is_(g['l'], r['bot']))
+                    or (is_(g['w'], r['bot']) and is_(g['l'], r['top']))]
+            # Where a bracket from the time placed the game ("A - B", 1981 on), that decides the order; a home-and-away
+            # line for the same game then only marks who was home and where.
+            r = next((r for r in hits if r.get('place')), hits[0] if hits else None)
+            info = next((r for r in hits if not r.get('place')), None)
             if r:
                 g['home'] = None
-                if r['at']: g['at'] = r['at']
-                g['hn'] = r['top'] if r['home'] == 0 else None   # the team at home
+                if info and info['at']: g['at'] = info['at']
+                g['hn'] = (info['top'] if info['home'] == 0 else None) if info else None   # the team at home
         # A team's first game (nothing feeds it): drawn the way Chuck listed it, home team on top. A later game stays
         # where the bracket puts it, the team from the upper half on top; the listing only says who was home.
         first = g and r and n['j'] <= main

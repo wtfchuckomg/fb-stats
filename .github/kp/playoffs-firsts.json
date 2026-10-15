@@ -372,6 +372,47 @@
         "Region",
         "State"
       ]
+    },
+    "1981": {
+      "6A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "1A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "2A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ]
     }
   },
   "1972": {
@@ -1065,6 +1106,66 @@
       "Minneola at Macksville",
       "Dorrance at Sylvan Grove",
       "Sylvan Grove at Minneola"
+    ]
+  },
+  "1981": {
+    "6A": [
+      "SM South - SM West",
+      "SM Northwest - Lawrence",
+      "Manhattan - Wichita East",
+      "Derby - Garden City"
+    ],
+    "5A": [
+      "Goddard - Hays",
+      "Kapaun Mt Carmel - Winfield",
+      "Chanute - Emporia",
+      "Olathe South - Washburn Rural"
+    ],
+    "4A": [
+      "Ulysses - Norton",
+      "Nickerson - Pratt",
+      "Wellington - Andover",
+      "Clay Center - Sacred Heart",
+      "Fredonia - Columbus",
+      "Osawatomie - St Thomas Aquinas",
+      "Tonganoxie - Baldwin",
+      "Perry-Lecompton - Hiawatha"
+    ],
+    "3A": [
+      "Hoxie - Lakin",
+      "Plainville - Ness City",
+      "Clearwater - Hillsboro",
+      "Herington - Belleville",
+      "Sabetha - Wellsville",
+      "Silver Lake - Osage City",
+      "Belle Plaine - Neodesha",
+      "Central Heights - Southeast (Cherokee)"
+    ],
+    "2A": [
+      "Frontenac - Jayhawk-Linn",
+      "Pomona - Valley Falls",
+      "Troy - Axtell",
+      "Clifton-Clyde - Lincoln",
+      "Moundridge - Claflin",
+      "Sedan - Garden Plain",
+      "Cimarron - Syracuse",
+      "Rawlins County - Victoria"
+    ],
+    "1A": [
+      "Baileyville - Burrton",
+      "Waverly - Cedar Vale",
+      "Canton-Galva - Little River",
+      "South Barber - Jetmore"
+    ],
+    "8M": [
+      "Brewster - Grinnell",
+      "Satanta - Fowler",
+      "Minneola - Cunningham",
+      "Ransom - Logan",
+      "Kensington - Waconda East",
+      "Mankato - Midway-Denton",
+      "Dorrance - Bennington",
+      "Argonia - LeRoy"
     ]
   }
 }
