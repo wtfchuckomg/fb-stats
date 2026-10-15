@@ -3772,7 +3772,13 @@
       "Clay Center at Topeka Hayden",
       "Andover at Circle",
       "Goodland at Haven",
-      "Ulysses at Wellington"
+      "Ulysses at Wellington",
+      "Sabetha at Baldwin",
+      "Paola at Labette County",
+      "Andover at Clay Center",
+      "Goodland at Ulysses",
+      "Paola at Sabetha",
+      "Andover at Goodland"
     ],
     "3A": [
       "Immaculata at Jeff Co. West",
@@ -3782,7 +3788,13 @@
       "Wichita Collegiate at Douglass",
       "Lyons at Belleville",
       "Norton at Smith Center",
-      "Elkhart at Cimarron"
+      "Elkhart at Cimarron",
+      "Jeff Co. West at Rossville",
+      "Wellsville at Riverton",
+      "Belleville at Wichita Collegiate",
+      "Smith Center at Elkhart",
+      "Jeff Co. West at Riverton",
+      "Elkhart at Wichita Collegiate"
     ],
     "2-1A": [
       "Jackson Heights at Troy",
@@ -3792,7 +3804,13 @@
       "Garden Plain at Caldwell",
       "Kinsley at Inman",
       "Stockton at Osborne",
-      "Syracuse at Ness City"
+      "Syracuse at Ness City",
+      "Riley County at Jackson Heights",
+      "Frontenac at Olpe",
+      "Caldwell at Kinsley",
+      "Ness City at Stockton",
+      "Frontenac at Riley County",
+      "Caldwell at Stockton"
     ],
     "8M-I": [
       "Crest at Chetopa",
@@ -3802,7 +3820,13 @@
       "Quivira Heights at Ell-Saline",
       "Spearville at Pratt-Skyline",
       "South Gray at Coldwater",
-      "Cheylin at Quinter"
+      "Cheylin at Quinter",
+      "Chetopa at Norwich",
+      "Pretty Prairie at Mankato",
+      "Skyline at Quivira Heights",
+      "Coldwater at Quinter",
+      "Norwich at Pretty Prairie",
+      "Coldwater at Quivira Heights"
     ],
     "8M-II": [
       "Axtell at Midway-Denton",
@@ -3812,7 +3836,29 @@
       "Kensington at Palco",
       "Weskan at Morland",
       "Pawnee Heights at Claflin",
-      "Rolla at Ransom"
+      "Rolla at Ransom",
+      "LeRoy at Axtell",
+      "Cedar Vale at Tipton",
+      "Morland at Kensington",
+      "Claflin at Rolla",
+      "Axtell at Cedar Vale",
+      "Claflin at Kensington"
+    ],
+    "6A": [
+      "SM North at SM South",
+      "Lawrence at Olathe East",
+      "Emporia at Manhattan",
+      "Dodge City at Derby",
+      "SM North at Lawrence",
+      "Manhattan at Derby"
+    ],
+    "5A": [
+      "Coffeyville at Bishop Miege",
+      "Salina Central at KC Schlagle",
+      "Liberal at Ark City",
+      "Hays at Wichita Kapaun at Carpenter Stadium, Wichita South HS",
+      "Bishop Miege at Salina Central",
+      "Liberal at Hays"
     ]
   }
 }
