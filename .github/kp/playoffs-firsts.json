@@ -3348,13 +3348,17 @@
       "SM South at Blue Valley North",
       "Olathe North at Lawrence at Haskell Stadium",
       "Topeka West at Emporia",
-      "Derby at Garden City"
+      "Derby at Garden City",
+      "Lawrence at SM South",
+      "Garden City at Emporia"
     ],
     "5A": [
       "Washburn Rural at KC Sumner",
       "Ark City at Pittsburg",
       "Goddard at Wichita Kapaun at Carpenter Stadium, Wichita South HS",
-      "Hays at Buhler"
+      "Hays at Buhler",
+      "Pittsburg at Washburn Rural",
+      "Wichita Kapaun at Buhler"
     ],
     "4A": [
       "Marysville at Lansing",
@@ -3368,7 +3372,9 @@
       "Topeka Hayden at Marysville",
       "Spring Hill at Chanute",
       "Maize at Augusta",
-      "Chapman at Scott City"
+      "Chapman at Scott City",
+      "Marysville vs. Spring Hill at Olathe District Activity Center",
+      "Scott City vs. Maize at Wichita Northwest Stadium"
     ],
     "3A": [
       "Immaculata at Nemaha Valley",
@@ -3382,7 +3388,9 @@
       "Silver Lake at Immaculata",
       "Belle Plaine at Riverton",
       "Hoisington at Chase County",
-      "Leoti at Cimarron"
+      "Leoti at Cimarron",
+      "Riverton at Silver Lake",
+      "Chase County at Leoti"
     ],
     "2-1A": [
       "Frankfort at Troy",
@@ -3396,7 +3404,9 @@
       "Troy at Clifton-Clyde",
       "Waverly at Sedan",
       "Moundridge at Caldwell",
-      "Ellis at Atwood"
+      "Ellis at Atwood",
+      "Clifton-Clyde at Sedan",
+      "Atwood at Moundridge"
     ],
     "8M-I": [
       "Elwood at Southern Cloud",
@@ -3410,7 +3420,9 @@
       "Southern Cloud at Centre",
       "Inman at Pleasanton",
       "Ashland at Greensburg",
-      "Northern Valley at Jetmore"
+      "Northern Valley at Jetmore",
+      "Pleasanton at Centre",
+      "Greensburg at Northern Valley"
     ],
     "8M-II": [
       "BV Randolph at Midway-Denton",
@@ -3424,7 +3436,9 @@
       "Midway-Denton at Dexter",
       "Claflin at Downs",
       "Logan at Cheylin",
-      "Lewis at Hanston"
+      "Lewis at Hanston",
+      "Dexter at Claflin",
+      "Hanston at Cheylin"
     ]
   }
 }
