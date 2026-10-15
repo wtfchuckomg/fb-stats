@@ -316,7 +316,7 @@ def write_years(games, out, order):
 
 def read_firsts():
     """.github/kp/playoffs-firsts.json: first-round games Chuck has sent for years before KPreps, by year, each
-    "A at B" (B at home) or "A vs. B at C" (at C), in bracket order. The class headings don't matter: a game is found
+    "A at B" (B at home), "A vs. B" (A at home) or "A vs. B at C" (at C), in bracket order. The class headings don't matter: a game is found
     in whichever of that year's brackets it was played (1969's "Class 1A" list carries the 8-man games too)."""
     f = HERE / 'playoffs-firsts.json'
     if not f.exists(): return {}
@@ -326,7 +326,8 @@ def read_firsts():
         rows = []
         for line in (l for ls in classes.values() for l in ls):
             m = re.match(r'(.+?)\s+vs\.?\s+(.+?)(?:\s+at\s+(.+))?$', line.strip(), re.I)
-            if m: rows.append({'top': m[1], 'bot': m[2], 'at': m[3], 'home': None})
+            # "A vs. B": A was at home (Chuck); with "at C" it was played at C
+            if m: rows.append({'top': m[1], 'bot': m[2], 'at': m[3], 'home': None if m[3] else 0})
             else:
                 m = re.match(r'(.+?)\s+at\s+(.+)$', line.strip(), re.I)
                 if m: rows.append({'top': m[2], 'bot': m[1], 'at': None, 'home': 0})   # the home team on top, as KPreps draws it
