@@ -1460,7 +1460,11 @@
       "Clay Center at Ellsworth",
       "Andover at Andale",
       "Clearwater at Pratt",
-      "Norton at Goodland"
+      "Norton at Goodland",
+      "Marysville at Hayden",
+      "Fredonia at Iola",
+      "Andale at Clay Center",
+      "Norton at Clearwater"
     ],
     "3A": [
       "St Marys at Eudora",
@@ -1470,7 +1474,11 @@
       "Belleville at Southeast of Saline",
       "Medicine Lodge at Sterling",
       "Plainville at Osborne",
-      "Hugoton at Decatur"
+      "Hugoton at Decatur",
+      "St Marys at Wabaunsee",
+      "Riverton at Yates Center",
+      "Sterling at Belleville",
+      "Osborne at Hugoton"
     ],
     "2A": [
       "Troy at Jackson Heights",
@@ -1480,7 +1488,11 @@
       "Oxford at Garden Plain",
       "Hutch Trinity at St John",
       "Ashland at Stanton County",
-      "Ness City at Dighton"
+      "Ness City at Dighton",
+      "Clifton-Clyde at Jackson Heights",
+      "Northern Heights at St Mary's Colgan",
+      "St John at Garden Plain",
+      "Stanton County at Ness City"
     ],
     "8M-II": [
       "North Central at Miltonvale",
@@ -1490,7 +1502,33 @@
       "Dexter at South Haven",
       "Haviland at Protection",
       "McCracken at Ingalls",
-      "Montezuma at Rolla"
+      "Montezuma at Rolla",
+      "Ell-Saline at North Central",
+      "Kensington at Northern Valley",
+      "Protection at South Haven",
+      "Rolla at Ingalls"
+    ],
+    "6A": [
+      "SM West at SM South",
+      "Topeka High at Lawrence",
+      "Wichita East at Manhattan at KSU Stadium",
+      "Wichita Southeast vs. Great Bend at Carpenter Stadium, Wichita South HS"
+    ],
+    "5A": [
+      "Bishop Miege at Olathe South",
+      "Pittsburg at Fort Scott",
+      "Kapaun Mt Carmel vs. Arkansas City at Wichita Heights",
+      "Salina South vs. Bishop Carroll at Salina Central"
+    ],
+    "1A": [
+      "Frankfort at Waverly",
+      "South Barber vs. Colony-Crest at Garnett"
+    ],
+    "8M-I": [
+      "BV Randolph at Highland",
+      "Logan at Bennington",
+      "Quivira Heights at Canton-Galva",
+      "Grinnell at Jetmore"
     ]
   }
 }
