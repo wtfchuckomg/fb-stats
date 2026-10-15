@@ -1130,7 +1130,8 @@
       "Wichita Southeast at Derby",
       "Garden City at Great Bend",
       "SM West vs. SM Northwest at SM South Stadium",
-      "Derby at Wichita East at Carpenter Stadium"
+      "Derby at Wichita East at Carpenter Stadium",
+      "Wichita East vs. SM Northwest at SM North"
     ],
     "5A": [
       "Goddard - Hays",
@@ -1146,7 +1147,8 @@
       "Blue Valley at Olathe South",
       "Washburn Rural at Shawnee Heights",
       "Emporia at Olathe South",
-      "Kapaun Mt Carmel vs. Goddard at Carroll Field"
+      "Kapaun Mt Carmel vs. Goddard at Carroll Field",
+      "Emporia vs. Kapaun Mt Carmel at South Stadium"
     ],
     "4A": [
       "Ulysses - Norton",
@@ -1186,7 +1188,8 @@
       "Fredonia at St Thomas Aquinas",
       "Hiawatha at Baldwin",
       "Wellington at Norton",
-      "Baldwin at Fredonia"
+      "Baldwin at Fredonia",
+      "Wellington at Baldwin"
     ],
     "3A": [
       "Hoxie - Lakin",
@@ -1226,7 +1229,8 @@
       "Wellsville at Silver Lake",
       "Neodesha at Central Heights",
       "Hoxie at Hillsboro",
-      "Silver Lake at Neodesha"
+      "Silver Lake at Neodesha",
+      "Hoxie vs. Silver Lake at Logan Field, Topeka"
     ],
     "2A": [
       "Frontenac - Jayhawk-Linn",
@@ -1266,7 +1270,8 @@
       "Claflin at Garden Plain",
       "Cimarron at Victoria",
       "Frontenac at Clifton-Clyde",
-      "Claflin at Victoria"
+      "Claflin at Victoria",
+      "Victoria at Frontenac"
     ],
     "1A": [
       "Baileyville - Burlingame",
@@ -1282,7 +1287,8 @@
       "Caldwell at South Barber",
       "Jetmore at Greeley County",
       "Baileyville vs. Waverly at Welch Stadium, Emporia State",
-      "Little River at South Barber"
+      "Little River at South Barber",
+      "Baileyville vs. Little River at McPherson College"
     ],
     "8M": [
       "Brewster - Grinnell",
@@ -1321,7 +1327,8 @@
       "Waconda East at Midway-Denton",
       "Dorrance at Argonia",
       "Ransom at Fowler",
-      "Argonia at Midway-Denton"
+      "Argonia at Midway-Denton",
+      "Fowler at Midway-Denton"
     ]
   },
   "districts": {
