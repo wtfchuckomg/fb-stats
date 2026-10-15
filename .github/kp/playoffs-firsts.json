@@ -111,6 +111,26 @@
       "8M": {
         "State": "Belleville"
       }
+    },
+    "1972": {
+      "5A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "4A": {
+        "State": "Liberal HS"
+      },
+      "3A": {
+        "State": "Kingman"
+      },
+      "2A": {
+        "State": "Meade HS"
+      },
+      "1A": {
+        "State": "Burlingame HS"
+      },
+      "8M": {
+        "State": "Scandia HS"
+      }
     }
   },
   "notes": {
@@ -168,6 +188,122 @@
       "Deerfield at Copeland",
       "Scandia vs. Dorrance at Russell HS",
       "Norwich at Deerfield"
+    ]
+  },
+  "rounds": {
+    "_": "What each round was called that year: year \u2192 class \u2192 names, first round to final.",
+    "1971": {
+      "5A": [
+        "Regional",
+        "State"
+      ],
+      "4A": [
+        "District",
+        "Regional",
+        "State"
+      ],
+      "3A": [
+        "District",
+        "Regional",
+        "State"
+      ],
+      "2A": [
+        "District",
+        "Regional",
+        "State"
+      ],
+      "1A": [
+        "District",
+        "Regional",
+        "State"
+      ],
+      "8M": [
+        "District",
+        "Regional",
+        "State"
+      ]
+    },
+    "1972": {
+      "5A": [
+        "Regional",
+        "State"
+      ],
+      "4A": [
+        "District",
+        "Regional",
+        "State"
+      ],
+      "3A": [
+        "District",
+        "Regional",
+        "State"
+      ],
+      "2A": [
+        "District",
+        "Regional",
+        "State"
+      ],
+      "1A": [
+        "District",
+        "Regional",
+        "State"
+      ],
+      "8M": [
+        "District",
+        "Regional",
+        "State"
+      ]
+    }
+  },
+  "1972": {
+    "5A": [
+      "SM South at Wichita Southeast",
+      "SM West at Wichita North"
+    ],
+    "4A": [
+      "Topeka West at Derby",
+      "Junction City at Liberal",
+      "Bishop Miege at Field Kindley",
+      "Bishop Ward at Manhattan",
+      "Derby at Bishop Miege",
+      "Liberal at Manhattan",
+      "Bishop Miege at Liberal"
+    ],
+    "3A": [
+      "Goodland at Larned",
+      "Kapaun Mt Carmel at Garnett",
+      "St. Joseph at Fort Scott",
+      "Kingman at Chapman",
+      "Fort Scott at Kapaun Mt Carmel",
+      "Kingman at Goodland",
+      "Kapaun Mt Carmel at Kingman"
+    ],
+    "2A": [
+      "Valley Falls at Minneapolis",
+      "Ness City at Meade",
+      "Remington at Halstead",
+      "Wellsville at Eudora",
+      "Valley Falls at Wellsville",
+      "Meade at Halstead",
+      "Valley Falls at Meade"
+    ],
+    "1A": [
+      "Clyde vs. Wakefield at Clay Center",
+      "Hodgeman County at Protection",
+      "Kiowa vs. Udall at Mulvane",
+      "Burlingame at Madison",
+      "Burlingame at Clyde",
+      "Udall at Protection",
+      "Protection at Burlingame"
+    ],
+    "8M": [
+      "Quenemo at Gorham",
+      "Scandia vs. Lebanon",
+      "Rolla vs. Weskan at Sharon Springs",
+      "Attica at Bucklin",
+      "Gorham at Scandia",
+      "Weskan at Bucklin",
+      "Bucklin at Scandia"
     ]
   }
 }

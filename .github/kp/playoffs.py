@@ -245,6 +245,7 @@ def write_years(games, out, order):
     f = HERE / 'playoffs-firsts.json'
     sites = json.loads(f.read_text()).get('sites', {}) if f.exists() else {}
     notes = json.loads(f.read_text()).get('notes', {}) if f.exists() else {}
+    called = json.loads(f.read_text()).get('rounds', {}) if f.exists() else {}
     ydir = out / 'years'
     ydir.mkdir(exist_ok=True)
     index, lost = {}, 0
@@ -284,6 +285,8 @@ def write_years(games, out, order):
                 n = max(said, key=said.count) if said else ''
                 if not n or n in used: n = PAD[min(d, len(PAD) - 1)]
                 used.add(n); names.insert(0, n)
+            # what the rounds were called at the time, where Chuck has said (1971: District, Regional, State)
+            if len(called.get(str(y), {}).get(c, [])) == len(levels): names = called[str(y)][c]
             # where a later round was played (Chuck's list: 1969's title games)
             for n, lv in zip(names, levels):
                 at = sites.get(str(y), {}).get(c, {}).get(n)
