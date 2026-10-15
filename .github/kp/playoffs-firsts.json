@@ -3628,13 +3628,17 @@
       "SM South at SM North",
       "Olathe North at Lawrence",
       "Washburn Rural vs. Wichita North",
-      "Derby at Dodge City"
+      "Derby at Dodge City",
+      "Lawrence at SM North",
+      "Dodge City at Washburn Rural at Topeka Seaman Stadium"
     ],
     "5A": [
       "Blue Valley at Pittsburg",
       "Augusta at Liberal",
       "Newton at Buhler",
-      "Aquinas at Salina Central"
+      "Aquinas at Salina Central",
+      "Salina Central at Blue Valley",
+      "Liberal at Newton at Fischer Field, Newton"
     ],
     "4A": [
       "Sabetha at Maur Hill",
@@ -3648,7 +3652,9 @@
       "Tonganoxie at Maur Hill",
       "Louisburg at Girard",
       "Chapman at Andover",
-      "Wellington at Smoky Valley"
+      "Wellington at Smoky Valley",
+      "Maur Hill at Girard",
+      "Chapman at Wellington"
     ],
     "3A": [
       "Nemaha Valley at Wathena",
@@ -3662,7 +3668,9 @@
       "Nemaha Valley at Rossville",
       "Osage City at Erie",
       "Sterling at Hesston",
-      "Holcomb at Plainville"
+      "Holcomb at Plainville",
+      "Erie at Rossville",
+      "Hesston at Plainville"
     ],
     "2-1A": [
       "Troy at Onaga",
@@ -3676,7 +3684,9 @@
       "Onaga at Riley County",
       "Olpe at Frontenac",
       "Garden Plain at Kinsley",
-      "Stockton at Ness City"
+      "Stockton at Ness City",
+      "Onaga at Frontenac",
+      "Kinsley at Stockton"
     ],
     "8M-I": [
       "Altoona-Midway at Pleasanton",
@@ -3690,7 +3700,9 @@
       "Norwich at Altoona-Midway",
       "Pretty Prairie at Pike Valley",
       "Otis-Bison at Cunningham",
-      "South Gray at Quinter"
+      "South Gray at Quinter",
+      "Altoona-Midway at Pretty Prairie",
+      "Otis-Bison at Quinter"
     ],
     "8M-II": [
       "Midway-Denton at Baileyville",
@@ -3704,7 +3716,9 @@
       "St. Paul at Midway-Denton",
       "Hope at Tescott",
       "Kensington at Morland",
-      "Rolla at Claflin"
+      "Rolla at Claflin",
+      "Tescott at Midway-Denton",
+      "Kensington at Claflin"
     ]
   }
 }
