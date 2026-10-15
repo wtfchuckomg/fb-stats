@@ -42,7 +42,7 @@ SAME = {
     'Maur Hill': 'Maur Hill-Mount', 'Maur Hill-Mount Academy': 'Maur Hill-Mount', 'St James Academy': 'St James',
     'Blue Valley SW': 'Blue Valley Southwest', 'Blue Valley NW': 'Blue Valley Northwest', 'Olathe NW': 'Olathe Northwest',
     'Wichita SE': 'Wichita Southeast', 'Wichita NW': 'Wichita Northwest', 'DeSoto': 'De Soto', 'KC Harmon': 'Harmon',
-    'Pratt-Skyline': 'Skyline', 'Sharon Springs': 'Wallace County', 'Sharon Springs-Wallace Co.': 'Wallace County',
+    'Pratt-Skyline': 'Skyline', 'Sharon Springs-Wallace Co.': 'Wallace County',
     'Atwood': 'Rawlins County', 'Atwood-Rawlins Co.': 'Rawlins County', 'Oberlin': 'Decatur', 'Oberlin-Decatur Co.': 'Decatur',
     'Tribune': 'Greeley County', 'Tribune-Greeley Co.': 'Greeley County', 'Western Plains-Healy': 'Western Plains',
     "St. John's-Beloit": "St John's", "St. John's-Tipton": "St John's", 'Mankato-Rock Hills': 'Rock Hills',
@@ -50,6 +50,7 @@ SAME = {
     'Saint Francis': 'St Francis', 'Southern Coffey': 'Southern Coffey County', 'Jeff North': 'Jefferson County North',
     'Jeff Co. North': 'Jefferson County North', 'Jeff Co. West': 'Jefferson West', 'Lousiburg': 'Louisburg',
     'Saliina Central': 'Salina Central', 'Sylvan-Lucas': 'Sylvan-Lucas Unified', 'Minneola-Fowler': 'Minneola',
+    # Sharon Springs (the archive, to 2009) stays apart from Wallace County until Chuck says otherwise.
     # Basehor and Linwood merged in 1987: the archive's "Basehor" (1979) stays its own school (Chuck).
     # Gardner became Gardner-Edgerton in 1979: the archive's "Gardner" (1975, 1978) stays its own school (Chuck).
     'Crest': 'Colony-Crest', 'WaKeeney': 'WaKeeney-Trego', 'Trego': 'WaKeeney-Trego',
