@@ -183,7 +183,7 @@ def main():
     out = ROOT / 'playoffs'
     out.mkdir(exist_ok=True)
     order = {'Round 0': 0, 'Round 1': 1, 'First Round': 1, 'Regional': 2, 'Second Round': 2, 'Sectional': 3, 'Quarterfinals': 3,
-             'Sub-State': 4, 'Semifinals': 4, 'State': 5}
+             'Sub-State': 4, 'Semifinals': 4, 'Region': 4, 'State': 5}
     for s, seasons in per.items():
         rows = [{'y': y, 'c': c, 'g': sorted(gs, key=lambda x: order.get(x['r'], 9))} for (y, c), gs in sorted(seasons.items(), reverse=True)]
         (out / f'{slug(s)}.json').write_text(json.dumps({'school': s, 'seasons': rows}, separators=(',', ':')))
@@ -338,6 +338,9 @@ def read_firsts():
             else:
                 m = re.match(r'(.+?)\s+at\s+(.+)$', line.strip(), re.I)
                 if m: rows.append({'top': m[2], 'bot': m[1], 'at': None, 'home': 0})   # the home team on top, as KPreps draws it
+                elif re.match(r'(.+?)\s+[-–]\s+(.+)$', line.strip()):   # "A - B": only where they sat
+                    m = re.match(r'(.+?)\s+[-–]\s+(.+)$', line.strip())
+                    rows.append({'top': m[1], 'bot': m[2], 'at': None, 'home': None})
                 else: print('playoffs-firsts.json: no game in', repr(line))
         out[int(y)] = rows
     return out
