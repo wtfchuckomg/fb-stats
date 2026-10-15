@@ -323,6 +323,32 @@
       "8M-II": {
         "State": "Russell HS"
       }
+    },
+    "1984": {
+      "6A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "5A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "4A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "3A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "2A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "1A": {
+        "State": "Emporia State"
+      },
+      "8M-I": {
+        "State": "Russell"
+      },
+      "8M-II": {
+        "State": "Russell"
+      }
     }
   },
   "notes": {
@@ -479,6 +505,51 @@
       ]
     },
     "1983": {
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "2A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "6A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "1A": [
+        "Sub-State",
+        "State"
+      ]
+    },
+    "1984": {
       "4A": [
         "Bi-District",
         "Regional",
@@ -1567,6 +1638,86 @@
       "Grinnell at Jetmore",
       "Highland at Logan",
       "Jetmore at Quivira Heights"
+    ]
+  },
+  "1984": {
+    "6A": [
+      "SM South vs. SM West at SM North",
+      "Lawrence at Emporia",
+      "Manhattan vs. Wichita East at Wichita Heights",
+      "Wichita Southeast at Dodge City"
+    ],
+    "5A": [
+      "Olathe South at Bishop Miege",
+      "Paola at Pittsburg",
+      "Kapaun Mt Carmel at Arkansas City",
+      "Hays at Bishop Carroll"
+    ],
+    "8M-I": [
+      "Midway-Denton at BV Randolph",
+      "Bennington at Mankato",
+      "Hutch Central Christian at Quivira Heights",
+      "Greensburg at Grinnell"
+    ],
+    "4A": [
+      "De Soto vs. St Thomas Aquinas at Bishop Miege Stadium",
+      "Nemaha Valley at Maur Hill-Mount",
+      "Santa Fe Trail at Iola",
+      "Fredonia at Columbus",
+      "Abilene at Clay Center",
+      "Maize at Andover",
+      "Pratt at Chaparral",
+      "Colby at Norton",
+      "Chaparral at Colby",
+      "St Thomas Aquinas at Maur Hill-Mount",
+      "Santa Fe Trail at Fredonia",
+      "Clay Center at Andover"
+    ],
+    "3A": [
+      "Eudora at Rossville",
+      "Wellsville at Silver Lake",
+      "Riverton at Sedan",
+      "Burlington at Chase County",
+      "Minneapolis at Southeast of Saline",
+      "Hesston at Medicine Lodge",
+      "Smith Center at Plainville",
+      "WaKeeney-Trego at Hugoton",
+      "Hugoton at Plainville",
+      "Rossville at Silver Lake",
+      "Sedan at Burlington",
+      "Medicine Lodge at Southeast of Saline"
+    ],
+    "2A": [
+      "Centralia at Jefferson County North",
+      "Clifton-Clyde at Solomon",
+      "Pomona at Oskaloosa",
+      "Uniontown at St Mary's Colgan",
+      "Pretty Prairie at Oxford",
+      "Claflin at Moundridge",
+      "Stanton County at Ashland",
+      "Rawlins County at Ness City",
+      "Oxford at Claflin",
+      "Ashland at Rawlins County",
+      "Jefferson County North at Clifton-Clyde",
+      "St Mary's Colgan at Oskaloosa"
+    ],
+    "8M-II": [
+      "Wakefield at Bern",
+      "Tipton at Tescott",
+      "Kensington at Lucas-Luray",
+      "Golden Plains at Northern Valley",
+      "South Haven at Dexter",
+      "Protection at Coldwater",
+      "Ingalls at Ransom",
+      "Rolla at Fowler",
+      "Bern at Tipton",
+      "Lucas-Luray at Northern Valley",
+      "Dexter at Coldwater",
+      "Fowler at Ingalls"
+    ],
+    "1A": [
+      "Marais des Cygnes at Baileyville",
+      "Madison vs. Cedar Vale at Burden Central Stadium"
     ]
   }
 }
