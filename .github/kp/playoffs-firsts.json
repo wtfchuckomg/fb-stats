@@ -1339,7 +1339,11 @@
       "Hiawatha at Perry-Lecompton",
       "Norton at Wellington",
       "Santa Fe Trail at Iola",
-      "Wellington vs. Santa Fe Trail at Moore Bowl, Washburn University"
+      "Wellington vs. Santa Fe Trail at Moore Bowl, Washburn University",
+      "Chaparral at Norton",
+      "Marysville at Wellington",
+      "Louisburg at Iola",
+      "Hiawatha at Santa Fe Trail"
     ],
     "3A": [
       "Hoxie at Wichita County",
@@ -1352,7 +1356,11 @@
       "Northeast-Arma at Humboldt",
       "Smith Center at Clearwater",
       "Wellsville at Neodesha",
-      "Smith Center at Wellsville"
+      "Smith Center at Wellsville",
+      "Wichita County at Smith Center",
+      "Clearwater at Herington",
+      "Rossville at Wellsville",
+      "Neodesha at Northeast-Arma"
     ],
     "2A": [
       "Uniontown at Frontenac",
@@ -1365,7 +1373,11 @@
       "Rawlins County at Stockton",
       "Clifton-Clyde at Uniontown",
       "Johnson at Sterling",
-      "Sterling at Clifton-Clyde"
+      "Sterling at Clifton-Clyde",
+      "Pomona at Uniontown",
+      "Onaga at Clifton-Clyde",
+      "Sedan at Sterling",
+      "Johnson at Stockton"
     ],
     "1A": [
       "Baileyville at Kansas School for the Deaf",
@@ -1387,7 +1399,11 @@
       "South Haven at Dexter",
       "Northern Valley at Brewster",
       "Lucas-Luray at Midway-Denton",
-      "Midway-Denton at Northern Valley"
+      "Midway-Denton at Northern Valley",
+      "Brewster at Rolla",
+      "Cunningham at Northern Valley",
+      "Midway-Denton at Eastern Heights",
+      "South Haven at Lucas-Luray"
     ]
   }
 }
