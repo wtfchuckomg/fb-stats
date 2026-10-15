@@ -441,6 +441,899 @@
       "8M-II": {
         "State": "Russell HS"
       }
+    },
+    "1989": {
+      "6A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "5A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "4A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "3A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "2-1A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "8M-I": {
+        "State": "Russell HS"
+      },
+      "8M-II": {
+        "State": "Russell HS"
+      }
+    },
+    "1990": {
+      "6A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "5A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "4A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "3A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "2-1A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "8M-I": {
+        "State": "Fort Hays State"
+      },
+      "8M-II": {
+        "State": "Fort Hays State"
+      }
+    },
+    "1991": {
+      "6A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "5A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "4A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "3A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "2-1A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "8M-I": {
+        "State": "Fort Hays State"
+      },
+      "8M-II": {
+        "State": "Fort Hays State"
+      }
+    },
+    "1992": {
+      "6A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "5A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "4A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "3A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "2-1A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "8M-I": {
+        "State": "Fort Hays State"
+      },
+      "8M-II": {
+        "State": "Fort Hays State"
+      }
+    },
+    "1993": {
+      "6A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "5A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "4A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "3A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "2-1A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "8M-I": {
+        "State": "Fort Hays State"
+      },
+      "8M-II": {
+        "State": "Fort Hays State"
+      }
+    },
+    "1994": {
+      "6A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "5A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "4A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "3A": {
+        "State": "Fort Hays State"
+      },
+      "2-1A": {
+        "State": "Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Salina Stadium"
+      },
+      "8M-II": {
+        "State": "Salina Stadium"
+      }
+    },
+    "1995": {
+      "6A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "5A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "4A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "3A": {
+        "State": "Fort Hays State"
+      },
+      "2-1A": {
+        "State": "Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Salina Central Stadium"
+      },
+      "8M-II": {
+        "State": "Salina Central Stadium"
+      }
+    },
+    "1996": {
+      "6A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "5A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "4A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "3A": {
+        "State": "Fort Hays State"
+      },
+      "2-1A": {
+        "State": "Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Salina Central Stadium"
+      },
+      "8M-II": {
+        "State": "Salina Central Stadium"
+      }
+    },
+    "1997": {
+      "6A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "5A": {
+        "State": "KSU Stadium, Manhattan"
+      },
+      "4A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "3A": {
+        "State": "Fort Hays State"
+      },
+      "2-1A": {
+        "State": "Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Salina Central Stadium"
+      },
+      "8M-II": {
+        "State": "Salina Central Stadium"
+      }
+    },
+    "1998": {
+      "6A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "5A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "4A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "3A": {
+        "State": "Fort Hays State"
+      },
+      "2-1A": {
+        "State": "Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Salina Central Stadium"
+      },
+      "8M-II": {
+        "State": "Salina Central Stadium"
+      }
+    },
+    "1999": {
+      "6A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "5A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "4A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "3A": {
+        "State": "Fort Hays State"
+      },
+      "2-1A": {
+        "State": "Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Salina Central Stadium"
+      },
+      "8M-II": {
+        "State": "Salina Central Stadium"
+      }
+    },
+    "2000": {
+      "6A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "5A": {
+        "State": "Pittsburg State"
+      },
+      "4A": {
+        "State": "Goddard High School"
+      },
+      "3A": {
+        "State": "Fort Hays State"
+      },
+      "2-1A": {
+        "State": "Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Salina Central Stadium"
+      },
+      "8M-II": {
+        "State": "Salina Central Stadium"
+      }
+    },
+    "2001": {
+      "6A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "5A": {
+        "State": "Pittsburg State"
+      },
+      "4A": {
+        "State": "Goddard High School"
+      },
+      "3A": {
+        "State": "Fort Hays State"
+      },
+      "2-1A": {
+        "State": "Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Salina Central Stadium"
+      },
+      "8M-II": {
+        "State": "Salina Central Stadium"
+      }
+    },
+    "2002": {
+      "6A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "5A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "4A": {
+        "State": "Pittsburg State"
+      },
+      "3A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "2-1A": {
+        "State": "Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Russell HS"
+      },
+      "8M-II": {
+        "State": "Russell HS"
+      }
+    },
+    "2003": {
+      "6A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "5A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "4A": {
+        "State": "Hummer Sports Park, Topeka"
+      },
+      "3A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "2-1A": {
+        "State": "Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Russell HS"
+      },
+      "8M-II": {
+        "State": "Russell HS"
+      }
+    },
+    "2004": {
+      "6A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "5A": {
+        "State": "Hummer Sports Park, Topeka"
+      },
+      "4A": {
+        "State": "Pittsburg State"
+      },
+      "3A": {
+        "State": "Goddard High School"
+      },
+      "2-1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Russell HS"
+      },
+      "8M-II": {
+        "State": "Russell HS"
+      }
+    },
+    "2005": {
+      "6A": {
+        "State": "Hummer Sports Park, Topeka"
+      },
+      "5A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "4A": {
+        "State": "Salina District Stadium"
+      },
+      "3A": {
+        "State": "Hummer Sports Park, Topeka"
+      },
+      "2-1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Russell HS"
+      },
+      "8M-II": {
+        "State": "Russell HS"
+      }
+    },
+    "2006": {
+      "6A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "5A": {
+        "State": "Hummer Sports Park, Topeka"
+      },
+      "4A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "3A": {
+        "State": "Salina District Stadium"
+      },
+      "2-1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2007": {
+      "6A": {
+        "State": "Yager Stadium, Washburn"
+      },
+      "5A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "4A": {
+        "State": "Salina District Stadium"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2-1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2008": {
+      "6A": {
+        "State": "Yager Stadium, Washburn"
+      },
+      "5A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "4A": {
+        "State": "Salina District Stadium"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2-1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2009": {
+      "6A": {
+        "State": "Yager Stadium, Washburn"
+      },
+      "5A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "4A": {
+        "State": "Salina District Stadium"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2-1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2010": {
+      "6A": {
+        "State": "Yager Stadium, Washburn"
+      },
+      "5A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "4A": {
+        "State": "Salina District Stadium"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2-1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2011": {
+      "6A": {
+        "State": "Yager Stadium, Washburn"
+      },
+      "5A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "4A": {
+        "State": "Salina District Stadium"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2-1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2012": {
+      "6A": {
+        "State": "Yager Stadium, Washburn"
+      },
+      "5A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "4A": {
+        "State": "Salina District Stadium"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2-1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2013": {
+      "6A": {
+        "State": "Yager Stadium, Washburn"
+      },
+      "5A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "4A": {
+        "State": "Salina District Stadium"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2-1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2014": {
+      "6A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "5A": {
+        "State": "Carnie Smith Stadium, Pittsburg State"
+      },
+      "4A-I": {
+        "State": "Hummer Sports Park, Topeka"
+      },
+      "4A-II": {
+        "State": "Salina District Stadium"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2-1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2015": {
+      "6A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "5A": {
+        "State": "Carnie Smith Stadium, Pittsburg State"
+      },
+      "4A-I": {
+        "State": "Hummer Sports Park, Topeka"
+      },
+      "4A-II": {
+        "State": "Salina District Stadium"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2-1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2016": {
+      "6A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "5A": {
+        "State": "Carnie Smith Stadium, Pittsburg State"
+      },
+      "4A-I": {
+        "State": "Hummer Sports Park, Topeka"
+      },
+      "4A-II": {
+        "State": "Salina District Stadium"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2-1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2017": {
+      "6A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "5A": {
+        "State": "Carnie Smith Stadium, Pittsburg State"
+      },
+      "4A-I": {
+        "State": "Hummer Sports Park, Topeka"
+      },
+      "4A-II": {
+        "State": "Salina District Stadium"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2-1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2018": {
+      "6A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "5A": {
+        "State": "Carnie Smith Stadium, Pittsburg State"
+      },
+      "4A": {
+        "State": "Hummer Sports Park, Topeka"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2A": {
+        "State": "Salina District Stadium"
+      },
+      "1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2019": {
+      "6A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "5A": {
+        "State": "Carnie Smith Stadium, Pittsburg State"
+      },
+      "4A": {
+        "State": "Hummer Sports Park, Topeka"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2A": {
+        "State": "Salina District Stadium"
+      },
+      "1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2021": {
+      "6A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "5A": {
+        "State": "Carnie Smith Stadium, Pittsburg State"
+      },
+      "4A": {
+        "State": "Hummer Sports Park, Topeka"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2A": {
+        "State": "Salina District Stadium"
+      },
+      "1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2022": {
+      "6A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "5A": {
+        "State": "Carnie Smith Stadium, Pittsburg State"
+      },
+      "4A": {
+        "State": "Hummer Sports Park, Topeka"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2A": {
+        "State": "Salina District Stadium"
+      },
+      "1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2023": {
+      "6A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "5A": {
+        "State": "Carnie Smith Stadium, Pittsburg State"
+      },
+      "4A": {
+        "State": "Hummer Sports Park, Topeka"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2A": {
+        "State": "Salina District Stadium"
+      },
+      "1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2020": {
+      "6A": {
+        "State": "College Boulevard Activity Center, Olathe"
+      },
+      "5A": {
+        "State": "Carnie Smith Stadium, Pittsburg State"
+      },
+      "4A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2A": {
+        "State": "Salina District Stadium"
+      },
+      "1A": {
+        "State": "Lewis Field, Fort Hays State"
+      },
+      "8M-I": {
+        "State": "Fischer Field, Newton"
+      },
+      "8M-II": {
+        "State": "Fischer Field, Newton"
+      }
+    },
+    "2024": {
+      "6A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "5A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "4A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "1A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "8M-I": {
+        "State": "Greensburg"
+      },
+      "8M-II": {
+        "State": "Greensburg"
+      },
+      "6M": {
+        "State": "Greensburg"
+      }
+    },
+    "2025": {
+      "6A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "5A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "4A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "3A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "2A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "1A": {
+        "State": "Gowans Stadium, Hutch CC"
+      },
+      "8M-I": {
+        "State": "Greensburg"
+      },
+      "8M-II": {
+        "State": "Greensburg"
+      },
+      "6M": {
+        "State": "Greensburg"
+      }
     }
   },
   "notes": {
