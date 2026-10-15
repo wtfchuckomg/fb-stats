@@ -1913,32 +1913,60 @@
   },
   "1986": {
     "6A": [
+      "Blue Valley vs. SM West at SM South",
+      "Olathe North at Lawrence",
+      "Junction City vs. Wichita North at Carpenter Stadium, Wichita South HS",
+      "Derby at Hutchinson",
       "Lawrence vs. SM West at SM South",
       "Hutchinson at Junction City"
     ],
     "5A": [
+      "Washburn Rural vs. KC Sumner at Wyandotte",
+      "Field Kindley at Pittsburg",
+      "Valley Center at Arkansas City",
+      "Liberal at Salina Central",
       "Pittsburg at Washburn Rural",
       "Arkansas City at Salina Central"
     ],
     "4A": [
       "Marysville at Baxter Springs",
-      "Norton at Beloit"
+      "Norton at Beloit",
+      "Perry-Lecompton at Marysville",
+      "Baxter Springs at Osawatomie",
+      "Augusta at Beloit",
+      "Andale at Norton"
     ],
     "3A": [
       "Sabetha at Sedan",
-      "Hillsboro at Smith Center"
+      "Hillsboro at Smith Center",
+      "St Marys at Sabetha",
+      "Sedan at Burlington",
+      "Sacred Heart at Hillsboro",
+      "Cimarron at Smith Center"
     ],
     "2-1A": [
       "Marais des Cygnes vs. St Paul at Chanute",
-      "Stockton at Central Burden"
+      "Stockton at Central Burden",
+      "Onaga at Marais des Cygnes at Santa Fe Trail HS",
+      "Pomona at St Paul at Chanute",
+      "Central Burden at Little River at Lyons",
+      "Stockton at Ashland"
     ],
     "8M-I": [
+      "Hanover at LeRoy",
+      "Northern Valley at Wilson",
+      "Greensburg at Pretty Prairie",
+      "Wallace County at Jetmore",
       "LeRoy at Northern Valley",
       "Greensburg at Wallace County"
     ],
     "8M-II": [
       "Dexter at Midway-Denton",
-      "Tipton at Chase"
+      "Tipton at Chase",
+      "Midway-Denton at North Central",
+      "Dexter at Attica",
+      "Tipton at Lenora",
+      "Chase at Montezuma"
     ]
   }
 }
