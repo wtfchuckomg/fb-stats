@@ -378,41 +378,6 @@
         "Regional",
         "State"
       ]
-    },
-    "1975": {
-      "5A": [
-        "Regional",
-        "State"
-      ],
-      "4A": [
-        "Quarterfinals",
-        "Semifinals",
-        "State"
-      ],
-      "3A": [
-        "District",
-        "Quarterfinals",
-        "Semifinals",
-        "State"
-      ],
-      "2A": [
-        "District Play-in",
-        "District",
-        "Quarterfinals",
-        "Semifinals",
-        "State"
-      ],
-      "1A": [
-        "District",
-        "Quarterfinals",
-        "Semifinals",
-        "State"
-      ],
-      "8M": [
-        "Quarterfinals",
-        "Semifinals",
-        "State"
-      ]
     }
   },
   "1972": {
