@@ -2058,19 +2058,23 @@
     ],
     "3A": [
       "Smith Center at Clearwater",
-      "Wellsville at Neodesha"
+      "Wellsville at Neodesha",
+      "Smith Center at Wellsville"
     ],
     "2A": [
       "Clifton-Clyde at Uniontown",
-      "Johnson at Sterling"
+      "Johnson at Sterling",
+      "Sterling at Clifton-Clyde"
     ],
     "1A": [
       "Hartford at Baileyville",
-      "Ashland vs. Little River at Lyons High School Stadium"
+      "Ashland vs. Little River at Lyons High School Stadium",
+      "Little River at Baileyville"
     ],
     "8M": [
       "Northern Valley at Brewster",
-      "Lucas-Luray at Midway-Denton"
+      "Lucas-Luray at Midway-Denton",
+      "Midway-Denton at Northern Valley"
     ]
   }
 }
