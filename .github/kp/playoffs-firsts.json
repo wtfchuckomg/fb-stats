@@ -375,6 +375,7 @@
     },
     "1981": {
       "6A": [
+        "District",
         "Regional",
         "Sub-State",
         "State"
@@ -1113,7 +1114,15 @@
       "SM South - SM West",
       "SM Northwest - Lawrence",
       "Manhattan - Wichita East",
-      "Derby - Garden City"
+      "Derby - Garden City",
+      "Harmon at SM South",
+      "SM West at SM North",
+      "SM Northwest at Leavenworth",
+      "Topeka High at Lawrence",
+      "Seaman at Manhattan",
+      "Wichita North vs. Wichita East at Carpenter Stadium",
+      "Wichita Southeast at Derby",
+      "Garden City at Great Bend"
     ],
     "5A": [
       "Goddard - Hays",
@@ -1179,5 +1188,68 @@
       "1A",
       "8M"
     ]
+  },
+  "added": {
+    "_": "Games the archive does not have: year \u2192 class \u2192 [round, game line, winner, winner points, loser points] (points null = not known yet).",
+    "1981": {
+      "6A": [
+        [
+          "District",
+          "Harmon at SM South",
+          "SM South",
+          null,
+          null
+        ],
+        [
+          "District",
+          "SM West at SM North",
+          "SM West",
+          null,
+          null
+        ],
+        [
+          "District",
+          "SM Northwest at Leavenworth",
+          "SM Northwest",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Topeka High at Lawrence",
+          "Lawrence",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Seaman at Manhattan",
+          "Manhattan",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Wichita North vs. Wichita East at Carpenter Stadium",
+          "Wichita East",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Wichita Southeast at Derby",
+          "Derby",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Garden City at Great Bend",
+          "Garden City",
+          null,
+          null
+        ]
+      ]
+    }
   }
 }

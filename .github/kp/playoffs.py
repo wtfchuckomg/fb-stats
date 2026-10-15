@@ -168,10 +168,19 @@ def main():
     # In 8-man, "Blue Valley" is the Randolph school (BV Randolph), not Blue Valley High in Overland Park.
     bv = lambda c, n: 'BV Randolph' if c.startswith('8M') and n == 'Blue Valley' else n
     games = [(y, c, rnd, bv(c, w), ws, bv(c, l), ls, ot, top, home) for y, c, rnd, w, ws, l, ls, ot, top, home in games]
+    # Games the archive doesn't have, from Chuck (1981's district games): the winner, and the score once he has it.
+    f = HERE / 'playoffs-firsts.json'
+    for y, classes in (json.loads(f.read_text()).get('added', {}) if f.exists() else {}).items():
+        if not y.isdigit(): continue
+        for c, gs in classes.items():
+            for rnd, line, w, ws, ls in gs:
+                a, b = [x.strip() for x in re.split(r'\s+(?:at|vs\.?)\s+', re.sub(r'\s+at\s+[^@]*$', '', line) if ' vs' in line else line)][:2]
+                l = b if key(a) == key(w) else a
+                games.append((int(y), c, rnd, w, ws, l, ls, False, 0, None))
     games = one_name(games)
     out = ROOT / 'playoffs'
     out.mkdir(exist_ok=True)
-    order = {'Round 0': 0, 'Round 1': 1, 'First Round': 1, 'Regional': 2, 'Second Round': 2, 'Sectional': 3, 'Quarterfinals': 3,
+    order = {'District': 0, 'Round 0': 0, 'Round 1': 1, 'First Round': 1, 'Regional': 2, 'Second Round': 2, 'Sectional': 3, 'Quarterfinals': 3,
              'Sub-State': 4, 'Semifinals': 4, 'Region': 4, 'State': 5}
     # Each game under the name of its column on the year's bracket, so a school's own history says what the bracket
     # says (Finals, Semifinals... from 1975; the names Chuck gave for 1969-74; KPreps' own from 2010).
@@ -335,6 +344,7 @@ def write_years(games, out, order):
                     seeds[key(t)], seeds[key(b)] = hi, lo
             def show(g, lead=False):
                 W, L = team(g['w'], g['ws']), team(g['l'], g['ls'])
+                if g['ws'] is None and g['ls'] is None: W['s'] = L['s'] = ''   # a game added before its score is known
                 for t, n in ((W, g['w']), (L, g['l'])):
                     if seeds.get(key(n)): t['sd'] = seeds[key(n)]
                 # "PEN": a tie decided on penetrations (1969 SM North over SM South), else overtime
@@ -359,7 +369,10 @@ def write_years(games, out, order):
                                     for g in extra]} if extra else {})}
         # Each first-round team's district, numbered down the bracket the way the paper drew it (Dist. 1, Dist. 2...)
         for c in districts.get(str(y), []):
-            if c in doc:
+            if c in doc and doc[c]['rounds'][0]['name'] == 'District':   # its district games drawn too: name each one
+                for i, g in enumerate(doc[c]['rounds'][0]['games']):
+                    if g: g['lbl'] = f'District {i + 1}'
+            elif c in doc:
                 for i, t in enumerate(t for g in doc[c]['rounds'][0]['games'] for t in ((g['a'], g['b']) if g else (None, None))):
                     if t: t['dn'] = i + 1
         (ydir / f'{y}.json').write_text(json.dumps({'y': y, 'classes': doc}, separators=(',', ':')))
