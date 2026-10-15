@@ -342,6 +342,9 @@ def read_firsts():
             m = re.match(r'(.+?)\s+vs\.?\s+(.+?)(?:\s+at\s+(.+))?$', line.strip(), re.I)
             # "A vs. B": A was at home (Chuck); with "at C" it was played at C
             if m: rows.append({'top': m[1], 'bot': m[2], 'at': m[3], 'home': None if m[3] else 0})
+            elif re.match(r'(.+?)\s+at\s+(.+?)\s+at\s+(.+)$', line.strip(), re.I):   # "A at B at C": B's home game, played at C
+                m = re.match(r'(.+?)\s+at\s+(.+?)\s+at\s+(.+)$', line.strip(), re.I)
+                rows.append({'top': m[2], 'bot': m[1], 'at': m[3], 'home': 0})
             else:
                 m = re.match(r'(.+?)\s+at\s+(.+)$', line.strip(), re.I)
                 if m: rows.append({'top': m[2], 'bot': m[1], 'at': None, 'home': 0})   # the home team on top, as KPreps draws it
