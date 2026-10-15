@@ -1802,7 +1802,11 @@
       "Haven at Larned",
       "Norton at Goodland",
       "St Thomas Aquinas at Fredonia",
-      "Mulvane at Norton"
+      "Mulvane at Norton",
+      "St Thomas Aquinas vs. Maur Hill-Mount",
+      "Spring Hill vs. Fredonia",
+      "Clay Center vs. Mulvane",
+      "Larned vs. Norton"
     ],
     "3A": [
       "Nemaha Valley at Jefferson County North",
@@ -1814,7 +1818,11 @@
       "Lakin at Lyons",
       "WaKeeney-Trego at Plainville",
       "Sedan at Wellsville",
-      "Plainville at Clifton-Clyde"
+      "Plainville at Clifton-Clyde",
+      "Nemaha Valley vs. Wellsville",
+      "Humboldt vs. Sedan",
+      "Clifton-Clyde vs. Hillsboro",
+      "Lyons vs. Plainville"
     ],
     "2-1A": [
       "Highland at Lyndon",
@@ -1826,7 +1834,11 @@
       "Victoria at Dighton",
       "Meade at Stanton County",
       "St Mary's Colgan at Centralia",
-      "Caldwell at Victoria"
+      "Caldwell at Victoria",
+      "Highland vs. Centralia",
+      "St Mary's Colgan vs. Pomona",
+      "Caldwell vs. Claflin",
+      "Victoria vs. Stanton County"
     ],
     "8M-I": [
       "LeRoy at Axtell",
@@ -1846,7 +1858,11 @@
       "Bazine at Grinnell",
       "Montezuma at Rolla",
       "Tescott at Midway-Denton",
-      "Lenora at Rolla"
+      "Lenora at Rolla",
+      "Midway-Denton vs. North Central",
+      "Tescott vs. Haviland",
+      "Eastern Heights vs. Lenora",
+      "Bazine vs. Rolla"
     ]
   }
 }
