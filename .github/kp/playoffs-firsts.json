@@ -1996,6 +1996,48 @@
         "Sub-State",
         "State"
       ]
+    },
+    "1997": {
+      "6A": [
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ]
     }
   },
   "1972": {
@@ -4279,6 +4321,104 @@
       "Hanston at Rolla",
       "Rolla at Triplains",
       "Baileyville at St. John's-Beloit"
+    ]
+  },
+  "1997": {
+    "6A": [
+      "Olathe North at Topeka High",
+      "SM South at SM West",
+      "Emporia at Garden City",
+      "Manhattan at Wichita West at Carpenter Stadium, Wichita South HS",
+      "SM West at Olathe North",
+      "Wichita West at Garden City"
+    ],
+    "5A": [
+      "KC Schlagle at Blue Valley",
+      "Pittsburg at Salina Central",
+      "Buhler at Salina South",
+      "Liberal at El Dorado",
+      "Salina South at Liberal",
+      "Salina Central at Blue Valley"
+    ],
+    "4A": [
+      "KC Ward at Jeff Co. West",
+      "Bonner Springs at Topeka Hayden",
+      "Prairie View at Louisburg",
+      "Labette County at Fort Scott",
+      "Concordia at Sabetha",
+      "Wellington at Fredonia",
+      "Andale at Smoky Valley",
+      "Pratt at Colby",
+      "Topeka Hayden at Jeff Co. West",
+      "Fort Scott at Louisburg",
+      "Fredonia at Sabetha",
+      "Pratt at Andale",
+      "Louisburg at Topeka Hayden",
+      "Sabetha at Andale"
+    ],
+    "3A": [
+      "Pleasant Ridge at Nemaha Valley",
+      "Riley County at Silver Lake",
+      "Central Heights at Wellsville",
+      "Erie at Galena",
+      "Beloit at Marion",
+      "Conway Springs at Wichita Collegiate",
+      "Lyons at Holcomb",
+      "Hoisington at Smith Center",
+      "Silver Lake at Nemaha Valley",
+      "Galena at Wellsville",
+      "Conway Springs at Beloit",
+      "Smith Center at Holcomb",
+      "Wellsville at Silver Lake",
+      "Smith Center at Conway Springs"
+    ],
+    "2-1A": [
+      "Centralia at Frankfort",
+      "Lyndon at Troy",
+      "Frontenac at Lebo",
+      "Remington at Sedan",
+      "Garden Plain at Ell-Saline",
+      "Claflin at Lincoln",
+      "Elkhart at Bucklin",
+      "Dighton at Saint Francis",
+      "Centralia vs. Lyndon",
+      "Sedan at Lebo",
+      "Ell-Saline at Claflin",
+      "Saint Francis at Bucklin",
+      "Lebo at Centralia",
+      "Claflin at Saint Francis"
+    ],
+    "8M-I": [
+      "Chetopa at Crest",
+      "Flinthills at Burrton",
+      "Mankato at Midway-Denton",
+      "Centre at Southern Cloud",
+      "Pratt-Skyline at Little River",
+      "Attica at Ashland",
+      "Minneola at Spearville",
+      "Tribune at Satanta",
+      "Crest at Burrton",
+      "Midway-Denton at Centre",
+      "Little River at Attica",
+      "Spearville at Satanta",
+      "Centre at Crest",
+      "Spearville at Little River"
+    ],
+    "8M-II": [
+      "Axtell at Elwood",
+      "LeRoy at Thayer",
+      "Tescott at Hope",
+      "Jewell at St. John's-Beloit",
+      "Sylvan at Northern Valley",
+      "Morland at Triplains",
+      "Hanston at Palco",
+      "Haviland at Moscow",
+      "Axtell at LeRoy",
+      "Hope at Jewell",
+      "Triplains at Sylvan",
+      "Hanston at Haviland",
+      "Hope at Axtell",
+      "Sylvan at Haviland"
     ]
   }
 }
