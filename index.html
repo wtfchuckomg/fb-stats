@@ -8836,7 +8836,10 @@ const PO_VIEW = PAGE_Q.has('playoffs');   // the team page's Playoff history pag
 const PO_CLASS = {'8M':'8-Man', '8M-I':'8-Man I', '8M-II':'8-Man II', '6M':'6-Man', '4A-I':'4A-I', '4A-II':'4A-II'};
 function poFinish(s){
   const g = s.g[s.g.length - 1];
-  return g.r === 'State' ? (g.w ? 'State champion' : 'State runner-up') : g.w ? `Won ${g.r}` : `Lost in ${g.r}`;
+  // the title game is "State" (KPreps, and 1969-74) or "Finals" (1975-2009)
+  if (g.r === 'State' || g.r === 'Finals') return g.w ? 'State champion' : 'State runner-up';
+  if (g.r === 'Third place') return g.w ? 'Third place' : 'Fourth place';
+  return g.w ? `Won ${g.r}` : `Lost in ${g.r}`;
 }
 function playoffCard(name){
   const P = teamPlayoffs(name);

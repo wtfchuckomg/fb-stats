@@ -167,27 +167,31 @@ def main():
     bv = lambda c, n: 'BV Randolph' if c.startswith('8M') and n == 'Blue Valley' else n
     games = [(y, c, rnd, bv(c, w), ws, bv(c, l), ls, ot, top, home) for y, c, rnd, w, ws, l, ls, ot, top, home in games]
     games = one_name(games)
+    out = ROOT / 'playoffs'
+    out.mkdir(exist_ok=True)
+    order = {'Round 0': 0, 'Round 1': 1, 'First Round': 1, 'Regional': 2, 'Second Round': 2, 'Sectional': 3, 'Quarterfinals': 3,
+             'Sub-State': 4, 'Semifinals': 4, 'Region': 4, 'State': 5}
+    # Each game under the name of its column on the year's bracket, so a school's own history says what the bracket
+    # says (Finals, Semifinals... from 1975; the names Chuck gave for 1969-74; KPreps' own from 2010).
+    named = write_years(games, out, order)
     per = {}
-    for y, c, rnd, w, ws, l, ls, ot, *_ in games:
+    for i, (y, c, rnd, w, ws, l, ls, ot, *_) in enumerate(games):
         # 1969-70 Class 5A was the Wichita City League champion against the KC league's, not a playoff run: it stays off
         # the schools' own playoff histories (Chuck, 2026-10-14), but the year's brackets still show that title game.
         if c == '5A' and y in (1969, 1970):
             continue
+        r, depth = named.get(i, (rnd, order.get(rnd, 9)))
         for me, us, opp, them, won in ((w, ws, l, ls, True), (l, ls, w, ws, False)):
             s = site(me)
             if not s:
                 continue
             o = site(opp)
-            per.setdefault(s, {}).setdefault((y, c), []).append({'r': rnd, 'o': o or opp, 'p': 1 if o else 0, 'us': us, 'them': them,
-                                                                   'w': 1 if won else 0, **({'ot': 1} if ot else {})})
-    out = ROOT / 'playoffs'
-    out.mkdir(exist_ok=True)
-    order = {'Round 0': 0, 'Round 1': 1, 'First Round': 1, 'Regional': 2, 'Second Round': 2, 'Sectional': 3, 'Quarterfinals': 3,
-             'Sub-State': 4, 'Semifinals': 4, 'Region': 4, 'State': 5}
+            per.setdefault(s, {}).setdefault((y, c), []).append({'r': r, 'o': o or opp, 'p': 1 if o else 0, 'us': us, 'them': them,
+                                                                   'w': 1 if won else 0, **({'ot': 1} if ot else {}), '_d': depth})
     for s, seasons in per.items():
-        rows = [{'y': y, 'c': c, 'g': sorted(gs, key=lambda x: order.get(x['r'], 9))} for (y, c), gs in sorted(seasons.items(), reverse=True)]
+        rows = [{'y': y, 'c': c, 'g': [{k: v for k, v in g.items() if k != '_d'} for g in sorted(gs, key=lambda x: x['_d'])]}
+                for (y, c), gs in sorted(seasons.items(), reverse=True)]
         (out / f'{slug(s)}.json').write_text(json.dumps({'school': s, 'seasons': rows}, separators=(',', ':')))
-    write_years(games, out, order)
     print(len(per), 'schools,', len(games), 'games')
 
 
@@ -239,8 +243,9 @@ def write_years(games, out, order):
     playoffs/years/index.json lists the classes each year has."""
     team = lambda n, sc: {'n': site(n) or n, 's': sc, **({'p': 1} if site(n) else {})}
     by = {}
-    for y, c, rnd, w, ws, l, ls, ot, top, home in games:
-        by.setdefault(y, {}).setdefault(c, []).append({'r': rnd, 'w': w, 'ws': ws, 'l': l, 'ls': ls, 'ot': ot, 'top': top, 'home': home})
+    named = {}   # game number → (its column's name, how far it is from the first column)
+    for i, (y, c, rnd, w, ws, l, ls, ot, top, home) in enumerate(games):
+        by.setdefault(y, {}).setdefault(c, []).append({'r': rnd, 'w': w, 'ws': ws, 'l': l, 'ls': ls, 'ot': ot, 'top': top, 'home': home, 'i': i})
     firsts = read_firsts()
     f = HERE / 'playoffs-firsts.json'
     sites = json.loads(f.read_text()).get('sites', {}) if f.exists() else {}
@@ -296,7 +301,8 @@ def write_years(games, out, order):
                 names = ['Play-in'] * main + ['First Round', 'Second Round', 'Third Round'][:max(rest, 0)] + back[:len(levels) - main][::-1]
             # where a later round was played (Chuck's list: 1969's title games)
             for n, lv in zip(names, levels):
-                at = sites.get(str(y), {}).get(c, {}).get(n)
+                here = sites.get(str(y), {}).get(c, {})
+                at = here.get(n) or (here.get('State') if lv is levels[-1] else None)   # "State" means the title game
                 for g in lv:
                     if g and at: g['at'] = at
             if y in firsts: levels = place(levels, firsts[y])
@@ -321,6 +327,10 @@ def write_years(games, out, order):
                 if g.get('hn'): (W if key(g['w']) == key(g['hn']) or same(g['w'], g['hn']) else L)['h'] = 1   # Chuck's lists
                 if g.get('at'): out['at'] = g['at']   # where it was played, when Chuck has said
                 return out
+            for d, lv in enumerate(levels):
+                for g in lv:
+                    if g: named[g['i']] = (names[d], d)
+            for g in third: named[g['i']] = ('Third place', len(levels))
             doc[c] = {'rounds': [{'name': names[i], 'games': [None if g is None else show(g, i == 0) for g in lv]}
                       for i, lv in enumerate(levels)],
                       **({'note': notes[str(y)][c]} if c in notes.get(str(y), {}) else {}),
@@ -333,6 +343,7 @@ def write_years(games, out, order):
         index[y] = sorted(doc, key=lambda c: CLASS_ORDER.index(c) if c in CLASS_ORDER else 99)
     (ydir / 'index.json').write_text(json.dumps({str(y): index[y] for y in sorted(index, reverse=True)}, separators=(',', ':')))
     print(len(index), 'years;', lost, 'games that fit no bracket slot')
+    return named
 
 
 def read_firsts():
