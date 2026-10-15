@@ -1,9 +1,45 @@
 {
   "_": "First-round games as Chuck sent them, for years before 2010 (KPreps has the real brackets from then on). 'A at B': B was home. 'A vs. B at C': played at C. Listed top to bottom the way the bracket was drawn.",
   "1969": {
-    "4A": ["Junction City at Topeka West", "Bishop Carroll at Ark City"],
-    "3A": ["St. Joseph Military (Hays) at Wellington", "Bonner Springs at Atchison County"],
-    "2A": ["Sacred Heart vs. Meade at Dodge City", "Yates Center at Conway Springs"],
-    "1A": ["Madison at Frontenac", "Clifton vs. Bird City at Concordia", "Ensign vs. Nashville-Zenda at Kingman", "Lecompton vs. Lucas at Russell"]
+    "4A": [
+      "Junction City at Topeka West",
+      "Bishop Carroll at Ark City"
+    ],
+    "3A": [
+      "St. Joseph Military (Hays) at Wellington",
+      "Bonner Springs at Atchison County"
+    ],
+    "2A": [
+      "Sacred Heart vs. Meade at Dodge City",
+      "Yates Center at Conway Springs"
+    ],
+    "1A": [
+      "Madison at Frontenac",
+      "Clifton vs. Bird City at Concordia",
+      "Ensign vs. Nashville-Zenda at Kingman",
+      "Lecompton vs. Lucas at Russell"
+    ]
+  },
+  "1970": {
+    "4A": [
+      "Pittsburg at Topeka West",
+      "Bishop Carroll at Dodge City"
+    ],
+    "3A": [
+      "Kapaun Mt Carmel vs. Thomas More Prep",
+      "Beloit vs. Ottawa"
+    ],
+    "2A": [
+      "Ellinwood vs. Stockton",
+      "Prairie View vs. Atchison County"
+    ],
+    "1A": [
+      "Little River vs. Macksville",
+      "Eskridge vs. St Mary's Colgan"
+    ],
+    "8M": [
+      "Paxico vs. Scandia",
+      "Copeland vs. Haviland"
+    ]
   }
 }
