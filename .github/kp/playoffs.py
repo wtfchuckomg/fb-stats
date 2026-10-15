@@ -375,7 +375,12 @@ def read_firsts():
         for line in (l for ls in classes.values() for l in ls):
             m = re.match(r'(.+?)\s+vs\.?\s+(.+?)(?:\s+at\s+(.+))?$', line.strip(), re.I)
             # "A vs. B": A was at home (Chuck); with "at C" it was played at C
-            if m: rows.append({'top': m[1], 'bot': m[2], 'at': m[3], 'home': None if m[3] else 0})
+            if m:
+                a, b = m[1], m[2]
+                # At a neutral site named like one of the teams' towns (Dodge City vs. Wichita Southeast at Wichita
+                # South HS), that team goes on top of its half (Chuck, 2026-10-16).
+                if m[3] and near_site(b, m[3]) and not near_site(a, m[3]): a, b = b, a
+                rows.append({'top': a, 'bot': b, 'at': m[3], 'home': None if m[3] else 0})
             elif re.match(r'(.+?)\s+at\s+(.+?)\s+at\s+(.+)$', line.strip(), re.I):   # "A at B at C": B's home game, played at C
                 m = re.match(r'(.+?)\s+at\s+(.+?)\s+at\s+(.+)$', line.strip(), re.I)
                 rows.append({'top': m[2], 'bot': m[1], 'at': m[3], 'home': 0})
@@ -388,6 +393,13 @@ def read_firsts():
                 else: print('playoffs-firsts.json: no game in', repr(line))
         out[int(y)] = rows
     return out
+
+
+SITE_WORDS = {'high', 'school', 'stadium', 'college', 'state', 'university', 'field', 'community', 'memorial', 'bowl'}
+def near_site(team, at):
+    """Whether a neutral site carries a team's town in its name: a word of four letters or more they share."""
+    words = lambda n: {w for w in re.findall(r'[a-z]+', n.lower()) if len(w) >= 4 and w not in SITE_WORDS}
+    return bool(words(at) & (words(team) | words(site(team) or '')))
 
 
 def place(levels, rows):
