@@ -189,6 +189,7 @@ def main():
                 if more.get('def'): DEFS.add((int(y), c, key(w), key(l)))   # won, score never found: "def."
 
     games = one_name(games)
+    games = official(games)
     out = ROOT / 'playoffs'
     out.mkdir(exist_ok=True)
     order = {'District': 0, 'Round 0': 0, 'Round 1': 1, 'First Round': 1, 'Regional': 2, 'Second Round': 2, 'Sectional': 3, 'Quarterfinals': 3,
@@ -216,6 +217,54 @@ def main():
                 for (y, c), gs in sorted(seasons.items(), reverse=True)]
         (out / f'{slug(s)}.json').write_text(json.dumps({'school': s, 'seasons': rows}, separators=(',', ':')))
     print(len(per), 'schools,', len(games), 'games')
+
+
+OFFICIAL_FROM = 1998   # Chuck pasted 1988-1997 himself; kp/playoffs-official.json is KSHSAA's own brackets
+                       # (kshsaachamps.org/Results/RetrieveResultsByActivityYearClassID), and from 1998 on it wins
+UNMATCHED = []
+
+def off_name(n):
+    """KSHSAA's way of writing a school, in the archive's and KPreps' terms."""
+    n = n.replace('’', "'").replace('/', '-').strip()
+    n = {'Midway (Denton)': 'Midway-Denton', 'Blue Valley (Overland Park)': 'Blue Valley', 'Blue Valley (Randolph)': 'BV Randolph',
+         'Central Christian (Hutchinson)': 'Hutch Central Christian', 'Trinity Catholic (Hutchinson)': 'Hutch Trinity',
+         "St. John's (Beloit)": "St John's", 'FL Schlagle': 'KC Schlagle', 'JC Harmon': 'KC Harmon', 'Sumner Academy': 'KC Sumner',
+         'Sylvan Unified': 'Sylvan Grove', 'B&B': 'Baileyville', 'St. John-Hudson': 'St John', 'Ness City-Dighton': 'Ness/Dighton',
+         "St. John's-Tipton Catholic": "St John's", 'The Independent School': 'Wichita Independent', 'Caldwell-South Haven': 'South Sumner',
+         'Cair Paravel Latin School': 'Cair Paravel', 'Central (Burden)': 'Central Burden', 'Dexter-Cedar Vale': 'Cedar Vale-Dexter',
+         'Almena': 'Northern Valley', 'Maur Hill Prep': 'Maur Hill', 'White Rock': 'Jewell', 'West Smith County': 'Kensington'}.get(n, n)
+    n = re.sub(r'\s*\([^)]*\)$', '', n)
+    n = re.sub(r'^(Wichita|Salina|Hutchinson|Topeka)-', r'\1 ', n)
+    return re.sub(r'\s+Community$', '', n)
+
+
+def official(games):
+    """KSHSAA's own score for each game it lists, OFFICIAL_FROM on (Chuck, 2026-10-16: the official scores win)."""
+    f = HERE / 'playoffs-official.json'
+    if not f.exists(): return games
+    offs = {}
+    for o in json.loads(f.read_text()):
+        if o['y'] >= OFFICIAL_FROM and o['ws'] > o['ls']:   # (a tie there is a typo: 2017 2-1A's 43-43 title game)
+            offs.setdefault((o['y'], o['c']), []).append(o)
+    def fits(ours, theirs, c):
+        t = off_name(theirs)
+        return (site_in(ours, c) or key(ours)) == (site_in(t, c) or key(t)) or same(ours, t) or same(ours, theirs)
+    out, used = [], set()
+    for y, c, rnd, w, ws, l, ls, ot, *rest in games:
+        hit = [o for o in offs.get((y, c), []) if id(o) not in used and
+               ((fits(w, o['w'], c) and fits(l, o['l'], c)) or (fits(w, o['l'], c) and fits(l, o['w'], c)))]
+        if len(hit) == 1:
+            o = hit[0]
+            used.add(id(o))
+            if fits(w, o['w'], c) and fits(l, o['l'], c):
+                ws, ls = o['ws'], o['ls']
+            else:   # KSHSAA has the other team winning
+                w, l, ws, ls = l, w, o['ws'], o['ls']
+                if rest: rest = [1 - rest[0], *rest[1:]]
+            ot = bool(o.get('ot'))
+        out.append((y, c, rnd, w, ws, l, ls, ot, *rest))
+    UNMATCHED[:] = [o for v in offs.values() for o in v if id(o) not in used]
+    return out
 
 
 def near(a, b):

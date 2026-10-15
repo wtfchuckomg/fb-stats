@@ -2038,6 +2038,502 @@
         "Sub-State",
         "State"
       ]
+    },
+    "1998": {
+      "6A": [
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ]
+    },
+    "1999": {
+      "6A": [
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ]
+    },
+    "2000": {
+      "6A": [
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ]
+    },
+    "2001": {
+      "6A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ]
+    },
+    "2002": {
+      "6A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ]
+    },
+    "2003": {
+      "6A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ]
+    },
+    "2004": {
+      "6A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ]
+    },
+    "2005": {
+      "6A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ]
+    },
+    "2006": {
+      "6A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ]
+    },
+    "2008": {
+      "6A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ]
+    },
+    "2009": {
+      "6A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ]
     }
   },
   "1972": {
@@ -4419,6 +4915,104 @@
       "Hanston at Haviland",
       "Hope at Axtell",
       "Sylvan at Haviland"
+    ]
+  },
+  "1998": {
+    "6A": [
+      "SM East at BV Northwest",
+      "Lawrence at Olathe North",
+      "Manhattan at Derby",
+      "Garden City at Wichita West at Carpenter Stadium, Wichita South HS",
+      "Derby at Garden City",
+      "Olathe North at BV Northwest"
+    ],
+    "5A": [
+      "Blue Valley at Aquinas",
+      "Topeka West at Pittsburg",
+      "Valley Center at Salina Central",
+      "Andover at Liberal",
+      "Pittsburg at Blue Valley",
+      "Salina Central at Liberal"
+    ],
+    "4A": [
+      "Holton at Lansing",
+      "Bishop Ward at Gardner-Edgerton",
+      "Louisburg at Prairie View",
+      "Parsons at Columbus",
+      "Concordia at Topeka Hayden",
+      "Smoky Valley at Kingman",
+      "Augusta at Wellington",
+      "Pratt at Scott City",
+      "Bishop Ward at Holton",
+      "Columbus at Louisburg",
+      "Topeka Hayden at Smoky Valley",
+      "Augusta at Pratt",
+      "Holton at Louisburg",
+      "Pratt at Topeka Hayden"
+    ],
+    "3A": [
+      "Pleasant Ridge at Royal Valley",
+      "Silver Lake at Chase County",
+      "Central Heights at Erie",
+      "Riverton at Fredonia",
+      "Oxford at Conway Springs",
+      "Hillsboro at Beloit",
+      "Smith Center at Hoisington",
+      "Holcomb at Cimarron",
+      "Royal Valley vs. Silver Lake",
+      "Erie vs. Fredonia",
+      "Beloit at Conway Springs",
+      "Cimarron at Smith Center",
+      "Fredonia vs. Silver Lake",
+      "Conway Springs at Smith Center"
+    ],
+    "2-1A": [
+      "Troy at Jefferson County North",
+      "Frankfort at Rossville",
+      "Lebo at Uniontown",
+      "Caldwell at Madison",
+      "Moundridge at Claflin",
+      "Ell-Saline at Stockton",
+      "Stanton County at Bucklin",
+      "Ness City at Atwood",
+      "Jefferson County North at Frankfort",
+      "Uniontown at Caldwell",
+      "Claflin at Stockton",
+      "Ness City at Stanton County",
+      "Frankfort at Uniontown",
+      "Stanton County at Claflin"
+    ],
+    "8M-I": [
+      "St. Paul at Thayer",
+      "Flinthills at Norwich",
+      "Burrton at Centre",
+      "Axtell at Hanover",
+      "Mankato at Wilson",
+      "Little River at Pratt-Skyline",
+      "Ashland at Spearville",
+      "Tribune at Satanta",
+      "St. Paul vs. Norwich",
+      "Centre at Axtell",
+      "Pratt-Skyline at Wilson",
+      "Tribune at Ashland",
+      "St. Paul vs. Axtell at Bern",
+      "Wilson at Tribune"
+    ],
+    "8M-II": [
+      "Midway-Denton at Linn",
+      "Williamsburg at LeRoy",
+      "Argonia at Hope",
+      "Sylvan at Waconda East",
+      "Jewell at Northern Valley",
+      "Palco at Cheylin",
+      "Triplains at Rolla",
+      "Haviland at Hanston",
+      "Linn at Williamsburg",
+      "Hope at Sylvan",
+      "Northern Valley at Palco",
+      "Hanston at Triplains",
+      "Hanston at Northern Valley",
+      "Sylvan at Linn"
     ]
   }
 }
