@@ -1702,6 +1702,48 @@
         "Sub-State",
         "State"
       ]
+    },
+    "1990": {
+      "6A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ]
     }
   },
   "1972": {
@@ -3299,6 +3341,90 @@
       "Hanston vs. Lewis",
       "Hamilton at Claflin",
       "Kensington at Hanston"
+    ]
+  },
+  "1990": {
+    "6A": [
+      "SM South at Blue Valley North",
+      "Olathe North at Lawrence",
+      "Topeka West at Emporia",
+      "Derby at Garden City"
+    ],
+    "5A": [
+      "Washburn Rural at KC Sumner",
+      "Ark City at Pittsburg",
+      "Goddard at Wichita Kapaun at Carpenter Stadium, Wichita South HS",
+      "Hays at Buhler"
+    ],
+    "4A": [
+      "Marysville - Lansing",
+      "Topeka Hayden - KC Ward",
+      "Spring Hill - Aquinas",
+      "Chanute - Garnett",
+      "Augusta - Caney Valley",
+      "Maize - Nickerson",
+      "Chapman - Beloit",
+      "Scott City - Colby",
+      "Topeka Hayden at Marysville",
+      "Spring Hill at Chanute",
+      "Maize at Augusta",
+      "Chapman at Scott City"
+    ],
+    "3A": [
+      "Immaculata - Nemaha Valley",
+      "Silver Lake - Rossville",
+      "Riverton - Wellsville",
+      "Belle Plaine - Yates Center",
+      "Chase County - Halstead",
+      "Hoisington - Belleville",
+      "Leoti - Plainville",
+      "Cimarron - Elkhart",
+      "Silver Lake at Immaculata",
+      "Belle Plaine at Riverton",
+      "Hoisington at Chase County",
+      "Leoti at Cimarron"
+    ],
+    "2-1A": [
+      "Troy - Frankfort",
+      "Clifton-Clyde - Jeff Co. North",
+      "Waverly - Frontenac",
+      "Sedan - Burlingame",
+      "Caldwell - Garden Plain",
+      "Moundridge - Sterling",
+      "Atwood - Stockton",
+      "Ellis - Kinsley",
+      "Troy at Clifton-Clyde",
+      "Waverly at Sedan",
+      "Moundridge at Caldwell",
+      "Ellis at Atwood"
+    ],
+    "8M-I": [
+      "Southern Cloud - Elwood",
+      "Centre - Quivira Heights",
+      "Pleasanton - Altoona-Midway",
+      "Inman - Argonia",
+      "Greensburg - Attica",
+      "Ashland - Stafford",
+      "Northern Valley - Wilson",
+      "Jetmore - Montezuma",
+      "Southern Cloud at Centre",
+      "Inman at Pleasanton",
+      "Ashland at Greensburg",
+      "Northern Valley at Jetmore"
+    ],
+    "8M-II": [
+      "Midway-Denton - BV Randolph",
+      "Dexter - LeRoy",
+      "Claflin - Central Christian",
+      "Downs - Hillcrest",
+      "Logan - Tipton",
+      "Cheylin - Morland",
+      "Hanston - Healy-Utica",
+      "Lewis - Rolla",
+      "Midway-Denton at Dexter",
+      "Claflin at Downs",
+      "Logan at Cheylin",
+      "Lewis at Hanston"
     ]
   }
 }
