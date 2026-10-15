@@ -1129,8 +1129,8 @@
       "Wichita North vs. Wichita East at Carpenter Stadium",
       "Wichita Southeast at Derby",
       "Garden City at Great Bend",
-      "SM West at SM Northwest",
-      "Derby at Wichita East"
+      "SM West vs. SM Northwest at SM South Stadium",
+      "Derby at Wichita East at Carpenter Stadium"
     ],
     "5A": [
       "Goddard - Hays",
@@ -1145,8 +1145,8 @@
       "Paola at Emporia",
       "Blue Valley at Olathe South",
       "Washburn Rural at Shawnee Heights",
-      "Kapaun Mt Carmel at Goddard",
-      "Emporia at Olathe South"
+      "Emporia at Olathe South",
+      "Kapaun Mt Carmel vs. Goddard at Carroll Field"
     ],
     "4A": [
       "Ulysses - Norton",
@@ -1184,7 +1184,9 @@
       "Pratt at Norton",
       "Sacred Heart at Wellington",
       "Fredonia at St Thomas Aquinas",
-      "Hiawatha at Baldwin"
+      "Hiawatha at Baldwin",
+      "Wellington at Norton",
+      "Baldwin at Fredonia"
     ],
     "3A": [
       "Hoxie - Lakin",
@@ -1222,7 +1224,9 @@
       "Plainville at Hoxie",
       "Hillsboro at Belleville",
       "Wellsville at Silver Lake",
-      "Neodesha at Central Heights"
+      "Neodesha at Central Heights",
+      "Hoxie at Hillsboro",
+      "Silver Lake at Neodesha"
     ],
     "2A": [
       "Frontenac - Jayhawk-Linn",
@@ -1260,7 +1264,9 @@
       "Valley Falls at Frontenac",
       "Axtell at Clifton-Clyde",
       "Claflin at Garden Plain",
-      "Cimarron at Victoria"
+      "Cimarron at Victoria",
+      "Frontenac at Clifton-Clyde",
+      "Claflin at Victoria"
     ],
     "1A": [
       "Baileyville - Burlingame",
@@ -1274,7 +1280,9 @@
       "Marquette at Canton-Galva",
       "Little River at Central Christian",
       "Caldwell at South Barber",
-      "Jetmore at Greeley County"
+      "Jetmore at Greeley County",
+      "Baileyville vs. Waverly at Welch Stadium, Emporia State",
+      "Little River at South Barber"
     ],
     "8M": [
       "Brewster - Grinnell",
@@ -1311,7 +1319,9 @@
       "Brewster at Fowler",
       "Ransom at Cunningham",
       "Waconda East at Midway-Denton",
-      "Dorrance at Argonia"
+      "Dorrance at Argonia",
+      "Ransom at Fowler",
+      "Argonia at Midway-Denton"
     ]
   },
   "districts": {
