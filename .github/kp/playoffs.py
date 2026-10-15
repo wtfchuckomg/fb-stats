@@ -179,6 +179,8 @@ def main():
                 l = b if key(a) == key(w) else a
                 games.append((int(y), c, rnd, w, ws, l, ls, bool(more.get('ot')), 0, None))
                 if more.get('adv'): ADVANCED[(int(y), c, key(w), key(l))] = more['adv']
+                if more.get('def'): DEFS.add((int(y), c, key(w), key(l)))   # won, score never found: "def."
+
     games = one_name(games)
     out = ROOT / 'playoffs'
     out.mkdir(exist_ok=True)
@@ -200,7 +202,8 @@ def main():
                 continue
             o = site(opp)
             per.setdefault(s, {}).setdefault((y, c), []).append({'r': r, 'o': o or opp, 'p': 1 if o else 0, 'us': us, 'them': them,
-                                                                   'w': 1 if won else 0, **({'ot': 1} if ot else {}), '_d': depth})
+                                                                   'w': 1 if won else 0, **({'ot': 1} if ot else {}), '_d': depth,
+                                                                   **({'def': 1} if (y, c, key(w), key(l)) in DEFS else {})})
     for s, seasons in per.items():
         rows = [{'y': y, 'c': c, 'g': [{k: v for k, v in g.items() if k != '_d'} for g in sorted(gs, key=lambda x: x['_d'])]}
                 for (y, c), gs in sorted(seasons.items(), reverse=True)]
@@ -349,6 +352,7 @@ def write_years(games, out, order):
             def show(g, lead=False):
                 W, L = team(g['w'], g['ws']), team(g['l'], g['ls'])
                 if g['ws'] is None and g['ls'] is None: W['s'] = L['s'] = ''   # a game added before its score is known
+                if (y, c, key(g['w']), key(g['l'])) in DEFS: W['s'] = 'def.'
                 for t, n in ((W, g['w']), (L, g['l'])):
                     if seeds.get(key(n)): t['sd'] = seeds[key(n)]
                 # "PEN": a tie decided on penetrations (1969 SM North over SM South), else overtime
@@ -488,6 +492,7 @@ def place(levels, rows):
 # (year, class, winner, loser) → the team that went on from that game anyway (1981: Clay Center lost to Wamego on the
 # last district Friday and still won District 7 on the tiebreak)
 ADVANCED = {}
+DEFS = set()   # (year, class, winner, loser): the result is known, the score isn't
 
 PAIRS = [(1, 16), (8, 9), (4, 13), (5, 12), (2, 15), (7, 10), (3, 14), (6, 11)]
 PAD = ['State', 'Sub-State', 'Quarterfinals', 'Second Round', 'First Round']

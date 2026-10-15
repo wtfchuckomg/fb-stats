@@ -1900,7 +1900,10 @@
           "Grinnell at Wallace County",
           "Grinnell",
           null,
-          null
+          null,
+          {
+            "def": true
+          }
         ],
         [
           "District",
@@ -1984,7 +1987,10 @@
           "Argonia at South Haven",
           "Argonia",
           null,
-          null
+          null,
+          {
+            "def": true
+          }
         ],
         [
           "District",
