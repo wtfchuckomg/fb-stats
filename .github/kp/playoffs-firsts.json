@@ -454,6 +454,51 @@
         "Sub-State",
         "State"
       ]
+    },
+    "1983": {
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "2A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "6A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "1A": [
+        "Sub-State",
+        "State"
+      ]
     }
   },
   "1972": {
@@ -1404,6 +1449,48 @@
       "Cunningham at Northern Valley",
       "Midway-Denton at Eastern Heights",
       "South Haven at Lucas-Luray"
+    ]
+  },
+  "1983": {
+    "4A": [
+      "Lansing at Hayden",
+      "Maur Hill-Mount at Marysville",
+      "Iola at Santa Fe Trail",
+      "Galena at Fredonia",
+      "Clay Center at Ellsworth",
+      "Andover at Andale",
+      "Clearwater at Pratt",
+      "Norton at Goodland"
+    ],
+    "3A": [
+      "St Marys at Eudora",
+      "Wabaunsee at Wellsville",
+      "Neodesha at Riverton",
+      "Chase County at Yates Center",
+      "Belleville at Southeast of Saline",
+      "Medicine Lodge at Sterling",
+      "Plainville at Osborne",
+      "Hugoton at Decatur"
+    ],
+    "2A": [
+      "Troy at Jackson Heights",
+      "Centre vs. Clifton-Clyde at Clyde",
+      "Oskaloosa vs. Northern Heights at Emporia State",
+      "St Mary's Colgan at Uniontown",
+      "Oxford at Garden Plain",
+      "Hutch Trinity at St John",
+      "Ashland at Stanton County",
+      "Ness City at Dighton"
+    ],
+    "8M-II": [
+      "North Central at Miltonvale",
+      "Ell-Saline at Sylvan Grove",
+      "Wilson at Kensington",
+      "Northern Valley at Triplains",
+      "Dexter at South Haven",
+      "Haviland at Protection",
+      "McCracken at Ingalls",
+      "Montezuma at Rolla"
     ]
   }
 }
