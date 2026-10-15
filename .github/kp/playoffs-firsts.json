@@ -726,6 +726,47 @@
         "Sub-State",
         "State"
       ]
+    },
+    "1988": {
+      "6A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ]
     }
   },
   "1972": {
