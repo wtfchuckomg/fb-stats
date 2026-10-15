@@ -89,7 +89,7 @@ function renderPlayoffHistory(){
   const extra = B.extra && B.extra.length ? `<section class="bcard"><h2 class="tp-h">Other games</h2><div class="tbl-x"><table class="tp-sched"><tbody>${B.extra.map(g =>
     `<tr><td class="wk">${esc(g.r)}</td><td>${phTeam(g.a, !g.w)}</td><td>${phTeam(g.b, !!g.w)}</td></tr>`).join('')}</tbody></table></div></section>` : '';
   const third = B.third && B.third.length ? `<div class="ph-third"><div class="ph-h">Third place</div>${B.third.map(phGame).join('')}</div>` : '';
-  box.innerHTML = head + `<section class="bcard"><h2 class="tp-h">${y} ${esc(PH_LABEL(c))}</h2>${phBracketHtml(B)}${third}</section>` + extra;
+  box.innerHTML = head + `<section class="bcard"><h2 class="tp-h">${y} ${esc(PH_LABEL(c))}</h2>${phBracketHtml(B)}${third}${B.note ? `<p class="ph-note">${esc(B.note)}</p>` : ''}</section>` + extra;
 }
 
 document.addEventListener('change', e => {

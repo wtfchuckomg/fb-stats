@@ -92,5 +92,14 @@
         "State": "Pratt Skyline High School"
       }
     }
+  },
+  "notes": {
+    "_": "A line under a bracket: year \u2192 class \u2192 text.",
+    "1969": {
+      "5A": "There was no official playoff. Two regional winners were picked for the championship game."
+    },
+    "1970": {
+      "5A": "There was no official playoff. Two regional winners were picked for the championship game."
+    }
   }
 }

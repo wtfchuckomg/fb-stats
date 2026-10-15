@@ -244,6 +244,7 @@ def write_years(games, out, order):
     firsts = read_firsts()
     f = HERE / 'playoffs-firsts.json'
     sites = json.loads(f.read_text()).get('sites', {}) if f.exists() else {}
+    notes = json.loads(f.read_text()).get('notes', {}) if f.exists() else {}
     ydir = out / 'years'
     ydir.mkdir(exist_ok=True)
     index, lost = {}, 0
@@ -311,6 +312,7 @@ def write_years(games, out, order):
                 return out
             doc[c] = {'rounds': [{'name': names[i], 'games': [None if g is None else show(g, i == 0) for g in lv]}
                       for i, lv in enumerate(levels)],
+                      **({'note': notes[str(y)][c]} if c in notes.get(str(y), {}) else {}),
                       **({'third': [show(g) for g in third]}
                          if third else {}),
                       # a game the archive printed that no slot leads to (a name spelled two ways, a missing round)

@@ -673,6 +673,7 @@ button.h-btn{cursor:pointer}
 .ph-conn.bot i{top:50%;bottom:25%;border-top:0;border-radius:0 0 8px 0}
 .ph-conn::after{content:"";position:absolute;left:50%;right:0;top:50%;border-top:1px solid var(--line)}
 .ph-conn.line::after{left:0}
+.ph-note{margin:12px 0 0;font-size:13px;color:var(--muted)}
 .ph-third{max-width:220px;margin-top:14px}
 .ph-sd{min-width:15px;font:700 10.5px/1 var(--sans);font-style:normal;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
 .ph-at{padding:3px 10px 4px;border-top:1px solid var(--line);font:600 10px/1.2 var(--sans);color:var(--muted)}
@@ -12376,7 +12377,7 @@ function renderPlayoffHistory(){
   const extra = B.extra && B.extra.length ? `<section class="bcard"><h2 class="tp-h">Other games</h2><div class="tbl-x"><table class="tp-sched"><tbody>${B.extra.map(g =>
     `<tr><td class="wk">${esc(g.r)}</td><td>${phTeam(g.a, !g.w)}</td><td>${phTeam(g.b, !!g.w)}</td></tr>`).join('')}</tbody></table></div></section>` : '';
   const third = B.third && B.third.length ? `<div class="ph-third"><div class="ph-h">Third place</div>${B.third.map(phGame).join('')}</div>` : '';
-  box.innerHTML = head + `<section class="bcard"><h2 class="tp-h">${y} ${esc(PH_LABEL(c))}</h2>${phBracketHtml(B)}${third}</section>` + extra;
+  box.innerHTML = head + `<section class="bcard"><h2 class="tp-h">${y} ${esc(PH_LABEL(c))}</h2>${phBracketHtml(B)}${third}${B.note ? `<p class="ph-note">${esc(B.note)}</p>` : ''}</section>` + extra;
 }
 
 document.addEventListener('change', e => {
