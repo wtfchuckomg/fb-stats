@@ -5014,5 +5014,103 @@
       "Hanston at Northern Valley",
       "Sylvan at Linn"
     ]
+  },
+  "1999": {
+    "6A": [
+      "Blue Valley North at Olathe South",
+      "Lawrence Free State at BV Northwest",
+      "Wichita NW at Junction City",
+      "Garden City at Derby",
+      "BV Northwest at Olathe South",
+      "Junction City at Garden City"
+    ],
+    "5A": [
+      "Aquinas at Bishop Miege",
+      "Fort Scott at Topeka Seaman",
+      "Salina Central at Salina South",
+      "Liberal at Andover",
+      "Aquinas at Fort Scott",
+      "Liberal at Salina Central"
+    ],
+    "4A": [
+      "Perry-Lecompton at Holton",
+      "Gardner-Edgerton at KC Ward",
+      "Osawatomie at Louisburg",
+      "Labette County at Girard",
+      "Topeka Hayden at Concordia",
+      "Kingman at Smoky Valley",
+      "Wellington at El Dorado",
+      "Thomas More Prep at Pratt",
+      "Holton at KC Ward",
+      "Girard at Osawatomie",
+      "Concordia at Kingman",
+      "Thomas More Prep at Wellington",
+      "Wellington at Concordia",
+      "Girard at Holton"
+    ],
+    "3A": [
+      "Atchison County at Immaculata",
+      "Osage City at St. Marys",
+      "Erie at Pomona",
+      "Eureka at Riverton",
+      "Medicine Lodge at Wichita Collegiate",
+      "Riley County at Hillsboro",
+      "Lyons at Smith Center",
+      "Lakin at Leoti",
+      "Immaculata at St. Marys",
+      "Riverton at Erie",
+      "Hillsboro at Wichita Collegiate",
+      "Smith Center at Lakin",
+      "Wichita Collegiate at Smith Center",
+      "St. Marys at Erie"
+    ],
+    "2-1A": [
+      "Centralia at Troy",
+      "Onaga at Frankfort",
+      "Pittsburg Colgan at Lebo",
+      "Madison at Sedan",
+      "Claflin at Garden Plain",
+      "Ellis at Sacred Heart",
+      "Bucklin at Syracuse",
+      "Atwood at Quinter",
+      "Onaga at Centralia",
+      "Sedan at Pittsburg Colgan",
+      "Sacred Heart at Claflin",
+      "Syracuse at Atwood",
+      "Pittsburg Colgan at Centralia",
+      "Claflin at Atwood"
+    ],
+    "8M-I": [
+      "Thayer at St. Paul",
+      "South Barber at Crest",
+      "Goessel at Burrton",
+      "Hanover at BV Randolph",
+      "Tescott at Mankato",
+      "Pratt-Skyline at Little River",
+      "Spearville at South Gray",
+      "Satanta at Tribune",
+      "St. Paul at Crest",
+      "Burrton at Hanover",
+      "Little River at Mankato",
+      "Tribune at Spearville",
+      "Burrton at St. Paul",
+      "Tribune at Little River"
+    ],
+    "8M-II": [
+      "Hillcrest at Baileyville",
+      "LeRoy at White City",
+      "Hope at Argonia",
+      "St. John's at Sylvan",
+      "Northern Valley at Kensington",
+      "Brewster at Ransom",
+      "Moscow at Healy-Utica",
+      "Hanston at Haviland",
+      "Sylvan at Argonia",
+      "White City at Baileyville",
+      "Kensington at Brewster",
+      "Moscow at Hanston",
+      "Baileyville at Argonia",
+      "Hanston at Brewster"
+    ]
   }
 }
