@@ -3512,7 +3512,9 @@
       "Sabetha at KC Ward",
       "Riverton at Louisburg",
       "Goodland at Abilene",
-      "Andover at Scott City"
+      "Andover at Scott City",
+      "Riverton at Sabetha",
+      "Abilene at Scott City"
     ],
     "3A": [
       "Immaculata at Nemaha Valley",
@@ -3526,7 +3528,9 @@
       "Silver Lake at Nemaha Valley",
       "Eureka at Central Heights",
       "Smoky Valley at Cheney",
-      "Plainville at Cimarron"
+      "Plainville at Cimarron",
+      "Eureka at Silver Lake",
+      "Plainville at Smoky Valley"
     ],
     "2-1A": [
       "Valley Falls at Highland",
@@ -3540,7 +3544,9 @@
       "Highland at Riley County",
       "Pittsburg Colgan at Waverly",
       "Caldwell at Moundridge",
-      "Atwood at Sublette"
+      "Atwood at Sublette",
+      "Pittsburg Colgan at Riley County",
+      "Moundridge at Atwood"
     ],
     "8M-I": [
       "Pleasanton at Altoona-Midway",
@@ -3554,7 +3560,9 @@
       "Attica at Pleasanton",
       "Hanover at Canton-Galva",
       "Inman at Otis-Bison",
-      "Minneola-Fowler at Sharon Springs"
+      "Minneola-Fowler at Sharon Springs",
+      "Canton-Galva at Pleasanton",
+      "Sharon Springs at Inman"
     ],
     "8M-II": [
       "LeRoy at Bern",
@@ -3568,7 +3576,9 @@
       "Bern at St. Paul",
       "Tipton at Tescott",
       "Triplains at Northern Valley",
-      "Claflin at Rolla"
+      "Claflin at Rolla",
+      "St. Paul at Tescott",
+      "Claflin at Northern Valley"
     ]
   }
 }
