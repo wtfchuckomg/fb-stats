@@ -50,7 +50,7 @@ SAME = {
     'Saint Francis': 'St Francis', 'Southern Coffey': 'Southern Coffey County', 'Jeff North': 'Jefferson County North',
     'Jeff Co. North': 'Jefferson County North', 'Jeff Co. West': 'Jefferson West', 'Lousiburg': 'Louisburg',
     'Saliina Central': 'Salina Central', 'Sylvan-Lucas': 'Sylvan-Lucas Unified', 'Minneola-Fowler': 'Minneola',
-    'Crest': 'Colony-Crest', 'Jetmore': 'Hodgeman County', 'WaKeeney': 'WaKeeney-Trego', 'Trego': 'WaKeeney-Trego',
+    'Crest': 'Colony-Crest', 'WaKeeney': 'WaKeeney-Trego', 'Trego': 'WaKeeney-Trego',
     'Peabody': 'Peabody-Burns', 'Topeka-Cornerstone Family': 'Topeka Cornerstone Family', 'Shawnee-St. Joseph': 'St Joseph',
     # the archive's typos
     'Clifton-Clye': 'Clifton-Clyde', 'M arysville': 'Marysville', 'Maryville': 'Marysville', 'Coglan': "St Mary's Colgan",
