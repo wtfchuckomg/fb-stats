@@ -1954,6 +1954,48 @@
         "Sub-State",
         "State"
       ]
+    },
+    "1996": {
+      "6A": [
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ]
     }
   },
   "1972": {
