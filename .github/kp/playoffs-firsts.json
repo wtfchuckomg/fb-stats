@@ -91,6 +91,26 @@
       "8M": {
         "State": "Pratt Skyline High School"
       }
+    },
+    "1971": {
+      "5A": {
+        "State": "SM South Stadium"
+      },
+      "4A": {
+        "State": "Bishop Ward HS, Kansas City"
+      },
+      "3A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "2A": {
+        "State": "Baldwin HS"
+      },
+      "1A": {
+        "State": "Sterling College"
+      },
+      "8M": {
+        "State": "Belleville"
+      }
     }
   },
   "notes": {
@@ -101,5 +121,53 @@
     "1970": {
       "5A": "There was no official playoff. Two regional winners were picked for the championship game."
     }
+  },
+  "1971": {
+    "5A": [
+      "Wichita South at SM North",
+      "SM West at SM South"
+    ],
+    "4A": [
+      "Pittsburg at Bishop Ward",
+      "Junction City at Manhattan",
+      "Arkansas City at El Dorado",
+      "Garden City at Dodge City",
+      "Bishop Ward at Junction City",
+      "Garden City at Arkansas City",
+      "Garden City at Bishop Ward"
+    ],
+    "3A": [
+      "Shawnee-St. Joseph at Ottawa",
+      "Wamego at Hayden",
+      "Kapaun Mt Carmel at Wellington",
+      "Pratt at Larned",
+      "Shawnee-St. Joseph at Hayden",
+      "Larned at Kapaun Mt Carmel"
+    ],
+    "2A": [
+      "Humboldt at Baldwin",
+      "Nemaha Valley at Troy",
+      "Haven at Moundridge",
+      "Rawlins County at Stockton",
+      "Nemaha Valley at Baldwin",
+      "Haven at Stockton",
+      "Stockton at Baldwin"
+    ],
+    "1A": [
+      "Mound City at Burlingame",
+      "Valley Falls at Jackson Heights",
+      "Clyde vs. Little River at Lyons",
+      "Protection at Greeley County",
+      "Burlingame at Jackson Heights",
+      "Little River vs. Protection"
+    ],
+    "8M": [
+      "Scandia at Paxico",
+      "Dorrance at Quenemo",
+      "Haviland vs. Norwich at Kingman",
+      "Deerfield at Copeland",
+      "Scandia vs. Dorrance at Russell HS",
+      "Norwich at Deerfield"
+    ]
   }
 }

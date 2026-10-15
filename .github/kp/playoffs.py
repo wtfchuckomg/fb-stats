@@ -308,6 +308,7 @@ def write_years(games, out, order):
                 ot = {'ot': g['ot'] if isinstance(g['ot'], str) else 1} if g['ot'] else {}
                 out = {'a': L, 'b': W, 'w': 1, **ot} if g['top'] else {'a': W, 'b': L, **ot}   # w: the bottom team won
                 if lead and g['home'] is not None: out['b' if g['home'] else 'a']['h'] = 1   # at home in the first round
+                if g.get('hn'): (W if key(g['w']) == key(g['hn']) or same(g['w'], g['hn']) else L)['h'] = 1   # Chuck's lists
                 if g.get('at'): out['at'] = g['at']   # where it was played, when Chuck has said
                 return out
             doc[c] = {'rounds': [{'name': names[i], 'games': [None if g is None else show(g, i == 0) for g in lv]}
@@ -363,22 +364,24 @@ def place(levels, rows):
             if not k[i] and k[1 - i]: return i
         return None
     def walk(n):
-        g, rank, listed = n['g'], 10 ** 6, False
+        g, rank = n['g'], 10 ** 6
         for x in n['kids']: rank = min(rank, walk(x))
+        k, r = n['kids'], None
         if g:
-            hit = next((i for i, r in enumerate(rows) if (is_(g['w'], r['top']) and is_(g['l'], r['bot']))
-                        or (is_(g['w'], r['bot']) and is_(g['l'], r['top']))), None)
-            if hit is not None:
-                r, rank, listed = rows[hit], min(rank, hit), True
-                g['top'] = 0 if is_(g['w'], r['top']) else 1
-                g['home'], g['at'] = r['home'], r['at']
-        k = n['kids']
+            r = next((r for r in rows if (is_(g['w'], r['top']) and is_(g['l'], r['bot']))
+                      or (is_(g['w'], r['bot']) and is_(g['l'], r['top']))), None)
+            if r:
+                g['home'] = None
+                if r['at']: g['at'] = r['at']
+                g['hn'] = r['top'] if r['home'] == 0 else None   # the team at home
+        # A team's first game (nothing feeds it): drawn the way Chuck listed it, home team on top. A later game stays
+        # where the bracket puts it, the team from the upper half on top; the listing only says who was home.
+        if g and r and not any(x['g'] for x in k):
+            rank = min(rank, rows.index(r))
+            g['top'] = 0 if is_(g['w'], r['top']) else 1
         if k:
             if k[1]['rank'] < k[0]['rank']: k.reverse()   # the half holding the earlier-listed game goes up
-            if g and listed:
-                if came_from(n, g['l'] if g['top'] else g['w']) == 1: k.reverse()   # a listed game: its top team's half
-            elif g:
-                g['top'] = 1 if came_from(n, g['w']) == 1 else 0
+            if g and any(x['g'] for x in k): g['top'] = 1 if came_from(n, g['w']) == 1 else 0
         n['rank'] = rank
         return rank
     root = node(len(levels) - 1, 0)
