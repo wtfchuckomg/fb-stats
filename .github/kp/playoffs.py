@@ -303,7 +303,8 @@ def write_years(games, out, order):
                 W, L = team(g['w'], g['ws']), team(g['l'], g['ls'])
                 for t, n in ((W, g['w']), (L, g['l'])):
                     if seeds.get(key(n)): t['sd'] = seeds[key(n)]
-                ot = {'ot': 1} if g['ot'] else {}
+                # "PEN": a tie decided on penetrations (1969 SM North over SM South), else overtime
+                ot = {'ot': g['ot'] if isinstance(g['ot'], str) else 1} if g['ot'] else {}
                 out = {'a': L, 'b': W, 'w': 1, **ot} if g['top'] else {'a': W, 'b': L, **ot}   # w: the bottom team won
                 if lead and g['home'] is not None: out['b' if g['home'] else 'a']['h'] = 1   # at home in the first round
                 if g.get('at'): out['at'] = g['at']   # where it was played, when Chuck has said
