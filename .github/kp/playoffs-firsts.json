@@ -1744,6 +1744,48 @@
         "Sub-State",
         "State"
       ]
+    },
+    "1991": {
+      "6A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ]
     }
   },
   "1972": {
@@ -3439,6 +3481,70 @@
       "Lewis at Hanston",
       "Dexter at Claflin",
       "Hanston at Cheylin"
+    ]
+  },
+  "1991": {
+    "6A": [
+      "SM West at SM South",
+      "Lawrence at Olathe North",
+      "Emporia at Washburn Rural",
+      "Garden City at Derby"
+    ],
+    "5A": [
+      "Pittsburg at Blue Valley",
+      "Highland Park at Ottawa",
+      "Liberal at Ark City",
+      "Buhler at Newton"
+    ],
+    "4A": [
+      "Tonganoxie at Sabetha",
+      "Baldwin at KC Ward",
+      "Chanute at Louisburg",
+      "Parsons at Riverton",
+      "Abilene at Santa Fe Trail",
+      "Goodland at Clay Center",
+      "Mulvane at Andover",
+      "Scott City at Andale"
+    ],
+    "3A": [
+      "Immaculata at Nemaha Valley",
+      "Hillsboro at Silver Lake",
+      "Central Heights at Osage City",
+      "Erie at Eureka",
+      "Halstead at Cheney",
+      "Sterling at Smoky Valley",
+      "Norton at Plainville",
+      "Holcomb at Cimarron"
+    ],
+    "2-1A": [
+      "Valley Falls at Highland",
+      "Riley County at Onaga",
+      "Waverly at Burlingame",
+      "Sedan at Pittsburg Colgan",
+      "Kinsley at Caldwell",
+      "Victoria at Moundridge",
+      "Atwood at Ellis",
+      "Sublette at Dighton"
+    ],
+    "8M-I": [
+      "Pleasanton at Altoona-Midway",
+      "Sedgwick at Attica",
+      "Canton-Galva at Pretty Prairie",
+      "Hanover at Bennington",
+      "Otis-Bison at Pike Valley",
+      "Cunningham at Inman",
+      "Jetmore at Minneola-Fowler",
+      "Sharon Springs at Ingalls"
+    ],
+    "8M-II": [
+      "LeRoy at Bern",
+      "Dexter at St. Paul",
+      "Tescott at Hope",
+      "Tipton at Hillcrest",
+      "Northern Valley at Lucas-Luray",
+      "Triplains at Morland",
+      "Lewis at Claflin",
+      "Rolla at Hanston"
     ]
   }
 }
