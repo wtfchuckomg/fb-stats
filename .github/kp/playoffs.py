@@ -242,6 +242,8 @@ def write_years(games, out, order):
     for y, c, rnd, w, ws, l, ls, ot, top, home in games:
         by.setdefault(y, {}).setdefault(c, []).append({'r': rnd, 'w': w, 'ws': ws, 'l': l, 'ls': ls, 'ot': ot, 'top': top, 'home': home})
     firsts = read_firsts()
+    f = HERE / 'playoffs-firsts.json'
+    sites = json.loads(f.read_text()).get('sites', {}) if f.exists() else {}
     ydir = out / 'years'
     ydir.mkdir(exist_ok=True)
     index, lost = {}, 0
@@ -281,6 +283,11 @@ def write_years(games, out, order):
                 n = max(said, key=said.count) if said else ''
                 if not n or n in used: n = PAD[min(d, len(PAD) - 1)]
                 used.add(n); names.insert(0, n)
+            # where a later round was played (Chuck's list: 1969's title games)
+            for n, lv in zip(names, levels):
+                at = sites.get(str(y), {}).get(c, {}).get(n)
+                for g in lv:
+                    if g and at: g['at'] = at
             if y in firsts: levels = place(levels, firsts[y])
             # Seeds, where the bracket is the manual's seeded one: 6A-4A since 2019 (East, then West, eight games a side
             # paired 1-16, 8-9, 4-13, 5-12, 2-15, 7-10, 3-14, 6-11) and 3A-1A since 2024. The higher seed sits on top
@@ -299,7 +306,7 @@ def write_years(games, out, order):
                 ot = {'ot': 1} if g['ot'] else {}
                 out = {'a': L, 'b': W, 'w': 1, **ot} if g['top'] else {'a': W, 'b': L, **ot}   # w: the bottom team won
                 if lead and g['home'] is not None: out['b' if g['home'] else 'a']['h'] = 1   # at home in the first round
-                if g.get('at'): out['at'] = g['at']   # a neutral site
+                if g.get('at'): out['at'] = g['at']   # where it was played, when Chuck has said
                 return out
             doc[c] = {'rounds': [{'name': names[i], 'games': [None if g is None else show(g, i == 0) for g in lv]}
                       for i, lv in enumerate(levels)],

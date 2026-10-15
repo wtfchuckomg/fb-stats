@@ -26,20 +26,40 @@
       "Bishop Carroll at Dodge City"
     ],
     "3A": [
-      "Kapaun Mt Carmel vs. Thomas More Prep",
-      "Beloit vs. Ottawa"
+      "Thomas More Prep at Kapaun Mt Carmel",
+      "Ottawa at Beloit"
     ],
     "2A": [
-      "Ellinwood vs. Stockton",
-      "Prairie View vs. Atchison County"
+      "Stockton at Ellinwood",
+      "Atchison County at Prairie View"
     ],
     "1A": [
-      "Little River vs. Macksville",
-      "Eskridge vs. St Mary's Colgan"
+      "Macksville at Little River",
+      "St Mary's Colgan at Eskridge"
     ],
     "8M": [
-      "Paxico vs. Scandia",
-      "Copeland vs. Haviland"
+      "Scandia at Paxico",
+      "Haviland at Copeland"
     ]
+  },
+  "sites": {
+    "_": "Where a later round was played: year \u2192 class \u2192 round \u2192 site.",
+    "1969": {
+      "4A": {
+        "State": "Kansas State"
+      },
+      "3A": {
+        "State": "Wichita State"
+      },
+      "2A": {
+        "State": "Salina High School"
+      },
+      "1A": {
+        "State": "Emporia State"
+      },
+      "8M": {
+        "State": "Great Bend HS"
+      }
+    }
   }
 }
