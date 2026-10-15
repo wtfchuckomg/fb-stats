@@ -381,34 +381,40 @@
         "State"
       ],
       "5A": [
+        "District",
         "Regional",
         "Sub-State",
         "State"
       ],
       "1A": [
+        "District",
         "Regional",
         "Sub-State",
         "State"
       ],
       "4A": [
+        "District",
         "Bi-District",
         "Regional",
         "Sub-State",
         "State"
       ],
       "3A": [
+        "District",
         "Bi-District",
         "Regional",
         "Sub-State",
         "State"
       ],
       "2A": [
+        "District",
         "Bi-District",
         "Regional",
         "Sub-State",
         "State"
       ],
       "8M": [
+        "District",
         "Bi-District",
         "Regional",
         "Sub-State",
@@ -1128,7 +1134,15 @@
       "Goddard - Hays",
       "Kapaun Mt Carmel - Winfield",
       "Chanute - Emporia",
-      "Olathe South - Washburn Rural"
+      "Olathe South - Washburn Rural",
+      "Goddard at Campus",
+      "Salina Central at Hays",
+      "El Dorado vs. Kapaun Mt Carmel at Bishop Carroll",
+      "Winfield at Arkansas City",
+      "Chanute at Pittsburg",
+      "Paola at Emporia",
+      "Blue Valley at Olathe South",
+      "Washburn Rural at Shawnee Heights"
     ],
     "4A": [
       "Ulysses - Norton",
@@ -1138,7 +1152,23 @@
       "Fredonia - Columbus",
       "Osawatomie - St Thomas Aquinas",
       "Tonganoxie - Baldwin",
-      "Perry-Lecompton - Hiawatha"
+      "Perry-Lecompton - Hiawatha",
+      "Scott City at Ulysses",
+      "Phillipsburg at Norton",
+      "Lyons at Nickerson",
+      "Pratt at Kingman",
+      "Maize at Wellington",
+      "Andover at Circle",
+      "Wamego at Clay Center",
+      "Sacred Heart at Chapman",
+      "Eureka at Fredonia",
+      "Girard at Columbus",
+      "Louisburg at Osawatomie",
+      "De Soto at St Thomas Aquinas",
+      "Tonganoxie at Sumner",
+      "Santa Fe Trail at Baldwin",
+      "Royal Valley at Perry-Lecompton",
+      "Atchison County at Hiawatha"
     ],
     "3A": [
       "Hoxie - Lakin",
@@ -1148,7 +1178,23 @@
       "Sabetha - Wellsville",
       "Silver Lake - Osage City",
       "Belle Plaine - Neodesha",
-      "Central Heights - Southeast (Cherokee)"
+      "Central Heights - Southeast (Cherokee)",
+      "Decatur at Hoxie",
+      "Lakin at Hugoton",
+      "Osborne at Plainville",
+      "Ness City at Kinsley",
+      "Clearwater at Fairfield",
+      "Remington at Hillsboro",
+      "Southeast of Saline at Herington",
+      "Beloit at Belleville",
+      "Horton at Sabetha",
+      "Wellsville at Basehor",
+      "Silver Lake at Rossville",
+      "Chase County at Osage City",
+      "Bluestem at Belle Plaine",
+      "Caney Valley at Neodesha",
+      "Prairie View at Central Heights",
+      "Southeast (Cherokee) at Erie"
     ],
     "2A": [
       "Frontenac - Jayhawk-Linn",
@@ -1158,13 +1204,37 @@
       "Moundridge - Claflin",
       "Sedan - Garden Plain",
       "Cimarron - Syracuse",
-      "Rawlins County - Victoria"
+      "Rawlins County - Victoria",
+      "St Mary's Colgan at Frontenac",
+      "Jayhawk-Linn at Uniontown",
+      "Crest at Pomona",
+      "Valley Falls at McLouth",
+      "Troy at Jefferson County North",
+      "Frankfort at Axtell",
+      "Clifton-Clyde at Valley Heights",
+      "Luckey at Lincoln",
+      "Centre at Moundridge",
+      "Claflin at St. John",
+      "Central-Burden at Sedan",
+      "Trinity at Garden Plain",
+      "Cimarron at Sublette",
+      "Syracuse at Elkhart",
+      "Rawlins County at St Francis",
+      "Victoria at Otis-Bison"
     ],
     "1A": [
-      "Baileyville - Burrton",
+      "Baileyville - Burlingame",
       "Waverly - Cedar Vale",
       "Canton-Galva - Little River",
-      "South Barber - Jetmore"
+      "South Barber - Jetmore",
+      "Baileyville at St. George",
+      "Burlingame at Williamsburg",
+      "Hartford at Waverly",
+      "Thayer at Cedar Vale",
+      "Marquette at Canton-Galva",
+      "Little River at Central Christian",
+      "Caldwell at South Barber",
+      "Jetmore at Greeley County"
     ],
     "8M": [
       "Brewster - Grinnell",
@@ -1174,7 +1244,22 @@
       "Kensington - Waconda East",
       "Mankato - Midway-Denton",
       "Dorrance - Bennington",
-      "Argonia - LeRoy"
+      "Argonia - LeRoy",
+      "Brewster at Golden Plains",
+      "Grinnell at Wallace County",
+      "Satanta at Rolla",
+      "Ensign at Fowler",
+      "Cunningham at Skyline",
+      "Ransom at Gorham",
+      "Logan at Eastern Heights",
+      "Kensington at Lebanon",
+      "Waconda East at Glasco",
+      "Mankato at Hillcrest",
+      "Elwood at Midway-Denton",
+      "Quivira Heights at Dorrance",
+      "Bennington at St. John's Military",
+      "Argonia at South Haven",
+      "LeRoy at Hamilton"
     ]
   },
   "districts": {
@@ -1246,6 +1331,571 @@
           "District",
           "Garden City at Great Bend",
           "Garden City",
+          null,
+          null
+        ]
+      ],
+      "5A": [
+        [
+          "District",
+          "Goddard at Campus",
+          "Goddard",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Salina Central at Hays",
+          "Hays",
+          null,
+          null
+        ],
+        [
+          "District",
+          "El Dorado vs. Kapaun Mt Carmel at Bishop Carroll",
+          "Kapaun Mt Carmel",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Winfield at Arkansas City",
+          "Winfield",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Chanute at Pittsburg",
+          "Chanute",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Paola at Emporia",
+          "Emporia",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Blue Valley at Olathe South",
+          "Olathe South",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Washburn Rural at Shawnee Heights",
+          "Washburn Rural",
+          null,
+          null
+        ]
+      ],
+      "4A": [
+        [
+          "District",
+          "Scott City at Ulysses",
+          "Ulysses",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Phillipsburg at Norton",
+          "Norton",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Lyons at Nickerson",
+          "Nickerson",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Pratt at Kingman",
+          "Pratt",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Maize at Wellington",
+          "Wellington",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Andover at Circle",
+          "Andover",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Wamego at Clay Center",
+          "Clay Center",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Sacred Heart at Chapman",
+          "Sacred Heart",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Eureka at Fredonia",
+          "Fredonia",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Girard at Columbus",
+          "Columbus",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Louisburg at Osawatomie",
+          "Osawatomie",
+          null,
+          null
+        ],
+        [
+          "District",
+          "De Soto at St Thomas Aquinas",
+          "St Thomas Aquinas",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Tonganoxie at Sumner",
+          "Tonganoxie",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Santa Fe Trail at Baldwin",
+          "Baldwin",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Royal Valley at Perry-Lecompton",
+          "Perry-Lecompton",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Atchison County at Hiawatha",
+          "Hiawatha",
+          null,
+          null
+        ]
+      ],
+      "3A": [
+        [
+          "District",
+          "Decatur at Hoxie",
+          "Hoxie",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Lakin at Hugoton",
+          "Lakin",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Osborne at Plainville",
+          "Plainville",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Ness City at Kinsley",
+          "Ness City",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Clearwater at Fairfield",
+          "Clearwater",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Remington at Hillsboro",
+          "Hillsboro",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Southeast of Saline at Herington",
+          "Herington",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Beloit at Belleville",
+          "Belleville",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Horton at Sabetha",
+          "Sabetha",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Wellsville at Basehor",
+          "Wellsville",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Silver Lake at Rossville",
+          "Silver Lake",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Chase County at Osage City",
+          "Osage City",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Bluestem at Belle Plaine",
+          "Belle Plaine",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Caney Valley at Neodesha",
+          "Neodesha",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Prairie View at Central Heights",
+          "Central Heights",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Southeast (Cherokee) at Erie",
+          "Southeast (Cherokee)",
+          null,
+          null
+        ]
+      ],
+      "2A": [
+        [
+          "District",
+          "St Mary's Colgan at Frontenac",
+          "Frontenac",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Jayhawk-Linn at Uniontown",
+          "Jayhawk-Linn",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Crest at Pomona",
+          "Pomona",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Valley Falls at McLouth",
+          "Valley Falls",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Troy at Jefferson County North",
+          "Troy",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Frankfort at Axtell",
+          "Axtell",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Clifton-Clyde at Valley Heights",
+          "Clifton-Clyde",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Luckey at Lincoln",
+          "Lincoln",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Centre at Moundridge",
+          "Moundridge",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Claflin at St. John",
+          "Claflin",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Central-Burden at Sedan",
+          "Sedan",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Trinity at Garden Plain",
+          "Garden Plain",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Cimarron at Sublette",
+          "Cimarron",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Syracuse at Elkhart",
+          "Syracuse",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Rawlins County at St Francis",
+          "Rawlins County",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Victoria at Otis-Bison",
+          "Victoria",
+          null,
+          null
+        ]
+      ],
+      "1A": [
+        [
+          "District",
+          "Baileyville at St. George",
+          "Baileyville",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Burlingame at Williamsburg",
+          "Burlingame",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Hartford at Waverly",
+          "Waverly",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Thayer at Cedar Vale",
+          "Cedar Vale",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Marquette at Canton-Galva",
+          "Canton-Galva",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Little River at Central Christian",
+          "Little River",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Caldwell at South Barber",
+          "South Barber",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Jetmore at Greeley County",
+          "Jetmore",
+          null,
+          null
+        ]
+      ],
+      "8M": [
+        [
+          "District",
+          "Brewster at Golden Plains",
+          "Brewster",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Grinnell at Wallace County",
+          "Grinnell",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Satanta at Rolla",
+          "Satanta",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Ensign at Fowler",
+          "Fowler",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Cunningham at Skyline",
+          "Cunningham",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Ransom at Gorham",
+          "Ransom",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Logan at Eastern Heights",
+          "Logan",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Kensington at Lebanon",
+          "Kensington",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Waconda East at Glasco",
+          "Waconda East",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Mankato at Hillcrest",
+          "Mankato",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Elwood at Midway-Denton",
+          "Midway-Denton",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Quivira Heights at Dorrance",
+          "Dorrance",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Bennington at St. John's Military",
+          "Bennington",
+          null,
+          null
+        ],
+        [
+          "District",
+          "Argonia at South Haven",
+          "Argonia",
+          null,
+          null
+        ],
+        [
+          "District",
+          "LeRoy at Hamilton",
+          "LeRoy",
           null,
           null
         ]
