@@ -1168,7 +1168,15 @@
       "Tonganoxie at Sumner",
       "Santa Fe Trail at Baldwin",
       "Royal Valley at Perry-Lecompton",
-      "Atchison County at Hiawatha"
+      "Atchison County at Hiawatha",
+      "Norton at Ulysses",
+      "Nickerson at Pratt",
+      "Andover at Wellington",
+      "Clay Center vs. Sacred Heart at Kansas Wesleyan",
+      "Columbus at Fredonia",
+      "St Thomas Aquinas at Osawatomie",
+      "Tonganoxie at Baldwin",
+      "Perry-Lecompton at Hiawatha"
     ],
     "3A": [
       "Hoxie - Lakin",
@@ -1194,7 +1202,15 @@
       "Bluestem at Belle Plaine",
       "Caney Valley at Neodesha",
       "Prairie View at Central Heights",
-      "Southeast (Cherokee) at Erie"
+      "Southeast (Cherokee) at Erie",
+      "Lakin at Hoxie",
+      "Ness City at Plainville",
+      "Clearwater at Hillsboro",
+      "Belleville at Herington",
+      "Sabetha at Wellsville",
+      "Silver Lake at Osage City",
+      "Belle Plaine at Neodesha",
+      "Central Heights at Southeast (Cherokee)"
     ],
     "2A": [
       "Frontenac - Jayhawk-Linn",
@@ -1216,11 +1232,19 @@
       "Centre at Moundridge",
       "Claflin at St. John",
       "Central-Burden at Sedan",
-      "Trinity at Garden Plain",
+      "Hutch Trinity at Garden Plain",
       "Cimarron at Sublette",
       "Syracuse at Elkhart",
       "Rawlins County at St Francis",
-      "Victoria at Otis-Bison"
+      "Victoria at Otis-Bison",
+      "Frontenac at Jayhawk-Linn",
+      "Pomona at Valley Falls",
+      "Troy at Axtell",
+      "Clifton-Clyde at Lincoln",
+      "Moundridge at Claflin",
+      "Sedan at Garden Plain",
+      "Cimarron at Syracuse",
+      "Victoria at Rawlins County"
     ],
     "1A": [
       "Baileyville - Burlingame",
@@ -1259,7 +1283,15 @@
       "Quivira Heights at Dorrance",
       "Bennington at St. John's Military",
       "Argonia at South Haven",
-      "LeRoy at Hamilton"
+      "LeRoy at Hamilton",
+      "Grinnell at Brewster",
+      "Fowler at Satanta",
+      "Cunningham at Minneola",
+      "Logan at Ransom",
+      "Waconda East at Kensington",
+      "Midway-Denton at Mankato",
+      "Bennington vs. Dorrance at Russell",
+      "LeRoy at Argonia"
     ]
   },
   "districts": {
@@ -1701,7 +1733,7 @@
         ],
         [
           "District",
-          "Trinity at Garden Plain",
+          "Hutch Trinity at Garden Plain",
           "Garden Plain",
           null,
           null
