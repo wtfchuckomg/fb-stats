@@ -2239,13 +2239,17 @@
       "Jefferson County North at Riley County",
       "Valley Falls at Madison",
       "Conway Springs at Moundridge",
-      "Victoria at Stockton"
+      "Victoria at Stockton",
+      "Riley County vs. Madison at Burlington High School",
+      "Victoria at Moundridge"
     ],
     "8M-I": [
       "Midway-Denton at Marmaton Valley",
       "Bennington at Centre",
       "Otis-Bison at Pretty Prairie",
-      "Jetmore at Greensburg"
+      "Jetmore at Greensburg",
+      "Centre at Midway-Denton",
+      "Greensburg at Otis-Bison"
     ],
     "8M-II": [
       "Westmoreland at Elwood",
@@ -2259,7 +2263,9 @@
       "Elwood at Tescott",
       "Hamilton at Attica",
       "Tipton at Northern Valley",
-      "Hanston at Brewster"
+      "Hanston at Brewster",
+      "Tescott at Attica",
+      "Northern Valley at Hanston"
     ]
   }
 }
