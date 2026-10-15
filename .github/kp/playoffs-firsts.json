@@ -2000,5 +2000,81 @@
       "Tipton at Lenora",
       "Chase at Montezuma"
     ]
+  },
+  "1987": {
+    "6A": [
+      "KC Schlagle at KC Wyandotte",
+      "Lawrence at Olathe North",
+      "Manhattan at Emporia",
+      "Dodge City at Derby"
+    ],
+    "5A": [
+      "Bishop Miege at Washburn Rural",
+      "Blue Valley at Pittsburg",
+      "Ark City vs. Wichita Kapaun at Carpenter Stadium, Wichita South HS",
+      "McPherson at Liberal"
+    ],
+    "4A": [
+      "Atchison at Marysville",
+      "DeSoto at Topeka Hayden",
+      "Paola at Baldwin",
+      "Fredonia at Caney Valley",
+      "Council Grove at Abilene",
+      "Augusta at Maize",
+      "Wellington at Pratt",
+      "Norton at Scott City",
+      "Topeka Hayden at Atchison",
+      "Fredonia at Paola",
+      "Maize at Abilene",
+      "Scott City at Pratt"
+    ],
+    "3A": [
+      "Nemaha Valley at Horton",
+      "St. Marys at Rossville",
+      "Burlington at Jayhawk-Linn",
+      "Central Burden at Galena",
+      "Ellsworth at Hillsboro",
+      "Lyons at Halstead",
+      "Oakley at Plainville",
+      "Lakin at Medicine Lodge",
+      "Rossville at Nemaha Valley",
+      "Burlington at Central Burden",
+      "Halstead at Ellsworth",
+      "Medicine Lodge at Plainville"
+    ],
+    "2-1A": [
+      "Troy at Onaga",
+      "Frankfort at Riley County",
+      "Pomona at Lebo",
+      "Frontenac vs. Hartford at Burlington",
+      "Udall vs. Sacred Heart at Kansas Wesleyan, Salina",
+      "Conway Springs at St. John",
+      "Stockton at Atwood",
+      "Victoria at Cimarron",
+      "Riley County at Onaga",
+      "Pomona at Frontenac",
+      "Sacred Heart at Conway Springs",
+      "Cimarron at Stockton"
+    ],
+    "8M-I": [
+      "Centre at Bennington",
+      "Sedgwick at Otis-Bison",
+      "Greensburg at Sharon Springs",
+      "St. Paul at Midway-Denton"
+    ],
+    "8M-II": [
+      "Bern at Westmoreland",
+      "Wakefield at Jewell",
+      "LeRoy at Dexter",
+      "Burrton at Attica",
+      "Tipton at Lucas-Luray",
+      "Northern Valley at Morland",
+      "Ransom vs. Weskan at Sharon Springs",
+      "Lewis at Rolla",
+      "Westmoreland at Wakefield",
+      "Attica at LeRoy",
+      "Northern Valley at Tipton",
+      "Weskan at Rolla"
+    ]
   }
 }
