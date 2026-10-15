@@ -420,6 +420,47 @@
         "Sub-State",
         "State"
       ]
+    },
+    "1982": {
+      "6A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "1A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "2A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ]
     }
   },
   "1972": {
@@ -2001,5 +2042,35 @@
         ]
       ]
     }
+  },
+  "1982": {
+    "6A": [
+      "SM Northwest vs. SM South",
+      "Wichita East at Derby"
+    ],
+    "5A": [
+      "Goddard vs. Kapaun Mt Carmel at Carpenter Stadium, Wichita South HS",
+      "Bishop Miege at Emporia"
+    ],
+    "4A": [
+      "Norton at Wellington",
+      "Santa Fe Trail at Iola"
+    ],
+    "3A": [
+      "Smith Center at Clearwater",
+      "Wellsville at Neodesha"
+    ],
+    "2A": [
+      "Clifton-Clyde at Uniontown",
+      "Johnson at Sterling"
+    ],
+    "1A": [
+      "Hartford at Baileyville",
+      "Ashland vs. Little River at Lyons High School Stadium"
+    ],
+    "8M": [
+      "Northern Valley at Brewster",
+      "Lucas-Luray at Midway-Denton"
+    ]
   }
 }
