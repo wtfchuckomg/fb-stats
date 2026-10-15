@@ -3218,7 +3218,7 @@
       "Wichita Kapaun at Goddard",
       "Valley Center at Salina Central",
       "Washburn Rural at Pittsburg",
-      "Salina Central at Wichita Kapaun"
+      "Salina Central vs. Wichita Kapaun at Carpenter Stadium, Wichita South HS"
     ],
     "4A": [
       "Atchison at Atchison County",
@@ -3232,7 +3232,9 @@
       "Atchison vs. KC Ward",
       "DeSoto vs. Chanute",
       "Caney Valley vs. Chaparral",
-      "Norton at Chapman"
+      "Norton at Chapman",
+      "DeSoto at Atchison",
+      "Chaparral at Norton"
     ],
     "3A": [
       "Nemaha Valley at Immaculata",
@@ -3246,7 +3248,9 @@
       "Nemaha Valley vs. Silver Lake",
       "Wellsville vs. Humboldt",
       "Belleville at Hesston",
-      "Smith Center vs. Sublette"
+      "Smith Center vs. Sublette",
+      "Silver Lake at Wellsville",
+      "Smith Center at Hesston"
     ],
     "2-1A": [
       "Highland at Frankfort",
@@ -3260,7 +3264,9 @@
       "Frankfort vs. Linn",
       "Waverly vs. Madison at Burlington High School",
       "Garden Plain vs. Peabody",
-      "Atwood vs. LaCrosse"
+      "Atwood vs. LaCrosse",
+      "Frankfort vs. Madison at Burlington",
+      "Garden Plain at Atwood"
     ],
     "8M-I": [
       "Pike Valley at Elwood",
@@ -3274,7 +3280,9 @@
       "Pike Valley at Ell-Saline",
       "Chetopa vs. Burrton",
       "Attica vs. Ashland",
-      "Northern Valley vs. Jetmore"
+      "Northern Valley vs. Jetmore",
+      "Ell-Saline at Burrton",
+      "Ashland at Northern Valley"
     ],
     "8M-II": [
       "Bern at BV Randolph",
@@ -3288,7 +3296,9 @@
       "BV Randolph vs. Hamilton",
       "Claflin vs. Jewell",
       "Kensington vs. Weskan",
-      "Hanston vs. Lewis"
+      "Hanston vs. Lewis",
+      "Hamilton at Claflin",
+      "Kensington at Hanston"
     ]
   }
 }
