@@ -24,7 +24,7 @@ const LEAGUES = [
   {slug:'flint-hills-league', name:"Flint Hills League", teams:["Council Grove", "Mission Valley", "Osage City", "Wabaunsee", "West Franklin"]},
   {slug:'frontier-league', name:"Frontier League", teams:["Baldwin", "Bonner Springs", "Eudora", "Louisburg", "Ottawa", "Paola", "Tonganoxie"]},
   {slug:'great-west-activities-conference', name:"Great West Activities Conference", teams:["Cimarron", "Colby", "Goodland", "Holcomb", "Hugoton", "Scott City", "Ulysses"]},
-  {slug:'greater-wichita-athletic-league', name:"Greater Wichita Athletic League", teams:["Bishop Carroll", "Kapaun Mt Carmel", "North", "Wichita East", "Wichita Heights", "Wichita Northwest", "Wichita South", "Wichita Southeast", "Wichita West"]},
+  {slug:'greater-wichita-athletic-league', name:"Greater Wichita Athletic League", teams:["Bishop Carroll", "Kapaun Mt Carmel", "Wichita North", "Wichita East", "Wichita Heights", "Wichita Northwest", "Wichita South", "Wichita Southeast", "Wichita West"]},
   {slug:'heart-of-america', name:"Heart of America", teams:["Hutch Trinity", "Inman", "Marion", "Moundridge", "Remington", "Sedgwick", "Sterling"]},
   {slug:'hi-plains-league', name:"Hi-Plains League", teams:["Lakin", "Southwestern Heights", "Syracuse"]},
   {slug:'kaw-valley-conference', name:"Kaw Valley Conference", teams:["Bishop Ward", "Maranatha"]},

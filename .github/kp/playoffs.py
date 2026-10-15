@@ -37,7 +37,7 @@ SAME = {
     'KC Ward': 'Bishop Ward', 'Ward': 'Bishop Ward', 'Miege': 'Bishop Miege', 'SE-Saline': 'Southeast of Saline',
     'Southeast-Saline': 'Southeast of Saline', 'SE-Cherokee': 'Southeast (Cherokee)', 'Southeast-Cherokee': 'Southeast (Cherokee)',
     'Clifton-Cylde': 'Clifton-Clyde', 'LaCrosse': 'La Crosse', 'Lacrosse': 'La Crosse', 'Free State': 'Lawrence Free State',
-    'Wichita North': 'North', 'TMP': 'Thomas More Prep', 'Hays TMP': 'Thomas More Prep', 'TMP-Marian': 'Thomas More Prep',
+    'TMP': 'Thomas More Prep', 'Hays TMP': 'Thomas More Prep', 'TMP-Marian': 'Thomas More Prep',
     'Salina Sacred Heart': 'Sacred Heart', 'Hutchinson Trinity': 'Hutch Trinity', 'Collegiate': 'Wichita Collegiate',
     'Maur Hill': 'Maur Hill-Mount', 'Maur Hill-Mount Academy': 'Maur Hill-Mount', 'St James Academy': 'St James',
     'Blue Valley SW': 'Blue Valley Southwest', 'Blue Valley NW': 'Blue Valley Northwest', 'Olathe NW': 'Olathe Northwest',

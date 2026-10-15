@@ -284,7 +284,7 @@ const ELEVEN_MAN = [
   "Labette County", "Lakin", "Lansing", "Larned", "Lawrence", "Lawrence Free State", "Leavenworth", "Liberal",
   "Louisburg", "Lyons", "Maize", "Maize South", "Manhattan", "Maranatha", "Marion", "Marysville",
   "Maur Hill-Mount", "McLouth", "McPherson", "Medicine Lodge", "Mill Valley", "Minneapolis", "Mission Valley", "Moundridge",
-  "Mulvane", "Nemaha Central", "Neodesha", "Newton", "Nickerson", "North", "Northeast-Arma", "Norton",
+  "Mulvane", "Nemaha Central", "Neodesha", "Newton", "Nickerson", "Northeast-Arma", "Norton",
   "Olathe East", "Olathe North", "Olathe Northwest", "Olathe South", "Olathe West", "Olpe", "Onaga", "Osage City",
   "Osawatomie", "Oskaloosa", "Ottawa", "Paola", "Parsons", "Perry-Lecompton", "Phillipsburg", "Piper",
   "Pittsburg", "Plainville", "Pleasant Ridge", "Prairie View", "Pratt", "Remington", "Republic County", "Riley County",
@@ -294,7 +294,7 @@ const ELEVEN_MAN = [
   "Smoky Valley", "Southeast of Saline", "Southwestern Heights", "Spring Hill", "St James", "St Mary's Colgan", "St Marys", "St Thomas Aquinas",
   "Sterling", "Syracuse", "Thomas More Prep", "Tonganoxie", "Topeka High", "Topeka West", "Turner", "Ulysses",
   "Uniontown", "Valley Center", "Valley Falls", "Valley Heights", "Wabaunsee", "Wamego", "Washburn Rural", "Washington",
-  "Wellington", "Wellsville", "West Franklin", "Wichita Collegiate", "Wichita East", "Wichita Heights", "Wichita Northwest", "Wichita South",
+  "Wellington", "Wellsville", "West Franklin", "Wichita Collegiate", "Wichita East", "Wichita Heights", "Wichita North", "Wichita Northwest", "Wichita South",
   "Wichita Southeast", "Wichita Trinity", "Wichita West", "Winfield", "Wyandotte",
 ];
 // The playoff round a game was, from its week (KSHSAA football manual, "Playoff round designations"): 11-man's

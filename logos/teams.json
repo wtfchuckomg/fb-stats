@@ -2041,16 +2041,16 @@
   "abbr": "Nickerson"
  },
  {
-  "name": "North",
-  "slug": "north",
+  "name": "Wichita North",
+  "slug": "wichita-north",
   "file": "North.png",
   "city": "",
   "w": 400,
   "h": 150,
   "aliases": [
-   "Wichita North"
+   "North"
   ],
-  "abbr": "North"
+  "abbr": "WN"
  },
  {
   "name": "Northeast-Arma",
