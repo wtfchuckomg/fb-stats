@@ -3488,13 +3488,17 @@
       "SM West at SM South",
       "Lawrence at Olathe North",
       "Emporia at Washburn Rural",
-      "Garden City at Derby"
+      "Garden City at Derby",
+      "SM West at Lawrence",
+      "Washburn Rural at Garden City"
     ],
     "5A": [
       "Pittsburg at Blue Valley",
       "Highland Park at Ottawa",
       "Liberal at Ark City",
-      "Buhler at Newton"
+      "Buhler at Newton",
+      "Blue Valley at Highland Park",
+      "Newton at Liberal"
     ],
     "4A": [
       "Tonganoxie at Sabetha",
@@ -3504,7 +3508,11 @@
       "Abilene at Santa Fe Trail",
       "Goodland at Clay Center",
       "Mulvane at Andover",
-      "Scott City at Andale"
+      "Scott City at Andale",
+      "Sabetha at KC Ward",
+      "Riverton at Louisburg",
+      "Goodland at Abilene",
+      "Andover at Scott City"
     ],
     "3A": [
       "Immaculata at Nemaha Valley",
@@ -3514,7 +3522,11 @@
       "Halstead at Cheney",
       "Sterling at Smoky Valley",
       "Norton at Plainville",
-      "Holcomb at Cimarron"
+      "Holcomb at Cimarron",
+      "Silver Lake at Nemaha Valley",
+      "Eureka at Central Heights",
+      "Smoky Valley at Cheney",
+      "Plainville at Cimarron"
     ],
     "2-1A": [
       "Valley Falls at Highland",
@@ -3524,7 +3536,11 @@
       "Kinsley at Caldwell",
       "Victoria at Moundridge",
       "Atwood at Ellis",
-      "Sublette at Dighton"
+      "Sublette at Dighton",
+      "Highland at Riley County",
+      "Pittsburg Colgan at Waverly",
+      "Caldwell at Moundridge",
+      "Atwood at Sublette"
     ],
     "8M-I": [
       "Pleasanton at Altoona-Midway",
@@ -3534,7 +3550,11 @@
       "Otis-Bison at Pike Valley",
       "Cunningham at Inman",
       "Jetmore at Minneola-Fowler",
-      "Sharon Springs at Ingalls"
+      "Sharon Springs at Ingalls",
+      "Attica at Pleasanton",
+      "Hanover at Canton-Galva",
+      "Inman at Otis-Bison",
+      "Minneola-Fowler at Sharon Springs"
     ],
     "8M-II": [
       "LeRoy at Bern",
@@ -3544,7 +3564,11 @@
       "Northern Valley at Lucas-Luray",
       "Triplains at Morland",
       "Lewis at Claflin",
-      "Rolla at Hanston"
+      "Rolla at Hanston",
+      "Bern at St. Paul",
+      "Tipton at Tescott",
+      "Triplains at Northern Valley",
+      "Claflin at Rolla"
     ]
   }
 }
