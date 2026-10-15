@@ -173,10 +173,12 @@ def main():
     for y, classes in (json.loads(f.read_text()).get('added', {}) if f.exists() else {}).items():
         if not y.isdigit(): continue
         for c, gs in classes.items():
-            for rnd, line, w, ws, ls in gs:
+            for rnd, line, w, ws, ls, *more in gs:
+                more = more[0] if more else {}   # {"ot": true} and/or {"adv": the team that went on though it lost}
                 a, b = [x.strip() for x in re.split(r'\s+(?:at|vs\.?)\s+', re.sub(r'\s+at\s+[^@]*$', '', line) if ' vs' in line else line)][:2]
                 l = b if key(a) == key(w) else a
-                games.append((int(y), c, rnd, w, ws, l, ls, False, 0, None))
+                games.append((int(y), c, rnd, w, ws, l, ls, bool(more.get('ot')), 0, None))
+                if more.get('adv'): ADVANCED[(int(y), c, key(w), key(l))] = more['adv']
     games = one_name(games)
     out = ROOT / 'playoffs'
     out.mkdir(exist_ok=True)
@@ -256,7 +258,8 @@ def write_years(games, out, order):
     by = {}
     named = {}   # game number → (its column's name, how far it is from the first column)
     for i, (y, c, rnd, w, ws, l, ls, ot, top, home) in enumerate(games):
-        by.setdefault(y, {}).setdefault(c, []).append({'r': rnd, 'w': w, 'ws': ws, 'l': l, 'ls': ls, 'ot': ot, 'top': top, 'home': home, 'i': i})
+        by.setdefault(y, {}).setdefault(c, []).append({'r': rnd, 'w': w, 'ws': ws, 'l': l, 'ls': ls, 'ot': ot, 'top': top, 'home': home, 'i': i,
+                                                       'adv': ADVANCED.get((y, c, key(w), key(l))) or w})
     firsts = read_firsts()
     f = HERE / 'playoffs-firsts.json'
     sites = json.loads(f.read_text()).get('sites', {}) if f.exists() else {}
@@ -283,7 +286,8 @@ def write_years(games, out, order):
                 for g in levels[0]:
                     for t in (((g['w'], g['l']) if not g['top'] else (g['l'], g['w'])) if g else (None, None)):
                         # the same name first; a short form or a typo only when nothing matches outright
-                        cand = [x for x in pool if t and key(x['w']) == key(t)] or [x for x in pool if t and same(x['w'], t)]
+                        # the team that went on from a game: its winner, or the loser a district's tiebreak sent on
+                        cand = [x for x in pool if t and key(x['adv']) == key(t)] or [x for x in pool if t and same(x['adv'], t)]
                         # KPreps' rounds are right: there a team's earlier win has to come from an earlier round
                         if y in KP_YEARS: cand = [x for x in cand if order.get(x['r'], 0) < order.get(g['r'], 0)]
                         # the latest earlier win: by round, then by the order the source printed them in
@@ -438,7 +442,7 @@ def place(levels, rows):
     def came_from(n, t):   # 0 or 1: the half a team came out of (the empty slot, for a team with a bye), else None
         k = [x['g'] for x in n['kids']]
         for i in (0, 1):
-            if k[i] and is_(k[i]['w'], t): return i
+            if k[i] and is_(k[i]['adv'], t): return i
         for i in (0, 1):
             if not k[i] and k[1 - i]: return i
         return None
@@ -480,6 +484,10 @@ def place(levels, rows):
     flat(root, len(levels) - 1)
     return out
 
+
+# (year, class, winner, loser) → the team that went on from that game anyway (1981: Clay Center lost to Wamego on the
+# last district Friday and still won District 7 on the tiebreak)
+ADVANCED = {}
 
 PAIRS = [(1, 16), (8, 9), (4, 13), (5, 12), (2, 15), (7, 10), (3, 14), (6, 11)]
 PAD = ['State', 'Sub-State', 'Quarterfinals', 'Second Round', 'First Round']
