@@ -46,7 +46,7 @@ function phTeam(t, won){
   return `<div class="ph-t${won ? ' won' : ''}">${t.sd ? `<i class="ph-sd">${t.sd}</i>` : ''}${markFor({name:t.n, abbr:shortName(t.n), color:'#4A4B4D'}, 18)}<span class="ph-n">${nm}</span>${t.h ? '<i class="ph-home" title="Home">H</i>' : ''}<b>${t.s ?? '?'}</b></div>`;
 }
 // Each team where it sat in the bracket; w marks the bottom one as the winner; PEN a tie settled on penetrations.
-const phGame = g => g ? `<div class="ph-g">${phTeam(g.a, !g.w)}${phTeam(g.b, !!g.w)}${g.ot && g.ot !== 'PEN' ? '<i>OT</i>' : ''}${g.ot === 'PEN' ? '<div class="ph-at">Advanced on penetrations</div>' : ''}${g.at ? `<div class="ph-at">at ${esc(g.at)}</div>` : ''}</div>` : '';
+const phGame = g => g ? `<div class="ph-g">${g.lbl ? `<div class="ph-lbl">${esc(g.lbl)}</div>` : ''}${phTeam(g.a, !g.w)}${phTeam(g.b, !!g.w)}${g.ot && g.ot !== 'PEN' ? '<i>OT</i>' : ''}${g.ot === 'PEN' ? '<div class="ph-at">Advanced on penetrations</div>' : ''}${g.at ? `<div class="ph-at">at ${esc(g.at)}</div>` : ''}</div>` : '';
 
 // The bracket on a grid: one row for each first-round game, and each later game spanning the rows of the two that
 // fed it, so it sits between them. Between the rounds, a connector joins each pair to the game they led to.

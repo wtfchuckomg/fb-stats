@@ -314,7 +314,19 @@
     ]
   },
   "rounds": {
-    "_": "What each round was called that year: year \u2192 class \u2192 names, first round to final."
+    "_": "What each round was called that year: year \u2192 class \u2192 names, first round to final.",
+    "1969": {
+      "5A": [
+        "Region",
+        "State"
+      ]
+    },
+    "1970": {
+      "5A": [
+        "Region",
+        "State"
+      ]
+    }
   },
   "1972": {
     "5A": [
@@ -802,5 +814,20 @@
       "Eastern Heights at LeRoy",
       "LeRoy at Moscow"
     ]
+  },
+  "labels": {
+    "_": "A name over a game: year \u2192 class \u2192 a team in that game (first round) \u2192 label.",
+    "1969": {
+      "5A": {
+        "Wichita North": "Region I",
+        "SM North": "Region II"
+      }
+    },
+    "1970": {
+      "5A": {
+        "Wichita North": "Region I",
+        "SM North": "Region II"
+      }
+    }
   }
 }

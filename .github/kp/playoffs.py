@@ -252,6 +252,7 @@ def write_years(games, out, order):
     sites = json.loads(f.read_text()).get('sites', {}) if f.exists() else {}
     notes = json.loads(f.read_text()).get('notes', {}) if f.exists() else {}
     called = json.loads(f.read_text()).get('rounds', {}) if f.exists() else {}
+    labels = json.loads(f.read_text()).get('labels', {}) if f.exists() else {}
     ydir = out / 'years'
     ydir.mkdir(exist_ok=True)
     index, lost = {}, 0
@@ -309,6 +310,10 @@ def write_years(games, out, order):
                 back = ['State', 'Sub-State', 'Quarterfinals']
                 rest = len(levels) - main - len(back)
                 names = ['Play-in'] * main + ['First Round', 'Second Round', 'Third Round'][:max(rest, 0)] + back[:len(levels) - main][::-1]
+            # a name over a first-round game (1969-70 5A: Region I, the Wichita game; Region II, Kansas City's)
+            for t, lbl in labels.get(str(y), {}).get(c, {}).items():
+                for g in levels[0]:
+                    if g and (key(g['w']) == key(t) or key(g['l']) == key(t)): g['lbl'] = lbl
             # where a later round was played (Chuck's list: 1969's title games)
             for n, lv in zip(names, levels):
                 here = sites.get(str(y), {}).get(c, {})
@@ -335,7 +340,8 @@ def write_years(games, out, order):
                 out = {'a': L, 'b': W, 'w': 1, **ot} if g['top'] else {'a': W, 'b': L, **ot}   # w: the bottom team won
                 if lead and g['home'] is not None: out['b' if g['home'] else 'a']['h'] = 1   # at home in the first round
                 if g.get('hn'): (W if key(g['w']) == key(g['hn']) or same(g['w'], g['hn']) else L)['h'] = 1   # Chuck's lists
-                if g.get('at'): out['at'] = g['at']   # where it was played, when Chuck has said
+                if g.get('at'): out['at'] = g['at']
+                if g.get('lbl'): out['lbl'] = g['lbl']   # where it was played, when Chuck has said
                 return out
             for d, lv in enumerate(levels):
                 for g in lv:
