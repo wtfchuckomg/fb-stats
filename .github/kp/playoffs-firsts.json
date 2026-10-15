@@ -3902,5 +3902,103 @@
       "Bishop Miege at Salina Central",
       "Liberal at Hays"
     ]
+  },
+  "1994": {
+    "6A": [
+      "BV Northwest at Olathe East",
+      "SM South at Lawrence",
+      "Junction City at Dodge City",
+      "Wichita NW at Derby",
+      "Lawrence at Olathe East",
+      "Dodge City at Derby"
+    ],
+    "5A": [
+      "Bishop Miege at Pittsburg",
+      "KC Schlagle at Salina Central",
+      "Ark City at Liberal",
+      "Maize at Salina South",
+      "Salina Central at Bishop Miege",
+      "Salina South at Liberal"
+    ],
+    "4A": [
+      "Hiawatha at Royal Valley",
+      "Basehor-Linwood at Perry-Lecompton",
+      "Spring Hill at Paola",
+      "Girard at Parsons",
+      "Santa Fe Trail at Abilene",
+      "Smoky Valley at Goodland",
+      "Andover at Wellington",
+      "Pratt at Scott City",
+      "Basehor-Linwood at Hiawatha",
+      "Paola at Girard",
+      "Goodland at Santa Fe Trail",
+      "Wellington at Scott City",
+      "Scott City at Santa Fe Trail",
+      "Hiawatha at Paola"
+    ],
+    "3A": [
+      "Nemaha Valley at Immaculata",
+      "Silver Lake at Marion",
+      "Wellsville at Humboldt",
+      "Cherryvale at Riverton",
+      "Cheney at Wichita Collegiate",
+      "Sterling at Riley County",
+      "Smith Center at Atwood",
+      "Oakley at Holcomb",
+      "Marion at Immaculata",
+      "Cherryvale at Wellsville",
+      "Wichita Collegiate at Riley County",
+      "Holcomb at Smith Center",
+      "Wellsville at Marion",
+      "Wichita Collegiate at Holcomb"
+    ],
+    "2-1A": [
+      "Centralia at Onaga",
+      "Frankfort at Lyndon",
+      "Olpe at Frontenac",
+      "Oxford at Garden Plain",
+      "Victoria at Stockton",
+      "Ell-Saline at Ness City",
+      "Inman at Greensburg",
+      "Sublette at Syracuse",
+      "Onaga at Frankfort",
+      "Frontenac at Garden Plain",
+      "Stockton at Ell-Saline",
+      "Inman at Sublette",
+      "Sublette at Stockton",
+      "Frankfort at Frontenac"
+    ],
+    "8M-I": [
+      "Crest at Chetopa",
+      "Peabody at Burrton",
+      "Hanover at Mankato",
+      "Bennington at Centre",
+      "Claflin at Pretty Prairie",
+      "South Barber at Coldwater",
+      "Quinter at Greeley County",
+      "Minneola-Fowler at Rolla",
+      "Burrton at Crest",
+      "Mankato at Bennington",
+      "Coldwater at Claflin",
+      "Greeley County at Minneola-Fowler",
+      "Coldwater at Minneola-Fowler",
+      "Crest at Bennington"
+    ],
+    "8M-II": [
+      "Elwood at Baileyville",
+      "LeRoy at St. Paul",
+      "Attica at Hope",
+      "Sylvan at Hillcrest",
+      "Kensington at Morland",
+      "Northern Valley at Brewster",
+      "Ransom at Hanston",
+      "Spearville at Ashland",
+      "St. Paul at Baileyville",
+      "Attica at Sylvan",
+      "Kensington at Northern Valley",
+      "Hanston at Ashland",
+      "Ashland at Kensington",
+      "Baileyville at Attica"
+    ]
   }
 }
