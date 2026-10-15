@@ -5210,5 +5210,103 @@
       "Northern Valley at Hanston",
       "Argonia at Midway-Denton"
     ]
+  },
+  "2001": {
+    "6A": [
+      "Lawrence Free State at Olathe North",
+      "SM East at Blue Valley North",
+      "Wichita Southeast vs. Wichita West at Carpenter Stadium, Wichita South HS",
+      "Manhattan at Hutchinson",
+      "Olathe North at SM East",
+      "Wichita West at Manhattan"
+    ],
+    "5A": [
+      "Pittsburg at Bishop Miege",
+      "Topeka Seaman at Aquinas",
+      "Salina Central at Salina South",
+      "Liberal at Andover",
+      "Aquinas at Pittsburg",
+      "Andover at Salina Central"
+    ],
+    "4A": [
+      "Chanute at Coffeyville",
+      "Paola at Fort Scott",
+      "Basehor-Linwood at Eudora",
+      "Sabetha at Holton",
+      "Santa Fe Trail at Wamego",
+      "Circle at Wellington",
+      "Nickerson at Smoky Valley",
+      "Scott City at Hugoton",
+      "Coffeyville at Fort Scott",
+      "Eudora at Sabetha",
+      "Wellington at Wamego",
+      "Scott City at Nickerson",
+      "Wellington at Scott City",
+      "Fort Scott at Sabetha"
+    ],
+    "3A": [
+      "Immaculata at Nemaha Valley",
+      "Northern Heights at Silver Lake",
+      "Frontenac at Central Heights",
+      "Neodesha at Baxter Springs",
+      "Hillsboro at Minneapolis",
+      "Conway Springs at Wichita Collegiate",
+      "Smith Center at Ellinwood",
+      "Lakin at Norton",
+      "Silver Lake at Immaculata",
+      "Frontenac at Neodesha",
+      "Minneapolis at Conway Springs",
+      "Norton at Smith Center",
+      "Neodesha at Immaculata",
+      "Smith Center at Conway Springs"
+    ],
+    "2-1A": [
+      "Centralia at Washington",
+      "Lyndon at Jefferson County North",
+      "Pittsburg Colgan at Olpe",
+      "Remington at Garden Plain",
+      "Sterling at Solomon",
+      "Claflin at Stockton",
+      "Leoti at St. Francis",
+      "Bucklin at Stanton County",
+      "Centralia at Lyndon",
+      "Garden Plain at Pittsburg Colgan",
+      "Claflin at Sterling",
+      "St. Francis at Stanton County",
+      "Pittsburg Colgan at Centralia",
+      "St. Francis at Claflin"
+    ],
+    "8M-I": [
+      "Crest at St. Paul",
+      "Pretty Prairie at Hartford",
+      "Centre at Little River",
+      "Baileyville at Hanover",
+      "Tribune at Waconda East",
+      "Quivira Heights at Jetmore",
+      "South Barber at St. John",
+      "South Gray at Ashland",
+      "Crest at Pretty Prairie",
+      "Hanover at Little River",
+      "Jetmore at Tribune",
+      "Ashland at South Barber",
+      "Little River at Pretty Prairie",
+      "Jetmore at South Barber"
+    ],
+    "8M-II": [
+      "Linn at Bern",
+      "Williamsburg at Hope",
+      "Cedar Vale at LeRoy",
+      "Haviland at Argonia",
+      "St. John's at Sylvan",
+      "Northern Valley at Eastern Heights",
+      "Weskan at Cheylin",
+      "Hanston at Deerfield",
+      "Hope at Bern",
+      "Haviland at Cedar Vale",
+      "Sylvan at Northern Valley",
+      "Cheylin at Hanston",
+      "Sylvan at Hanston",
+      "Bern at Haviland"
+    ]
   }
 }
