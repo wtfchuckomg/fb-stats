@@ -1660,6 +1660,18 @@
         "Sub-State",
         "State"
       ]
+    },
+    "1989": {
+      "6A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ]
     }
   },
   "1972": {
@@ -3159,6 +3171,24 @@
       "Hanston at Brewster",
       "Tescott at Attica",
       "Northern Valley at Hanston"
+    ]
+  },
+  "1989": {
+    "6A": [
+      "SM South - SM West",
+      "Lawrence - Olathe South",
+      "Dodge City - Wichita Southeast",
+      "Manhattan - Emporia",
+      "SM South at Lawrence",
+      "Manhattan at Dodge City"
+    ],
+    "5A": [
+      "Washburn Rural - Bishop Miege",
+      "Pittsburg - Coffeyville",
+      "Wichita Kapaun - Goddard",
+      "Salina Central - Valley Center",
+      "Washburn Rural at Pittsburg",
+      "Salina Central at Wichita Kapaun"
     ]
   }
 }
