@@ -2006,13 +2006,17 @@
       "KC Schlagle at KC Wyandotte",
       "Lawrence at Olathe North",
       "Manhattan at Emporia",
-      "Dodge City at Derby"
+      "Dodge City at Derby",
+      "KC Wyandotte vs. Lawrence at Haskell Stadium",
+      "Manhattan at Dodge City"
     ],
     "5A": [
       "Bishop Miege at Washburn Rural",
       "Blue Valley at Pittsburg",
       "Ark City vs. Wichita Kapaun at Carpenter Stadium, Wichita South HS",
-      "McPherson at Liberal"
+      "McPherson at Liberal",
+      "Washburn Rural at Pittsburg",
+      "Wichita Kapaun vs. McPherson at McPherson College"
     ],
     "4A": [
       "Atchison at Marysville",
@@ -2026,7 +2030,9 @@
       "Topeka Hayden at Atchison",
       "Fredonia at Paola",
       "Maize at Abilene",
-      "Scott City at Pratt"
+      "Scott City at Pratt",
+      "Paola at Atchison",
+      "Abilene at Pratt"
     ],
     "3A": [
       "Nemaha Valley at Horton",
@@ -2040,7 +2046,9 @@
       "Rossville at Nemaha Valley",
       "Burlington at Central Burden",
       "Halstead at Ellsworth",
-      "Medicine Lodge at Plainville"
+      "Medicine Lodge at Plainville",
+      "Medicine Lodge at Ellsworth",
+      "Central Burden at Rossville"
     ],
     "2-1A": [
       "Troy at Onaga",
@@ -2054,13 +2062,17 @@
       "Riley County at Onaga",
       "Pomona at Frontenac",
       "Sacred Heart at Conway Springs",
-      "Cimarron at Stockton"
+      "Cimarron at Stockton",
+      "Frontenac at Onaga",
+      "Sacred Heart at Stockton"
     ],
     "8M-I": [
       "Centre at Bennington",
       "Sedgwick at Otis-Bison",
       "Greensburg at Sharon Springs",
-      "St. Paul at Midway-Denton"
+      "St. Paul at Midway-Denton",
+      "Bennington at Midway-Denton",
+      "Otis-Bison at Greensburg"
     ],
     "8M-II": [
       "Bern at Westmoreland",
@@ -2074,7 +2086,9 @@
       "Westmoreland at Wakefield",
       "Attica at LeRoy",
       "Northern Valley at Tipton",
-      "Weskan at Rolla"
+      "Weskan at Rolla",
+      "Rolla at Northern Valley",
+      "Wakefield at Attica"
     ]
   }
 }
