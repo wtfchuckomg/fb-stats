@@ -3680,7 +3680,7 @@
       "Newton at Buhler",
       "Aquinas at Salina Central",
       "Salina Central at Blue Valley",
-      "Liberal at Newton at Fischer Field, Newton"
+      "Liberal at Newton"
     ],
     "4A": [
       "Sabetha at Maur Hill",
@@ -3761,6 +3761,58 @@
       "Rolla at Claflin",
       "Tescott at Midway-Denton",
       "Kensington at Claflin"
+    ]
+  },
+  "1993": {
+    "4A": [
+      "Atchison at Sabetha",
+      "Baldwin at KC Piper",
+      "Prairie View at Paola",
+      "Labette County at Parsons",
+      "Clay Center at Topeka Hayden",
+      "Andover at Circle",
+      "Goodland at Haven",
+      "Ulysses at Wellington"
+    ],
+    "3A": [
+      "Immaculata at Jeff Co. West",
+      "Herington at Rossville",
+      "Humboldt at Wellsville",
+      "Riverton at Erie",
+      "Wichita Collegiate at Douglass",
+      "Lyons at Belleville",
+      "Norton at Smith Center",
+      "Elkhart at Cimarron"
+    ],
+    "2-1A": [
+      "Jackson Heights at Troy",
+      "Riley County at Centralia",
+      "Olpe at Wabaunsee",
+      "Sedan at Frontenac",
+      "Garden Plain at Caldwell",
+      "Kinsley at Inman",
+      "Stockton at Osborne",
+      "Syracuse at Ness City"
+    ],
+    "8M-I": [
+      "Crest at Chetopa",
+      "Sedgwick at Norwich",
+      "Canton-Galva at Pretty Prairie",
+      "Mankato at Pike Valley",
+      "Quivira Heights at Ell-Saline",
+      "Spearville at Pratt-Skyline",
+      "South Gray at Coldwater",
+      "Cheylin at Quinter"
+    ],
+    "8M-II": [
+      "Axtell at Midway-Denton",
+      "St. Paul at LeRoy",
+      "Wakefield at Cedar Vale",
+      "Tipton at Jewell",
+      "Kensington at Palco",
+      "Weskan at Morland",
+      "Pawnee Heights at Claflin",
+      "Rolla at Ransom"
     ]
   }
 }
