@@ -44,8 +44,14 @@ const LEAGUES = [
   {slug:'united-kansas-conference', name:"United Kansas Conference", teams:["Basehor-Linwood", "De Soto", "Lansing", "Leavenworth", "Piper", "Seaman", "Shawnee Heights", "Spring Hill", "Topeka West", "Turner"]},
   {slug:'western-athletic-conference', name:"Western Athletic Conference", teams:["Dodge City", "Garden City", "Great Bend", "Hays", "Liberal"]},
 ];
+// A league KPreps keeps as an 11-man and an 8-man page ("Twin Valley League (8-Man)") is one league here with a tab
+// for each (Chuck, 2026-10-16): one name in the menu, and the page switches between them.
+const lgPlain = n => n.replace(/\s*\((?:8|6)-Man\)$/, '');
+const lgDivs = l => LEAGUES.filter(x => lgPlain(x.name) === lgPlain(l.name));
+const lgDivName = l => (l.name.match(/\(((?:8|6)-Man)\)$/) || [, '11-Man'])[1];
 // The Leagues menu, AVCTL first: its pages are on its own site, AVCTLstats.com.
-const LEAGUE_MENU = [{name:'AVCTL', href:`${AV_SITE}?standings`}, ...LEAGUES.map(l => ({name:l.name, href:`?league=${l.slug}`}))];
+const LEAGUE_MENU = [{name:'AVCTL', href:`${AV_SITE}?standings`},
+  ...LEAGUES.filter(l => lgDivs(l)[0] === l).map(l => ({name:lgPlain(l.name), href:`?league=${l.slug}`}))];
 
 const LG_Q = new URLSearchParams(location.search);
 const LG = LEAGUES.find(l => l.slug === LG_Q.get('league')) || null;   // the league whose page this is
@@ -64,8 +70,12 @@ function leagueNav(on){
   const tabs = av
     ? [['standings', 'Standings', '?standings'], ['players', 'Player Stats', '?avstats'], ['team', 'Team Stats', '?avstats=team']]
     : [['standings', 'Standings', `?${base}`], ['players', 'Player Stats', `?${base}&lgstats`], ['team', 'Team Stats', `?${base}&lgstats=team`]];
-  return `<section class="bcard lg-head"><div class="bhead-top"><h1 class="c-title">${esc(av ? 'AVCTL' : LG.name)}</h1></div>
-    <nav class="c-tabs lg-tabs" aria-label="League pages">${tabs.map(([k, label, href]) =>
+  // 11-man and 8-man, where the league has both: the same page for the other one
+  const divs = av ? [] : lgDivs(LG), page = {standings:'', players:'&lgstats', team:'&lgstats=team'}[on] ?? '';
+  const divTabs = divs.length > 1 ? `<nav class="tp-links lg-divs" aria-label="11-man or 8-man">${divs.map(l =>
+      `<a class="h-btn${l === LG ? ' on' : ''}" href="?league=${l.slug}${page}"${l === LG ? ' aria-current="page"' : ''}>${esc(lgDivName(l))}</a>`).join('')}</nav>` : '';
+  return `<section class="bcard lg-head"><div class="bhead-top"><h1 class="c-title">${esc(av ? 'AVCTL' : lgPlain(LG.name))}</h1></div>
+    ${divTabs}<nav class="c-tabs lg-tabs" aria-label="League pages">${tabs.map(([k, label, href]) =>
       `<a href="${href}"${k === on ? ' class="on" aria-current="page"' : ''}>${label}</a>`).join('')}</nav></section>`;
 }
 
