@@ -254,6 +254,7 @@ def write_years(games, out, order):
     notes = json.loads(f.read_text()).get('notes', {}) if f.exists() else {}
     called = json.loads(f.read_text()).get('rounds', {}) if f.exists() else {}
     labels = json.loads(f.read_text()).get('labels', {}) if f.exists() else {}
+    districts = json.loads(f.read_text()).get('districts', {}) if f.exists() else {}
     ydir = out / 'years'
     ydir.mkdir(exist_ok=True)
     index, lost = {}, 0
@@ -356,6 +357,11 @@ def write_years(games, out, order):
                       # a game the archive printed that no slot leads to (a name spelled two ways, a missing round)
                       **({'extra': [{'r': g['r'], 'a': team(g['w'], g['ws']), 'b': team(g['l'], g['ls']), **({'ot': 1} if g['ot'] else {})}
                                     for g in extra]} if extra else {})}
+        # Each first-round team's district, numbered down the bracket the way the paper drew it (Dist. 1, Dist. 2...)
+        for c in districts.get(str(y), []):
+            if c in doc:
+                for i, t in enumerate(t for g in doc[c]['rounds'][0]['games'] for t in ((g['a'], g['b']) if g else (None, None))):
+                    if t: t['dn'] = i + 1
         (ydir / f'{y}.json').write_text(json.dumps({'y': y, 'classes': doc}, separators=(',', ':')))
         index[y] = sorted(doc, key=lambda c: CLASS_ORDER.index(c) if c in CLASS_ORDER else 99)
     (ydir / 'index.json').write_text(json.dumps({str(y): index[y] for y in sorted(index, reverse=True)}, separators=(',', ':')))

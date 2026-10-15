@@ -1167,5 +1167,17 @@
       "Dorrance - Bennington",
       "Argonia - LeRoy"
     ]
+  },
+  "districts": {
+    "_": "Years whose first-round teams carry their district number, top to bottom, as the paper drew them.",
+    "1981": [
+      "6A",
+      "5A",
+      "4A",
+      "3A",
+      "2A",
+      "1A",
+      "8M"
+    ]
   }
 }

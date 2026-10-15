@@ -42,8 +42,8 @@ function phLoad(y){
 function phTeam(t, won){
   if (!t) return '<div class="ph-t empty"></div>';
   const name = esc(t.n), nm = t.p ? `<a href="?team=${encodeURIComponent(t.n)}">${name}</a>` : name;
-  // Its seed where the bracket was seeded, and in the first round an H for the team at home.
-  return `<div class="ph-t${won ? ' won' : ''}">${t.sd ? `<i class="ph-sd">${t.sd}</i>` : ''}${markFor({name:t.n, abbr:shortName(t.n), color:'#4A4B4D'}, 18)}<span class="ph-n">${nm}</span>${t.h ? '<i class="ph-home" title="Home">H</i>' : ''}<b>${t.s ?? '?'}</b></div>`;
+  // Its seed where the bracket was seeded (or its district, 1981 on), and in the first round an H for the team at home.
+  return `<div class="ph-t${won ? ' won' : ''}">${t.sd ? `<i class="ph-sd">${t.sd}</i>` : ''}${t.dn ? `<i class="ph-dist">Dist. ${t.dn}</i>` : ''}${markFor({name:t.n, abbr:shortName(t.n), color:'#4A4B4D'}, 18)}<span class="ph-n">${nm}</span>${t.h ? '<i class="ph-home" title="Home">H</i>' : ''}<b>${t.s ?? '?'}</b></div>`;
 }
 // Each team where it sat in the bracket; w marks the bottom one as the winner; PEN a tie settled on penetrations.
 const phGame = g => g ? `<div class="ph-g">${g.lbl ? `<div class="ph-lbl">${esc(g.lbl)}</div>` : ''}${phTeam(g.a, !g.w)}${phTeam(g.b, !!g.w)}${g.ot && g.ot !== 'PEN' ? '<i>OT</i>' : ''}${g.ot === 'PEN' ? '<div class="ph-at">Advanced on penetrations</div>' : ''}${g.at ? `<div class="ph-at">at ${esc(g.at)}</div>` : ''}</div>` : '';
@@ -70,7 +70,9 @@ function phBracketHtml(B){
   if (champ) cells.push(`<div class="ph-conn line" style="grid-column:${R * 2};grid-row:2 / span ${rows}"></div>`,
     `<div class="ph-h" style="grid-column:${R * 2 + 1}">Champion</div>`,
     `<div class="ph-cell ph-champ" style="grid-column:${R * 2 + 1};grid-row:2 / span ${rows}">${phTeam(Object.assign({}, champ, {s:'', h:0}), true)}</div>`);
-  const cols = Array.from({length:R}, () => 'minmax(190px,220px)').join(' 26px ') + (champ ? ' 26px minmax(160px,200px)' : '');
+  // a first column with district numbers in it is wider, so the names still fit
+  const dist = B.rounds[0].games.some(g => g && (g.a.dn || g.b.dn));
+  const cols = Array.from({length:R}, (_, r) => !r && dist ? 'minmax(240px,270px)' : 'minmax(190px,220px)').join(' 26px ') + (champ ? ' 26px minmax(160px,200px)' : '');
   return `<div class="ph-scroll"><div class="ph-grid" style="grid-template-columns:${cols};grid-template-rows:auto repeat(${rows}, minmax(64px, auto))">${cells.join('')}</div></div>`;
 }
 
