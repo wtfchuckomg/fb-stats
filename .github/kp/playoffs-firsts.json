@@ -211,6 +211,26 @@
       "8M": {
         "State": "Montezuma"
       }
+    },
+    "1977": {
+      "5A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "4A": {
+        "State": "Bishop Miege"
+      },
+      "3A": {
+        "State": "Wichita South"
+      },
+      "2A": {
+        "State": "Peabody"
+      },
+      "1A": {
+        "State": "Clyde"
+      },
+      "8M": {
+        "State": "Sharon"
+      }
     }
   },
   "notes": {
@@ -271,43 +291,7 @@
     ]
   },
   "rounds": {
-    "_": "What each round was called that year: year \u2192 class \u2192 names, first round to final.",
-    "1976": {
-      "5A": [
-        "Sub-State",
-        "State"
-      ],
-      "4A": [
-        "Regional",
-        "Sub-State",
-        "State"
-      ],
-      "3A": [
-        "District",
-        "Regional",
-        "Sub-State",
-        "State"
-      ],
-      "2A": [
-        "District Qualifying",
-        "District",
-        "Regional",
-        "Sub-State",
-        "State"
-      ],
-      "1A": [
-        "District",
-        "Regional",
-        "Sub-State",
-        "State"
-      ],
-      "8M": [
-        "Regional Qualifying",
-        "Regional",
-        "Sub-State",
-        "State"
-      ]
-    }
+    "_": "What each round was called that year: year \u2192 class \u2192 names, first round to final."
   },
   "1972": {
     "5A": [
@@ -621,6 +605,85 @@
       "Montezuma at Sharon",
       "Bogue vs. Luray at Russell HS",
       "Bogue at Montezuma"
+    ]
+  },
+  "1977": {
+    "5A": [
+      "SM West at Wichita Southeast at Cessna Stadium, Wichita State",
+      "Lawrence at SM North"
+    ],
+    "4A": [
+      "Washburn Rural at Pittsburg",
+      "Field Kindley at Bishop Miege",
+      "Great Bend at Winfield",
+      "Bishop Carroll at Dodge City",
+      "Bishop Miege at Washburn Rural",
+      "Winfield at Bishop Carroll",
+      "Winfield at Bishop Miege"
+    ],
+    "3A": [
+      "Goodland at Wamego",
+      "Abilene at Thomas More Prep",
+      "Larned at Goddard",
+      "Augusta at Wellington",
+      "Chaparral at Kapaun Mt Carmel at Wichita South",
+      "Fredonia at Girard",
+      "Blue Valley at De Soto",
+      "Bishop Ward at Garnett",
+      "Abilene at Goodland",
+      "Girard at Augusta",
+      "De Soto at Bishop Ward",
+      "Kapaun Mt Carmel at Goddard",
+      "Goodland at De Soto",
+      "Kapaun Mt Carmel at Augusta"
+    ],
+    "2A": [
+      "Jayhawk-Linn vs. McLouth at Eudora",
+      "Wichita County at Hugoton",
+      "Silver Lake at Marmaton Valley at Iola HS",
+      "Hanover at Immaculata",
+      "Greeley County at Garden Plain",
+      "Caldwell at Douglass",
+      "Hugoton at Greeley County",
+      "WaKeeney-Trego at Decatur",
+      "Herington at Beloit",
+      "Belle Plaine at Caldwell",
+      "Cherryvale at Peabody-Burns",
+      "Olpe vs. St Marys at Topeka Seaman HS",
+      "Immaculata vs. McLouth at Eudora HS",
+      "Hugoton at Decatur",
+      "Beloit vs. St Marys at Topeka Seaman HS",
+      "Peabody-Burns at Belle Plaine",
+      "McLouth at Baldwin",
+      "Decatur at Beloit",
+      "Baldwin at Peabody-Burns",
+      "Beloit at Peabody-Burns"
+    ],
+    "1A": [
+      "Fowler at Brewster",
+      "Ransom at Ashland",
+      "Quivira Heights at Pretty Prairie",
+      "Quinter at Clyde",
+      "St John's at Logan",
+      "Clifton vs. Hutch Trinity at Hutch CC",
+      "Highland at Luckey",
+      "St Mary's Colgan vs. Hope at Chapman HS",
+      "Hutch Trinity at Fowler",
+      "Pretty Prairie at Ashland",
+      "Clyde at Logan",
+      "Luckey at St Mary's Colgan",
+      "Fowler at Pretty Prairie",
+      "Clyde at St Mary's Colgan",
+      "Pretty Prairie at Clyde"
+    ],
+    "8M": [
+      "Jennings at Waconda East",
+      "Moscow at Bucklin",
+      "Sharon at LeRoy",
+      "Montezuma at Eastern Heights at Phillipsburg HS",
+      "Sharon at Moscow",
+      "Waconda East at Montezuma",
+      "Montezuma at Sharon"
     ]
   }
 }
