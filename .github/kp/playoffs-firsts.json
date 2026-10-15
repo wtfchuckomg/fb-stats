@@ -1645,19 +1645,25 @@
       "SM South vs. SM West at SM North",
       "Lawrence at Emporia",
       "Manhattan vs. Wichita East at Wichita Heights",
-      "Wichita Southeast at Dodge City"
+      "Wichita Southeast at Dodge City",
+      "Dodge City at Manhattan",
+      "Lawrence vs. SM West"
     ],
     "5A": [
       "Olathe South at Bishop Miege",
       "Paola at Pittsburg",
       "Kapaun Mt Carmel at Arkansas City",
-      "Hays at Bishop Carroll"
+      "Hays at Bishop Carroll",
+      "Kapaun Mt Carmel at Hays",
+      "Olathe South at Paola"
     ],
     "8M-I": [
       "Midway-Denton at BV Randolph",
       "Bennington at Mankato",
       "Hutch Central Christian at Quivira Heights",
-      "Greensburg at Grinnell"
+      "Greensburg at Grinnell",
+      "Midway-Denton vs. Mankato",
+      "Quivira Heights vs. Grinnell"
     ],
     "4A": [
       "De Soto vs. St Thomas Aquinas at Bishop Miege Stadium",
@@ -1671,7 +1677,9 @@
       "Chaparral at Colby",
       "St Thomas Aquinas at Maur Hill-Mount",
       "Santa Fe Trail at Fredonia",
-      "Clay Center at Andover"
+      "Clay Center at Andover",
+      "Maur Hill-Mount vs. Santa Fe Trail",
+      "Andover vs. Chaparral"
     ],
     "3A": [
       "Eudora at Rossville",
@@ -1685,7 +1693,9 @@
       "Hugoton at Plainville",
       "Rossville at Silver Lake",
       "Sedan at Burlington",
-      "Medicine Lodge at Southeast of Saline"
+      "Medicine Lodge at Southeast of Saline",
+      "Silver Lake vs. Sedan",
+      "Medicine Lodge vs. Plainville"
     ],
     "2A": [
       "Centralia at Jefferson County North",
@@ -1699,7 +1709,9 @@
       "Oxford at Claflin",
       "Ashland at Rawlins County",
       "Jefferson County North at Clifton-Clyde",
-      "St Mary's Colgan at Oskaloosa"
+      "St Mary's Colgan at Oskaloosa",
+      "Clifton-Clyde vs. St Mary's Colgan",
+      "Claflin vs. Rawlins County"
     ],
     "8M-II": [
       "Wakefield at Bern",
@@ -1713,7 +1725,9 @@
       "Bern at Tipton",
       "Lucas-Luray at Northern Valley",
       "Dexter at Coldwater",
-      "Fowler at Ingalls"
+      "Fowler at Ingalls",
+      "Tipton vs. Northern Valley",
+      "Coldwater vs. Ingalls"
     ],
     "1A": [
       "Marais des Cygnes at Baileyville",
