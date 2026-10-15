@@ -64,7 +64,7 @@ SAME = {
     'Centrallia': 'Centralia', "St. John's Beloit-Tipton": "St John's", 'Brewster-Triplains': 'Triplains-Brewster', 'N Valley': 'Northern Valley',
 }
 # Typos of schools that have no page here, so the same school reads the same way in every round.
-TYPO = {'Greesnsburg': 'Greensburg', 'Lurary': 'Luray', 'Lucus-Luray': 'Lucas-Luray', 'Waconada East': 'Waconda East',
+TYPO = {'Shawnee - St. Joe': 'Shawnee-St. Joseph', 'Greesnsburg': 'Greensburg', 'Lurary': 'Luray', 'Lucus-Luray': 'Lucas-Luray', 'Waconada East': 'Waconda East',
         'Mdiway-Denton': 'Midway-Denton', 'Quenomo': 'Quenemo', 'Marias des Cygnes': 'Marais des Cygnes',
         'Stanley-Blue Valley': 'Blue Valley', 'Blue Valley-Stanley': 'Blue Valley', 'North Center': 'North Central',
         'School for Deaf': 'Kansas School for the Deaf', 'School for the Deaf': 'Kansas School for the Deaf', 'KSD': 'Kansas School for the Deaf', 'Midway': 'Midway-Denton', 'MDCV': 'Marais des Cygnes', 'Marais des Cygnes Valley': 'Marais des Cygnes'}
@@ -360,7 +360,10 @@ def place(levels, rows):
     """Turn a winner-on-top bracket into the one that was drawn: the games Chuck listed in his order, each listed
     team where he put it, and every later game with the team from the upper half on top."""
     def node(j, i):
-        return {'g': levels[j][i] if i < len(levels[j]) else None, 'kids': [node(j - 1, 2 * i), node(j - 1, 2 * i + 1)] if j else []}
+        return {'j': j, 'g': levels[j][i] if i < len(levels[j]) else None, 'kids': [node(j - 1, 2 * i), node(j - 1, 2 * i + 1)] if j else []}
+    # The round every team played in: the first one with no empty slots. Games before it are play-ins for teams
+    # without a bye (1974 3A Shawnee-St. Joseph at Bonner Springs) and don't decide the order.
+    main = next((j for j, lv in enumerate(levels) if all(lv)), 0)
     def is_(a, b): return key(a) == key(b) or same(a, b)
     def came_from(n, t):   # 0 or 1: the half a team came out of (the empty slot, for a team with a bye), else None
         k = [x['g'] for x in n['kids']]
@@ -382,12 +385,16 @@ def place(levels, rows):
                 g['hn'] = r['top'] if r['home'] == 0 else None   # the team at home
         # A team's first game (nothing feeds it): drawn the way Chuck listed it, home team on top. A later game stays
         # where the bracket puts it, the team from the upper half on top; the listing only says who was home.
-        if g and r and not any(x['g'] for x in k):
-            rank = min(rank, rows.index(r))
+        first = g and r and n['j'] <= main
+        if n['j'] < main: rank = 10 ** 6
+        if first:
+            if n['j'] == main: rank = rows.index(r)
             g['top'] = 0 if is_(g['w'], r['top']) else 1
         if k:
             if k[1]['rank'] < k[0]['rank']: k.reverse()   # the half holding the earlier-listed game goes up
-            if g and any(x['g'] for x in k): g['top'] = 1 if came_from(n, g['w']) == 1 else 0
+            if first:
+                if came_from(n, g['l'] if g['top'] else g['w']) == 1: k.reverse()   # its listed top team's game goes up
+            elif g and any(x['g'] for x in k): g['top'] = 1 if came_from(n, g['w']) == 1 else 0
         n['rank'] = rank
         return rank
     root = node(len(levels) - 1, 0)

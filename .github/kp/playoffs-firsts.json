@@ -151,6 +151,26 @@
       "8M": {
         "State": "Russell"
       }
+    },
+    "1974": {
+      "5A": {
+        "State": "SM North"
+      },
+      "4A": {
+        "State": "Manhattan HS"
+      },
+      "3A": {
+        "State": "Fort Scott"
+      },
+      "2A": {
+        "State": "WaKeeney"
+      },
+      "1A": {
+        "State": "Pittsburg HS"
+      },
+      "8M": {
+        "State": "Larned HS"
+      }
     }
   },
   "notes": {
@@ -304,6 +324,40 @@
         "Regional",
         "State"
       ]
+    },
+    "1974": {
+      "5A": [
+        "Regional",
+        "State"
+      ],
+      "4A": [
+        "District",
+        "Regional",
+        "State"
+      ],
+      "3A": [
+        "District Qualifying",
+        "District",
+        "Regional",
+        "State"
+      ],
+      "2A": [
+        "District Qualifying",
+        "District",
+        "Regional",
+        "State"
+      ],
+      "1A": [
+        "District",
+        "Regional",
+        "State"
+      ],
+      "8M": [
+        "District Qualifying",
+        "District",
+        "Regional",
+        "State"
+      ]
     }
   },
   "1972": {
@@ -405,6 +459,61 @@
       "Rolla at Bucklin",
       "Paxico vs. Luray at Russell",
       "Skyline at Rolla"
+    ]
+  },
+  "1974": {
+    "5A": [
+      "Wichita North at SM North",
+      "SM Northwest at Wichita Southeast",
+      "Wichita Southeast at SM North"
+    ],
+    "4A": [
+      "Derby at Garden City",
+      "Seaman at Junction City",
+      "Harmon at Manhattan",
+      "Bishop Miege at Pittsburg",
+      "Seaman at Bishop Miege",
+      "Garden City at Manhattan",
+      "Bishop Miege at Manhattan"
+    ],
+    "3A": [
+      "Shawnee-St. Joseph at Bonner Springs",
+      "Scott City at Buhler",
+      "Paola at Fort Scott",
+      "Andale vs. Kapaun Mt Carmel at Bishop Carroll",
+      "Council Grove vs. Bonner Springs at Emporia",
+      "Kapaun Mt Carmel at Scott City",
+      "Fort Scott at Bonner Springs",
+      "Kapaun Mt Carmel at Fort Scott"
+    ],
+    "2A": [
+      "Lyndon at Wellsville",
+      "Uniontown at Caney Valley",
+      "Oxford at Sacred Heart",
+      "Frankfort at Beloit",
+      "WaKeeney-Trego at Southwestern Heights",
+      "Wellsville at Caney Valley",
+      "Beloit at WaKeeney-Trego",
+      "Sacred Heart vs. Wellsville at Haskell Stadium, Lawrence",
+      "Sacred Heart at WaKeeney-Trego"
+    ],
+    "1A": [
+      "Quinter vs. Natoma at Plainville",
+      "Chase vs. Garden Plain at Goddard",
+      "St John's vs. Luckey at Bishop Stadium, Manhattan",
+      "St Mary's Colgan vs. Highland at Pittsburg High School",
+      "St Mary's Colgan vs. Garden Plain at Goddard",
+      "Natoma vs. St John's"
+    ],
+    "8M": [
+      "Scandia at McCracken",
+      "Waconda East at Jennings",
+      "LeRoy vs. Norwich at Kingman",
+      "Lewis at Deerfield",
+      "Waconda East at Jewell",
+      "McCracken vs. Luray at Russell",
+      "Luray vs. Lewis at Larned",
+      "Norwich vs. Waconda East at Mankato"
     ]
   }
 }
