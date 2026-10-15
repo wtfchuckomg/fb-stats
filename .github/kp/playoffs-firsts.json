@@ -171,6 +171,26 @@
       "8M": {
         "State": "Larned HS"
       }
+    },
+    "1975": {
+      "5A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "3A": {
+        "State": "Cessna Stadium, Wichita State"
+      },
+      "2A": {
+        "State": "Cherryvale"
+      },
+      "1A": {
+        "State": "Brewster"
+      },
+      "8M": {
+        "State": "Russell HS"
+      },
+      "4A": {
+        "State": "Bishop Miege"
+      }
     }
   },
   "notes": {
@@ -358,6 +378,41 @@
         "Regional",
         "State"
       ]
+    },
+    "1975": {
+      "5A": [
+        "Regional",
+        "State"
+      ],
+      "4A": [
+        "Quarterfinals",
+        "Semifinals",
+        "State"
+      ],
+      "3A": [
+        "District",
+        "Quarterfinals",
+        "Semifinals",
+        "State"
+      ],
+      "2A": [
+        "District Play-in",
+        "District",
+        "Quarterfinals",
+        "Semifinals",
+        "State"
+      ],
+      "1A": [
+        "District",
+        "Quarterfinals",
+        "Semifinals",
+        "State"
+      ],
+      "8M": [
+        "Quarterfinals",
+        "Semifinals",
+        "State"
+      ]
     }
   },
   "1972": {
@@ -514,6 +569,80 @@
       "McCracken vs. Luray at Russell",
       "Luray vs. Lewis at Larned",
       "Norwich vs. Waconda East at Mankato"
+    ]
+  },
+  "1975": {
+    "5A": [
+      "Wichita North at SM South",
+      "Wichita Southeast at SM North"
+    ],
+    "4A": [
+      "Manhattan at Bishop Ward",
+      "Dodge City at Junction City",
+      "Field Kindley at Bishop Miege",
+      "Derby at Emporia",
+      "Junction City at Derby",
+      "Bishop Miege at Bishop Ward",
+      "Derby at Bishop Miege"
+    ],
+    "3A": [
+      "Russell at Andale",
+      "Haven at Augusta",
+      "Goddard at Kapaun Mt Carmel at Friends",
+      "Concordia at Hayden",
+      "Wamego at Atchison County",
+      "Tonganoxie at Shawnee-St. Joseph at Bishop Miege",
+      "Parsons at Gardner-Edgerton",
+      "Girard at Fort Scott",
+      "Kapaun Mt Carmel at Andale",
+      "Hayden at Augusta",
+      "Girard at Parsons",
+      "Tonganoxie at Wamego",
+      "Kapaun Mt Carmel at Augusta",
+      "Wamego at Parsons"
+    ],
+    "2A": [
+      "Nemaha Valley at Marmaton Valley",
+      "Oakley at Lakin",
+      "Sedan at Garden Plain",
+      "Peabody-Burns at Ellsworth",
+      "Hanover at Beloit",
+      "Erie at Cherryvale",
+      "Uniontown at Pomona at Ottawa HS",
+      "Wellsville at Oskaloosa",
+      "Nemaha Valley at Silver Lake",
+      "Nemaha Valley at Oskaloosa",
+      "Beloit at Oakley",
+      "Ellsworth at Garden Plain",
+      "Cherryvale at Pomona at Ottawa HS",
+      "Garden Plain at Beloit",
+      "Cherryvale vs. Nemaha Valley at Seneca",
+      "Beloit at Cherryvale"
+    ],
+    "1A": [
+      "Brewster at Quinter",
+      "Fowler at Pretty Prairie",
+      "Macksville at Stafford",
+      "Wilson at Hope at Herington HS",
+      "Burrton at St Xavier at Junction City HS",
+      "St John's at Baileyville",
+      "Olpe at Highland",
+      "McCune at St Mary's Colgan",
+      "St John's vs. Brewster at Colby HS",
+      "Macksville at Fowler",
+      "St Mary's Colgan vs. Olpe at Emporia State",
+      "Hope vs. Burrton at Halstead",
+      "Burrton at St Mary's Colgan",
+      "Brewster at Macksville",
+      "St Mary's Colgan at Brewster"
+    ],
+    "8M": [
+      "Lebanon at Gridley",
+      "Triplains at Jewell",
+      "Healy at Luray at Russell HS",
+      "Montezuma at Cunningham",
+      "Jewell at Cunningham at Pratt Skyline HS",
+      "Luray vs. Lebanon at Mankato"
     ]
   }
 }
