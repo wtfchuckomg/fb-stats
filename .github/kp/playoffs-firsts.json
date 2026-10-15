@@ -71,6 +71,21 @@
     "1970": {
       "5A": {
         "State": "SM South High School"
+      },
+      "4A": {
+        "State": "Gowans Field, Hutchinson"
+      },
+      "3A": {
+        "State": "Welch Stadium, Emporia State"
+      },
+      "2A": {
+        "State": "Salina High School"
+      },
+      "1A": {
+        "State": "McPherson College Stadium"
+      },
+      "8M": {
+        "State": "Pratt Skyline High School"
       }
     }
   }
