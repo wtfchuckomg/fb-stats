@@ -1176,7 +1176,11 @@
       "Columbus at Fredonia",
       "St Thomas Aquinas at Osawatomie",
       "Tonganoxie at Baldwin",
-      "Perry-Lecompton at Hiawatha"
+      "Perry-Lecompton at Hiawatha",
+      "Pratt at Norton",
+      "Sacred Heart at Wellington",
+      "Fredonia at St Thomas Aquinas",
+      "Hiawatha at Baldwin"
     ],
     "3A": [
       "Hoxie - Lakin",
@@ -1210,7 +1214,11 @@
       "Sabetha at Wellsville",
       "Silver Lake at Osage City",
       "Belle Plaine at Neodesha",
-      "Central Heights at Southeast (Cherokee)"
+      "Central Heights at Southeast (Cherokee)",
+      "Plainville at Hoxie",
+      "Hillsboro at Belleville",
+      "Wellsville at Silver Lake",
+      "Neodesha at Central Heights"
     ],
     "2A": [
       "Frontenac - Jayhawk-Linn",
@@ -1244,7 +1252,11 @@
       "Moundridge at Claflin",
       "Sedan at Garden Plain",
       "Cimarron at Syracuse",
-      "Victoria at Rawlins County"
+      "Victoria at Rawlins County",
+      "Valley Falls at Frontenac",
+      "Axtell at Clifton-Clyde",
+      "Claflin at Garden Plain",
+      "Cimarron at Victoria"
     ],
     "1A": [
       "Baileyville - Burlingame",
@@ -1291,7 +1303,11 @@
       "Waconda East at Kensington",
       "Midway-Denton at Mankato",
       "Bennington vs. Dorrance at Russell",
-      "LeRoy at Argonia"
+      "LeRoy at Argonia",
+      "Brewster at Fowler",
+      "Ransom at Cunningham",
+      "Waconda East at Midway-Denton",
+      "Dorrance at Argonia"
     ]
   },
   "districts": {
