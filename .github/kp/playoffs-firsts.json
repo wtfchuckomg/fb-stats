@@ -359,6 +359,18 @@
       },
       "2-1A": {
         "State": "KSU Stadium, Manhattan"
+      },
+      "5A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "4A": {
+        "State": "Memorial Stadium, KU"
+      },
+      "8M-I": {
+        "State": "Russell HS"
+      },
+      "8M-II": {
+        "State": "Russell HS"
       }
     }
   },
