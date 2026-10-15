@@ -1912,6 +1912,48 @@
         "Sub-State",
         "State"
       ]
+    },
+    "1995": {
+      "6A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ]
     }
   },
   "1972": {
@@ -3999,6 +4041,100 @@
       "Hanston at Ashland",
       "Ashland at Kensington",
       "Baileyville at Attica"
+    ]
+  },
+  "1995": {
+    "6A": [
+      "Olathe North - Blue Valley NW",
+      "Lawrence - SM East",
+      "Derby at Garden City",
+      "Manhattan at Wichita NW",
+      "Manhattan at Derby",
+      "Olathe North at Lawrence"
+    ],
+    "5A": [
+      "Independence at Blue Valley",
+      "Liberal at Ark City",
+      "Hays at Valley Center",
+      "Salina Central at KC Schlagle",
+      "Valley Center at Liberal",
+      "Blue Valley at Salina Central"
+    ],
+    "4A": [
+      "Atchison at Hiawatha",
+      "Tonganoxie at Basehor-Linwood",
+      "Paola at Spring Hill",
+      "Baxter Springs at Girard",
+      "Abilene at Topeka Hayden",
+      "Goodland at Smoky Valley",
+      "Wellington at Andover",
+      "Ulysses at Pratt",
+      "Hiawatha at Tonganoxie",
+      "Paola at Baxter Springs",
+      "Smoky Valley at Topeka Hayden",
+      "Pratt at Andover",
+      "Hiawatha at Paola",
+      "Topeka Hayden at Pratt"
+    ],
+    "3A": [
+      "Immaculata at Jeff Co. West",
+      "Marion at Silver Lake",
+      "Eureka at Wellsville",
+      "Riverton at Erie",
+      "Wichita Collegiate at Medicine Lodge",
+      "Riley County at Lyons",
+      "Atwood at Belleville",
+      "SW Heights at WaKeeney",
+      "Silver Lake at Immaculata",
+      "Wellsville at Riverton",
+      "Lyons at Wichita Collegiate",
+      "Belleville at WaKeeney",
+      "Belleville at Wichita Collegiate",
+      "Silver Lake at Riverton"
+    ],
+    "2-1A": [
+      "Onaga at Troy",
+      "Wabaunsee at Frankfort",
+      "Frontenac at Olpe",
+      "Garden Plain at Sedan",
+      "Stockton at Victoria",
+      "Ellis at Ell-Saline",
+      "St. John at Fairfield",
+      "Syracuse at Dighton",
+      "Frankfort at Onaga",
+      "Olpe at Garden Plain",
+      "Ell-Saline at Stockton",
+      "Dighton at Fairfield",
+      "Stockton at Dighton",
+      "Frankfort at Garden Plain"
+    ],
+    "8M-I": [
+      "Chetopa at Crest",
+      "Little River at Goessel",
+      "Mankato at BV Randolph",
+      "Centre at Bennington",
+      "Macksville at Otis-Bison",
+      "Coldwater at South Barber",
+      "Greeley County at Quinter",
+      "Rolla at Bucklin",
+      "Crest at Little River",
+      "Centre at Mankato",
+      "Quinter at Coldwater",
+      "Little River at Centre"
+    ],
+    "8M-II": [
+      "Axtell at Midway-Denton",
+      "Cedar Vale at LeRoy",
+      "Hope at South Haven",
+      "Hillcrest at Sylvan",
+      "Palco at Kensington",
+      "Triplains at Northern Valley",
+      "Hanston at Bazine",
+      "Ashland at Spearville",
+      "LeRoy at Axtell",
+      "Ashland at Hanston",
+      "Kensington at Ashland",
+      "LeRoy at Sylvan"
     ]
   }
 }
