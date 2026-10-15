@@ -3622,5 +3622,89 @@
       "St. Paul at Tescott",
       "Claflin at Northern Valley"
     ]
+  },
+  "1992": {
+    "6A": [
+      "SM South at SM North",
+      "Olathe North at Lawrence",
+      "Washburn Rural vs. Wichita North",
+      "Derby at Dodge City"
+    ],
+    "5A": [
+      "Blue Valley at Pittsburg",
+      "Augusta at Liberal",
+      "Newton at Buhler",
+      "Aquinas at Salina Central"
+    ],
+    "4A": [
+      "Sabetha at Maur Hill",
+      "KC Piper at Tonganoxie",
+      "Louisburg at Burlington",
+      "Girard at Labette County",
+      "Santa Fe Trail at Chapman",
+      "Council Grove at Andover",
+      "Smoky Valley at Goodland",
+      "Wellington at Scott City",
+      "Tonganoxie at Maur Hill",
+      "Louisburg at Girard",
+      "Chapman at Andover",
+      "Wellington at Smoky Valley"
+    ],
+    "3A": [
+      "Nemaha Valley at Wathena",
+      "Rossville at Herington",
+      "Osage City at Jayhawk-Linn",
+      "Erie at SE-Cherokee",
+      "Douglass at Hesston",
+      "Belleville at Sterling",
+      "Plainville at Oakley",
+      "Hoisington at Holcomb",
+      "Nemaha Valley at Rossville",
+      "Osage City at Erie",
+      "Sterling at Hesston",
+      "Holcomb at Plainville"
+    ],
+    "2-1A": [
+      "Troy at Onaga",
+      "Centralia at Riley County",
+      "Wabaunsee at Olpe",
+      "Frontenac at Sedan",
+      "Caldwell at Garden Plain",
+      "Sacred Heart at Kinsley",
+      "Victoria at Stockton",
+      "Ness City at Sublette",
+      "Onaga at Riley County",
+      "Olpe at Frontenac",
+      "Garden Plain at Kinsley",
+      "Stockton at Ness City"
+    ],
+    "8M-I": [
+      "Altoona-Midway at Pleasanton",
+      "Norwich at Sedgwick",
+      "Pretty Prairie at Canton-Galva",
+      "Pike Valley at Southern Cloud",
+      "Sylvan at Otis-Bison",
+      "Cunningham at Jetmore",
+      "Minneola-Fowler at South Gray",
+      "Quinter at Cheylin",
+      "Norwich at Altoona-Midway",
+      "Pretty Prairie at Pike Valley",
+      "Otis-Bison at Cunningham",
+      "South Gray at Quinter"
+    ],
+    "8M-II": [
+      "Midway-Denton at Baileyville",
+      "LeRoy at St. Paul",
+      "Cedar Vale at Hope",
+      "Jewell at Tescott",
+      "Palco at Kensington",
+      "Morland at Brewster",
+      "Claflin at Lewis",
+      "Ransom at Rolla",
+      "St. Paul at Midway-Denton",
+      "Hope at Tescott",
+      "Kensington at Morland",
+      "Rolla at Claflin"
+    ]
   }
 }
