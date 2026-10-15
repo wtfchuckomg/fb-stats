@@ -50,6 +50,7 @@ SAME = {
     'Saint Francis': 'St Francis', 'Southern Coffey': 'Southern Coffey County', 'Jeff North': 'Jefferson County North',
     'Jeff Co. North': 'Jefferson County North', 'Jeff Co. West': 'Jefferson West', 'Lousiburg': 'Louisburg',
     'Saliina Central': 'Salina Central', 'Sylvan-Lucas': 'Sylvan-Lucas Unified', 'Minneola-Fowler': 'Minneola',
+    # Basehor and Linwood merged in 1987: the archive's "Basehor" (1979) stays its own school (Chuck).
     # Gardner became Gardner-Edgerton in 1979: the archive's "Gardner" (1975, 1978) stays its own school (Chuck).
     'Crest': 'Colony-Crest', 'WaKeeney': 'WaKeeney-Trego', 'Trego': 'WaKeeney-Trego',
     'Peabody': 'Peabody-Burns', 'Topeka-Cornerstone Family': 'Topeka Cornerstone Family', 'Shawnee-St. Joseph': 'St Joseph',
@@ -58,7 +59,7 @@ SAME = {
     'Pittsburg-Colgan': "St Mary's Colgan", 'Stocktion': 'Stockton', 'Lawrence Free': 'Lawrence Free State', 'Andover High': 'Andover',
     "Beloit-St. John's": "St John's", 'Dodge': 'Dodge City', 'Wichita Kapun': 'Kapaun Mt Carmel', 'Aqunas': 'St Thomas Aquinas',
     'Biship Miege': 'Bishop Miege', 'Lawence': 'Lawrence', 'Centrailia': 'Centralia', 'Frankforst': 'Frankfort',
-    'Hays-TMP-Marian': 'Thomas More Prep', 'Blue Valley Randolph': 'BV Randolph', 'Logan-Palco': 'Logan', 'Basehor': 'Basehor-Linwood',
+    'Hays-TMP-Marian': 'Thomas More Prep', 'Blue Valley Randolph': 'BV Randolph', 'Logan-Palco': 'Logan',
     'Conway': 'Conway Springs', 'Caney': 'Caney Valley', 'Hutch-Trinity': 'Hutch Trinity',
     'Pasons': 'Parsons', 'Anderson Counity': 'Anderson County', 'Pretty Praire': 'Pretty Prairie', 'Pretty Prarie': 'Pretty Prairie',
     'So. Coffey Co.': 'Southern Coffey County', 'Wichita Carroll': 'Bishop Carroll', 'Desoto': 'De Soto', 'LaCross': 'La Crosse',
@@ -299,8 +300,8 @@ def write_years(games, out, order):
             # one are play-ins.
             # 1975 and before (Chuck, 2026-10-16): District, Regional, Semifinals, State, counted back from the final;
             # games before the first full round are District Qualifying, or Regional Qualifying with no districts.
-            # The same through 1979, the years Chuck has gone through, with the semifinal called Sub-State from 1976.
-            elif y <= 1979:
+            # The same through 1980, the years Chuck has gone through, with the semifinal called Sub-State from 1976.
+            elif y <= 1980:
                 main = next((j for j, lv in enumerate(levels) if all(lv)), 0)
                 back = ['State', 'Semifinals' if y <= 1975 else 'Sub-State', 'Regional', 'District'][:len(levels) - main][::-1]
                 names = [('District' if 'District' in back else 'Regional') + ' Qualifying'] * main + back
@@ -395,11 +396,15 @@ def read_firsts():
     return out
 
 
-SITE_WORDS = {'high', 'school', 'stadium', 'college', 'state', 'university', 'field', 'community', 'memorial', 'bowl'}
+SITE_WORDS = {'high', 'school', 'stadium', 'college', 'state', 'university', 'field', 'community', 'memorial', 'bowl',
+              # a school's side of town isn't its town: "SM South" isn't from "Wichita South HS"
+              'north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest', 'central'}
 def near_site(team, at):
     """Whether a neutral site carries a team's town in its name: a word of four letters or more they share."""
     words = lambda n: {w for w in re.findall(r'[a-z]+', n.lower()) if len(w) >= 4 and w not in SITE_WORDS}
-    return bool(words(at) & (words(team) | words(site(team) or '')))
+    # the other ways the school is written count too ("St. John's-Beloit" is St John's, at Beloit HS)
+    also = ' '.join(k for k, v in SAME.items() if site(team) and site(v) == site(team))
+    return bool(words(at) & (words(team) | words(site(team) or '') | words(also)))
 
 
 def place(levels, rows):

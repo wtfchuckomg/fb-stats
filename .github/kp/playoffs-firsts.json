@@ -277,6 +277,29 @@
       "8M": {
         "State": "Stockton HS"
       }
+    },
+    "1980": {
+      "6A": {
+        "State": "Carpenter Stadium, Wichita South HS"
+      },
+      "5A": {
+        "State": "Fort Scott HS"
+      },
+      "4A": {
+        "State": "Fredonia HS"
+      },
+      "3A": {
+        "State": "Logan Field, Topeka"
+      },
+      "2A": {
+        "State": "Meade HS"
+      },
+      "1A": {
+        "State": "Herington HS"
+      },
+      "8M": {
+        "State": "Minneola HS"
+      }
     }
   },
   "notes": {
@@ -894,7 +917,7 @@
       "Hillsboro at Ellinwood",
       "Wabaunsee at Sacred Heart",
       "Silver Lake at Chase County",
-      "Basehor-Linwood at Rossville",
+      "Basehor at Rossville",
       "Belle Plaine at Caney Valley",
       "Sedan at Halstead",
       "Smith Center at Hoxie",
@@ -944,6 +967,104 @@
       "Minneola at Norwich",
       "Kensington vs. McCracken at Fort Hays State",
       "Skyline at Minneola"
+    ]
+  },
+  "1980": {
+    "6A": [
+      "SM South vs. Wichita Southeast at Wichita South HS",
+      "Wichita East at Olathe",
+      "Leavenworth at SM West at SM South HS",
+      "SM Northwest at Washington",
+      "Wichita Southeast vs. Wichita East at Wichita South HS",
+      "SM West vs. SM Northwest at SM North HS"
+    ],
+    "5A": [
+      "Salina Central at Liberal",
+      "Arkansas City at Pittsburg",
+      "Emporia at Fort Scott",
+      "Paola at Blue Valley",
+      "Blue Valley at Fort Scott",
+      "Pittsburg at Liberal",
+      "Liberal at Fort Scott"
+    ],
+    "4A": [
+      "Colby at Sacred Heart",
+      "Rose Hill at Circle",
+      "Andale at Clay Center",
+      "Chaparral at Fredonia",
+      "Eureka at Prairie View",
+      "Abilene at Perry-Lecompton",
+      "Hiawatha at Baldwin",
+      "Girard at St Thomas Aquinas",
+      "Circle at Eureka",
+      "Clay Center vs. Hiawatha at Nemaha Valley",
+      "Perry-Lecompton at Sacred Heart",
+      "St Thomas Aquinas at Fredonia",
+      "Fredonia at Circle",
+      "Sacred Heart vs. Hiawatha at Nemaha Valley",
+      "Hiawatha at Fredonia"
+    ],
+    "3A": [
+      "WaKeeney-Trego at Hoxie",
+      "Kinsley at Plainville",
+      "Northern Heights at Halstead",
+      "Central Heights at Hesston",
+      "Neodesha at Douglass",
+      "Wellsville at Chase County",
+      "Sabetha at Silver Lake",
+      "Horton at Rossville",
+      "Plainville at WaKeeney-Trego",
+      "Halstead at Hesston",
+      "Neodesha at Wellsville",
+      "Silver Lake at Horton",
+      "Halstead at Plainville",
+      "Wellsville vs. Silver Lake"
+    ],
+    "2A": [
+      "Elkhart at Meade",
+      "Dighton at Syracuse",
+      "Claflin at Cimarron",
+      "Oxford at Clifton-Clyde",
+      "Mankato at Frankfort",
+      "Centralia at Jackson Heights",
+      "Troy at McLouth at Oskaloosa HS",
+      "St Paul at Frontenac",
+      "Meade at Syracuse",
+      "Clifton-Clyde vs. Claflin at Ellinwood HS",
+      "Jackson Heights at Mankato",
+      "Frontenac vs. McLouth at Oskaloosa HS",
+      "Meade at Clifton-Clyde",
+      "McLouth vs. Jackson Heights",
+      "McLouth at Meade"
+    ],
+    "1A": [
+      "South Barber at Ashland",
+      "Glasco at Quinter",
+      "Olpe at Little River",
+      "Wakefield at Marquette",
+      "Canton-Galva vs. Bennington at Minneapolis HS",
+      "Baileyville at Downs",
+      "Marais des Cygnes vs. Hope at Herington",
+      "Cedar Vale vs. Thayer at Chanute",
+      "Thayer vs. Olpe at Welch Field, Emporia State",
+      "Quinter at Ashland",
+      "Marquette vs. Bennington at Minneapolis",
+      "Hope at Baileyville",
+      "Ashland vs. Marquette at Bethany College, Lindsborg",
+      "Olpe vs. Hope at Herington"
+    ],
+    "8M": [
+      "Skyline at Minneola",
+      "Pawnee Heights at Hanston",
+      "Macksville at Cunningham",
+      "Dorrance at Norwich",
+      "Pike Valley at Sylvan Grove",
+      "Kensington at Waconda East",
+      "Grinnell at Palco",
+      "Wallace County vs. Jennings at Norton HS",
+      "Minneola at Macksville",
+      "Dorrance at Sylvan Grove",
+      "Sylvan Grove at Minneola"
     ]
   }
 }
