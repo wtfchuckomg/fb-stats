@@ -7106,5 +7106,27 @@
       "Olpe at Troy",
       "Phillipsburg at Smith Center"
     ]
+  },
+  "2016": {
+    "6A": [
+      "Wichita NW at Derby",
+      "Junction City at Hutchinson",
+      "Washburn Rural at Manhattan",
+      "Lawrence Free State at Garden City",
+      "Olathe South at Blue Valley",
+      "SM West at Blue Valley North",
+      "Gardner-Edgerton at SM East",
+      "SM North at Lawrence"
+    ],
+    "5A": [
+      "Emporia at Wichita Heights",
+      "Bishop Carroll at Goddard",
+      "Andover at Great Bend",
+      "Maize at Valley Center",
+      "St. James at KC Schlagle",
+      "BV Southwest at Mill Valley",
+      "KC Turner at Topeka Seaman",
+      "Bonner Springs at Aquinas"
+    ]
   }
 }
