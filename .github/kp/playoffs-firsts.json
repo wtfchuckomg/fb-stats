@@ -7116,7 +7116,11 @@
       "Olathe South at Blue Valley",
       "SM West at Blue Valley North",
       "Gardner-Edgerton at SM East",
-      "SM North at Lawrence"
+      "SM North at Lawrence",
+      "Hutchinson at Derby",
+      "Washburn Rural at Lawrence Free State",
+      "Blue Valley North at Blue Valley",
+      "SM East at SM North"
     ],
     "5A": [
       "Emporia at Wichita Heights",
@@ -7126,7 +7130,46 @@
       "St. James at KC Schlagle",
       "BV Southwest at Mill Valley",
       "KC Turner at Topeka Seaman",
-      "Bonner Springs at Aquinas"
+      "Bonner Springs at Aquinas",
+      "Goddard at Wichita Heights",
+      "Valley Center at Great Bend",
+      "St. James at Mill Valley",
+      "Aquinas at Topeka Seaman"
+    ],
+    "2-1A": [
+      "Plainville at Republic County",
+      "Smith Center at LaCrosse",
+      "Lyndon at Troy",
+      "Washington County at Pittsburg Colgan"
+    ],
+    "3A": [
+      "Halstead at Garden Plain",
+      "Hoisington at Norton",
+      "Chaparral at Hesston",
+      "Phillipsburg at Larned",
+      "Nemaha Central at Silver Lake",
+      "Rossville at Sabetha"
+    ],
+    "4A-I": [
+      "Mulvane at Buhler",
+      "Maize South at McPherson",
+      "Basehor-Linwood at Ottawa",
+      "Bishop Miege at Louisburg"
+    ],
+    "4A-II": [
+      "Wichita Collegiate at Holcomb",
+      "Smoky Valley at Pratt",
+      "Girard at Topeka Hayden",
+      "Frontenac at Holton"
+    ],
+    "8M-I": [
+      "Burlingame at St. Paul",
+      "Burlingame at Osborne",
+      "Spearville at St. Francis"
+    ],
+    "8M-II": [
+      "Dighton at Chase",
+      "Pike Valley at Hanover"
     ]
   }
 }
