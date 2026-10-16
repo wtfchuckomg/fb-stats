@@ -6492,14 +6492,14 @@
   },
   "2009": {
     "6A": [
-      "Olathe North - SM East",
-      "Lawrence Free State - Olathe East",
-      "Blue Valley - SM West",
-      "BV Northwest - Olathe Northwest",
-      "Manhattan - Maize",
-      "Wichita Heights - Wichita South",
-      "Derby - Wichita NW",
-      "Dodge City - Topeka",
+      "SM East at Olathe North",
+      "Olathe East at Lawrence Free State",
+      "Blue Valley at SM West",
+      "Olathe Northwest at BV Northwest",
+      "Maize at Manhattan",
+      "Wichita South at Wichita Heights",
+      "Derby at Wichita NW",
+      "Topeka at Dodge City",
       "Lawrence Free State at Olathe North",
       "BV Northwest at Blue Valley",
       "Wichita Heights at Manhattan",
@@ -6508,14 +6508,14 @@
       "Derby at Wichita Heights"
     ],
     "5A": [
-      "Gardner-Edgerton - KC Schlagle",
-      "Topeka Seaman - KC Sumner",
-      "Shawnee Heights - KC Turner",
-      "Aquinas - Mill Valley",
-      "Hutchinson - Liberal",
-      "Salina South - Wichita Kapaun",
-      "Bishop Carroll - Newton",
-      "Emporia - McPherson",
+      "KC Schlagle at Gardner-Edgerton",
+      "KC Sumner at Topeka Seaman",
+      "Shawnee Heights at KC Turner",
+      "Aquinas at Mill Valley",
+      "Liberal at Hutchinson",
+      "Salina South at Wichita Kapaun",
+      "Newton at Bishop Carroll",
+      "McPherson at Emporia",
       "Topeka Seaman at Gardner-Edgerton",
       "Shawnee Heights at Aquinas",
       "Hutchinson at Salina South",
@@ -6545,7 +6545,15 @@
       "Topeka Hayden at Andale",
       "Rose Hill at Buhler",
       "Bishop Miege at Paola",
-      "Buhler at Topeka Hayden"
+      "Buhler at Topeka Hayden",
+      "Holton at Bishop Miege",
+      "Columbus at Louisburg",
+      "Eudora at Jeff Co. West",
+      "Independence at Paola",
+      "Andover at Topeka Hayden",
+      "Andale at Wellington",
+      "Abilene at Rose Hill",
+      "Hugoton at Buhler"
     ],
     "3A": [
       "Erie at Galena",
@@ -6569,7 +6577,15 @@
       "Hutch Trinity at Norton",
       "Scott City at Wichita Collegiate",
       "Galena at Marysville",
-      "Wichita Collegiate at Norton"
+      "Wichita Collegiate at Norton",
+      "Galena at Osage City",
+      "Rossville at Riley County",
+      "Cherryvale at Silver Lake",
+      "Pleasant Ridge at Marysville",
+      "Hillsboro at Wichita Collegiate",
+      "Hoisington at Scott City",
+      "Conway Springs at Hutch Trinity",
+      "Beloit at Norton"
     ],
     "2-1A": [
       "Onaga at Valley Heights",
@@ -6593,7 +6609,15 @@
       "Meade at Smith Center",
       "Oakley at Ellis",
       "Centralia at St. Marys",
-      "Oakley at Smith Center"
+      "Oakley at Smith Center",
+      "Valley Heights at Centralia",
+      "Moundridge at Pittsburg Colgan",
+      "St. Marys at Valley Falls",
+      "Olpe at Oswego",
+      "Smith Center at Minneapolis",
+      "St. Francis at Meade",
+      "Ellis at Ell-Saline",
+      "Elkhart at Oakley"
     ],
     "8M-I": [
       "Madison at Baileyville",
@@ -6605,7 +6629,11 @@
       "Greensburg at Minneola",
       "Hill City at Clifton-Clyde",
       "Pretty Prairie at Baileyville",
-      "Quinter at Clifton-Clyde"
+      "Quinter at Clifton-Clyde",
+      "Baileyville at Goessel",
+      "Pretty Prairie at Frankfort",
+      "Macksville at Quinter",
+      "Clifton-Clyde at Greensburg"
     ],
     "8M-II": [
       "Wilson at Hanover",
@@ -6617,7 +6645,11 @@
       "South Barber at Ashland",
       "Golden Plains at Victoria",
       "Hanover at St. John's",
-      "Quivira Heights at Victoria"
+      "Quivira Heights at Victoria",
+      "Centre at Hanover",
+      "St. John's at Caldwell",
+      "Otis-Bison at Quivira Heights",
+      "Victoria at South Barber"
     ]
   }
 }
