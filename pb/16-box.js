@@ -19,10 +19,18 @@
 const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const lastName = n => String(n).trim().split(/\s+/).pop().toLowerCase();
 // A school's name as the logo library knows it, so "Collegiate" and "Wichita Collegiate" read as one school.
+// Remembered per name until the school list changes: the State Stats page asks 21,000 times, and walking the whole
+// list each time took it three seconds to draw.
+var canonMemo = {list:null, n:0, by:new Map()};
 function canonSchool(n){
+  const L = logoLib.list || [], M = canonMemo || (canonMemo = {list:null, n:0, by:new Map()});
+  if (M.list !== L || M.n !== L.length){ M.list = L; M.n = L.length; M.by = new Map(); }
+  if (M.by.has(n)) return M.by.get(n);
   const k = logoSlug(n);
-  for (const t of logoLib.list || []) if (t.slug === k || logoSlug(t.name) === k || (t.aliases || []).some(a => logoSlug(a) === k)) return logoSlug(t.name);
-  return k;
+  let out = k;
+  for (const t of L) if (t.slug === k || logoSlug(t.name) === k || (t.aliases || []).some(a => logoSlug(a) === k)){ out = logoSlug(t.name); break; }
+  M.by.set(n, out);
+  return out;
 }
 const sameSchool = (a, b) => { const x = logoSlug(a), y = logoSlug(b); return !!x && !!y && (x === y || x.startsWith(y) || y.startsWith(x) || canonSchool(a) === canonSchool(b)); };
 
