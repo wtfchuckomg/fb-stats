@@ -5964,9 +5964,15 @@
       "Olathe East at Olathe South",
       "SM East at Lawrence Free State",
       "Wichita NW at Hutchinson",
-      "Wichita Heights at Wichita Southeast at Carpenter Stadium, Wichita South HS",
+      "Wichita Heights vs. Wichita Southeast at Carpenter Stadium, Wichita South HS",
       "Garden City at Manhattan",
-      "Wichita East at Maize"
+      "Wichita East at Maize",
+      "Lawrence Free State at Olathe East at CBAC, Olathe",
+      "SM West at Lawrence at Haskell Stadium",
+      "Hutchinson at Wichita Heights",
+      "Manhattan at Maize",
+      "Lawrence Free State at SM West",
+      "Manhattan at Hutchinson"
     ],
     "5A": [
       "Bishop Miege at Blue Valley",
@@ -5976,7 +5982,12 @@
       "Liberal at Great Bend",
       "Topeka Seaman at Wichita Kapaun at Cessna Stadium, Wichita State",
       "McPherson at Salina Central",
-      "Newton at Bishop Carroll"
+      "Newton at Bishop Carroll",
+      "KC Turner at Blue Valley",
+      "Great Bend at Topeka Seaman",
+      "Salina Central at Bishop Carroll",
+      "Blue Valley at Aquinas",
+      "Bishop Carroll at Great Bend"
     ],
     "4A": [
       "Girard at Labette County",
@@ -5994,7 +6005,21 @@
       "Wamego at Chapman",
       "Andover Central at Mulvane",
       "Nickerson at Smoky Valley",
-      "Pratt at Ulysses"
+      "Pratt at Ulysses",
+      "Andale at Buhler",
+      "Chapman at Andover Central",
+      "Eudora at Atchison",
+      "KC Ward at Holton",
+      "Louisburg at Girard",
+      "Pittsburg at Paola",
+      "Topeka Hayden at Rose Hill",
+      "Ulysses at Nickerson",
+      "Eudora at Girard",
+      "Holton at Paola",
+      "Rose Hill at Andale",
+      "Ulysses at Andover Central",
+      "Paola at Girard",
+      "Andale at Ulysses"
     ],
     "3A": [
       "Atchison County at Rock Creek",
@@ -6012,7 +6037,21 @@
       "Wichita Collegiate at Cheney",
       "Hillsboro at Halstead",
       "Sacred Heart at Phillipsburg",
-      "Hoisington at Holcomb"
+      "Hoisington at Holcomb",
+      "Burlington at Caney Valley",
+      "Cheney at Hillsboro",
+      "Fredonia at Frontenac",
+      "Garden Plain at Hesston",
+      "Hoisington at Sacred Heart at Salina Stadium",
+      "Rock Creek at Silver Lake",
+      "Rossville at Sabetha",
+      "Scott City at SE-Saline",
+      "Silver Lake at Burlington",
+      "Frontenac at Sabetha",
+      "Hillsboro at Sacred Heart",
+      "Garden Plain at Scott City",
+      "Silver Lake at Sabetha",
+      "Garden Plain at Hillsboro"
     ],
     "2-1A": [
       "Centralia at Valley Heights",
@@ -6030,7 +6069,21 @@
       "Moundridge at Bennington",
       "Lincoln at Ellis",
       "WaKeeney at St. Francis",
-      "Meade at Stanton County"
+      "Meade at Stanton County",
+      "Lyndon at Centralia",
+      "Uniontown at Olpe",
+      "St. Marys at Washington",
+      "Canton-Galva at Pittsburg Colgan",
+      "Smith Center at Minneapolis",
+      "LaCrosse at Oakley",
+      "Ellis at Moundridge",
+      "St. Francis at Meade",
+      "Olpe at Lyndon",
+      "St. Marys at Pittsburg Colgan",
+      "LaCrosse at Smith Center",
+      "St. Francis at Ellis",
+      "Olpe at St. Marys",
+      "Smith Center at St. Francis"
     ],
     "8M-I": [
       "Kensington at Hanover",
@@ -6040,7 +6093,13 @@
       "South Barber at Goessel",
       "South Gray at Macksville",
       "Claflin at Pretty Prairie",
-      "Spearville at Jetmore"
+      "Spearville at Jetmore",
+      "Waverly at Kensington",
+      "Clifton-Clyde at Madison",
+      "Macksville at South Barber",
+      "Jetmore at Claflin",
+      "Waverly at Madison",
+      "Macksville at Jetmore"
     ],
     "8M-II": [
       "Hope at Axtell",
@@ -6049,8 +6108,14 @@
       "Cedar Vale at Argonia",
       "Ingalls at Wilson",
       "Triplains at Victoria",
-      "Bucklin - Moscow",
-      "Palco - Sharon Springs"
+      "Bucklin at Moscow",
+      "Palco at Sharon Springs",
+      "Hope at St. Paul",
+      "Argonia at Sylvan",
+      "Wilson at Victoria",
+      "Sharon Springs at Bucklin",
+      "Sylvan at Hope",
+      "Victoria at Sharon Springs"
     ]
   }
 }
