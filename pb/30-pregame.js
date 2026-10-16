@@ -264,17 +264,28 @@ function predict(A, H, year){
   return {home, away:1 - home, pts, parts, a, h};
 }
 // Season leaders, from the same games the stats pages use: the file, plus every game saved since it was built.
+// Every school's season totals, added up once and kept a few seconds: a scoreboard asks for two schools per card,
+// and adding the whole season up again for each one made a 160-game week take eight seconds to draw.
+var leadersCache = {at:0, src:null, n:0, season:null, by:null};
 function seasonLeaders(name){
-  const k = canonSchool(name), pl = {};
-  (typeof countyGames === 'function' ? countyGames() : []).forEach(x => {
-    const n = gameNumbers(x); if (!n) return;
-    ['A', 'H'].forEach(s => {
-      const T = n[s]; if (!T || canonSchool(T.name) !== k) return;
-      (T.pl || []).forEach(p => { const o = pl[p.name] || (pl[p.name] = {name:p.name}); C_KEYS.forEach(c => { if (p[c]) o[c] = (o[c] || 0) + p[c]; }); });
+  const C = leadersCache || (leadersCache = {at:0, by:null}), now = Date.now();
+  if (!C.by || C.src !== county.games || C.n !== (county.games || []).length || C.season !== county.season || now - C.at > 5000){
+    const by = {};
+    (typeof countyGames === 'function' ? countyGames() : []).forEach(x => {
+      const n = gameNumbers(x); if (!n) return;
+      ['A', 'H'].forEach(s => {
+        const T = n[s]; if (!T) return;
+        const pl = by[canonSchool(T.name)] || (by[canonSchool(T.name)] = {});
+        (T.pl || []).forEach(p => { const o = pl[p.name] || (pl[p.name] = {name:p.name}); C_KEYS.forEach(c => { if (p[c]) o[c] = (o[c] || 0) + p[c]; }); });
+      });
     });
-  });
+    Object.assign(C, {at:now, src:county.games, n:(county.games || []).length, season:county.season, by, best:{}});
+  }
+  const k = canonSchool(name);
+  if (C.best[k]) return C.best[k];
+  const pl = C.by[k] || {};
   const best = key => Object.values(pl).filter(p => p[key] > 0).sort((a, b) => b[key] - a[key])[0] || null;
-  return {pass:best('py'), rush:best('ry'), rec:best('rey')};
+  return C.best[k] = {pass:best('py'), rush:best('ry'), rec:best('rey')};
 }
 
 const shortPlayer = n => { const w = playerName(n).split(/\s+/); return w.length > 1 ? `${w[0][0]}. ${w.slice(1).join(' ')}` : w[0]; };
