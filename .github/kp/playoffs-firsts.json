@@ -7034,7 +7034,11 @@
   },
   "2015": {
     "5A": [
-      "Eisenhower at Wichita Kapaun at Cessna Stadium, Wichita State"
+      "Eisenhower at Wichita Kapaun at Cessna Stadium, Wichita State",
+      "Mill Valley at Pittsburg",
+      "Aquinas at St. James",
+      "Bishop Carroll at Wichita Heights",
+      "Eisenhower at Maize South"
     ],
     "3A": [
       "Sabetha at Silver Lake",
@@ -7044,19 +7048,51 @@
       "Halstead at Wichita Independent",
       "Washington County at Hoisington",
       "Wichita Collegiate at Garden Plain",
-      "Norton at Scott City"
+      "Norton at Scott City",
+      "Sabetha at Wellsville",
+      "Pittsburg Colgan at Rossville",
+      "Hoisington at Halstead",
+      "Norton at Wichita Collegiate"
     ],
     "8M-I": [
       "Burlingame at Central Burden",
       "West Elk at Hanover",
       "Central Plains at Spearville",
-      "St. Francis at Solomon"
+      "St. Francis at Solomon",
+      "Hanover at Burlingame",
+      "Spearville at Solomon"
     ],
     "8M-II": [
       "Axtell at Caldwell",
       "Attica-Argonia at Pike Valley",
       "Minneola at Victoria",
-      "Wallace County at Ingalls"
+      "Wallace County at Ingalls",
+      "Axtell at Attica-Argonia",
+      "Victoria at Wallace County"
+    ],
+    "6A": [
+      "Blue Valley at Lawrence",
+      "SM East at Olathe North",
+      "Lawrence Free State at Wichita NW",
+      "Derby at Junction City"
+    ],
+    "4A-I": [
+      "Eudora at Basehor-Linwood",
+      "Paola at Bishop Miege",
+      "Abilene at Andover Central",
+      "Buhler at Topeka Hayden"
+    ],
+    "4A-II": [
+      "Holton at Frontenac",
+      "Santa Fe Trail at Columbus",
+      "Andale at Hugoton",
+      "Holcomb at Wamego"
+    ],
+    "2-1A": [
+      "Troy at Lyndon",
+      "Jackson Heights at Olpe",
+      "Oakley at Smith Center",
+      "Phillipsburg at Meade"
     ]
   }
 }
