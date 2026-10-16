@@ -7534,7 +7534,8 @@
       "Augusta at Wamego",
       "Wellington at Wichita Kapaun at Wichita Heights HS",
       "Bishop Miege at Labette County",
-      "Wamego at Wichita Kapaun at Wichita Heights HS"
+      "Wamego at Wichita Kapaun at Wichita Heights HS",
+      "El Dorado at Wichita Kapaun at Wichita Heights HS"
     ],
     "6A": [
       "Olathe West vs. Olathe South at CBAC, Olathe",
@@ -7550,7 +7551,13 @@
       "Derby at Junction City",
       "Manhattan at Maize",
       "Derby at Wichita NW",
-      "Derby at Manhattan"
+      "Derby at Manhattan",
+      "SM North at Olathe West at CBAC, Olathe",
+      "BV Northwest at Olathe South at CBAC, Olathe",
+      "Wyandotte at Olathe Northwest at ODAC, Olathe",
+      "Blue Valley West at SM East at SM South Stadium",
+      "SM South at Olathe North at ODAC, Olathe",
+      "Lawrence at SM Northwest at SM North Stadium"
     ],
     "5A": [
       "De Soto at Basehor-Linwood",
@@ -7582,7 +7589,8 @@
       "Cheney at Holcomb",
       "Pratt at Andale",
       "Cheney at Rock Creek",
-      "Rock Creek at Andale"
+      "Rock Creek at Andale",
+      "Holton at Baldwin at Baker University"
     ],
     "2A": [
       "Council Grove at Nemaha Central",
@@ -7962,13 +7970,15 @@
       "SM East at Gardner-Edgerton",
       "Lawrence Free State at Blue Valley Northwest",
       "Olathe Northwest at Blue Valley West",
-      "Olathe East at SM Northwest",
       "Wichita East at Derby",
       "Wichita Northwest at Manhattan",
       "Blue Valley Northwest at Gardner-Edgerton",
       "SM Northwest at Blue Valley West",
       "Manhattan at Derby",
-      "Blue Valley West at Gardner-Edgerton"
+      "Blue Valley West at Gardner-Edgerton",
+      "Lawrence at SM East at SM South Stadium",
+      "SM South vs. SM Northwest at SM North Stadium",
+      "Olathe East at SM Northwest at SM North Stadium"
     ],
     "5A": [
       "Hays at Great Bend",
@@ -8000,7 +8010,8 @@
       "Lansing at Tonganoxie",
       "Bishop Miege at Chanute",
       "Buhler at Andover Central",
-      "Bishop Miege at Tonganoxie"
+      "Bishop Miege at Tonganoxie",
+      "Rose Hill at Wichita Kapaun at Stryker Sports Complex, Wichita"
     ],
     "3A": [
       "Clay Center at Andale",
@@ -8019,19 +8030,19 @@
       "Holcomb at Scott City"
     ],
     "2A": [
-      "Norton at SE-Saline",
       "Haven at Hoisington",
-      "Phillipsburg at Garden Plain",
       "Halstead at Beloit",
       "Riverton at Humboldt",
       "Council Grove at Silver Lake",
       "St. Marys at Osage City",
       "Sabetha at Nemaha Central",
-      "Hoisington at SE-Saline",
       "Beloit at Garden Plain",
       "Nemaha Central at Osage City",
-      "Beloit at SE-Saline",
-      "Council Grove at Nemaha Central"
+      "Council Grove at Nemaha Central",
+      "Norton at SE-Saline at Kansas Wesleyan, Salina",
+      "Hoisington at SE-Saline at Kansas Wesleyan, Salina",
+      "Beloit at SE-Saline at Kansas Wesleyan, Salina",
+      "Phillipsburg at Garden Plain at Cheney HS"
     ],
     "1A": [
       "Marion at Conway Springs",
@@ -8075,7 +8086,9 @@
       "Burlingame at Frankfort",
       "Axtell at Osborne",
       "Dighton at Hodgeman County",
-      "Victoria at Central Christian"
+      "Central Christian at Victoria",
+      "Frankfort at Axtell",
+      "Victoria at Dighton"
     ],
     "6M": [
       "Chetopa at Peabody-Burns",
@@ -8089,7 +8102,9 @@
       "Peabody-Burns at Tescott",
       "Cunningham at Otis-Bison",
       "Ingalls at Weskan",
-      "South Barber at Golden Plains"
+      "South Barber at Golden Plains",
+      "Tescott at Cunningham",
+      "Golden Plains at Weskan"
     ]
   }
 }
