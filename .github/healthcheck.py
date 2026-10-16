@@ -34,8 +34,14 @@ PAGES = [
     ('Team page', f'{KMR}/?team=Derby', '.tp-head', 'renderTeamPage()'),
     ('Team playoff history', f'{KMR}/?team=Derby&playoffs', '.po-recs', 'renderTeamPage()'),
     ('Playoff bracket', f'{KMR}/?brackets=1990&class=6A', '.ph-cell', None),
+    # avctlstats.com, the same checks (Chuck, 2026-10-16: "do the same checks on the avctlstats site")
     ('AVCTL home', f'{AV}/', 'body', None),
-    ('AVCTL scoreboard', f'{AV}/?scores', '#board .bcard', 'renderScoreboard()'),
+    ('AVCTL scoreboard', f'{AV}/?avctl', '#board .bcard', 'renderScoreboard()'),
+    ('AVCTL stats', f'{AV}/?avstats', 'table tr', 'renderCounty()'),
+    ('AVCTL standings', f'{AV}/?standings', '#board table', 'renderStandings()'),
+    ('AVCTL team page', f'{AV}/?team=Andover', '.tp-head', 'renderTeamPage()'),
+    ('AVCTL team playoffs', f'{AV}/?team=Andover&playoffs', '.po-recs', 'renderTeamPage()'),
+    ('AVCTL schools', f'{AV}/?teams', 'body', None),
 ]
 
 
