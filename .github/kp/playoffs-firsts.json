@@ -7230,7 +7230,15 @@
       "Blue Valley North at SM East",
       "Olathe North at Blue Valley",
       "Derby at Wichita NW",
-      "Blue Valley North at Blue Valley"
+      "Blue Valley North at Blue Valley",
+      "Junction City at Lawrence Free State",
+      "Derby at Manhattan",
+      "Campus at Wichita NW",
+      "Garden City at Topeka",
+      "Olathe Northwest at SM East",
+      "Olathe East at Blue Valley North",
+      "Olathe South at Blue Valley",
+      "Lawrence at Olathe North"
     ],
     "5A": [
       "Eisenhower at Goddard",
@@ -7238,7 +7246,15 @@
       "Mill Valley at St. James",
       "Pittsburg at Aquinas",
       "Bishop Carroll at Goddard",
-      "Mill Valley at Aquinas"
+      "Mill Valley at Aquinas",
+      "Andover at Goddard",
+      "Salina South at Eisenhower",
+      "Wichita Kapaun at Bishop Carroll",
+      "Wichita Heights at Maize",
+      "Mill Valley at KC Schlagle",
+      "Shawnee Heights at St. James",
+      "Bonner Springs at Aquinas",
+      "KC Turner at Pittsburg"
     ],
     "4A-I": [
       "Fort Scott at DeSoto",
@@ -7246,7 +7262,15 @@
       "Andale at Andover Central",
       "McPherson at Maize South",
       "Bishop Miege at DeSoto",
-      "Andale at McPherson"
+      "Andale at McPherson",
+      "DeSoto at Tonganoxie",
+      "Chanute at Fort Scott",
+      "Basehor-Linwood at Bishop Miege",
+      "Paola at Labette County",
+      "Andover Central at Mulvane",
+      "Wamego at Andale",
+      "Wellington at Maize South",
+      "Buhler at McPherson"
     ],
     "4A-II": [
       "Burlington at Topeka Hayden",
@@ -7254,7 +7278,15 @@
       "Scott City at Clay Center",
       "Holcomb at Smoky Valley",
       "Topeka Hayden at Frontenac",
-      "Scott City at Holcomb"
+      "Scott City at Holcomb",
+      "Prairie View at Topeka Hayden",
+      "Columbus at Burlington",
+      "Holton at Baldwin",
+      "Girard at Frontenac",
+      "Clay Center at Nickerson",
+      "Kingman at Scott City",
+      "Wichita Collegiate at Smoky Valley",
+      "Colby at Holcomb"
     ],
     "2-1A": [
       "Jefferson County North at Olpe",
@@ -7262,7 +7294,15 @@
       "Plainville at Ell-Saline",
       "Smith Center at Elkhart",
       "Olpe at Pittsburg Colgan",
-      "Plainville at Smith Center"
+      "Plainville at Smith Center",
+      "Jackson Heights at Jefferson County North",
+      "Yates Center at Olpe",
+      "Doniphan West at Centralia",
+      "Lyndon at Pittsburg Colgan",
+      "Ell-Saline at Sedgwick",
+      "Meade at Plainville",
+      "Medicine Lodge at Smith Center",
+      "LaCrosse at Elkhart"
     ],
     "8M-I": [
       "Burlingame at West Elk",
@@ -7270,7 +7310,15 @@
       "Central Plains at Spearville",
       "South Central at Hoxie",
       "Burlingame at St. Paul",
-      "Hoxie at Spearville"
+      "Hoxie at Spearville",
+      "Udall at West Elk",
+      "Victoria at Burlingame",
+      "St. Paul at Central Burden",
+      "Clifton-Clyde at Osborne",
+      "Macksville at Central Plains",
+      "St. Francis at Spearville",
+      "Little River at South Central",
+      "Ness City at Hoxie"
     ],
     "8M-II": [
       "Hanover at Caldwell",
@@ -7278,7 +7326,15 @@
       "South Barber at Hodgeman County",
       "Ingalls at Otis-Bison",
       "Pike Valley at Hanover",
-      "Otis-Bison at Hodgeman County"
+      "Otis-Bison at Hodgeman County",
+      "Caldwell at Waverly",
+      "Rock Hills at Hanover",
+      "Pleasanton at Central Christian",
+      "Axtell at Pike Valley",
+      "Hodgeman County at Northern Valley",
+      "Rolla at South Barber",
+      "Sylvan-Lucas at Otis-Bison",
+      "Pretty Prairie at Ingalls"
     ],
     "3A": [
       "Silver Lake at Nemaha Central",
@@ -7290,7 +7346,23 @@
       "Hesston at Conway Springs",
       "Phillipsburg at Hoisington",
       "Sabetha at Silver Lake",
-      "Marysville at Phillipsburg"
+      "Marysville at Phillipsburg",
+      "Pleasant Ridge at Nemaha Central",
+      "Mission Valley at Silver Lake",
+      "Humboldt at Wellsville",
+      "Neodesha at Galena",
+      "Sabetha at Maur Hill",
+      "Perry-Lecompton at St. Marys",
+      "Osage City at Jayhawk-Linn",
+      "Cherryvale at Caney Valley",
+      "Cheney at Douglass",
+      "Marion at Halstead",
+      "Norton at Marysville",
+      "Lakin at Larned",
+      "Wichita Independent at Conway Springs",
+      "Hutch Trinity at Hesston",
+      "Riley County at Phillipsburg",
+      "Hoisington at Cimarron"
     ]
   },
   "2018": {
