@@ -7038,7 +7038,9 @@
       "Mill Valley at Pittsburg",
       "Aquinas at St. James",
       "Bishop Carroll at Wichita Heights",
-      "Eisenhower at Maize South"
+      "Eisenhower at Maize South",
+      "Aquinas at Mill Valley",
+      "Bishop Carroll at Eisenhower"
     ],
     "3A": [
       "Sabetha at Silver Lake",
@@ -7052,7 +7054,9 @@
       "Sabetha at Wellsville",
       "Pittsburg Colgan at Rossville",
       "Hoisington at Halstead",
-      "Norton at Wichita Collegiate"
+      "Norton at Wichita Collegiate",
+      "Wellsville at Rossville",
+      "Wichita Collegiate at Halstead"
     ],
     "8M-I": [
       "Burlingame at Central Burden",
@@ -7074,25 +7078,33 @@
       "Blue Valley at Lawrence",
       "SM East at Olathe North",
       "Lawrence Free State at Wichita NW",
-      "Derby at Junction City"
+      "Derby at Junction City",
+      "Olathe North at Blue Valley",
+      "Lawrence Free State at Derby"
     ],
     "4A-I": [
       "Eudora at Basehor-Linwood",
       "Paola at Bishop Miege",
       "Abilene at Andover Central",
-      "Buhler at Topeka Hayden"
+      "Buhler at Topeka Hayden",
+      "Bishop Miege at Eudora",
+      "Topeka Hayden at Andover Central"
     ],
     "4A-II": [
       "Holton at Frontenac",
       "Santa Fe Trail at Columbus",
       "Andale at Hugoton",
-      "Holcomb at Wamego"
+      "Holcomb at Wamego",
+      "Columbus at Holton",
+      "Andale at Holcomb"
     ],
     "2-1A": [
       "Troy at Lyndon",
       "Jackson Heights at Olpe",
       "Oakley at Smith Center",
-      "Phillipsburg at Meade"
+      "Phillipsburg at Meade",
+      "Olpe at Troy",
+      "Phillipsburg at Smith Center"
     ]
   }
 }
