@@ -7223,6 +7223,74 @@
     "6M": [
       "Pawnee Heights at Weskan",
       "Golden Plains at Cheylin"
+    ],
+    "6A": [
+      "Derby at Lawrence Free State",
+      "Garden City at Wichita NW",
+      "Blue Valley North at SM East",
+      "Olathe North at Blue Valley",
+      "Derby at Wichita NW",
+      "Blue Valley North at Blue Valley"
+    ],
+    "5A": [
+      "Eisenhower at Goddard",
+      "Maize at Bishop Carroll",
+      "Mill Valley at St. James",
+      "Pittsburg at Aquinas",
+      "Bishop Carroll at Goddard",
+      "Mill Valley at Aquinas"
+    ],
+    "4A-I": [
+      "Fort Scott at DeSoto",
+      "Labette County at Bishop Miege",
+      "Andale at Andover Central",
+      "McPherson at Maize South",
+      "Bishop Miege at DeSoto",
+      "Andale at McPherson"
+    ],
+    "4A-II": [
+      "Burlington at Topeka Hayden",
+      "Frontenac at Holton",
+      "Scott City at Clay Center",
+      "Holcomb at Smoky Valley",
+      "Topeka Hayden at Frontenac",
+      "Scott City at Holcomb"
+    ],
+    "2-1A": [
+      "Jefferson County North at Olpe",
+      "Pittsburg Colgan at Centralia",
+      "Plainville at Ell-Saline",
+      "Smith Center at Elkhart",
+      "Olpe at Pittsburg Colgan",
+      "Plainville at Smith Center"
+    ],
+    "8M-I": [
+      "Burlingame at West Elk",
+      "Osborne at St. Paul",
+      "Central Plains at Spearville",
+      "South Central at Hoxie",
+      "Burlingame at St. Paul",
+      "Hoxie at Spearville"
+    ],
+    "8M-II": [
+      "Hanover at Caldwell",
+      "Central Christian at Pike Valley",
+      "South Barber at Hodgeman County",
+      "Ingalls at Otis-Bison",
+      "Pike Valley at Hanover",
+      "Otis-Bison at Hodgeman County"
+    ],
+    "3A": [
+      "Silver Lake at Nemaha Central",
+      "Galena at Wellsville",
+      "Perry-Lecompton at Sabetha",
+      "Caney Valley at Osage City",
+      "Marion at Cheney",
+      "Marysville at Larned",
+      "Hesston at Conway Springs",
+      "Phillipsburg at Hoisington",
+      "Sabetha at Silver Lake",
+      "Marysville at Phillipsburg"
     ]
   },
   "2018": {
