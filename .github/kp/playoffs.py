@@ -422,7 +422,9 @@ def write_years(games, out, order):
                 # "PEN": a tie decided on penetrations (1969 SM North over SM South), else overtime
                 ot = {'ot': g['ot'] if isinstance(g['ot'], str) else 1} if g['ot'] else {}
                 out = {'a': L, 'b': W, 'w': 1, **ot} if g['top'] else {'a': W, 'b': L, **ot}   # w: the bottom team won
-                if lead and g['home'] is not None: out['b' if g['home'] else 'a']['h'] = 1   # at home in the first round
+                # KPreps: "Home team listed on top unless otherwise indicated (ex: @)" — every round, not just the first
+                # (Chuck, 2026-10-16). A paper's line for the game (hn) wins where there is one.
+                if (lead or y in KP_YEARS) and g['home'] is not None and not g.get('hn'): out['b' if g['home'] else 'a']['h'] = 1
                 if g.get('hn'): (W if key(g['w']) == key(g['hn']) or same(g['w'], g['hn']) else L)['h'] = 1   # Chuck's lists
                 if g.get('at'): out['at'] = g['at']
                 if g.get('lbl'): out['lbl'] = g['lbl']   # where it was played, when Chuck has said
