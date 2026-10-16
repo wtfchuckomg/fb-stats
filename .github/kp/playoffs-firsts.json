@@ -7224,5 +7224,29 @@
       "Pawnee Heights at Weskan",
       "Golden Plains at Cheylin"
     ]
+  },
+  "2018": {
+    "6M": [
+      "Pawnee Heights at Weskan",
+      "Ashland at Golden Plains"
+    ]
+  },
+  "2019": {
+    "6M": [
+      "Weskan at Moscow",
+      "Golden Plains at Cheylin"
+    ]
+  },
+  "2020": {
+    "6M": [
+      "Golden Plains at Cheylin",
+      "Moscow at Cunningham"
+    ]
+  },
+  "2021": {
+    "6M": [
+      "Northern Valley at Cunningham",
+      "Ashland at Natoma"
+    ]
   }
 }
