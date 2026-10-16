@@ -6808,5 +6808,79 @@
       "Baileyville at South Haven",
       "Thunder Ridge at Otis-Bison"
     ]
+  },
+  "2012": {
+    "6A": [
+      "Olathe East at Lawrence Free State",
+      "SM West at Lawrence",
+      "Derby at Dodge City",
+      "Hutchinson at Topeka",
+      "Lawrence Free State at SM West",
+      "Hutchinson at Derby"
+    ],
+    "5A": [
+      "Aquinas at Blue Valley",
+      "BV West at Bishop Miege",
+      "Bishop Carroll at Andover",
+      "Emporia at Salina South",
+      "Bishop Miege at Aquinas",
+      "Salina South at Bishop Carroll"
+    ],
+    "4A": [
+      "KC Piper at Baldwin",
+      "Girard at Chanute",
+      "Tonganoxie at Eudora",
+      "Coffeyville at Louisburg",
+      "Holton at Wichita Collegiate",
+      "Andale at McPherson",
+      "Mulvane at Maize South",
+      "Concordia at Buhler",
+      "Chanute at KC Piper",
+      "Eudora at Louisburg",
+      "McPherson at Holton",
+      "Buhler at Mulvane",
+      "KC Piper at Eudora",
+      "Holton at Mulvane"
+    ],
+    "3A": [
+      "Silver Lake at Hiawatha",
+      "Caney Valley at Wellsville",
+      "Rossville at Sabetha",
+      "Humboldt at Pittsburg Colgan",
+      "Garden Plain at Conway Springs",
+      "Scott City at Sacred Heart",
+      "Sedgwick at Hillsboro",
+      "Holcomb at Beloit",
+      "Silver Lake at Caney Valley",
+      "Pittsburg Colgan at Rossville",
+      "Garden Plain at Scott City",
+      "Beloit at Sedgwick",
+      "Rossville at Silver Lake",
+      "Scott City at Beloit"
+    ],
+    "2-1A": [
+      "Centralia at Olpe",
+      "Lyndon at McLouth",
+      "Oakley at LaCrosse",
+      "Meade at Sterling",
+      "Lyndon at Centralia",
+      "LaCrosse at Meade"
+    ],
+    "8M-I": [
+      "South Haven at Madison",
+      "Rock Hills at Marmaton Valley",
+      "Hodgeman County at Solomon",
+      "Ness City at Pretty Prairie",
+      "Madison at Rock Hills",
+      "Solomon at Ness City"
+    ],
+    "8M-II": [
+      "Baileyville at Caldwell",
+      "Colony-Crest at Hanover",
+      "Thunder Ridge at Otis-Bison",
+      "Fowler at Wallace County",
+      "Hanover at Baileyville",
+      "Wallace County at Thunder Ridge"
+    ]
   }
 }
