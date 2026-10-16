@@ -691,6 +691,7 @@ button.h-btn{cursor:pointer}
 .po-g{font-size:13.5px;line-height:1.7}
 .po-g b.w{color:var(--good)}.po-g b.l{color:var(--bad, var(--red))}
 .po-g .tp-rnd{margin-left:8px}
+.lazy{display:block}
 .po-at{margin-left:6px;color:var(--muted);font-size:.85em}
 .po-g a{color:inherit;text-decoration:none;font-weight:600}.po-g a:hover{text-decoration:underline}
 .tp-rec b{display:block;font:800 26px/1.1 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink-2)}
@@ -4417,6 +4418,42 @@ setInterval(() => {
   if (el && el.tagName === 'BUTTON') el.textContent = mmss(s);
 }, 250);
 
+
+/* ---------- long pages draw what's on screen first ----------
+   Chuck, 2026-10-16: "Shouldn't load things that are only visible?" A long list (the State scoreboard's 160 games)
+   draws its first cards now and leaves a placeholder of about the right height for each later group; a group draws
+   when it scrolls within a screen of view. A group once drawn stays drawn on every redraw of the same page (the
+   scoreboard redraws itself every few seconds while games are live), so nothing under the reader's finger jumps. */
+var lazyParts = new Map(), lazyShown = new Set(), lazyObs = null;
+// items: the list; draw: one item's HTML; key: this page's own name (a new key forgets what was drawn before)
+function lazyList(items, draw, key, opt){
+  const o = Object.assign({first:12, per:6, est:190}, opt || {});
+  let out = '';
+  // Groups sit at fixed places in the list, so a group drawn once is the same group on the next redraw.
+  for (let i = 0; i < items.length; i += o.per){
+    const id = key + '|' + i, part = items.slice(i, i + o.per);
+    if (i < o.first) lazyShown.add(id);
+    if (lazyShown.has(id)){ out += part.map(draw).join(''); continue; }
+    lazyParts.set(id, () => part.map(draw).join(''));
+    out += `<div class="lazy" data-lazy="${esc(id)}" style="min-height:${part.length * o.est}px"></div>`;
+  }
+  return out;
+}
+// After the HTML is in the page: watch its placeholders.
+function lazyWatch(root){
+  if (!root) return;
+  const els = root.querySelectorAll('[data-lazy]');
+  if (!('IntersectionObserver' in window)){ els.forEach(lazyFill); return; }
+  if (!lazyObs) lazyObs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ lazyObs.unobserve(e.target); lazyFill(e.target); } }), {rootMargin:'1200px 0px'});
+  els.forEach(el => lazyObs.observe(el));
+}
+function lazyFill(el){
+  const id = el.dataset.lazy, f = lazyParts.get(id);
+  lazyShown.add(id); lazyParts.delete(id);
+  if (f) el.outerHTML = f();
+}
+// A different page or week: start over.
+function lazyReset(){ lazyParts.clear(); lazyShown.clear(); if (lazyObs) lazyObs.disconnect(); }
 /* ================================================================
    School logos, borrowed from the Pick 'ems library on the same
    domain (picks.kansasmediarankings.com/logos/teams.json). A school
@@ -6496,8 +6533,14 @@ function renderScoreboard(){
     const bySchool = x => canonSchool(x.teams.H.name);
     days.forEach(day => { day.games.sort((a, b) => rank.get(a) - rank.get(b) || bySchool(a).localeCompare(bySchool(b))); day.live = rank.get(day.games[0]) === 0; });
     days.sort((a, b) => (b.live ? 1 : 0) - (a.live ? 1 : 0) || a.k.localeCompare(b.k));
-    body = days.map(day => `<section class="bcard"><h2 class="bday">${esc(day.d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'}))}</h2>
-      ${day.games.map(boardGame).join('')}</section>`).join('');
+    // The first dozen cards now, the rest as they scroll near (a State week is 160 games); the card being typed on
+    // is always drawn.
+    if (board.lazyKey !== 'board|' + boardName() + '|' + key){ lazyReset(); board.lazyKey = 'board|' + boardName() + '|' + key; }
+    let room = 12;
+    body = days.map((day, di) => { const first = board.edit && day.games.some(x => x.id === board.edit.id) ? day.games.length : room;
+      room = Math.max(0, room - day.games.length);
+      return `<section class="bcard"><h2 class="bday">${esc(day.d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'}))}</h2>
+      ${lazyList(day.games, boardGame, board.lazyKey + '|' + day.k, {first})}</section>`; }).join('');
   }
   const old = box.querySelector('.bweeks'), keep = old ? old.scrollLeft : 0;
   const act = document.activeElement, focusId = act && box.contains(act) && act.id && act.id.startsWith('bs-') ? act.id : null;
@@ -6506,6 +6549,7 @@ function renderScoreboard(){
     <div class="bweeks-wrap"><button type="button" class="bw-arrow" data-bscroll="-1" aria-label="Earlier weeks">${chev('M9 1L1 9l8 8')}</button>
       <div class="bweeks">${tabs}</div>
       <button type="button" class="bw-arrow" data-bscroll="1" aria-label="Later weeks">${chev('M1 1l8 8-8 8')}</button></div></section>${body}`;
+  lazyWatch(box);
   if (focusId){ const f = $('#' + focusId); if (f){ f.focus(); if (f.setSelectionRange && f.type !== 'checkbox') f.setSelectionRange(f.value.length, f.value.length); } }
   // A redraw keeps the week tabs where they were; a new week brings its tab into view.
   const wk = box.querySelector('.bweeks');

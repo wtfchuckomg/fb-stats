@@ -507,3 +507,39 @@ setInterval(() => {
   if (el && el.tagName === 'BUTTON') el.textContent = mmss(s);
 }, 250);
 
+
+/* ---------- long pages draw what's on screen first ----------
+   Chuck, 2026-10-16: "Shouldn't load things that are only visible?" A long list (the State scoreboard's 160 games)
+   draws its first cards now and leaves a placeholder of about the right height for each later group; a group draws
+   when it scrolls within a screen of view. A group once drawn stays drawn on every redraw of the same page (the
+   scoreboard redraws itself every few seconds while games are live), so nothing under the reader's finger jumps. */
+var lazyParts = new Map(), lazyShown = new Set(), lazyObs = null;
+// items: the list; draw: one item's HTML; key: this page's own name (a new key forgets what was drawn before)
+function lazyList(items, draw, key, opt){
+  const o = Object.assign({first:12, per:6, est:190}, opt || {});
+  let out = '';
+  // Groups sit at fixed places in the list, so a group drawn once is the same group on the next redraw.
+  for (let i = 0; i < items.length; i += o.per){
+    const id = key + '|' + i, part = items.slice(i, i + o.per);
+    if (i < o.first) lazyShown.add(id);
+    if (lazyShown.has(id)){ out += part.map(draw).join(''); continue; }
+    lazyParts.set(id, () => part.map(draw).join(''));
+    out += `<div class="lazy" data-lazy="${esc(id)}" style="min-height:${part.length * o.est}px"></div>`;
+  }
+  return out;
+}
+// After the HTML is in the page: watch its placeholders.
+function lazyWatch(root){
+  if (!root) return;
+  const els = root.querySelectorAll('[data-lazy]');
+  if (!('IntersectionObserver' in window)){ els.forEach(lazyFill); return; }
+  if (!lazyObs) lazyObs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ lazyObs.unobserve(e.target); lazyFill(e.target); } }), {rootMargin:'1200px 0px'});
+  els.forEach(el => lazyObs.observe(el));
+}
+function lazyFill(el){
+  const id = el.dataset.lazy, f = lazyParts.get(id);
+  lazyShown.add(id); lazyParts.delete(id);
+  if (f) el.outerHTML = f();
+}
+// A different page or week: start over.
+function lazyReset(){ lazyParts.clear(); lazyShown.clear(); if (lazyObs) lazyObs.disconnect(); }

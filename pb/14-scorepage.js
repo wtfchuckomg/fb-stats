@@ -170,8 +170,14 @@ function renderScoreboard(){
     const bySchool = x => canonSchool(x.teams.H.name);
     days.forEach(day => { day.games.sort((a, b) => rank.get(a) - rank.get(b) || bySchool(a).localeCompare(bySchool(b))); day.live = rank.get(day.games[0]) === 0; });
     days.sort((a, b) => (b.live ? 1 : 0) - (a.live ? 1 : 0) || a.k.localeCompare(b.k));
-    body = days.map(day => `<section class="bcard"><h2 class="bday">${esc(day.d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'}))}</h2>
-      ${day.games.map(boardGame).join('')}</section>`).join('');
+    // The first dozen cards now, the rest as they scroll near (a State week is 160 games); the card being typed on
+    // is always drawn.
+    if (board.lazyKey !== 'board|' + boardName() + '|' + key){ lazyReset(); board.lazyKey = 'board|' + boardName() + '|' + key; }
+    let room = 12;
+    body = days.map((day, di) => { const first = board.edit && day.games.some(x => x.id === board.edit.id) ? day.games.length : room;
+      room = Math.max(0, room - day.games.length);
+      return `<section class="bcard"><h2 class="bday">${esc(day.d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'}))}</h2>
+      ${lazyList(day.games, boardGame, board.lazyKey + '|' + day.k, {first})}</section>`; }).join('');
   }
   const old = box.querySelector('.bweeks'), keep = old ? old.scrollLeft : 0;
   const act = document.activeElement, focusId = act && box.contains(act) && act.id && act.id.startsWith('bs-') ? act.id : null;
@@ -180,6 +186,7 @@ function renderScoreboard(){
     <div class="bweeks-wrap"><button type="button" class="bw-arrow" data-bscroll="-1" aria-label="Earlier weeks">${chev('M9 1L1 9l8 8')}</button>
       <div class="bweeks">${tabs}</div>
       <button type="button" class="bw-arrow" data-bscroll="1" aria-label="Later weeks">${chev('M1 1l8 8-8 8')}</button></div></section>${body}`;
+  lazyWatch(box);
   if (focusId){ const f = $('#' + focusId); if (f){ f.focus(); if (f.setSelectionRange && f.type !== 'checkbox') f.setSelectionRange(f.value.length, f.value.length); } }
   // A redraw keeps the week tabs where they were; a new week brings its tab into view.
   const wk = box.querySelector('.bweeks');
