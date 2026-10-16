@@ -5956,5 +5956,101 @@
       "Bern at Waverly",
       "South Gray at Palco"
     ]
+  },
+  "2006": {
+    "6A": [
+      "Olathe Northwest at SM West",
+      "Lawrence at Blue Valley North",
+      "Olathe East at Olathe South",
+      "SM East at Lawrence Free State",
+      "Wichita NW at Hutchinson",
+      "Wichita Heights at Wichita Southeast at Carpenter Stadium, Wichita South HS",
+      "Garden City at Manhattan",
+      "Wichita East at Maize"
+    ],
+    "5A": [
+      "Bishop Miege at Blue Valley",
+      "Lansing at KC Turner",
+      "BV West at Shawnee Heights",
+      "KC Wyandotte at Aquinas",
+      "Liberal at Great Bend",
+      "Topeka Seaman at Wichita Kapaun at Cessna Stadium, Wichita State",
+      "McPherson at Salina Central",
+      "Newton at Bishop Carroll"
+    ],
+    "4A": [
+      "Girard at Labette County",
+      "Louisburg at Fort Scott",
+      "KC Piper at Eudora",
+      "Clay Center at Atchison",
+      "Parsons at Pittsburg",
+      "Chanute at Paola",
+      "Spring Hill at KC Ward",
+      "Tonganoxie at Holton",
+      "Circle at Topeka Hayden",
+      "Wellington at Rose Hill",
+      "Russell at Buhler",
+      "Goodland at Andale",
+      "Wamego at Chapman",
+      "Andover Central at Mulvane",
+      "Nickerson at Smoky Valley",
+      "Pratt at Ulysses"
+    ],
+    "3A": [
+      "Atchison County at Rock Creek",
+      "Mission Valley at Silver Lake",
+      "Erie at Burlington",
+      "Caney Valley at Galena",
+      "Sabetha at Pleasant Ridge",
+      "Jefferson County North at Rossville",
+      "Central Heights at Frontenac",
+      "Baxter Springs at Fredonia",
+      "Medicine Lodge at Garden Plain",
+      "Sterling at Hesston",
+      "Norton at SE-Saline",
+      "Lakin at Scott City",
+      "Wichita Collegiate at Cheney",
+      "Hillsboro at Halstead",
+      "Sacred Heart at Phillipsburg",
+      "Hoisington at Holcomb"
+    ],
+    "2-1A": [
+      "Centralia at Valley Heights",
+      "Lyndon at Immaculata",
+      "West Elk at Uniontown",
+      "Solomon at Olpe",
+      "Washington at Troy",
+      "Jackson Heights at St. Marys",
+      "Pittsburg Colgan at Oxford",
+      "Peabody at Canton-Galva",
+      "Minneapolis at St. John",
+      "Plainville at Smith Center",
+      "Atwood at Oakley",
+      "Sublette at LaCrosse",
+      "Moundridge at Bennington",
+      "Lincoln at Ellis",
+      "WaKeeney at St. Francis",
+      "Meade at Stanton County"
+    ],
+    "8M-I": [
+      "Kensington at Hanover",
+      "Flinthills at Waverly",
+      "Wakefield at Clifton-Clyde",
+      "Madison at Marmaton Valley",
+      "South Barber at Goessel",
+      "South Gray at Macksville",
+      "Claflin at Pretty Prairie",
+      "Spearville at Jetmore"
+    ],
+    "8M-II": [
+      "Hope at Axtell",
+      "South Haven at St. Paul",
+      "BV Randolph at Sylvan",
+      "Cedar Vale at Argonia",
+      "Ingalls at Wilson",
+      "Triplains at Victoria",
+      "Bucklin - Moscow",
+      "Palco - Sharon Springs"
+    ]
   }
 }
