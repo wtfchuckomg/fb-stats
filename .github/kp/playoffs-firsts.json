@@ -6882,5 +6882,80 @@
       "Hanover at Baileyville",
       "Wallace County at Thunder Ridge"
     ]
+  },
+  "2013": {
+    "6A": [
+      "Lawrence Free State at Olathe North",
+      "SM East at Olathe East",
+      "Derby at Manhattan",
+      "Wichita Heights at Garden City",
+      "Olathe North at SM East",
+      "Garden City at Derby"
+    ],
+    "5A": [
+      "Liberal at Wichita Kapaun at Cessna Stadium, Wichita State",
+      "Mill Valley at Blue Valley",
+      "BV West at Bishop Miege",
+      "Salina South at Bishop Carroll",
+      "Wichita Kapaun at Salina Central",
+      "Blue Valley at BV West",
+      "Salina South at Wichita Kapaun at Cessna Stadium, Wichita State"
+    ],
+    "4A": [
+      "KC Piper at Spring Hill",
+      "Independence at Paola",
+      "Baldwin at Tonganoxie",
+      "Coffeyville at Chanute",
+      "Holton at Mulvane",
+      "Andale at McPherson",
+      "Winfield at Topeka Hayden",
+      "Buhler at Abilene",
+      "Paola at KC Piper",
+      "Baldwin at Coffeyville",
+      "Andale at Holton",
+      "Topeka Hayden at Buhler",
+      "Coffeyville at Paola",
+      "Holton at Buhler"
+    ],
+    "3A": [
+      "Hiawatha at Silver Lake",
+      "Wellsville at Pittsburg Colgan",
+      "Rossville at Nemaha Valley",
+      "Humboldt at Cherryvale",
+      "Conway Springs at Kingman",
+      "Scott City at Phillipsburg",
+      "Marion at Sedgwick",
+      "Beloit at Holcomb",
+      "Silver Lake at Pittsburg Colgan",
+      "Rossville at Cherryvale",
+      "Scott City at Conway Springs",
+      "Sedgwick at Beloit",
+      "Silver Lake at Rossville",
+      "Beloit at Scott City"
+    ],
+    "2-1A": [
+      "Centralia at Olpe",
+      "Lyndon at Troy",
+      "LaCrosse at Oakley",
+      "Smith Center at Meade",
+      "Centralia at Lyndon",
+      "Meade at LaCrosse"
+    ],
+    "8M-I": [
+      "Yates Center at Clifton-Clyde",
+      "Marais des Cygnes at Osborne",
+      "Central Plains at Hodgeman County",
+      "Kiowa County at Hoxie",
+      "Osborne at Clifton-Clyde",
+      "Hoxie at Hodgeman County"
+    ],
+    "8M-II": [
+      "Baileyville at Waverly",
+      "South Barber at Hanover",
+      "Victoria at St. John's",
+      "Wallace County at Dighton",
+      "Baileyville at Hanover",
+      "St. John's at Wallace County"
+    ]
   }
 }
