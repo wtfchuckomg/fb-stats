@@ -397,6 +397,11 @@ def write_years(games, out, order):
                 at = here.get(n) or (here.get('State') if lv is levels[-1] else None)   # "State" means the title game
                 for g in lv:
                     if g and at: g['at'] = at
+            # the game for third place: where Chuck says ("Third place"), else with the title game (2016 6-Man,
+            # both at Dodge City)
+            here = sites.get(str(y), {}).get(c, {})
+            for g in third:
+                if here.get('Third place') or here.get('State'): g['at'] = here.get('Third place') or here.get('State')
             if y in firsts: levels = place(levels, firsts[y], keep=y in KP_YEARS)
             # Seeds, where the bracket is the manual's seeded one: 6A-4A since 2019 (East, then West, eight games a side
             # paired 1-16, 8-9, 4-13, 5-12, 2-15, 7-10, 3-14, 6-11) and 3A-1A since 2024. The higher seed sits on top
