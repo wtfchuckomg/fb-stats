@@ -209,7 +209,10 @@ def main():
             if not s:
                 continue
             o = site_in(opp, c)
-            per.setdefault(s, {}).setdefault((y, c), []).append({'r': r, 'o': o or opp, 'p': 1 if o else 0, 'us': us, 'them': them,
+            # home, away, or a neutral site (Chuck, 2026-10-16: "I'd like to see if they were home or away")
+            hw, at = WHERE.get(i, (None, None))
+            loc = {'loc': 'h' if hw == ('w' if won else 'l') else 'a'} if hw else {'loc': 'n', 'at': at} if at else {}
+            per.setdefault(s, {}).setdefault((y, c), []).append({'r': r, 'o': o or opp, 'p': 1 if o else 0, 'us': us, 'them': them, **loc,
                                                                    'w': 1 if won else 0, **({'ot': 1} if ot else {}), '_d': depth,
                                                                    **({'def': 1} if (y, c, key(w), key(l)) in DEFS else {})})
     for s, seasons in per.items():
@@ -418,6 +421,7 @@ def write_years(games, out, order):
                 if g.get('hn'): (W if key(g['w']) == key(g['hn']) or same(g['w'], g['hn']) else L)['h'] = 1   # Chuck's lists
                 if g.get('at'): out['at'] = g['at']
                 if g.get('lbl'): out['lbl'] = g['lbl']   # where it was played, when Chuck has said
+                if 'i' in g: WHERE[g['i']] = ('w' if W.get('h') else 'l' if L.get('h') else None, g.get('at'))
                 return out
             for d, lv in enumerate(levels):
                 for g in lv:
@@ -547,6 +551,7 @@ def place(levels, rows):
 
 # (year, class, winner, loser) → the team that went on from that game anyway (1981: Clay Center lost to Wamego on the
 # last district Friday and still won District 7 on the tiebreak)
+WHERE = {}      # game number → ('w' or 'l', the side at home, or None; the site, or None)
 ADVANCED = {}
 DEFS = set()   # (year, class, winner, loser): the result is known, the score isn't
 
