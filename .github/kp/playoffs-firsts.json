@@ -1122,6 +1122,9 @@
       },
       "8M-II": {
         "State": "Fischer Field, Newton"
+      },
+      "6M": {
+        "State": "Memorial Stadium, Dodge City"
       }
     },
     "2018": {
@@ -1148,6 +1151,9 @@
       },
       "8M-II": {
         "State": "Fischer Field, Newton"
+      },
+      "6M": {
+        "State": "Memorial Stadium, Dodge City"
       }
     },
     "2019": {
@@ -1174,6 +1180,9 @@
       },
       "8M-II": {
         "State": "Fischer Field, Newton"
+      },
+      "6M": {
+        "State": "Memorial Stadium, Dodge City"
       }
     },
     "2021": {
@@ -1200,6 +1209,9 @@
       },
       "8M-II": {
         "State": "Fischer Field, Newton"
+      },
+      "6M": {
+        "State": "Memorial Stadium, Dodge City"
       }
     },
     "2022": {
@@ -1278,6 +1290,9 @@
       },
       "8M-II": {
         "State": "Fischer Field, Newton"
+      },
+      "6M": {
+        "State": "Memorial Stadium, Dodge City"
       }
     },
     "2024": {
@@ -7202,6 +7217,12 @@
     "6M": [
       "Weskan at Cheylin",
       "Pawnee Heights at Golden Plains"
+    ]
+  },
+  "2017": {
+    "6M": [
+      "Pawnee Heights at Weskan",
+      "Golden Plains at Cheylin"
     ]
   }
 }
