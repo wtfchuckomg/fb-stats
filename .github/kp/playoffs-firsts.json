@@ -7120,7 +7120,9 @@
       "Hutchinson at Derby",
       "Washburn Rural at Lawrence Free State",
       "Blue Valley North at Blue Valley",
-      "SM East at SM North"
+      "SM East at SM North",
+      "SM East at Blue Valley",
+      "Lawrence Free State at Derby"
     ],
     "5A": [
       "Emporia at Wichita Heights",
@@ -7134,13 +7136,17 @@
       "Goddard at Wichita Heights",
       "Valley Center at Great Bend",
       "St. James at Mill Valley",
-      "Aquinas at Topeka Seaman"
+      "Aquinas at Topeka Seaman",
+      "Mill Valley at Aquinas",
+      "Goddard at Great Bend"
     ],
     "2-1A": [
       "Plainville at Republic County",
       "Smith Center at LaCrosse",
       "Lyndon at Troy",
-      "Washington County at Pittsburg Colgan"
+      "Washington County at Pittsburg Colgan",
+      "Pittsburg Colgan at Troy",
+      "Smith Center at Plainville"
     ],
     "3A": [
       "Halstead at Garden Plain",
@@ -7148,28 +7154,47 @@
       "Chaparral at Hesston",
       "Phillipsburg at Larned",
       "Nemaha Central at Silver Lake",
-      "Rossville at Sabetha"
+      "Rossville at Sabetha",
+      "Wellsville at Galena",
+      "Caney Valley at Osage City",
+      "Wellsville at Nemaha Central",
+      "Caney Valley at Rossville",
+      "Garden Plain at Hoisington",
+      "Hesston at Phillipsburg",
+      "Nemaha Central at Rossville",
+      "Hoisington at Hesston"
     ],
     "4A-I": [
       "Mulvane at Buhler",
       "Maize South at McPherson",
       "Basehor-Linwood at Ottawa",
-      "Bishop Miege at Louisburg"
+      "Bishop Miege at Louisburg",
+      "Basehor-Linwood at Bishop Miege",
+      "Buhler at Maize South"
     ],
     "4A-II": [
       "Wichita Collegiate at Holcomb",
       "Smoky Valley at Pratt",
       "Girard at Topeka Hayden",
-      "Frontenac at Holton"
+      "Frontenac at Holton",
+      "Topeka Hayden at Holton",
+      "Pratt at Holcomb"
     ],
     "8M-I": [
       "Burlingame at St. Paul",
       "Burlingame at Osborne",
-      "Spearville at St. Francis"
+      "Spearville at St. Francis",
+      "Osborne at West Elk",
+      "Spearville at Central Plains",
+      "St. Francis at South Central"
     ],
     "8M-II": [
       "Dighton at Chase",
-      "Pike Valley at Hanover"
+      "Pike Valley at Hanover",
+      "Hanover at Central Christian",
+      "Hartford at Pike Valley",
+      "South Barber at Wallace County",
+      "Wallace County at Dighton"
     ]
   }
 }
