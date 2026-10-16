@@ -424,7 +424,7 @@ def write_years(games, out, order):
                 out = {'a': L, 'b': W, 'w': 1, **ot} if g['top'] else {'a': W, 'b': L, **ot}   # w: the bottom team won
                 # KPreps: "Home team listed on top unless otherwise indicated (ex: @)" — every round, not just the first
                 # (Chuck, 2026-10-16). A paper's line for the game (hn) wins where there is one.
-                if (lead or y in KP_YEARS) and g['home'] is not None and not g.get('hn'): out['b' if g['home'] else 'a']['h'] = 1
+                if (lead or y in KP_YEARS) and g['home'] is not None and not g.get('hn') and not (g.get('at') and not lead): out['b' if g['home'] else 'a']['h'] = 1
                 if g.get('hn'): (W if key(g['w']) == key(g['hn']) or same(g['w'], g['hn']) else L)['h'] = 1   # Chuck's lists
                 if g.get('at'): out['at'] = g['at']
                 if g.get('lbl'): out['lbl'] = g['lbl']   # where it was played, when Chuck has said
