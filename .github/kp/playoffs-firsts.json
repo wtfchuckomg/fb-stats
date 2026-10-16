@@ -1093,6 +1093,9 @@
       },
       "8M-II": {
         "State": "Fischer Field, Newton"
+      },
+      "6M": {
+        "State": "Memorial Stadium, Dodge City"
       }
     },
     "2017": {
@@ -7195,6 +7198,10 @@
       "Hartford at Pike Valley",
       "South Barber at Wallace County",
       "Wallace County at Dighton"
+    ],
+    "6M": [
+      "Weskan at Cheylin",
+      "Pawnee Heights at Golden Plains"
     ]
   }
 }
