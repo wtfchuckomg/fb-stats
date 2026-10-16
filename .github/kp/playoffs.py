@@ -397,7 +397,7 @@ def write_years(games, out, order):
                 at = here.get(n) or (here.get('State') if lv is levels[-1] else None)   # "State" means the title game
                 for g in lv:
                     if g and at: g['at'] = at
-            if y in firsts: levels = place(levels, firsts[y])
+            if y in firsts: levels = place(levels, firsts[y], keep=y in KP_YEARS)
             # Seeds, where the bracket is the manual's seeded one: 6A-4A since 2019 (East, then West, eight games a side
             # paired 1-16, 8-9, 4-13, 5-12, 2-15, 7-10, 3-14, 6-11) and 3A-1A since 2024. The higher seed sits on top
             # and is at home in the first round.
@@ -494,7 +494,7 @@ def near_site(team, at):
     return bool(words(at) & (words(team) | words(site(team) or '') | words(also)))
 
 
-def place(levels, rows):
+def place(levels, rows, keep=False):
     """Turn a winner-on-top bracket into the one that was drawn: the games Chuck listed in his order, each listed
     team where he put it, and every later game with the team from the upper half on top."""
     def node(j, i):
@@ -527,7 +527,8 @@ def place(levels, rows):
                 g['hn'] = (info['top'] if info['home'] == 0 else None) if info else None   # the team at home
         # A team's first game (nothing feeds it): drawn the way Chuck listed it, home team on top. A later game stays
         # where the bracket puts it, the team from the upper half on top; the listing only says who was home.
-        first = g and r and n['j'] <= main
+        # keep: KPreps' own bracket (2010 on) already sits where it was drawn; the lines only say who was home
+        first = g and r and n['j'] <= main and not keep
         if n['j'] < main: rank = 10 ** 6
         if first:
             if n['j'] == main: rank = rows.index(r)
@@ -536,7 +537,7 @@ def place(levels, rows):
             if k[1]['rank'] < k[0]['rank']: k.reverse()   # the half holding the earlier-listed game goes up
             if first:
                 if came_from(n, g['l'] if g['top'] else g['w']) == 1: k.reverse()   # its listed top team's game goes up
-            elif g and any(x['g'] for x in k): g['top'] = 1 if came_from(n, g['w']) == 1 else 0
+            elif g and any(x['g'] for x in k) and not keep: g['top'] = 1 if came_from(n, g['w']) == 1 else 0
         n['rank'] = rank
         return rank
     root = node(len(levels) - 1, 0)

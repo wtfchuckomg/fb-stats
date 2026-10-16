@@ -6651,5 +6651,88 @@
       "Otis-Bison at Quivira Heights",
       "Victoria at South Barber"
     ]
+  },
+  "2010": {
+    "6A": [
+      "SM Northwest at Olathe East",
+      "Olathe North at Olathe South",
+      "Wichita Heights at Junction City",
+      "Manhattan at Dodge City",
+      "Olathe East at Olathe North",
+      "Dodge City at Wichita Heights"
+    ],
+    "5A": [
+      "Emporia at Wichita Kapaun at Cessna Stadium, Wichita State",
+      "Shawnee Heights at Gardner-Edgerton",
+      "Blue Valley at Topeka Seaman",
+      "McPherson at Bishop Carroll",
+      "Hutchinson at Emporia",
+      "Gardner-Edgerton at Blue Valley",
+      "Bishop Carroll at Hutchinson"
+    ],
+    "4A": [
+      "KC Piper at DeSoto",
+      "Louisburg at Chanute",
+      "Baldwin at KC Sumner",
+      "Paola at Independence",
+      "Topeka Hayden at Mulvane",
+      "Abilene at Buhler",
+      "Andale at Holton",
+      "Ulysses at Hesston",
+      "DeSoto at Louisburg",
+      "Baldwin at Paola",
+      "Buhler at Topeka Hayden",
+      "Ulysses at Holton",
+      "Louisburg at Paola",
+      "Holton at Buhler"
+    ],
+    "3A": [
+      "Caney Valley at SE-Cherokee",
+      "Atchison County at Rossville",
+      "Neodesha at Wellsville",
+      "Riley County at Silver Lake",
+      "Wichita Collegiate at Hutch Trinity",
+      "Norton at Beloit",
+      "Garden Plain at Conway Springs",
+      "Scott City at Smith Center",
+      "Caney Valley at Rossville",
+      "Wellsville at Silver Lake",
+      "Hutch Trinity at Beloit",
+      "Conway Springs at Smith Center",
+      "Silver Lake at Rossville",
+      "Beloit vs. Conway Springs"
+    ],
+    "2-1A": [
+      "Oskaloosa at Pittsburg Colgan",
+      "Washington County at St. Marys",
+      "Olpe at Valley Falls",
+      "Onaga at Centralia",
+      "Ell-Saline at Sacred Heart",
+      "Stanton County at Ellis",
+      "Moundridge at LaCrosse",
+      "Rawlins County at Meade",
+      "St. Marys at Pittsburg Colgan",
+      "Centralia at Olpe",
+      "Stanton County at Ell-Saline",
+      "Meade at LaCrosse",
+      "Pittsburg Colgan at Olpe",
+      "Meade at Stanton County"
+    ],
+    "8M-I": [
+      "Central Burden at Madison",
+      "Crest at Lebo",
+      "Osborne at Pretty Prairie",
+      "Hodgeman County at Hill City",
+      "Madison at Lebo",
+      "Osborne at Hill City"
+    ],
+    "8M-II": [
+      "Baileyville at Centre",
+      "Caldwell at Hanover",
+      "Otis-Bison at Cheylin",
+      "Thunder Ridge at Ashland",
+      "Hanover at Baileyville",
+      "Ashland at Otis-Bison"
+    ]
   }
 }
