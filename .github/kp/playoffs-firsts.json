@@ -6734,5 +6734,69 @@
       "Hanover at Baileyville",
       "Ashland at Otis-Bison"
     ]
+  },
+  "2011": {
+    "6A": [
+      "SM West at Olathe East",
+      "Olathe South at SM East",
+      "Garden City at Wichita Heights",
+      "Manhattan at Derby",
+      "Olathe East at Olathe South",
+      "Wichita Heights at Derby"
+    ],
+    "5A": [
+      "Blue Valley at Bishop Miege",
+      "Shawnee Heights at Gardner-Edgerton",
+      "Emporia at Bishop Carroll",
+      "Wichita Kapaun at Hutchinson",
+      "Gardner-Edgerton at Blue Valley",
+      "Bishop Carroll at Hutchinson"
+    ],
+    "4A": [
+      "KC Piper at BV Southwest",
+      "Paola at Columbus",
+      "Eudora at Basehor-Linwood",
+      "Chanute at Louisburg",
+      "Mulvane at Topeka Hayden",
+      "Buhler at Abilene",
+      "Andale at Rose Hill",
+      "Ulysses at Hesston",
+      "Paola at Eudora",
+      "Rose Hill at Topeka Hayden"
+    ],
+    "3A": [
+      "Erie at Caney Valley",
+      "Rossville at Rock Creek",
+      "Wellsville at Galena",
+      "Silver Lake at Riley County",
+      "Wichita Collegiate at Garden Plain",
+      "Phillipsburg at Beloit",
+      "Sedgwick at Conway Springs",
+      "Smith Center at Scott City",
+      "Scott City at Conway Springs",
+      "Rock Creek at Silver Lake",
+      "Conway Springs at Garden Plain"
+    ],
+    "2-1A": [
+      "Pittsburg Colgan at Doniphan West",
+      "Riverside at Centralia",
+      "Plainville at Stanton County",
+      "LaCrosse at Meade",
+      "Centralia at Pittsburg Colgan",
+      "LaCrosse at Plainville"
+    ],
+    "8M-I": [
+      "Madison at Central Burden",
+      "Marmaton Valley at Lakeside",
+      "Osborne at Macksville",
+      "Central Plains at South Gray"
+    ],
+    "8M-II": [
+      "Baileyville at South Barber",
+      "South Haven at Hope",
+      "Otis-Bison at Victoria",
+      "Ashland at Thunder Ridge",
+      "Baileyville at South Haven"
+    ]
   }
 }
