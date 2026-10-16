@@ -6957,5 +6957,79 @@
       "Baileyville at Hanover",
       "St. John's at Wallace County"
     ]
+  },
+  "2014": {
+    "6A": [
+      "SM West at SM East",
+      "Blue Valley at Olathe North",
+      "Hutchinson at Derby",
+      "Lawrence Free State at Junction City",
+      "Olathe North at SM East",
+      "Hutchinson at Lawrence Free State"
+    ],
+    "5A": [
+      "Aquinas at Leavenworth",
+      "Shawnee Heights at Pittsburg",
+      "Wichita Heights at Bishop Carroll",
+      "Salina South at Maize South",
+      "Aquinas at Shawnee Heights",
+      "Bishop Carroll at Salina South"
+    ],
+    "4A-I": [
+      "KC Piper at Paola",
+      "Bishop Miege at Fort Scott",
+      "Andover Central at Buhler",
+      "Topeka Hayden at Mulvane",
+      "KC Piper at Bishop Miege",
+      "Buhler at Topeka Hayden"
+    ],
+    "4A-II": [
+      "Holton at Columbus",
+      "Frontenac at Santa Fe Trail",
+      "Andale at Concordia",
+      "Holcomb at Clearwater",
+      "Santa Fe Trail at Columbus",
+      "Holcomb at Andale"
+    ],
+    "3A": [
+      "Sabetha at Silver Lake",
+      "Caney Valley at Wellsville",
+      "Centralia at Rossville",
+      "Pittsburg Colgan at Galena",
+      "Chaparral at Halstead",
+      "Hoisington at Minneapolis",
+      "Hesston at Wichita Collegiate",
+      "Scott City at Norton",
+      "Wellsville at Silver Lake",
+      "Rossville at Pittsburg Colgan",
+      "Halstead at Minneapolis",
+      "Wichita Collegiate at Scott City",
+      "Rossville at Silver Lake",
+      "Scott City at Halstead"
+    ],
+    "2-1A": [
+      "Troy at Lyndon",
+      "Olpe at Onaga",
+      "LaCrosse at Ell-Saline",
+      "Phillipsburg at Oakley",
+      "Troy at Olpe",
+      "Ell-Saline at Phillipsburg"
+    ],
+    "8M-I": [
+      "Marais des Cygnes Valley at Osborne",
+      "Udall at Hanover",
+      "Spearville at Central Plains",
+      "Ness City at Little River",
+      "Hanover at Osborne",
+      "Central Plains at Ness City"
+    ],
+    "8M-II": [
+      "Chetopa at Axtell",
+      "Attica-Argonia at Pike Valley",
+      "Victoria at Minneola",
+      "Ingalls at Wallace County",
+      "Axtell at Attica-Argonia",
+      "Wallace County at Victoria"
+    ]
   }
 }
