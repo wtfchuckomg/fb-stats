@@ -2534,6 +2534,53 @@
         "Sub-State",
         "State"
       ]
+    },
+    "2007": {
+      "6A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "5A": [
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "4A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "3A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "2-1A": [
+        "Bi-District",
+        "Regional",
+        "Sectional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-I": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ],
+      "8M-II": [
+        "Bi-District",
+        "Regional",
+        "Sub-State",
+        "State"
+      ]
     }
   },
   "1972": {
@@ -6117,6 +6164,158 @@
       "Sharon Springs at Bucklin",
       "Sylvan at Hope",
       "Victoria at Sharon Springs"
+    ]
+  },
+  "2007": {
+    "6A": [
+      "Topeka at Olathe North",
+      "SM Northwest at SM South",
+      "Olathe South at Lawrence Free State",
+      "Blue Valley North at Olathe East",
+      "Maize at Hutchinson",
+      "Wichita Southeast at Emporia",
+      "Junction City at Derby",
+      "Goddard at Wichita NW",
+      "Olathe North at SM Northwest",
+      "Olathe East at Olathe South",
+      "Hutchinson at Wichita Southeast",
+      "Junction City at Goddard"
+    ],
+    "5A": [
+      "KC Sumner at BV West",
+      "Shawnee Heights at Bishop Miege",
+      "Aquinas at Bonner Springs",
+      "Gardner-Edgerton at Lansing",
+      "Salina Central at Wichita Kapaun at Cessna Stadium, Wichita State",
+      "Liberal at McPherson",
+      "Great Bend at Topeka Seaman",
+      "Newton at Bishop Carroll",
+      "Bishop Miege at BV West",
+      "Gardner-Edgerton at Aquinas",
+      "McPherson at Salina Central",
+      "Bishop Carroll at Great Bend"
+    ],
+    "4A": [
+      "Columbus at Labette County",
+      "Paola at Fort Scott",
+      "KC Ward at Baldwin",
+      "Marysville at Perry-Lecompton",
+      "Independence at Pittsburg",
+      "Chanute at Louisburg",
+      "Eudora at Basehor-Linwood",
+      "Atchison at Holton",
+      "El Dorado at Topeka Hayden",
+      "Wellington at Andover Central",
+      "Abilene at Buhler",
+      "Goodland at Andale",
+      "Wamego at Chapman",
+      "Rose Hill at Mulvane",
+      "Nickerson at Smoky Valley",
+      "Clearwater at Ulysses",
+      "Fort Scott at Columbus",
+      "Baldwin at Marysville",
+      "Pittsburg at Louisburg",
+      "Holton at Basehor-Linwood",
+      "Topeka Hayden at Wellington",
+      "Buhler at Andale",
+      "Mulvane at Wamego",
+      "Ulysses at Smoky Valley at Bethany College, Lindsborg",
+      "Columbus at Baldwin",
+      "Louisburg at Holton",
+      "Andale at Topeka Hayden",
+      "Mulvane at Ulysses"
+    ],
+    "3A": [
+      "Pleasant Ridge at Riley County",
+      "Northern Heights at Silver Lake",
+      "Erie at Central Heights",
+      "Caney Valley at Galena",
+      "Rock Creek at Horton",
+      "Oskaloosa at Rossville",
+      "Wellsville at Frontenac",
+      "Riverton at Neodesha",
+      "Medicine Lodge at Garden Plain",
+      "Sterling at Hesston",
+      "Beloit at Sacred Heart",
+      "Holcomb at Hoisington",
+      "Wichita Collegiate at Conway Springs",
+      "Hillsboro at Sedgwick",
+      "Ellsworth at Norton",
+      "Scott City at SW Heights",
+      "Silver Lake at Riley County",
+      "Galena at Central Heights",
+      "Rossville at Rock Creek",
+      "Frontenac at Riverton",
+      "Hesston at Garden Plain",
+      "Sacred Heart at Hoisington",
+      "Conway Springs at Hillsboro",
+      "Norton at Scott City",
+      "Central Heights at Silver Lake",
+      "Rossville at Riverton",
+      "Hoisington at Garden Plain",
+      "Scott City at Conway Springs"
+    ],
+    "2-1A": [
+      "Troy at Valley Heights",
+      "Lyndon at Wathena",
+      "Canton-Galva at Olpe",
+      "Pittsburg Colgan - Sedan",
+      "Washington County at Centralia",
+      "Immaculata at St. Marys",
+      "Humboldt at West Elk",
+      "Peabody at Solomon",
+      "Ell-Saline at St. John",
+      "Plainville at Smith Center",
+      "Rawlins County at Oakley",
+      "Stanton County at LaCrosse",
+      "Moundridge at Minneapolis",
+      "Osborne at Ellis",
+      "Hoxie at St. Francis",
+      "Meade at Sublette",
+      "Lyndon at Troy",
+      "Olpe at Pittsburg Colgan",
+      "Centralia at St. Marys",
+      "Solomon at Humboldt",
+      "Smith Center at St. John",
+      "Oakley at LaCrosse",
+      "Ellis at Minneapolis",
+      "St. Francis at Meade",
+      "Pittsburg Colgan at Lyndon",
+      "St. Marys at Humboldt",
+      "Smith Center at Oakley",
+      "Minneapolis at St. Francis"
+    ],
+    "8M-I": [
+      "St. John's at Hanover",
+      "Flinthills at Madison",
+      "Marais des Cygnes at Clifton-Clyde",
+      "Lebo at Marmaton Valley",
+      "Norwich at Claflin",
+      "Deerfield at Macksville",
+      "Goessel at Pretty Prairie",
+      "Pawnee Heights at Jetmore",
+      "Madison at Hanover",
+      "Marmaton Valley at Clifton-Clyde",
+      "Claflin at Macksville",
+      "Pretty Prairie at Pawnee Heights",
+      "Clifton-Clyde at Hanover",
+      "Macksville at Pawnee Heights"
+    ],
+    "8M-II": [
+      "Hope at Baileyville",
+      "South Central at Cedar Vale",
+      "Axtell at Tescott",
+      "Southern Coffey at South Haven",
+      "Ashland at Quivira Heights",
+      "Triplains at Victoria",
+      "Wilson at Minneola",
+      "Natoma at Sharon Springs",
+      "South Central at Hope",
+      "Tescott at South Haven",
+      "Victoria at Quivira Heights",
+      "Sharon Springs at Wilson",
+      "South Haven at Hope",
+      "Quivira Heights at Sharon Springs"
     ]
   }
 }
