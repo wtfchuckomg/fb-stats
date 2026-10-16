@@ -6762,7 +6762,11 @@
       "Andale at Rose Hill",
       "Ulysses at Hesston",
       "Paola at Eudora",
-      "Rose Hill at Topeka Hayden"
+      "Rose Hill at Topeka Hayden",
+      "BV Southwest at Paola",
+      "Eudora at Chanute",
+      "Topeka Hayden at Buhler",
+      "Rose Hill at Ulysses"
     ],
     "3A": [
       "Erie at Caney Valley",
@@ -6775,7 +6779,10 @@
       "Smith Center at Scott City",
       "Scott City at Conway Springs",
       "Rock Creek at Silver Lake",
-      "Conway Springs at Garden Plain"
+      "Conway Springs at Garden Plain",
+      "Caney Valley at Rock Creek",
+      "Silver Lake at Galena",
+      "Beloit at Garden Plain"
     ],
     "2-1A": [
       "Pittsburg Colgan at Doniphan West",
@@ -6789,14 +6796,17 @@
       "Madison at Central Burden",
       "Marmaton Valley at Lakeside",
       "Osborne at Macksville",
-      "Central Plains at South Gray"
+      "Central Plains at South Gray",
+      "Lakeside at Madison",
+      "South Gray at Osborne"
     ],
     "8M-II": [
       "Baileyville at South Barber",
       "South Haven at Hope",
       "Otis-Bison at Victoria",
       "Ashland at Thunder Ridge",
-      "Baileyville at South Haven"
+      "Baileyville at South Haven",
+      "Thunder Ridge at Otis-Bison"
     ]
   }
 }
