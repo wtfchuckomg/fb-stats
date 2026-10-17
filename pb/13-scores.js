@@ -255,6 +255,10 @@ function weekGames(key, withHidden, withOpp){
     xs.forEach(x => {
       if (best ? x !== best : hasScore && x.kind !== 'score') delete out[x.id];
     });
+    // Two typed-in scores for one matchup that week (Olathe West-Mill Valley: the Friday schedule entry, and the
+    // Thursday final typed in fresh): the final stands for the game, and the unplayed copy goes.
+    const left = xs.filter(x => out[x.id]);
+    if (left.length > 1 && left.some(x => summary(x).fin)) left.forEach(x => { if (!summary(x).fin && !summary(x).live) delete out[x.id]; });
   });
   if (!withHidden) Object.values(out).forEach(x => { if (isHidden(x)) delete out[x.id]; });
   return Object.values(out).sort((a, b) => gameDay(a) - gameDay(b) || (a.created || 0) - (b.created || 0));
