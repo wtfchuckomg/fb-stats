@@ -274,13 +274,23 @@ async function turboGame(feed, id){
     roster:{A:roster.A, H:roster.H},
     date:turboDate(gi.date), clk:{s:12 * 60, run:false, at:0}, plays
   };
-  game.id = turboGameId(id, game.date, game.teams.A.name, game.teams.H.name);
+  // The same matchup already brought in from this link within a few days is this game: keep its name and the date it
+  // carries now, so a date fixed by hand stays fixed when the gamecast is read again (Chuck, 2026-10-17: Winfield at
+  // Buhler kept going back to Saturday, the date the crew's feed has, after he set it to Friday).
+  const kept = turboSameGame(id, game.date, game.teams.A.name, game.teams.H.name);
+  if (kept){ game.id = kept.id; game.date = game.set.date = kept.date; }
+  else game.id = turboGameId(id, game.date, game.teams.A.name, game.teams.H.name);
   return {game, skipped};
 }
 // A crew can keep one gamecast link all season (Winfield's does), and the link then serves whichever game is newest.
 // So a game is named by the link and its date, and the next one goes beside the last instead of over it: Augusta at
 // Winfield replaced Winfield at Mulvane that way (2026-09-26). Importing the same game again updates it, including
 // one brought in before this under the link alone.
+function turboSameGame(id, date, A, H){
+  const day = d => fromYmd(d).getTime(), near = 3 * 864e5;
+  return Object.values(db.games || {}).find(x => x && x.id && (x.id === `tg-${id}` || x.id.startsWith(`tg-${id}-`)) && x.date && x.teams &&
+    Math.abs(day(x.date) - day(date)) <= near && sameSchool(x.teams.A.name, A) && sameSchool(x.teams.H.name, H)) || null;
+}
 function turboGameId(id, date, A, H){
   const old = db.games[`tg-${id}`];
   if (old && old.date === date && old.teams && sameSchool(old.teams.A.name, A) && sameSchool(old.teams.H.name, H)) return `tg-${id}`;

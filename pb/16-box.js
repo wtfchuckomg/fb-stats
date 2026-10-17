@@ -668,7 +668,10 @@ function saveBox(){
   };
   // Opened from a game or a card, the date in the window; found on its own, that game's date.
   const typed = /^\d{4}-\d\d-\d\d$/.test(dv) ? dv : ymd(new Date());
-  const date = ui.boxGame || ui.boxFrom ? typed : (from && from.date) || (old && old.date) || typed;
+  // A date changed by hand in the window always wins (Chuck, 2026-10-17: Augusta-Mulvane kept going back to the
+  // earlier box score's Thursday though he had set Friday).
+  const touched = dv && dv !== ($('#bx-date') || {}).defaultValue;
+  const date = ui.boxGame || ui.boxFrom || touched ? typed : (from && from.date) || (old && old.date) || typed;
   const box = {lines:p.lines, total:p.total, scoring:p.scoring.map(({side, how, pts, desc, q}) => ({side, how, pts, desc, q})), pl:p.pl, team:p.team, src:txt};
   // A new one goes on everyone's scoreboard, where its Box Score opens.
   const x = old || {id:'g' + Date.now().toString(36), created:Date.now(), set:{qtr:12, men:11, firstKick:'H'}, plays:[], clk:{s:0, run:false, at:0}, share:true};
