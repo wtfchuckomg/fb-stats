@@ -4056,7 +4056,10 @@ function saveSetup(isNew){
   const keepPrivate = !!($('#s-private') && $('#s-private').checked);
   if (isNew){ g = {id:'g' + Date.now().toString(36), created:Date.now(), date, teams, set, plays:[], clk:{s:set.qtr * 60, run:false, at:0}, share:!keepPrivate}; resetUi(); }
   else { if (!g.plays.length && set.qtr !== g.set.qtr) g.clk = {s:set.qtr * 60, run:false, at:0}; Object.assign(g, {teams, set, date}); }
-  save(); closeDialog(); refresh(); toast(isNew ? 'Game started' : 'Setup saved');
+  save(); closeDialog(); refresh();
+  // Signed out, a change stays on this device and the scoreboards keep the old copy: say so (Chuck, 2026-10-17:
+  // Winfield-Buhler's date "won't change" — it had, on his device only).
+  toast(!sync.user && !g.sample ? 'Saved on this device only. Sign in under Games to put it on the scoreboards.' : isNew ? 'Game started' : 'Setup saved');
 }
 
 // The quarter-by-quarter summary, typed by hand: for a game the play-by-play doesn't tell the whole story of —
