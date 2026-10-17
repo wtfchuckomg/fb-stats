@@ -286,8 +286,7 @@ function renderBracket(){
   const body = `<div class="bk-wrap bkt-wrap">${bkTreeHtml(east, 'East')}${bkTreeHtml(west, 'West')}</div>`;
   box.innerHTML = head
     + `<section class="bcard ccard"><div class="ccard-hd"><h2>Week 9 matchups</h2></div>
-        ${body}
-        <p class="h-note pl-note">The higher seed hosts. Games are set after week 8, so these move every Friday.</p></section>`
+        ${body}</section>`
     + `<section class="bcard ccard"><div class="ccard-hd"><h2>How they're seeded</h2></div>${bkListHtml(east, 'East')}${bkListHtml(west, 'West')}</section>`;
 }
 // 3A-1A and 8-player: the districts first, then the bracket they make.
@@ -305,8 +304,7 @@ function renderDistricts(box, head){
   }
   box.innerHTML = head
     + `<section class="bcard ccard"><div class="ccard-hd"><h2>Week 9 matchups</h2></div>
-        <div class="bk-wrap bkt-wrap">${trees}</div>
-        <p class="h-note pl-note">${eight ? 'District champions and runners-up host.' : 'The higher seed hosts.'} Games are set after week 8, so these move every Friday.</p></section>`
+        <div class="bk-wrap bkt-wrap">${trees}</div></section>`
     + seeded
     + `<section class="bcard ccard"><div class="ccard-hd"><h2>District standings</h2></div>${D.map((d, i) => bkDistrictHtml(i + 1, d)).join('')}</section>`;
 }
