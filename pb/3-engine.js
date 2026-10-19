@@ -138,6 +138,13 @@ function replay(g, upto = g.plays.length){
     const who = playerName(rosterGet(T[s].roster, n, s)) || playerName(rosterGet(T[s].roster, worn(s, n), s)) || playerName(fillName(T[s].name, worn(s, n), s));
     return who ? `#${n} ${who.split(' ').slice(-1)[0]}` : `#${n}`;
   };
+  // Scoring plays go by full name, no number (Chuck, 2026-10-19): "#3 Lewis" becomes "Keason Lewis" wherever a
+  // roster on either side has #3 with that last name. A number with no name behind it stays as it is.
+  const fullNm = (s, n) => playerName(rosterGet(T[s].roster, n, s)) || playerName(rosterGet(T[s].roster, worn(s, n), s)) || playerName(fillName(T[s].name, worn(s, n), s));
+  const plainNames = (s, txt) => String(txt || '').replace(/#(\w+) (\S+)/g, (m, n, last) => {
+    for (const t of [s, other(s)]){ const w = fullNm(t, n); if (w && w.split(' ').slice(-1)[0] === last) return w; }
+    return m;
+  });
   const yl = (s, pos) => { pos = clamp(pos, 0, FL); if (pos === HALF) return String(HALF);
     return pos < HALF ? `${ab(s)} ${fy(pos)}` : `${ab(other(s))} ${fy(FL - pos)}`; };
   const yds = g => g > 0 ? `for ${fy(g)} yard${g === 1 ? '' : 's'}` : g < 0 ? `for a loss of ${fy(-g)}` : 'for no gain';
@@ -222,9 +229,9 @@ function replay(g, upto = g.plays.length){
       if (last){ last.A = st.score.A; last.H = st.score.H; }
       return;
     }
-    scoring.push({q:st.q, clk, side:s, how, desc, A:st.score.A, H:st.score.H, i:curI});
+    scoring.push({q:st.q, clk, side:s, how, desc:plainNames(s, desc), A:st.score.A, H:st.score.H, i:curI});
   }
-  function amendTry(txt){ const last = scoring[scoring.length - 1]; if (last && last.how === 'TD') last.desc += ` (${txt})`; }
+  function amendTry(txt){ const last = scoring[scoring.length - 1]; if (last && last.how === 'TD') last.desc += ` (${plainNames(last.side, txt)})`; }
   function touchdown(s, desc, scorer){
     if (st.drive && st.drive.team === s) closeDrive('TD', FL); else closeDrive();
     if (scorer){ scorer.tds++; scorer.pts += 6; }

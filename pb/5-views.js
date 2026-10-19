@@ -373,6 +373,8 @@ document.addEventListener('click', e => {
   if (e.target === dlg()){ closeDialog(); return; }
   const t = e.target.closest('button'); if (!t) return;
   const d = t.dataset;
+  // A drive on the play-by-play opens and folds for anyone.
+  if (d.pdrive != null){ const k = d.pdrive; ui.pbpFold = ui.pbpFold || {}; ui.pbpFold[k] = t.getAttribute('aria-expanded') !== 'true'; return renderView(); }
   if (ui.viewer && !d.tab && !d.pbp && !d.pbsort) return;     // viewers can switch tabs and nothing else
   if ('xlsx' in d) return downloadXlsx();
   if (d.share){

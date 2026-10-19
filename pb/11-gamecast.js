@@ -103,36 +103,20 @@ function scoringList(){
   }
   return h;
 }
-function driveHead(d){
-  return `<div class="drivehd">${teamMark(d.team, 22)}<b>${esc(ab(d.team))}</b><span class="res">${esc(d.open ? 'Current drive' : d.res)}</span><span>${driveSum(d)} · ${perLabel(d.q)}</span></div>`;
-}
 // Every play, grouped by quarter with a header where each drive begins. Newest first unless `oldFirst`.
 let pbpSortPick = null; try { pbpSortPick = localStorage.getItem('pressbox.pbpSort'); } catch (e) {}
 const pbpOldFirst = () => (pbpSortPick || (ui.viewer ? 'old' : 'new')) === 'old';
 function playsList(oldFirst = false){
   if (!R.log.length) return '<div class="empty">No plays yet. Record the opening kickoff to start the log.</div>';
-  const driveOf = [];
-  R.drives.forEach(d => {
-    if (d.i0 == null) return;
-    const end = d.open || d.i1 == null ? R.log.length - 1 : d.i1;
-    for (let i = d.i0; i <= end; i++) driveOf[i] = d;
-  });
   // "WIN ball at WIN 23" says where the ball is, it isn't a play. Fans never see those lines; the scorer sees only
   // the ones he typed (they carry his text), to fix one — not the ones an import put in. Play numbers count what's shown.
   const shown = e => !(e.t === 'set' && (ui.viewer || !e.src)), num = [];
   let c = 0; R.log.forEach(e => { if (shown(e)) num[e.i] = ++c; });
-  let h = '', lastQ = null, lastD = null;
-  const n = R.log.length;
-  for (let j = 0; j < n; j++){
-    const k = oldFirst ? j : n - 1 - j;
-    const e = R.log[k], open = ui.open === e.i, d = driveOf[e.i] || null;
-    if (!shown(e)) continue;
-    if (e.q !== lastQ){ h += `<div class="qhd">${qName(e.q)}</div>`; lastQ = e.q; lastD = null; }
-    if (d && d !== lastD) h += driveHead(d);
-    lastD = d;
+  const row = e => {
+    const open = ui.open === e.i;
     // Viewers get outcomes only: no typed shorthand, no bookkeeping tags.
     const tags = ui.viewer ? e.tags.filter(([, t]) => t !== 'Spot') : e.tags;
-    h += `<button type="button" class="pl ${open ? 'open' : ''}" data-row="${e.i}">
+    let h = `<button type="button" class="pl ${open ? 'open' : ''}" data-row="${e.i}">
       <div><div class="pl-clk">${e.clk != null ? mmss(e.clk) : '—'}</div><span class="pl-no">Play ${num[e.i]}</span></div>
       <div><div class="pl-sit">${esc(e.sit)}${e.src && !ui.viewer ? ` <code class="qsrc">${esc(e.src)}</code>` : ''}</div>
       <div class="pl-txt">${e.wiped ? `<s>${esc(e.wiped)}</s> ` : ''}${esc(e.text)}${tags.length ? `<span class="tags">${tagHtml(tags)}</span>` : ''}</div></div></button>`;
@@ -143,6 +127,51 @@ function playsList(oldFirst = false){
         <button class="btn small danger" data-del="${e.i}">${ui.confirm === e.i ? 'Tap again to delete' : 'Delete'}</button>
         <button class="linkbtn" data-row="${e.i}">Close</button></div>`;
     }
+    return h;
+  };
+  // Every play goes in a drive (Chuck, 2026-10-19, ESPN's play-by-play): a finished drive folds into one line —
+  // how it ended, plays, yards and time, the score after it — and opens on a tap. The drive under way stays open.
+  // Plays between drives: a kickoff opens the next drive, a try or the end of a quarter closes the last one.
+  // Plays after the last drive with none to follow (the kickoff just recorded) stand on their own, always open.
+  const D = R.drives, CK = driveClocks(), groups = D.map((d, k) => ({d, k, plays:[]})), loose = [];
+  const owner = [];
+  D.forEach((d, k) => { if (d.i0 == null) return; const end = d.open || d.i1 == null ? R.log.length - 1 : d.i1; for (let i = d.i0; i <= end; i++) owner[i] = k; });
+  R.log.forEach(e => {
+    if (!shown(e)) return;
+    let k = owner[e.i];
+    if (k == null){
+      const next = D.findIndex(d => d.i0 != null && d.i0 > e.i);
+      let prev = -1; D.forEach((d, j) => { if (d.i1 != null && d.i1 < e.i) prev = j; });
+      const kick = e.t === 'ko' || e.phase === 'kick';
+      k = kick ? (next >= 0 ? next : null) : prev >= 0 ? prev : next >= 0 ? next : null;
+      if (k === prev && next < 0 && !['try', 'endq', 'final', 'to', 'pen', 'note'].includes(e.t) && e.phase !== 'try') k = null;
+    }
+    if (k == null) loose.push(e); else groups[k].plays.push(e);
+  });
+  const RES = {TD:'Touchdown', FG:'Field Goal', Punt:'Punt', INT:'Interception', Fumble:'Fumble', Downs:'Turnover on Downs', Safety:'Safety',
+    'Missed FG':'Missed Field Goal', 'Blocked FG':'Blocked Field Goal', Half:'End of Half', 'End of game':'End of Game',
+    'End of regulation':'End of Regulation', 'End of OT':'End of OT'};
+  const head = (gr, isOpen) => {
+    const d = gr.d, last = gr.plays[gr.plays.length - 1] || R.log[d.i1 != null ? d.i1 : R.log.length - 1];
+    const title = d.open ? (R.st.final ? 'Drive' : 'Current Drive') : RES[d.res] || 'Drive', top = CK[gr.k] && CK[gr.k].top;
+    return `<button type="button" class="inner scard pbd ${isOpen ? 'on' : ''}" data-pdrive="${d.i0}" aria-expanded="${isOpen}">${teamMark(d.team, 40)}
+      <div><div class="sc-title">${esc(title)}</div><div class="sc-time">${plural2(d.plays, 'play')}, ${plural2(Math.round(d.last - d.start), 'yard')}${top != null ? `, ${mmss(top)}` : ''}</div></div>
+      <div class="pbd-r"><div class="sc-score"><b>${last ? last.A : 0}</b><b>${last ? last.H : 0}</b><span>${esc(ab('A'))}</span><span>${esc(ab('H'))}</span></div><i class="pbd-chev" aria-hidden="true"></i></div></button>`;
+  };
+  const list = groups.filter(gr => gr.plays.length).map(gr => ({q:gr.d.q, gr, plays:gr.plays}));
+  if (loose.length) list.push({q:loose[0].q, gr:null, plays:loose});
+  if (!oldFirst) list.reverse();
+  let h = '', lastQ = null;
+  for (const it of list){
+    if (it.q !== lastQ){ h += `<div class="qhd">${qName(it.q)}</div>`; lastQ = it.q; }
+    const plays = oldFirst ? it.plays : it.plays.slice().reverse();
+    if (!it.gr){ h += plays.map(row).join(''); continue; }
+    const key = it.gr.d.i0, pick = ui.pbpFold && ui.pbpFold[key];
+    // The play being worked on keeps its drive open, and so, for the scorer, does the drive just finished
+    // until the next one starts (the try and the kickoff are still to come).
+    const latest = !ui.viewer && !R.st.final && it.gr === groups.filter(x => x.plays.length).slice(-1)[0];
+    const isOpen = pick != null ? pick : it.gr.d.open || latest || it.plays.some(e => e.i === ui.open);
+    h += head(it.gr, isOpen) + (isOpen ? `<div class="pbd-plays">${plays.map(row).join('')}</div>` : '');
   }
   return `<div class="plays">${h}</div>`;
 }
@@ -238,15 +267,34 @@ function cardDrives(){
 // The clock a scorer types sticks until it's changed, so a time counts only on the play where it was set.
 // A drive's start is the last clock set from the previous drive's last play through this drive's first;
 // its end is the first clock set from its last play through the next drive's first. Otherwise, a dash.
-function driveChart(){
+// For each drive: where the clock stood at its start (t0) and end (t1), and the time it used (top); null if not known.
+function driveClocks(){
   const D = R.drives, L = R.log, P = g.plays, qSec = (g.set.qtr || 12) * 60;
-  if (!D.length) return '<div class="empty">No drives yet.</div>';
   const set = i => typeof P[i].clk === 'number' && (!i || L[i - 1].q !== L[i].q || P[i].clk !== P[i - 1].clk);
   const clockIn = (a, b, q, last) => {
     let hit = null;
     for (let i = Math.max(0, a); i <= Math.min(b, L.length - 1); i++) if (L[i].q === q && set(i)){ hit = P[i].clk; if (!last) break; }
     return hit;
   };
+  let endAt = null;
+  return D.map((d, k) => {
+    const prev = D[k - 1], next = D[k + 1];
+    // The clock can't run back up within a quarter, so a start later than the last drive's end takes that end,
+    // and an end later than its own start is a mistyped clock, left out.
+    let t0 = d.q <= 4 ? clockIn(prev ? prev.i1 : 0, d.i0, d.q, true) : null;
+    if (t0 != null && endAt && endAt.q === d.q && t0 > endAt.t) t0 = endAt.t;
+    let t1 = d.open || d.endQ > 4 ? null : clockIn(d.i1, next ? next.i0 : L.length - 1, d.endQ, false);
+    // A clock that hit 0:00 stays there, so a drive whose last play is at 0:00 ends at 0:00 even if the zero was typed earlier.
+    if (t1 == null && !d.open && d.endQ <= 4 && d.i1 != null && P[d.i1] && P[d.i1].clk === 0 && L[d.i1].q === d.endQ) t1 = 0;
+    if (t1 != null && t0 != null && d.endQ === d.q && t1 > t0) t1 = null;
+    endAt = t1 != null ? {q:d.endQ, t:t1} : null;
+    return {t0, t1, top:t0 != null && t1 != null ? Math.max(0, (d.endQ - d.q) * qSec + t0 - t1) : null};
+  });
+}
+function driveChart(){
+  const D = R.drives, P = g.plays;
+  if (!D.length) return '<div class="empty">No drives yet.</div>';
+  const CK = driveClocks();
   // How the ball was obtained: a kickoff between the two drives, or how the other team's drive ended.
   const how = (d, prev) => {
     if (d.q > 4) return 'OT';
@@ -258,22 +306,13 @@ function driveChart(){
     return ['Punt', 'Downs', 'INT', 'Fumble', 'Missed FG', 'Blocked FG'].includes(prev.res) ? prev.res : '—';
   };
   const badge = r => ['TD', 'FG'].includes(r) ? 'score' : ['INT', 'Fumble', 'Downs', 'Safety'].includes(r) ? 'to' : '';
-  let rows = '', dash = false, endAt = null;
+  let rows = '', dash = false;
   const tm = v => { if (v == null){ dash = true; return '—'; } return mmss(v); };
   D.forEach((d, k) => {
-    const prev = D[k - 1], next = D[k + 1];
+    const prev = D[k - 1];
     if (prev && d.q > 2 && d.q <= 4 && prev.q <= 2) rows += '<tr class="dc-half"><td colspan="12">2nd Half</td></tr>';
     if (d.q > 4 && (!prev || prev.q <= 4)) rows += '<tr class="dc-half"><td colspan="12">Overtime</td></tr>';
-    // The clock can't run back up within a quarter, so a start later than the last drive's end takes that end,
-    // and an end later than its own start is a mistyped clock, left out.
-    let t0 = d.q <= 4 ? clockIn(prev ? prev.i1 : 0, d.i0, d.q, true) : null;
-    if (t0 != null && endAt && endAt.q === d.q && t0 > endAt.t) t0 = endAt.t;
-    let t1 = d.open || d.endQ > 4 ? null : clockIn(d.i1, next ? next.i0 : L.length - 1, d.endQ, false);
-    // A clock that hit 0:00 stays there, so a drive whose last play is at 0:00 ends at 0:00 even if the zero was typed earlier.
-    if (t1 == null && !d.open && d.endQ <= 4 && d.i1 != null && P[d.i1] && P[d.i1].clk === 0 && L[d.i1].q === d.endQ) t1 = 0;
-    if (t1 != null && t0 != null && d.endQ === d.q && t1 > t0) t1 = null;
-    endAt = t1 != null ? {q:d.endQ, t:t1} : null;
-    const top = t0 != null && t1 != null ? Math.max(0, (d.endQ - d.q) * qSec + t0 - t1) : null;
+    const {t0, t1, top} = CK[k];
     // A drive left open in a game that's already over says nothing: a dash, not "In progress".
     const res = d.open ? (R.st.final ? '—' : 'In progress') : d.res, b = badge(res), ot = d.q > 4;
     rows += `<tr><td><span class="dc-tm">${teamMark(d.team, 22)}${esc(ab(d.team))}</span></td>
