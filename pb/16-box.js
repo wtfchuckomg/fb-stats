@@ -128,8 +128,18 @@ function parseBox(txt){
     return Math.max(a.length, b.length) - i - j <= 1 || (a.length === b.length && i + j === a.length - 2 && a[i] === b[i + 1] && a[i + 1] === b[i]);
   };
   const wordsLike = (k, n) => { const kw = k.split('-'), nw = n.split('-'); return nw.filter(w => kw.some(x => near(x, w))).length / Math.max(nw.length, kw.length); };
+  // Every name a side goes by: the line score's, the school's own and its aliases ("Ark City"; "Goddard-Eisenhower").
+  const namesOf = i => {
+    const n = out.names[i]; if (!n) return [];
+    const k = canonSchool(n), t = (logoLib.list || []).find(x => logoSlug(x.name) === k);
+    return [...new Set([n, ...(t ? [t.name, ...(t.aliases || [])] : [])])];
+  };
   const sideOf = label => {
     const k = logoSlug(label); if (!k) return null;
+    // A school's other name, or its initials with "HS" on the end ("GEHS", "ACHS")
+    const other = ['A', 'H'].map((s, i) => namesOf(i).slice(1).some(n => { const x = logoSlug(n), ini = x.split('-').map(w => w[0]).join('');
+      return x === k || canonSchool(label) === canonSchool(n) || (ini.length > 1 && (ini === k || ini + 'hs' === k)); }));
+    if (other[0] !== other[1]) return other[0] ? 'A' : 'H';
     const score = ['A', 'H'].map((s, i) => { const n = logoSlug(out.names[i] || ''), ini = n.split('-').map(w => w[0]).join('');
       return !n ? 0 : n === k ? 3 : ini === k ? 2 : n.startsWith(k) || k.startsWith(n) ? 1 : 0; });
     if (score[0] || score[1]) return score[0] > score[1] ? 'A' : score[1] > score[0] ? 'H' : null;
@@ -155,7 +165,8 @@ function parseBox(txt){
     return /^(?:pass(?:ing)?\s+)?c(?:omp)?(?:letions)?[-\s]*a(?:tt)?(?:empts)?[-\s]*i(?:nt)?/i.test(t) || /^pass(?:es|ing)?$/i.test(t) ? 'passing'
       : /^rush(?:es|ing)?(?:\s+att(?:empts)?)?$/i.test(t) ? 'rushing' : /^(?:3rd|third) downs?/i.test(t) ? 'third downs'
       : /^(?:4th|fourth) downs?/i.test(t) ? 'fourth downs' : /^sack/i.test(t) ? 'sacks' : /^int(?:erceptions?)?\s+ret/i.test(t) ? 'interception returns'
-      : /^punt(?:s|ing)?(?:\s+no)?$/i.test(t) ? 'punts' : /^time of poss/i.test(t) ? 'time of possession' : t;
+      : /^kick(?:off)?s?\s+ret/i.test(t) ? 'kickoff returns' : /^punt\s+ret/i.test(t) ? 'punt returns' : /^fum(?:ble)?s?\s+ret/i.test(t) ? 'fumble returns'
+      : /^punts?\s+no/i.test(t) ? 'punts' : /^punt(?:s|ing)?(?:\s+no)?$/i.test(t) ? 'punts' : /^time of poss/i.test(t) ? 'time of possession' : t;
   };
   const sections = [];
   let sec = null, curQ = 0, teamAbove = null;   // teamAbove: a team's name on its own line, over its stat lines
@@ -170,7 +181,7 @@ function parseBox(txt){
         // "by Run 6 14" under "First Downs 14 22" belongs to the first downs.
         const by = r[1].match(/^(?:by\s+)?(run|rush(?:ing)?|pass(?:ing)?|penalt(?:y|ies))$/i), at = tbl.fd;
         tbl.order.forEach((s, i) => {
-          if (by && at != null) sec.parts[s][at] += `, ${by[1].toLowerCase().replace(/^run$/, 'rushing')} ${r[i + 2]}`;
+          if (by && at != null) sec.parts[s][at] += `, ${by[1].toLowerCase().replace(/^run$/, 'rushing').replace(/^pass$/, 'passing')} ${r[i + 2]}`;
           else { const what = tableLabel(r[1]); if (/^first downs?$/i.test(what)) tbl.fd = sec.parts[s].length; sec.parts[s].push(`${what} ${r[i + 2]}`); }
         });
         tbl.head = true; continue;
@@ -211,7 +222,10 @@ function parseBox(txt){
         const add = a => a.reduce((t, v) => t + (v || 0), 0);
         if (tot == null && q.length >= 5 && q[q.length - 1] != null && q[q.length - 1] === add(q.slice(0, -1))) tot = q.pop();
         // Each overtime keeps its own column, however many there were: "10 10 0 7 0 6 0 6 0 — 39".
-        const s = out.names.length ? 'H' : 'A', name = ls[1].replace(/[\s:,.—–-]+$/, ''), sum = add(q);
+        let name = ls[1].replace(/[\s:,.—–-]+$/, '');
+        // "isenhower": a school we don't have that is one slip from one we do is that one.
+        if (typeof knownSchool === 'function' && !knownSchool(name)){ const near = similarSchools(name, 2); if (near.length === 1) name = near[0]; }
+        const s = out.names.length ? 'H' : 'A', sum = add(q);
         out.names.push(name); out.lines[s] = q; out.total[s] = tot ?? sum;
         if (tot != null && tot !== sum) out.warn.push(`${name}’s quarters add up to ${sum}, but the total says ${tot}. Using ${tot}.`);
         sec = null; continue;
@@ -295,7 +309,7 @@ function parseBox(txt){
   // A section's body, split at each team's name: "Andover — …. Hutchinson — …".
   const splitTeams = body => {
     // One-letter labels ("W", "C") mark scoring plays but are too short to split a stat line on.
-    const alts = [...new Set([...out.names, ...out.scoring.map(e => e.label)])].filter(a => a && a.length > 1).sort((a, b) => b.length - a.length);
+    const alts = [...new Set([...namesOf(0), ...namesOf(1), ...out.scoring.map(e => e.label)])].filter(a => a && a.length > 1).sort((a, b) => b.length - a.length);
     // A heading on its own line leaves the body starting with a space, so the first team's name sits at ^\s*.
     const re = new RegExp(`(?:^\\s*|[.;:)]\\s*)(${alts.map(escRe).join('|')})\\s*(?:[—–:,]|\\s-)\\s*`, 'gi'), hits = [...body.matchAll(re)];
     return hits.map((h, i) => [sideOf(h[1]), body.slice(h.index + h[0].length, i + 1 < hits.length ? hits[i + 1].index : undefined)]).filter(x => x[0]);
