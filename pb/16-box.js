@@ -561,7 +561,7 @@ function boxInto(game, st, S, scoring){
     Object.assign(S.team[s], b.team[s] || {});
     S.pl[s] = {};
     // Longest gains and sacks aren't in a box score: blank, not zero.
-    Object.entries(b.pl[s] || {}).forEach(([k, p]) => { S.pl[s][k] = Object.assign(zeros(PL_KEYS), {plg:'', rlg:'', relg:'', psk:''}, p, {n:k}); });
+    Object.entries(b.pl[s] || {}).forEach(([k, p]) => { S.pl[s][k] = Object.assign(zeros(PL_KEYS), {plg:'', rlg:'', relg:'', psk:''}, p, {n:boxFull(game, s, k)}); });
   });
   // A box score only lists the quarters that were played, so a mercy-shortened game shows an X for the rest —
   // whether the paste stopped short or spelled the unplayed quarters out as X.
@@ -573,8 +573,26 @@ function boxInto(game, st, S, scoring){
     run[e.side] += e.pts || 0;
     // The time the paste gave for that score, so a box-score game reads like a tracked one.
     const c = e.time ? parseClock(e.time) : null;
-    scoring.push({q:e.q || 4, clk:c == null ? null : c, side:e.side, how:e.how, desc:e.desc, A:run.A, H:run.H, i:-1});
+    scoring.push({q:e.q || 4, clk:c == null ? null : c, side:e.side, how:e.how, desc:boxFullDesc(game, b, e.desc), A:run.A, H:run.H, i:-1});
   });
+}
+// A last name in a pasted box score ("Vega") shows as the one player on that school's roster it can be ("Pete Vega"),
+// the same rule the season stats use (fullNameOf). Chuck, 2026-10-19: "I thought last names would autopopulate with
+// first names." The paste itself is kept as typed; only what is shown changes.
+function boxFull(game, s, k){
+  if (typeof fullNameOf !== 'function' || !game.teams || !game.teams[s]) return k;
+  loadRosterNames();
+  return fullNameOf(game.teams[s].name, k) || k;
+}
+function boxFullDesc(game, b, desc){
+  let d = String(desc || '');
+  ['A', 'H'].forEach(s => Object.keys(b.pl[s] || {}).forEach(k => {
+    const f = boxFull(game, s, k);
+    if (f === k || /\s/.test(k)) return;
+    d = d.replace(new RegExp(`(^|[^A-Za-z'’.-])${k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z'’])`, 'g'), (m, pre, at, all) =>
+      all.slice(Math.max(0, at - 20), at + pre.length).match(/[A-Z][a-z]+\s$/) ? m : pre + f);
+  }));
+  return d;
 }
 
 /* ---------- a gamecast whose player stats come from a pasted box score ----------
