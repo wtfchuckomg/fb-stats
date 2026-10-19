@@ -546,3 +546,7 @@ function lazyFill(el){
 }
 // A different page or week: start over.
 function lazyReset(){ lazyParts.clear(); lazyShown.clear(); if (lazyObs) lazyObs.disconnect(); }
+
+// Print (or Save as PDF) from any game's page: the line score, box score, team stats and play-by-play together
+// (Chuck, 2026-10-19: "can we put the stats into a PDF form that it could be printed out?").
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-print-game]')) printAll(); });
