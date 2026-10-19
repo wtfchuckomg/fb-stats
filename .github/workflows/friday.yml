@@ -1,4 +1,4 @@
-# Friday night at midnight in Kansas: read this season's results from KPreps and write kpscores.json, so a game
+# Friday night in Kansas, from midnight on: read this season's results from KPreps and write kpscores.json, so a game
 # nobody kept stats on still shows its final on the scoreboard. See .github/kp/scores.py.
 name: Friday night scores
 
@@ -22,12 +22,21 @@ jobs:
   scores:
     runs-on: ubuntu-latest
     steps:
-      - name: Is it midnight in Kansas?
+      # GitHub starts scheduled runs late (six hours on 2026-10-10). Waiting for exactly midnight skipped those
+      # runs as successes, so any start before noon Saturday in Kansas counts, and the second cron line steps
+      # aside when tonight's results were already saved.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 50
+      - name: Is it Friday night in Kansas?
         id: when
         run: |
-          if [ "${{ github.event_name }}" != "schedule" ] || [ "$(TZ=America/Chicago date +%H)" = "00" ]; then echo "go=1" >> "$GITHUB_OUTPUT"; else echo "Not midnight in Kansas; the other run has it."; fi
-      - uses: actions/checkout@v4
-        if: steps.when.outputs.go == '1'
+          D=$(TZ=America/Chicago date +%u); H=$(TZ=America/Chicago date +%-H)
+          last=$(git log -1 --format=%ct --author="Friday night scores" || echo 0); last=${last:-0}
+          if [ "${{ github.event_name }}" != "schedule" ]; then echo "go=1" >> "$GITHUB_OUTPUT"
+          elif [ "$D" != "6" ] || [ "$H" -ge 12 ]; then echo "Not Friday night in Kansas; the other run has it."
+          elif [ $(( $(date +%s) - last )) -lt 43200 ]; then echo "Already saved tonight."
+          else echo "go=1" >> "$GITHUB_OUTPUT"; fi
       - name: Read tonight's results from KPreps
         if: steps.when.outputs.go == '1'
         env:

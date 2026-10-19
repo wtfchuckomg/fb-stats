@@ -25,12 +25,21 @@ jobs:
     # never saved. Each KPreps step now has its own cap and can fail without stopping the save.
     timeout-minutes: 120
     steps:
-      - name: Is it 3 a.m. in Kansas?
+      # GitHub starts scheduled runs late, sometimes by seven hours. Waiting for exactly 3 a.m. skipped every run
+      # from 2026-10-02 on, all reported as successes. Any start from 3 a.m. to 3 p.m. Kansas time counts, and the
+      # second cron line steps aside when a rebuild was already saved in the last ten hours.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 50
+      - name: Is it the night's rebuild?
         id: when
         run: |
-          if [ "${{ github.event_name }}" != "schedule" ] || [ "$(TZ=America/Chicago date +%H)" = "03" ]; then echo "go=1" >> "$GITHUB_OUTPUT"; else echo "Not 3 a.m. in Kansas; the other run has it."; fi
-      - uses: actions/checkout@v4
-        if: steps.when.outputs.go == '1'
+          H=$(TZ=America/Chicago date +%-H)
+          last=$(git log -1 --format=%ct --author="Nightly rebuild" || echo 0); last=${last:-0}
+          if [ "${{ github.event_name }}" != "schedule" ]; then echo "go=1" >> "$GITHUB_OUTPUT"
+          elif [ "$H" -lt 3 ] || [ "$H" -ge 15 ]; then echo "Not between 3 a.m. and 3 p.m. in Kansas; the other run has it."
+          elif [ $(( $(date +%s) - last )) -lt 36000 ]; then echo "Already rebuilt tonight."
+          else echo "go=1" >> "$GITHUB_OUTPUT"; fi
       - name: Install Playwright and Pillow
         if: steps.when.outputs.go == '1'
         run: python3 -m pip install --quiet playwright Pillow
