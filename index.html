@@ -1977,6 +1977,10 @@ function replay(g, upto = g.plays.length){
     return y;
   }
   function penalize(pen, seriesNew, pre, dead){
+    // Roughing the kicker, passer, holder or snapper can only be on the defense (Chuck, 2026-10-19: "pen bs 15
+    // roughing the kicker" typed with the punting team's name got no first down). Charged to the offense, it goes
+    // to the defense, with the automatic first down that comes with it.
+    if (pen.a && st.phase === 'play' && pen.side === st.poss) pen = Object.assign({}, pen, {side:other(st.poss)});
     const side = pen.side, offFoul = side === st.poss;
     // Where it's marched off from: the line of scrimmage, or the foul's own spot on a spot foul. Told the
     // ball spot instead, the foul is however many yards back the other way.
