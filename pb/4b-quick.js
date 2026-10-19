@@ -39,7 +39,7 @@ function quickTeams(){
   const map = {};
   // Anything that names one team and not the other can be typed: "wichita collegiate" is w, c, wc or collegiate.
   const WORDS_TAKEN = ['at', 'to', 'td', 'inc', 'punt', 'fg', 'xp', 'int', 'sack', 'fum', 'pen', 'ko', 'ret', 'ball', 'rec',
-    'oob', 'tb', 'fc', 'blk', 'block', 'blocks', 'blocked', 'down', 'half', 'end', 'final', 'undo', 'safety', 'saf', 'kneel', 'muff', 'lateral', 'team'];
+    'oob', 'tb', 'fc', 'blk', 'block', 'blocks', 'blocked', 'down', 'half', 'end', 'final', 'undo', 'safety', 'saf', 'kneel', 'muff', 'lateral', 'team', 'rekick', 'rk'];
   const add = (w, side) => {
     const k = String(w || '').toLowerCase();
     if (!/^[a-z]+$/.test(k) || (k.length > 1 && WORDS_TAKEN.includes(k))) return;
@@ -116,6 +116,7 @@ function plainWords(line){
     .replace(/\bfair catch\b/g, ' fc ')
     .replace(/\btouchback\b/g, ' tb ')
     .replace(/\bout of bounds\b/g, ' oob ')
+    .replace(/\b(?:re-?kicks?|re-?kicked|kick(?:s|ed)? again)\b/g, ' rekick ')
     .replace(/\b(?:kicks off|kicked off|kick off|kickoff)\b/g, ' ko ')
     .replace(/\btime ?out\b/g, ' timeout ')
     .replace(/\b(?:scores|scored|for a score)\b/g, ' td ')
@@ -439,6 +440,8 @@ function parseQuick(raw, st){
       // it was kicked. "15 kicks off 45 yards out of bounds" used to read as a 45-yard return.
       p.res = 'oob';
       if (p.d == null && ryTold != null) p.d = Math.abs(+ryTold);
+      // "ko oob rk": the receiving team took the 5 yards and made them kick again
+      if (has('rekick', 'rk')) p.rk = true;
     }
     else if (has('onside')){
       p.res = 'onside';

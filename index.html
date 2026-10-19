@@ -2127,7 +2127,11 @@ function replay(g, upto = g.plays.length){
         return txt + (at <= 0 ? ', into the end zone. Touchback.' : ` to the ${yl(R, s)}.`);
       }
       case 'tb': bump(k, 'ktb'); tk.koTB++; newSeries(R, RU.tb); return txt + `, touchback. ${ab(R)} ball at the ${yl(R, RU.tb)}.`;
-      case 'oob': { oobFoul(); const s = FL - (kf + NFHS.oobFreeKick); newSeries(R, s);
+      // The receiving team can make them kick again, 5 yards back, instead of taking the ball 25 yards out (Chuck,
+      // 2026-10-19). The kicking team still has it, and the next play is the rekick.
+      case 'oob': if (p.rk){ oobFoul(); st.kickFrom = Math.max(1, kf - NFHS.oobKickPen);
+          return txt + `, out of bounds (5-yard penalty). ${ab(K)} kicks again from the ${yl(K, st.kickFrom)}.`; }
+      { oobFoul(); const s = FL - (kf + NFHS.oobFreeKick); newSeries(R, s);
         return txt + `, out of bounds (5-yard penalty). ${ab(R)} ball at the ${yl(R, s)}.`; }
       case 'onside': { const s = kf + d; bump(pl(K, p.ret), 'fr'); newSeries(K, s); tags.push(['to', 'Onside']);
         return txt + `, onside, recovered by ${p.ret ? nm(K, p.ret) : ab(K)} at the ${yl(K, s)}.`; }
@@ -2633,7 +2637,7 @@ function blank(t, st){
     case 'run': return {...base, r:'', y:'', yn:'gain', tk:['', ''], latOn:false, lat:{r:'', y:''}};
     case 'pass': return {...base, qb:first(O, 'qb'), res:'c', to:'', y:'', yn:'gain', tk:['', ''], pbu:'', ib:'', at:'', ry:'', by:['', ''], sy:''};
     case 'punt': return {...base, k:first(O, 'punt'), d:'', res:'ret', ret:'', ry:'', tk:['', ''], by:'', b:'', mr:'', own:'', oob:false};
-    case 'ko': return {...base, k:first(O, 'kick'), d:'', res:'ret', ret:'', ry:'', tk:['', ''], by:'', mr:'', oob:false};
+    case 'ko': return {...base, k:first(O, 'kick'), d:'', res:'ret', ret:'', ry:'', tk:['', ''], by:'', mr:'', oob:false, rk:false};
     case 'fg': return {...base, k:first(O, 'kick'), d:'', res:'good', by:'', b:'', ret:'', ry:''};
     case 'try': return {t, kind:'kick', res:'good', k:first(O, 'kick'), r:'', qb:first(O, 'qb'), to:''};
     case 'pen': return {t, pen:penBlank(O, 'acc')};
@@ -2695,6 +2699,7 @@ function buildPlay(d){
       if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:n(d.ry) || 0, tk:js(d.tk), oob:yes(d.oob) || undefined});
       if (d.res === 'fc' || d.res === 'onside') p.ret = j(d.ret);
       if (d.res === 'muff') Object.assign(p, {by:j(d.by), ret:j(d.ret), mr:yes(d.mr) || undefined});
+      if (d.res === 'oob' && yes(d.rk)) p.rk = true;
       break;
     case 'fg':
       Object.assign(p, {k:j(d.k), d:n(d.d), res:d.res});
@@ -2838,6 +2843,7 @@ function formHtml(){
       if (d.res === 'muff') h += muffFields(K, Rr, 'Kick yards to where it was muffed.');
       if (d.res === 'fc') h += row(fJ('ret', 'Caught by', Rr, 'ret'));
       if (d.res === 'onside') h += row(fJ('ret', 'Recovered by', K));
+      if (d.res === 'oob') h += `<div class="checks">${tog('rk', 'Kick again, 5 yards back')}</div>`;
       h += `<p class="hint">Kick yards count from the ${esc(R.yl(K, st.kickFrom))}. Out of bounds gives ${esc(ab(Rr))} the ball 25 yards beyond the kicking line (its ${ui.ctx.FL - rulesOf(g).kickFrom - NFHS.oobFreeKick} on a normal kickoff).</p>`;
       return h + extras();
     }
@@ -2981,7 +2987,7 @@ function quickTeams(){
   const map = {};
   // Anything that names one team and not the other can be typed: "wichita collegiate" is w, c, wc or collegiate.
   const WORDS_TAKEN = ['at', 'to', 'td', 'inc', 'punt', 'fg', 'xp', 'int', 'sack', 'fum', 'pen', 'ko', 'ret', 'ball', 'rec',
-    'oob', 'tb', 'fc', 'blk', 'block', 'blocks', 'blocked', 'down', 'half', 'end', 'final', 'undo', 'safety', 'saf', 'kneel', 'muff', 'lateral', 'team'];
+    'oob', 'tb', 'fc', 'blk', 'block', 'blocks', 'blocked', 'down', 'half', 'end', 'final', 'undo', 'safety', 'saf', 'kneel', 'muff', 'lateral', 'team', 'rekick', 'rk'];
   const add = (w, side) => {
     const k = String(w || '').toLowerCase();
     if (!/^[a-z]+$/.test(k) || (k.length > 1 && WORDS_TAKEN.includes(k))) return;
@@ -3058,6 +3064,7 @@ function plainWords(line){
     .replace(/\bfair catch\b/g, ' fc ')
     .replace(/\btouchback\b/g, ' tb ')
     .replace(/\bout of bounds\b/g, ' oob ')
+    .replace(/\b(?:re-?kicks?|re-?kicked|kick(?:s|ed)? again)\b/g, ' rekick ')
     .replace(/\b(?:kicks off|kicked off|kick off|kickoff)\b/g, ' ko ')
     .replace(/\btime ?out\b/g, ' timeout ')
     .replace(/\b(?:scores|scored|for a score)\b/g, ' td ')
@@ -3381,6 +3388,8 @@ function parseQuick(raw, st){
       // it was kicked. "15 kicks off 45 yards out of bounds" used to read as a 45-yard return.
       p.res = 'oob';
       if (p.d == null && ryTold != null) p.d = Math.abs(+ryTold);
+      // "ko oob rk": the receiving team took the 5 yards and made them kick again
+      if (has('rekick', 'rk')) p.rk = true;
     }
     else if (has('onside')){
       p.res = 'onside';

@@ -550,7 +550,11 @@ function replay(g, upto = g.plays.length){
         return txt + (at <= 0 ? ', into the end zone. Touchback.' : ` to the ${yl(R, s)}.`);
       }
       case 'tb': bump(k, 'ktb'); tk.koTB++; newSeries(R, RU.tb); return txt + `, touchback. ${ab(R)} ball at the ${yl(R, RU.tb)}.`;
-      case 'oob': { oobFoul(); const s = FL - (kf + NFHS.oobFreeKick); newSeries(R, s);
+      // The receiving team can make them kick again, 5 yards back, instead of taking the ball 25 yards out (Chuck,
+      // 2026-10-19). The kicking team still has it, and the next play is the rekick.
+      case 'oob': if (p.rk){ oobFoul(); st.kickFrom = Math.max(1, kf - NFHS.oobKickPen);
+          return txt + `, out of bounds (5-yard penalty). ${ab(K)} kicks again from the ${yl(K, st.kickFrom)}.`; }
+      { oobFoul(); const s = FL - (kf + NFHS.oobFreeKick); newSeries(R, s);
         return txt + `, out of bounds (5-yard penalty). ${ab(R)} ball at the ${yl(R, s)}.`; }
       case 'onside': { const s = kf + d; bump(pl(K, p.ret), 'fr'); newSeries(K, s); tags.push(['to', 'Onside']);
         return txt + `, onside, recovered by ${p.ret ? nm(K, p.ret) : ab(K)} at the ${yl(K, s)}.`; }

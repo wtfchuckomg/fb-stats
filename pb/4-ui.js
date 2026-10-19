@@ -224,7 +224,7 @@ function blank(t, st){
     case 'run': return {...base, r:'', y:'', yn:'gain', tk:['', ''], latOn:false, lat:{r:'', y:''}};
     case 'pass': return {...base, qb:first(O, 'qb'), res:'c', to:'', y:'', yn:'gain', tk:['', ''], pbu:'', ib:'', at:'', ry:'', by:['', ''], sy:''};
     case 'punt': return {...base, k:first(O, 'punt'), d:'', res:'ret', ret:'', ry:'', tk:['', ''], by:'', b:'', mr:'', own:'', oob:false};
-    case 'ko': return {...base, k:first(O, 'kick'), d:'', res:'ret', ret:'', ry:'', tk:['', ''], by:'', mr:'', oob:false};
+    case 'ko': return {...base, k:first(O, 'kick'), d:'', res:'ret', ret:'', ry:'', tk:['', ''], by:'', mr:'', oob:false, rk:false};
     case 'fg': return {...base, k:first(O, 'kick'), d:'', res:'good', by:'', b:'', ret:'', ry:''};
     case 'try': return {t, kind:'kick', res:'good', k:first(O, 'kick'), r:'', qb:first(O, 'qb'), to:''};
     case 'pen': return {t, pen:penBlank(O, 'acc')};
@@ -286,6 +286,7 @@ function buildPlay(d){
       if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:n(d.ry) || 0, tk:js(d.tk), oob:yes(d.oob) || undefined});
       if (d.res === 'fc' || d.res === 'onside') p.ret = j(d.ret);
       if (d.res === 'muff') Object.assign(p, {by:j(d.by), ret:j(d.ret), mr:yes(d.mr) || undefined});
+      if (d.res === 'oob' && yes(d.rk)) p.rk = true;
       break;
     case 'fg':
       Object.assign(p, {k:j(d.k), d:n(d.d), res:d.res});
@@ -429,6 +430,7 @@ function formHtml(){
       if (d.res === 'muff') h += muffFields(K, Rr, 'Kick yards to where it was muffed.');
       if (d.res === 'fc') h += row(fJ('ret', 'Caught by', Rr, 'ret'));
       if (d.res === 'onside') h += row(fJ('ret', 'Recovered by', K));
+      if (d.res === 'oob') h += `<div class="checks">${tog('rk', 'Kick again, 5 yards back')}</div>`;
       h += `<p class="hint">Kick yards count from the ${esc(R.yl(K, st.kickFrom))}. Out of bounds gives ${esc(ab(Rr))} the ball 25 yards beyond the kicking line (its ${ui.ctx.FL - rulesOf(g).kickFrom - NFHS.oobFreeKick} on a normal kickoff).</p>`;
       return h + extras();
     }
