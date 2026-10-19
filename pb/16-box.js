@@ -230,6 +230,9 @@ function parseBox(txt){
       const own = sideOf(l.replace(/[:—–.-]+$/, '').trim());
       if (own){ teamAbove = own; sec = null; continue; }
     }
+    // "10:02 RH – Nick Jones 17 run (…)": the clock in front of the team. Moved to the end, where it is usually written.
+    const lead = out.names.length === 2 && l.match(/^\(?(\d{0,2}:\d{2})\)?\s+([A-Za-z].*)$/);
+    if (lead) l = `${lead[2]} ${lead[1].startsWith(':') ? '0' + lead[1] : lead[1]}`;
     const sc = out.names.length === 2 && (l.match(/^([A-Za-z][A-Za-z.'& ]{0,24}?)\s*[—–:-]\s+(.+)$/)
       // "A Quinn 55-yd. run (Vega kick) 9:09", under a quarter: a team's short name, then the play
       || (curQ && /\b(run|pass|field goal|fg|return|safety|fumble|interception|recovery|kick|punt)\b/i.test(l) && l.match(/^([A-Za-z][A-Za-z.'&]{0,12})\s+([A-Z].+)$/)));
@@ -498,6 +501,10 @@ function parseBox(txt){
   });
   // Quarters for the scoring plays, when the summary has no quarter headings: each team's running score
   // against its line score, quarter by quarter.
+  // Plays above the first quarter heading ("Second quarter" with no "First quarter" over the plays before it) are in
+  // the quarter before that heading.
+  const firstQ = out.scoring.find(e => e.q);
+  if (firstQ){ const before = Math.max(1, firstQ.q - 1); for (const e of out.scoring){ if (e.q) break; e.q = before; } }
   if (!out.scoring.some(e => e.q)){
     const nq = Math.max(out.lines.A.length, out.lines.H.length), run = {A:0, H:0}, thru = (s, i) => out.lines[s].slice(0, i + 1).reduce((a, b) => a + (b || 0), 0);
     let q = 0;
