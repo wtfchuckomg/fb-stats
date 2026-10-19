@@ -297,7 +297,7 @@ function record(){
     const c = parseClock(ui.draft.clkTxt || ''); if (c != null) p.clk = c;
     g.plays[ui.editing] = p; ui.editing = null; ui.open = null; toast('Play updated');
   } else {
-    if (R.st.q <= 4) p.clk = Math.ceil(clockNow());
+    if (R.st.q <= 4 && clockUsed(g)) p.clk = Math.ceil(clockNow());
     stopClockFor(p);
     g.plays.push(p); toast('Recorded');
   }

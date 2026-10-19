@@ -26,7 +26,10 @@ function clockNow(){ const c = (g && g.clk) || {s:((g && g.set && g.set.qtr) || 
 // An incomplete pass, or a run or catch that went out of bounds, stops the clock.
 const stopsClock = p => (p.t === 'pass' && p.res === 'i') || ((p.t === 'run' || (p.t === 'pass' && p.res === 'c')) && /\b(oob|out of bounds)\b/i.test(p.q || ''));
 function stopClockFor(p){ if (g.clk.run && stopsClock(p)) g.clk = {s:clockNow(), run:false, at:Date.now()}; }
-function setClock(s, run){ g.clk = {s:Math.max(0, s), run:!!run && s > 0, at:Date.now()}; save(); }
+// A game scored without the clock never gets a time on its plays: only once the clock is started or set does it count
+// (Chuck, 2026-10-19: "I just don't want it to say 12:00 12:00 12:00 every play").
+function setClock(s, run){ g.clk = {s:Math.max(0, s), run:!!run && s > 0, at:Date.now()}; g.clkUsed = true; save(); }
+const clockUsed = x => !!(x && (x.clkUsed || (x.plays || []).some(p => p.clk != null && !['endq', 'final'].includes(p.t) && p.clk !== (x.set && x.set.qtr || 12) * 60)));
 
 /* ---------- game strip (scoreboard) ---------- */
 function renderBoard(){
@@ -50,7 +53,7 @@ function renderBoard(){
   const go = g.clk.run
     ? '<svg viewBox="0 0 12 12"><rect x="1" y="1" width="3.6" height="10"/><rect x="7.4" y="1" width="3.6" height="10"/></svg>'
     : '<svg viewBox="0 0 12 12"><path d="M2 1l9 5-9 5z"/></svg>';
-  const line1 = clockOn
+  const line1 = clockOn && (!ui.viewer || clockUsed(g))
     ? `<button class="st-clock num ${g.clk.run ? 'run' : ''}" id="clk" title="Tap to set the clock">${mmss(clockNow())}</button><span>-</span><span>${per}</span>${ui.viewer ? '' : `<button class="clk-go" id="clkgo" aria-label="${g.clk.run ? 'Stop' : 'Start'} the clock">${go}</button>`}`
     : `<span>${per}</span>`;
   let l2 = '', l3 = '';

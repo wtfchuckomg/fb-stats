@@ -332,7 +332,7 @@ function summary(x){
     const last = x.plays[x.plays.length - 1], c = x.clk;
     if (last.t === 'endq' && st.q === 3) status = 'Halftime';
     else if (st.q > 4) status = perShort(st.q);
-    else status = `${c ? mmss(c.run ? c.s - (Date.now() - c.at) / 1000 : c.s) + ' - ' : ''}${ord(st.q)}`;
+    else status = `${c && clockUsed(x) ? mmss(c.run ? c.s - (Date.now() - c.at) / 1000 : c.s) + ' - ' : ''}${ord(st.q)}`;
   }
   return {quick:false, fin:st.final, pre:!x.plays.length && !x.box, live, q:st.q, status, score:st.score, poss:live && st.phase !== 'kick' ? st.poss : null,
     lines:st.lines, qPlayed:st.qPlayed, typed:st.typed, S:r.S, men:rulesOf(x).men};
