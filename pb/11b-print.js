@@ -127,7 +127,7 @@ function psPbp(){
     const d = driveOf[e.i] || null;
     if (d && d !== lastD) h += `<tr class="ps-dr"><td class="l" colspan="3">${esc(schoolName(g.teams[d.team].name))} drive at ${esc(R.yl(d.team, d.start))}</td></tr>`;
     lastD = d;
-    h += `<tr><td class="l ps-nw">${set(e) ? mmss(P[e.i].clk) : ''}</td><td class="l ps-nw">${esc(e.sit || '')}</td><td class="l">${e.wiped ? `<s>${esc(e.wiped)}</s> ` : ''}${esc(e.text)}</td></tr>`;
+    h += `<tr><td class="l ps-nw">${set(e) ? mmss(P[e.i].clk) : ''}</td><td class="l ps-nw">${['endq', 'final'].includes(e.t) ? '' : esc(e.sit || '')}</td><td class="l">${e.wiped ? `<s>${esc(e.wiped)}</s> ` : ''}${esc(e.text)}</td></tr>`;
   }
   return `<section class="ps-page"><h2 class="ps-h">Play-by-Play</h2><hr class="ps-rule">${h}</tbody></table></section>`;
 }

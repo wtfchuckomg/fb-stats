@@ -118,7 +118,7 @@ function playsList(oldFirst = false){
     const tags = ui.viewer ? e.tags.filter(([, t]) => t !== 'Spot') : e.tags;
     let h = `<button type="button" class="pl ${open ? 'open' : ''}" data-row="${e.i}">
       <div><div class="pl-clk">${e.clk != null ? mmss(e.clk) : '—'}</div><span class="pl-no">Play ${num[e.i]}</span></div>
-      <div><div class="pl-sit">${esc(e.sit)}${e.src && !ui.viewer ? ` <code class="qsrc">${esc(e.src)}</code>` : ''}</div>
+      <div><div class="pl-sit">${['endq', 'final'].includes(e.t) ? '' : esc(e.sit)}${e.src && !ui.viewer ? ` <code class="qsrc">${esc(e.src)}</code>` : ''}</div>
       <div class="pl-txt">${e.wiped ? `<s>${esc(e.wiped)}</s> ` : ''}${esc(e.text)}${tags.length ? `<span class="tags">${tagHtml(tags)}</span>` : ''}</div></div></button>`;
     if (open){
       const editable = !['endq', 'final', 'to'].includes(e.t);
@@ -142,7 +142,8 @@ function playsList(oldFirst = false){
     if (k == null){
       const next = D.findIndex(d => d.i0 != null && d.i0 > e.i);
       let prev = -1; D.forEach((d, j) => { if (d.i1 != null && d.i1 < e.i) prev = j; });
-      const kick = e.t === 'ko' || e.phase === 'kick';
+      // An end of quarter logged while a kickoff was due is still the end of the quarter, not a kick.
+      const kick = e.t === 'ko' || (e.phase === 'kick' && !['endq', 'final', 'to', 'note'].includes(e.t));
       k = kick ? (next >= 0 ? next : null) : prev >= 0 ? prev : next >= 0 ? next : null;
       if (k === prev && next < 0 && !['try', 'endq', 'final', 'to', 'pen', 'note'].includes(e.t) && e.phase !== 'try') k = null;
     }
