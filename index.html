@@ -6749,7 +6749,8 @@ const sameSchool = (a, b) => { const x = logoSlug(a), y = logoSlug(b); return !!
 // "Will Quinn 79 run (Vega kick); 3:45" — and sometimes at the front instead.
 function pullTime(d){
   const s = String(d).trim();
-  let m = s.match(/[;,–—-]?\s*\(?(\d{1,2}:\d{2})(?:\.\d+)?\)?\s*(?:left|remaining|to go)?\s*[.]?\s*$/);
+  let m = s.match(/[;,–—-]?\s*\(?(\d{0,2}:\d{2})(?:\.\d+)?\)?\s*(?:left|remaining|to go)?\s*[.]?\s*$/);
+  if (m && m[1][0] === ':') m[1] = '0' + m[1];   // ":00" is 0:00
   if (m) return {desc:s.slice(0, m.index).replace(/[;,\s–—-]+$/, '').trim(), time:m[1]};
   m = s.match(/^\(?(\d{1,2}:\d{2})\)?\s*[;,—–-]?\s*/);
   if (m) return {desc:s.slice(m[0].length).trim(), time:m[1]};
@@ -6808,7 +6809,16 @@ function parseBox(txt){
   const out = {ok:false, error:'', names:[], lines:{A:[], H:[]}, total:{A:0, H:0}, scoring:[], pl:{A:{}, H:{}}, team:{A:{}, H:{}}, warn:[]};
   // A loss can be written out: "Sanderson 2-(minus 6)" is "2-(-6)".
   const raw = String(txt || '').replace(/\r/g, '').replace(/\(\s*minus\s+(\d+)\s*\)/gi, '(-$1)').replace(/-\s*minus\s+(\d+)/gi, '-(-$1)')
-    .split('\n').filter(l => l.trim());
+    .split('\n').filter(l => l.trim())
+    // A table saved with semicolons between its cells ("Andover;13;8;7;3;—;31", ";And.;New.", "First downs;19;6"):
+    // the same as one pasted with tabs. A stats line keeps its semicolons, which split one team's players from
+    // the other's.
+    .map(l => {
+      // Cells after the first all numbers (or blank, or "—"), or a header row starting with a semicolon: a table row.
+      const c = l.split(';');
+      return c.length >= 3 && (/^\s*;/.test(l) || c.slice(1).every(x => /^\s*(?:[—–-]|-?\(?-?[\d.:]+\)?(?:\s*-\s*\(?-?[\d.]+\)?)*)?\s*$/.test(x)))
+        ? c.join('\t') : l;
+    });
   const rows = raw.map(l => l.replace(/[ \t]+/g, ' ').trim());
   // A line pasted from a table keeps its tabs here, one cell apiece.
   const cellsOf = raw.map(l => /\t/.test(l.trim()) ? l.split('\t').map(x => x.trim()).filter(Boolean) : null);
@@ -6852,6 +6862,7 @@ function parseBox(txt){
     t = t.replace(/\([^)]*\)/g, ' ').replace(/[-\s]+(?:yards|yds|yd|avg|average)\b\.?/gi, '').replace(/[.:]+$/, '').replace(/\s+/g, ' ').trim();
     if (yds && /^kickoffs?$/i.test(t)) return 'kickoff yards';
     if (yds && /^punt(?:s|ing)?$/i.test(t)) return 'punt yards';
+    if (/^pass(?:ing)?\s+(?:yards|yds|yd)\b/i.test(t)) return 'passing yards';   // "Passing yards 13 86"
     return /^(?:pass(?:ing)?\s+)?c(?:omp)?(?:letions)?[-\s]*a(?:tt)?(?:empts)?[-\s]*i(?:nt)?/i.test(t) || /^pass(?:es|ing)?$/i.test(t) ? 'passing'
       : /^rush(?:es|ing)?(?:\s+att(?:empts)?)?$/i.test(t) ? 'rushing' : /^(?:3rd|third) downs?/i.test(t) ? 'third downs'
       : /^(?:4th|fourth) downs?/i.test(t) ? 'fourth downs' : /^sack/i.test(t) ? 'sacks' : /^int(?:erceptions?)?\s+ret/i.test(t) ? 'interception returns'
@@ -6930,7 +6941,9 @@ function parseBox(txt){
       const own = sideOf(l.replace(/[:—–.-]+$/, '').trim());
       if (own){ teamAbove = own; sec = null; continue; }
     }
-    const sc = out.names.length === 2 && l.match(/^([A-Za-z][A-Za-z.'& ]{0,24}?)\s*[—–:-]\s+(.+)$/);
+    const sc = out.names.length === 2 && (l.match(/^([A-Za-z][A-Za-z.'& ]{0,24}?)\s*[—–:-]\s+(.+)$/)
+      // "A Quinn 55-yd. run (Vega kick) 9:09", under a quarter: a team's short name, then the play
+      || (curQ && /\b(run|pass|field goal|fg|return|safety|fumble|interception|recovery|kick|punt)\b/i.test(l) && l.match(/^([A-Za-z][A-Za-z.'&]{0,12})\s+([A-Z].+)$/)));
     const side = sc && sideOf(sc[1]);
     if (side){
       const t = pullTime(sc[2]);
@@ -7031,7 +7044,7 @@ function parseBox(txt){
           if ((m = n(/fourth downs?\D+(\d+)\D+(\d+)/i))){ put('d4m', m[0]); put('d4a', m[1]); return; }
           if ((m = n(/rushing\s+(\d+)\s*-\s*(-?\d+)/i))){ put('rushN', m[0]); put('rushY', m[1]); return; }
           if ((m = n(/passing\s+(\d+)\s*-\s*(\d+)\s*-\s*(\d+)/i))){ put('passC', m[0]); put('passA', m[1]); put('passInt', m[2]); return; }
-          if ((m = n(/passing\s+(-?\d+)\s*$/i))){ put('passY', m[0]); return; }
+          if ((m = n(/passing\s+(-?\d+)\s*$/i)) || (m = n(/passing yards\s+(-?\d+)/i))){ put('passY', m[0]); return; }
           if ((m = n(/sacks?\b[^\d]*(\d+)\s*-\s*(\d+)/i))){ put('sk', m[0]); put('skY', m[1]); return; }
           if ((m = n(/interception returns?\s+(\d+)\s*-\s*(-?\d+)/i))){ put('intN', m[0]); put('intY', m[1]); return; }
           if ((m = n(/fumbles?\s*-\s*lost\s+(\d+)\s*-\s*(\d+)/i))){ put('fum', m[0]); put('fumL', m[1]); return; }
@@ -7097,7 +7110,7 @@ function parseBox(txt){
         const v = nums(m[2]);
         // Passing yards written after a space: "Telles 16-24-0 354" is cmp-att-int and then the yards.
         let rest = m[3];
-        if (kind === 'pass'){ const y = rest.match(/^\s+(-?\d+)\b(?!\s*(?:td|tds|int|ints)\b)/i); if (y){ v.push(+y[1]); rest = rest.slice(y[0].length); } }
+        if (kind === 'pass'){ const y = rest.match(/^\s+(-?\d+)\b(?!\s*(?:td|tds|int|ints)\b)/i) || rest.match(/^\s*,\s*(-?\d+)\s*(?:yards|yds|yd)\b\.?/i); if (y){ v.push(+y[1]); rest = rest.slice(y[0].length); } }
         const p = player(s, m[1]), td = tds(rest);
         // Rushing and receiving: the number and the yards. With no scoring summary to take touchdowns from, a third
         // number is touchdowns — "4-101-3" is four carries or catches for 101 yards and three scores (Chuck,
