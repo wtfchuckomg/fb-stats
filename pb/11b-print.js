@@ -112,4 +112,23 @@ function psPlayers(){
   return `<section class="ps-page"><h2 class="ps-h">Individual Offense</h2><hr class="ps-rule">${off.join('')}</section>
     <section class="ps-page"><h2 class="ps-h">Individual Defense</h2><hr class="ps-rule">${def.join('')}</section>`;
 }
-const printSheet = () => `<section class="ps-first">${psHeader()}${psLines()}${psScoring()}</section>${psTeam()}${psPlayers()}`;
+// Play-by-Play: every play first to last, by quarter, a line where each drive begins (games scored play by play).
+function psPbp(){
+  const L = R.log.filter(e => e.t !== 'set');
+  if (!L.length) return '';
+  const driveOf = [];
+  R.drives.forEach(d => { if (d.i0 == null) return; const end = d.open || d.i1 == null ? R.log.length - 1 : d.i1; for (let i = d.i0; i <= end; i++) driveOf[i] = d; });
+  // The scorer's clock sticks until it's changed, so a time shows only on the play where it was set.
+  const clk = clockUsed(g), P = g.plays;
+  const set = e => clk && e.q <= 4 && typeof (P[e.i] || {}).clk === 'number' && (!e.i || R.log[e.i - 1].q !== e.q || P[e.i].clk !== P[e.i - 1].clk);
+  let h = '', q = null, lastD = null;
+  for (const e of L){
+    if (e.q !== q){ h += `${q != null ? '</tbody></table>' : ''}<div class="ps-gt">${qName(e.q)}</div><table class="ps-t ps-pbp"><tbody>`; q = e.q; lastD = null; }
+    const d = driveOf[e.i] || null;
+    if (d && d !== lastD) h += `<tr class="ps-dr"><td class="l" colspan="3">${esc(schoolName(g.teams[d.team].name))} drive at ${esc(R.yl(d.team, d.start))}</td></tr>`;
+    lastD = d;
+    h += `<tr><td class="l ps-nw">${set(e) ? mmss(P[e.i].clk) : ''}</td><td class="l ps-nw">${esc(e.sit || '')}</td><td class="l">${e.wiped ? `<s>${esc(e.wiped)}</s> ` : ''}${esc(e.text)}</td></tr>`;
+  }
+  return `<section class="ps-page"><h2 class="ps-h">Play-by-Play</h2><hr class="ps-rule">${h}</tbody></table></section>`;
+}
+const printSheet = () => `<section class="ps-first">${psHeader()}${psLines()}${psScoring()}</section>${psTeam()}${psPlayers()}${g.box ? '' : psPbp()}`;
