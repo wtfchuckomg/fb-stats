@@ -11,12 +11,13 @@ const ord = n => n + (['th','st','nd','rd'][n] || 'th');
 const fy = x => { const w = Math.floor(x), h = x - w >= .5; return h ? (w ? w + '½' : '½') : String(w); };
 
 // NFHS penalty yardage. Only the four roughing fouls carry an automatic
-// first down; illegal forward pass and intentional grounding lose the down.
+// first down; illegal forward pass, intentional grounding and illegal touching (Chuck, 2026-10-19: 5 yards
+// from the previous spot and loss of down) lose the down.
 const PENALTIES = [
   ['False start',5,'O'],['Encroachment',5,'D'],['Offside',5,'D'],['Delay of game',5,'E'],
   ['Illegal formation',5,'O'],['Illegal motion',5,'O'],['Illegal shift',5,'O'],['Illegal snap',5,'O'],
   ['Illegal substitution',5,'E'],['Too many players',5,'E'],['Ineligible downfield',5,'O'],
-  ['Illegal forward pass',5,'O','l'],['Intentional grounding',5,'O','l'],['Running into the kicker',5,'D'],
+  ['Illegal forward pass',5,'O','l'],['Intentional grounding',5,'O','l'],['Illegal touching',5,'O','l'],['Running into the kicker',5,'D'],
   ['Free-kick infraction',5,'E'],['Invalid fair catch signal',5,'D'],
   ['Holding',10,'E'],['Illegal use of hands',10,'E'],['Illegal block in the back',10,'E'],
   ['Pass interference',15,'E'],['Kick-catch interference',15,'D'],['Facemask',15,'E'],['Horse-collar',15,'D'],
@@ -353,6 +354,8 @@ function replay(g, upto = g.plays.length){
     // roughing the kicker" typed with the punting team's name got no first down). Charged to the offense, it goes
     // to the defense, with the automatic first down that comes with it.
     if (pen.a && st.phase === 'play' && pen.side === st.poss) pen = Object.assign({}, pen, {side:other(st.poss)});
+    // And the other way round: the loss-of-down fouls (illegal forward pass, grounding, illegal touching) are the offense's.
+    if (pen.l && st.phase === 'play' && pen.side !== st.poss) pen = Object.assign({}, pen, {side:st.poss});
     const side = pen.side, offFoul = side === st.poss;
     // Where it's marched off from: the line of scrimmage, or the foul's own spot on a spot foul. Told the
     // ball spot instead, the foul is however many yards back the other way.

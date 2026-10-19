@@ -10,6 +10,7 @@ const PEN_CODES = {fs:'False start', enc:'Encroachment', off:'Offside', os:'Offs
   motion:'Illegal motion', mot:'Illegal motion', shift:'Illegal shift', snap:'Illegal snap',
   sub:'Illegal substitution', too:'Too many players', idp:'Ineligible downfield', ineligible:'Ineligible downfield',
   ifp:'Illegal forward pass', ig:'Intentional grounding', grounding:'Intentional grounding', rik:'Running into the kicker',
+  touch:'Illegal touching', touching:'Illegal touching', itouch:'Illegal touching',
   hold:'Holding', holding:'Holding', iuh:'Illegal use of hands', hands:'Illegal use of hands',
   ibb:'Illegal block in the back', bib:'Illegal block in the back', pi:'Pass interference', dpi:'Pass interference',
   opi:'Pass interference', kci:'Kick-catch interference', fm:'Facemask', face:'Facemask', facemask:'Facemask',
@@ -77,7 +78,7 @@ const PEN_PHRASES = [[/\boffsetting(?:\s+penalties|\s+fouls|\s+flags)?\b/g, ' pe
   [/\bfalse start\b/g, 'fs'], [/\bpass interference\b/g, 'pi'], [/\bpersonal foul\b/g, 'pf'], [/\bdelay of game\b/g, 'dog'],
   [/\bface ?mask\b/g, 'fm'], [/\broughing the passer\b/g, 'rtp'], [/\broughing the kicker\b/g, 'rtk'], [/\bunsportsmanlike(?: conduct)?\b/g, 'uc'],
   [/\boffsides?\b/g, 'off'], [/\bhorse ?collar\b/g, 'hc'], [/\b(?:illegal )?block in the back\b/g, 'ibb'], [/\billegal motion\b/g, 'motion'],
-  [/\billegal formation\b/g, 'form'], [/\bintentional grounding\b/g, 'ig'], [/\bunnecessary roughness\b/g, 'ur']];
+  [/\billegal formation\b/g, 'form'], [/\bintentional grounding\b/g, 'ig'], [/\billegal(?:ly)? touch(?:ing|ed)?\b/g, 'touch'], [/\bunnecessary roughness\b/g, 'ur']];
 function plainWords(line){
   const {map} = quickTeams(), team = w => !!w && !!map[w];
   let s = ' ' + String(line).toLowerCase().replace(/#/g, '') + ' ';
