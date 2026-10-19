@@ -1247,5 +1247,44 @@ body.viewer .pl:hover{background:none}
   .gc{display:block;padding:0}
   .card{box-shadow:none;border:1px solid #ccc;margin-bottom:12px}
   body{background:#fff}
+  /* The Print button: only the box-score sheet (11b-print.js), set like Butler CC's print version */
+  body.printing > *:not(#printsheet){display:none!important}
+  body.printing #printsheet{display:block!important}
+  @page{size:letter;margin:.6in .55in}
 }
+#printsheet{display:none}
+#printsheet{font:10.5pt/1.45 Menlo,Consolas,"DejaVu Sans Mono","Courier New",monospace;color:#000;background:#fff;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact}
+#printsheet *{color:#000}
+#printsheet .ps-page{break-before:page}
+#printsheet .ps-kicker{text-align:center;color:#555!important;letter-spacing:.06em;font-size:10pt}
+#printsheet .ps-title{text-align:center;font-size:15pt;margin:4px 0 6px;line-height:1.25}
+#printsheet .ps-sub{text-align:center;margin-bottom:10px}
+#printsheet .ps-thick{border:0;border-top:2.5px solid #000;margin:10px 0 18px}
+#printsheet .ps-rule{border:0;border-top:1px solid #000;margin:0 0 10px}
+#printsheet .ps-h{text-align:center;font-size:12pt;margin:14px 0 6px}
+#printsheet .ps-t{width:100%;border-collapse:collapse}
+#printsheet .ps-t th{font-weight:700;text-align:right;padding:5px 6px;border-bottom:1px solid #000;white-space:nowrap}
+#printsheet .ps-t td{text-align:right;padding:4px 6px;vertical-align:top}
+#printsheet .ps-t .l{text-align:left}
+#printsheet .ps-ls{width:75%;margin:0 auto;border-top:1px solid #000}
+#printsheet .ps-sc{border-top:1px solid #000}
+#printsheet .ps-sc td{padding:5px 6px}
+#printsheet .ps-play{width:100%}
+#printsheet .ps-nw{white-space:nowrap}
+#printsheet .ps-sc tr,#printsheet .ps-ts tr,#printsheet .ps-pl tr{break-inside:avoid}
+#printsheet .ps-ts{border-top:1px solid #000}
+#printsheet .ps-ts th,#printsheet .ps-ts td{text-align:center;width:33%}
+#printsheet .ps-ts thead{display:table-header-group}
+#printsheet .ps-ts tr.b td:not(.lab){font-weight:700}
+#printsheet .ps-ts tr.i .lab{font-style:italic}
+#printsheet .ps-grp{margin-bottom:22px;break-inside:avoid}
+#printsheet .ps-gt{font-weight:700;border-bottom:1px solid #888;padding-bottom:4px;margin-bottom:10px}
+#printsheet .ps-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+#printsheet .ps-pl{font-size:9.5pt}
+#printsheet .ps-pl th,#printsheet .ps-pl td{padding-left:3px;padding-right:3px}
+#printsheet .ps-pl td:not(.l){white-space:nowrap}
+#printsheet .ps-tm{font-weight:700;font-size:11.5pt;margin-bottom:4px}
+#printsheet .ps-pl td.no,#printsheet .ps-pl th.no{text-align:left;width:2.2em;padding-right:2px}
+#printsheet .ps-pl tfoot td{font-weight:700;border-top:1px solid #000}
 </style>

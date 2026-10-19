@@ -240,9 +240,15 @@ function importText(txt){
   x.id = 'g' + Date.now().toString(36); x.clk = x.clk || {s:(x.set?.qtr || 12) * 60, run:false, at:0}; x.set = x.set || {qtr:12, ot:10, firstKick:'H'};
   g = x; resetUi(); save(); closeDialog(); refresh(); toast('Game imported');
 }
+// Print draws the box-score sheet (11b-print.js) into its own box, the only thing shown while printing.
+// It's cleared after the print dialog closes; a phone's print sheet doesn't block, so that waits for afterprint.
 function printAll(){
-  closeDialog(); ui.printing = true; renderView();
-  try { window.print(); } finally { setTimeout(() => { ui.printing = false; renderView(); }, 300); }
+  closeDialog();
+  let el = document.getElementById('printsheet');
+  if (!el){ el = document.createElement('div'); el.id = 'printsheet'; document.body.appendChild(el); }
+  el.innerHTML = printSheet(); document.body.classList.add('printing');
+  window.addEventListener('afterprint', () => { document.body.classList.remove('printing'); el.innerHTML = ''; }, {once:true});
+  window.print();
 }
 
 /* ---------- storage ---------- */

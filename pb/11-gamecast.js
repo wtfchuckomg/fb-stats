@@ -324,9 +324,7 @@ function renderView(){
   // A game entered from a box score has no plays: Gamecast and Play-by-Play show its scoring summary.
   const scoringCard = () => `<section class="card"><div class="card-hd"><h2 class="card-title">Scoring Summary</h2></div>${scoringList()}</section>`;
   const V = g.box
-    ? (ui.printing ? () => cardLinescore() + scoringCard() + viewBoxTab() + cardCmp(true)
-      : ({gamecast:() => cardLinescore() + scoringCard() + viewBoxTab(), box:viewBoxTab, pbp:scoringCard, team:() => cardLinescore() + cardCmp(true)})[ui.tab] || (() => ''))
-    : ui.printing ? () => cardLinescore() + viewBoxTab() + cardCmp(true) + cardTeamTable() + pbpCard()
+    ? (({gamecast:() => cardLinescore() + scoringCard() + viewBoxTab(), box:viewBoxTab, pbp:scoringCard, team:() => cardLinescore() + cardCmp(true)})[ui.tab] || (() => ''))
     : ({gamecast:() => cardDrive() + cardLinescore() + cardPbp(), box:viewBoxTab, pbp:() => pbpCard() + cardDriveChart(),
         team:() => cardLinescore() + cardCmp(true) + cardTeamTable() + cardDrives()})[ui.tab] || (() => '');
   $('#view').innerHTML = V();

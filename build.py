@@ -50,6 +50,7 @@ PARTS_JS = [
     '5-views.js',        # views, dialogs, storage, events
     '10-logos.js',       # the school list and where each logo lives
     '11-gamecast.js',    # gamecast, line score, play-by-play, drive chart, box score
+    '11b-print.js',      # the printed box score (the Print button)
     '12-xlsx.js',        # .xlsx export, written by hand, no library
     '12b-avctl.js',      # the AVCTL divisions and standings — before the pages that read them
     '12c-leagues.js',    # State › Leagues: every 4A-6A league's standings and stats — before the pages that read them
