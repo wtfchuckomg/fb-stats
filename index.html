@@ -1008,8 +1008,14 @@ body:not(.viewer) .pl{-webkit-touch-callout:none;-webkit-user-select:none;user-s
 .cmp-bar i{display:block;border-radius:3px;min-width:3px}
 
 /* box score and tables */
-.bx2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-@media (max-width:800px){.bx2{grid-template-columns:1fr}}
+/* Both teams side by side, each table scrolling inside its own half rather than running out of the card. A wide
+   group (Defense, Returns) stacks one team over the other when the game column can't fit both (Chuck, 2026-10-19). */
+.gc-view{container-type:inline-size}
+.bx2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.bx2 > div{min-width:0}
+@container (max-width:1100px){.bx2.wide{grid-template-columns:minmax(0,1fr)}}
+@container (max-width:640px){.bx2{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:800px){.bx2{grid-template-columns:minmax(0,1fr)}}
 .bx-team{display:flex;align-items:center;gap:8px;font:600 14px/1.2 var(--sans);color:var(--ink-2);margin-bottom:6px}
 table.st{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
 table.st th{font:500 12px/1.2 var(--sans);color:var(--muted);text-align:right;padding:6px 7px;border-bottom:1px solid var(--line);white-space:nowrap;text-transform:uppercase}
@@ -4867,7 +4873,7 @@ function viewBoxTab(){
       ? `<div class="tbl-wrap"><table class="st"><thead><tr><th>${title}</th>${heads.map(x => `<th>${x}</th>`).join('')}</tr></thead>
         <tbody>${lists[s].map(p => `<tr><td>${plName(s, p.n)}</td>${row(p).map(v => `<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`
       : `<div class="muted" style="font-size:13px;padding:6px 0">No ${title.toLowerCase()} stats</div>`}</div>`;
-    h += `<section class="card"><div class="card-hd"><h2 class="card-title">${title}</h2></div><div class="bx2">${table('A')}${table('H')}</div></section>`;
+    h += `<section class="card"><div class="card-hd"><h2 class="card-title">${title}</h2></div><div class="bx2${heads.length >= 8 ? ' wide' : ''}">${table('A')}${table('H')}</div></section>`;
   }
   // The scorer can hand the player stats over to a pasted box score (a stream that cut off before the end).
   const own = !ui.viewer && !g.box && g.plays.length ? `<section class="card"><div class="line"><button type="button" class="btn small" data-statbox-open>${g.statBox

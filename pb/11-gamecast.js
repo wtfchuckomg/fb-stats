@@ -213,7 +213,7 @@ function viewBoxTab(){
       ? `<div class="tbl-wrap"><table class="st"><thead><tr><th>${title}</th>${heads.map(x => `<th>${x}</th>`).join('')}</tr></thead>
         <tbody>${lists[s].map(p => `<tr><td>${plName(s, p.n)}</td>${row(p).map(v => `<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`
       : `<div class="muted" style="font-size:13px;padding:6px 0">No ${title.toLowerCase()} stats</div>`}</div>`;
-    h += `<section class="card"><div class="card-hd"><h2 class="card-title">${title}</h2></div><div class="bx2">${table('A')}${table('H')}</div></section>`;
+    h += `<section class="card"><div class="card-hd"><h2 class="card-title">${title}</h2></div><div class="bx2${heads.length >= 8 ? ' wide' : ''}">${table('A')}${table('H')}</div></section>`;
   }
   // The scorer can hand the player stats over to a pasted box score (a stream that cut off before the end).
   const own = !ui.viewer && !g.box && g.plays.length ? `<section class="card"><div class="line"><button type="button" class="btn small" data-statbox-open>${g.statBox
