@@ -1560,6 +1560,7 @@ html[data-skin="liquid"] .ctbl tbody tr:nth-child(even) td{background:var(--lg-z
         <button class="abtn" data-open="schools" id="schoolsbtn" hidden>Schools</button>
         <button class="abtn" data-open="setup">Setup</button>
         <button class="abtn" data-open="lines">Line score</button>
+        <button class="abtn" data-box-pop id="boxpopbtn" hidden>Edit</button>
       </div>
     </div>
   </div>
@@ -2966,6 +2967,7 @@ function renderPad(){
   if (ui.viewer) return;              // the live look-in is read-only
   // Entered from a box score: nothing to record, and Edit opens the box score itself (boxPop), so no pad at all.
   $('#pad').hidden = !!g.box;
+  const bp = $('#boxpopbtn'); if (bp) bp.hidden = !g.box;
   if (g.box){ $('#pad').innerHTML = ''; return; }
   const ctx = ui.ctx, st = ctx.st, pad = $('#pad');
   // While editing, the play can become another kind (a pass that was really a run), and its own kind stays on
@@ -4447,7 +4449,7 @@ document.addEventListener('click', e => {
   if (d.saveSetup) return saveSetup(d.saveSetup === '1');
   if ('linesSave' in d) return saveLines();
   if ('linesClear' in d) return clearLines();
-  if (d.openGame){ g = db.games[d.openGame]; resetUi(); setCurrent(); closeDialog(); refresh(); return boxPop(); }
+  if (d.openGame){ g = db.games[d.openGame]; resetUi(); setCurrent(); closeDialog(); return refresh(); }
   if ('sync' in d) return sync.state === 'signed-out' ? signIn() : openDialog('games');
   if ('signin' in d) return signIn();
   if ('signout' in d) return signOutSync();
@@ -7737,8 +7739,8 @@ function saveBox(){
   else renderScores();
   toast(`Box score ${replaced ? 'updated' : 'saved'} in ${weekLabel(wk)}: ${x.teams.A.abbr} ${p.total.A}, ${x.teams.H.abbr} ${p.total.H}${busy ? '. Tap its card to see it.' : ''}`);
 }
-// Opening a box-score game to edit it opens its box score, pasted text and all (Chuck, 2026-10-19: Edit, then
-// Edit box score, was one step too many).
+// Edit on a box-score game opens its box score, pasted text and all: the Edit button on the game's own page, or
+// Edit in the scorer's menu (Chuck, 2026-10-19). Only on Edit — never just for opening the game.
 function boxPop(){
   if (!g || !g.box || ui.viewer) return;
   ui.boxGame = g.id; ui.boxFrom = null; openDialog('box');
@@ -7747,6 +7749,7 @@ function boxPop(){
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('button'); if (!b || ui.viewer) return;
   const d = b.dataset;
+  if ('boxPop' in d) return boxPop();
   if ('qsBox' in d){ ui.boxFrom = d.qsBox || null; ui.boxGame = null; return openDialog('box'); }
   if ('boxNew' in d){ ui.boxFrom = ui.boxGame = null; return openDialog('box'); }
   if ('statboxOpen' in d) return openDialog('statbox');
@@ -8927,7 +8930,7 @@ function renderStart(){
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-start-open]'); if (!b) return;
   const x = db.games[b.dataset.startOpen]; if (!x) return;
-  g = x; resetUi(); setCurrent(); refresh(); scrollTo(0, 0); boxPop();
+  g = x; resetUi(); setCurrent(); refresh(); scrollTo(0, 0);
 });
 
 /* ================================================================

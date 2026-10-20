@@ -61,6 +61,6 @@ function renderStart(){
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-start-open]'); if (!b) return;
   const x = db.games[b.dataset.startOpen]; if (!x) return;
-  g = x; resetUi(); setCurrent(); refresh(); scrollTo(0, 0); boxPop();
+  g = x; resetUi(); setCurrent(); refresh(); scrollTo(0, 0);
 });
 

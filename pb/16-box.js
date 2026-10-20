@@ -759,8 +759,8 @@ function saveBox(){
   else renderScores();
   toast(`Box score ${replaced ? 'updated' : 'saved'} in ${weekLabel(wk)}: ${x.teams.A.abbr} ${p.total.A}, ${x.teams.H.abbr} ${p.total.H}${busy ? '. Tap its card to see it.' : ''}`);
 }
-// Opening a box-score game to edit it opens its box score, pasted text and all (Chuck, 2026-10-19: Edit, then
-// Edit box score, was one step too many).
+// Edit on a box-score game opens its box score, pasted text and all: the Edit button on the game's own page, or
+// Edit in the scorer's menu (Chuck, 2026-10-19). Only on Edit — never just for opening the game.
 function boxPop(){
   if (!g || !g.box || ui.viewer) return;
   ui.boxGame = g.id; ui.boxFrom = null; openDialog('box');
@@ -769,6 +769,7 @@ function boxPop(){
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('button'); if (!b || ui.viewer) return;
   const d = b.dataset;
+  if ('boxPop' in d) return boxPop();
   if ('qsBox' in d){ ui.boxFrom = d.qsBox || null; ui.boxGame = null; return openDialog('box'); }
   if ('boxNew' in d){ ui.boxFrom = ui.boxGame = null; return openDialog('box'); }
   if ('statboxOpen' in d) return openDialog('statbox');

@@ -456,7 +456,7 @@ document.addEventListener('click', e => {
   if (d.saveSetup) return saveSetup(d.saveSetup === '1');
   if ('linesSave' in d) return saveLines();
   if ('linesClear' in d) return clearLines();
-  if (d.openGame){ g = db.games[d.openGame]; resetUi(); setCurrent(); closeDialog(); refresh(); return boxPop(); }
+  if (d.openGame){ g = db.games[d.openGame]; resetUi(); setCurrent(); closeDialog(); return refresh(); }
   if ('sync' in d) return sync.state === 'signed-out' ? signIn() : openDialog('games');
   if ('signin' in d) return signIn();
   if ('signout' in d) return signOutSync();
