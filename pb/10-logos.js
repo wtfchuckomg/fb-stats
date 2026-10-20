@@ -18,6 +18,9 @@ function loadLogos(){
       // Two names for one school only merge once the library is here, so anything already filed under the
       // other name has to be filed again — or a school's page finds none of its own games.
       schoolIdx = null;          // keyed by canonical name as well, so it is built again
+      // Box scores read before the list came in couldn't tell "Ark City" is Arkansas City: read them again
+      // (Chuck, 2026-10-19: every Ark City player was listed under Eisenhower).
+      boxCache.clear();
       if (allGames.list) indexGames();
       if (g && R) refresh(); else { renderScoreboard(); renderCounty(); renderTeamPage(); renderStandings(); renderAvHome(); }
     });

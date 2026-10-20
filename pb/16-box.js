@@ -312,7 +312,16 @@ function parseBox(txt){
     const alts = [...new Set([...namesOf(0), ...namesOf(1), ...out.scoring.map(e => e.label)])].filter(a => a && a.length > 1).sort((a, b) => b.length - a.length);
     // A heading on its own line leaves the body starting with a space, so the first team's name sits at ^\s*.
     const re = new RegExp(`(?:^\\s*|[.;:)]\\s*)(${alts.map(escRe).join('|')})\\s*(?:[—–:,]|\\s-)\\s*`, 'gi'), hits = [...body.matchAll(re)];
-    return hits.map((h, i) => [sideOf(h[1]), body.slice(h.index + h[0].length, i + 1 < hits.length ? hits[i + 1].index : undefined)]).filter(x => x[0]);
+    // A name this list doesn't know ("Ark City," before the school list has come in, or a nickname nobody added)
+    // after a sentence ends and ahead of a player's name, in a line that names the other team: that's this team.
+    const known = new Set(hits.map(h => sideOf(h[1])).filter(Boolean));
+    if (known.size === 1){
+      const un = /[.;]\s*([A-Z][A-Za-z.'&-]*(?:\s+[A-Z][A-Za-z.'&-]*){0,3})\s*(?:[—–:,]|\s-)\s*(?=[A-Z][A-Za-z'.-]*\s+[A-Z])/g;
+      for (const h of body.matchAll(un)) if (!hits.some(x => Math.abs(x.index - h.index) < 3) && !sideOf(h[1])) hits.push(Object.assign(h, {other:true}));
+      hits.sort((x, y) => x.index - y.index);
+    }
+    const mine = [...known][0], them = mine === 'A' ? 'H' : 'A';
+    return hits.map((h, i) => [h.other ? them : sideOf(h[1]), body.slice(h.index + h[0].length, i + 1 < hits.length ? hits[i + 1].index : undefined)]).filter(x => x[0]);
   };
   // No scoring summary at all: the stat lines are the only place touchdowns can come from.
   const noSummary = !out.scoring.some(e => e.how === 'TD');
