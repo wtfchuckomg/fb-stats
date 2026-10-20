@@ -759,10 +759,11 @@ function saveBox(){
   else renderScores();
   toast(`Box score ${replaced ? 'updated' : 'saved'} in ${weekLabel(wk)}: ${x.teams.A.abbr} ${p.total.A}, ${x.teams.H.abbr} ${p.total.H}${busy ? '. Tap its card to see it.' : ''}`);
 }
-// On the scorer's page a box-score game has nothing to record; it can be edited.
-function boxPad(){
-  return `<div class="card-hd"><h2 class="card-title">Box score</h2></div>
-    <div class="line"><button type="button" class="btn small primary" data-box-edit>Edit box score</button></div>`;
+// Opening a box-score game to edit it opens its box score, pasted text and all (Chuck, 2026-10-19: Edit, then
+// Edit box score, was one step too many).
+function boxPop(){
+  if (!g || !g.box || ui.viewer) return;
+  ui.boxGame = g.id; ui.boxFrom = null; openDialog('box');
 }
 
 document.addEventListener('click', e => {
@@ -770,7 +771,6 @@ document.addEventListener('click', e => {
   const d = b.dataset;
   if ('qsBox' in d){ ui.boxFrom = d.qsBox || null; ui.boxGame = null; return openDialog('box'); }
   if ('boxNew' in d){ ui.boxFrom = ui.boxGame = null; return openDialog('box'); }
-  if ('boxEdit' in d){ ui.boxGame = g.id; ui.boxFrom = null; return openDialog('box'); }
   if ('statboxOpen' in d) return openDialog('statbox');
   if ('statboxSave' in d) return saveStatBox(false);
   if ('statboxClear' in d) return saveStatBox(true);

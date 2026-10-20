@@ -486,7 +486,9 @@ function openKickHtml(){
 
 function renderPad(){
   if (ui.viewer) return;              // the live look-in is read-only
-  if (g.box){ $('#pad').innerHTML = boxPad(); return; }   // entered from a box score: nothing to record
+  // Entered from a box score: nothing to record, and Edit opens the box score itself (boxPop), so no pad at all.
+  $('#pad').hidden = !!g.box;
+  if (g.box){ $('#pad').innerHTML = ''; return; }
   const ctx = ui.ctx, st = ctx.st, pad = $('#pad');
   // While editing, the play can become another kind (a pass that was really a run), and its own kind stays on
   // offer even if earlier edits changed the situation. A timeout isn't a play to turn one into.

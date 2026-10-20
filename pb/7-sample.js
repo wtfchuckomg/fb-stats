@@ -50,6 +50,7 @@ else {
   ui.start = !EDIT_ID && idleGame(g);
   setCurrent();
   refresh();
+  if (EDIT_ID && g.box) boxPop();
   // ?tracker&open=games (or setup, export, share): from the scorer's buttons on the other pages.
   const OPEN = new URLSearchParams(location.search).get('open');
   if (['games', 'setup', 'export', 'share', 'others'].includes(OPEN)){ history.replaceState(null, '', `${location.pathname}?tracker`); openDialog(OPEN); }

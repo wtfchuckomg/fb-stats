@@ -2964,7 +2964,9 @@ function openKickHtml(){
 
 function renderPad(){
   if (ui.viewer) return;              // the live look-in is read-only
-  if (g.box){ $('#pad').innerHTML = boxPad(); return; }   // entered from a box score: nothing to record
+  // Entered from a box score: nothing to record, and Edit opens the box score itself (boxPop), so no pad at all.
+  $('#pad').hidden = !!g.box;
+  if (g.box){ $('#pad').innerHTML = ''; return; }
   const ctx = ui.ctx, st = ctx.st, pad = $('#pad');
   // While editing, the play can become another kind (a pass that was really a run), and its own kind stays on
   // offer even if earlier edits changed the situation. A timeout isn't a play to turn one into.
@@ -4445,7 +4447,7 @@ document.addEventListener('click', e => {
   if (d.saveSetup) return saveSetup(d.saveSetup === '1');
   if ('linesSave' in d) return saveLines();
   if ('linesClear' in d) return clearLines();
-  if (d.openGame){ g = db.games[d.openGame]; resetUi(); setCurrent(); closeDialog(); return refresh(); }
+  if (d.openGame){ g = db.games[d.openGame]; resetUi(); setCurrent(); closeDialog(); refresh(); return boxPop(); }
   if ('sync' in d) return sync.state === 'signed-out' ? signIn() : openDialog('games');
   if ('signin' in d) return signIn();
   if ('signout' in d) return signOutSync();
@@ -7735,10 +7737,11 @@ function saveBox(){
   else renderScores();
   toast(`Box score ${replaced ? 'updated' : 'saved'} in ${weekLabel(wk)}: ${x.teams.A.abbr} ${p.total.A}, ${x.teams.H.abbr} ${p.total.H}${busy ? '. Tap its card to see it.' : ''}`);
 }
-// On the scorer's page a box-score game has nothing to record; it can be edited.
-function boxPad(){
-  return `<div class="card-hd"><h2 class="card-title">Box score</h2></div>
-    <div class="line"><button type="button" class="btn small primary" data-box-edit>Edit box score</button></div>`;
+// Opening a box-score game to edit it opens its box score, pasted text and all (Chuck, 2026-10-19: Edit, then
+// Edit box score, was one step too many).
+function boxPop(){
+  if (!g || !g.box || ui.viewer) return;
+  ui.boxGame = g.id; ui.boxFrom = null; openDialog('box');
 }
 
 document.addEventListener('click', e => {
@@ -7746,7 +7749,6 @@ document.addEventListener('click', e => {
   const d = b.dataset;
   if ('qsBox' in d){ ui.boxFrom = d.qsBox || null; ui.boxGame = null; return openDialog('box'); }
   if ('boxNew' in d){ ui.boxFrom = ui.boxGame = null; return openDialog('box'); }
-  if ('boxEdit' in d){ ui.boxGame = g.id; ui.boxFrom = null; return openDialog('box'); }
   if ('statboxOpen' in d) return openDialog('statbox');
   if ('statboxSave' in d) return saveStatBox(false);
   if ('statboxClear' in d) return saveStatBox(true);
@@ -8925,7 +8927,7 @@ function renderStart(){
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-start-open]'); if (!b) return;
   const x = db.games[b.dataset.startOpen]; if (!x) return;
-  g = x; resetUi(); setCurrent(); refresh(); scrollTo(0, 0);
+  g = x; resetUi(); setCurrent(); refresh(); scrollTo(0, 0); boxPop();
 });
 
 /* ================================================================
@@ -12950,6 +12952,7 @@ else {
   ui.start = !EDIT_ID && idleGame(g);
   setCurrent();
   refresh();
+  if (EDIT_ID && g.box) boxPop();
   // ?tracker&open=games (or setup, export, share): from the scorer's buttons on the other pages.
   const OPEN = new URLSearchParams(location.search).get('open');
   if (['games', 'setup', 'export', 'share', 'others'].includes(OPEN)){ history.replaceState(null, '', `${location.pathname}?tracker`); openDialog(OPEN); }
