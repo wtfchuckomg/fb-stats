@@ -43,11 +43,13 @@ else {
   seedOppSchedule();      // and the schedules of the teams they play
   // ?edit=<id>, from the Edit button on a game's own page: open that game here, then tidy the address.
   const EDIT_ID = new URLSearchParams(location.search).get('edit');
-  g = (EDIT_ID && db.games[EDIT_ID]) || db.games[db.cur] || Object.values(db.games)[0];
+  // ?tracker&id=<id>: the game the tracker had open, after a refresh.
+  const TRACK_ID = new URLSearchParams(location.search).get('id'), back = !!(TRACK_ID && db.games[TRACK_ID]);
+  g = (EDIT_ID && db.games[EDIT_ID]) || (back && db.games[TRACK_ID]) || db.games[db.cur] || Object.values(db.games)[0];
   if (EDIT_ID) history.replaceState(null, '', `${location.pathname}?tracker`);
   if (!g) g = sampleGame();
   // No game under way (the last one is over, or there's only the sample or a box score): the start screen.
-  ui.start = !EDIT_ID && idleGame(g);
+  ui.start = !EDIT_ID && !back && idleGame(g);
   setCurrent();
   refresh();
   if (EDIT_ID && g.box) boxPop();

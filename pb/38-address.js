@@ -21,6 +21,9 @@ function addressNow(){
     set('tab', ui.tab && ui.tab !== 'gamecast' ? ui.tab : null);
     set('plays', ui.tab === 'pbp' && ui.pbp && ui.pbp !== (ui.viewer ? 'scoring' : 'all') ? ui.pbp : null);
   }
+  // The Game Tracker names the game it has open, so a refresh comes back to that game rather than the start screen
+  // (Chuck, 2026-10-19). Not on the start screen, and not the sample.
+  if (q.has('tracker') && !ui.viewer) set('id', !ui.start && g && !g.sample ? g.id : null);
   // "?tracker=&tab=box" is the same page as "?tracker&tab=box" and reads worse, so drop the empty values.
   const s = q.toString().replace(/=(?=&|$)/g, '');
   return `${p}${s ? '?' + s : ''}`;

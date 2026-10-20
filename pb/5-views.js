@@ -288,6 +288,7 @@ function refresh(){
   const sb = $('#sharebtn');
   if (sb){ sb.classList.toggle('live', !!g.share); sb.innerHTML = g.share ? '<i></i>Live' : 'Private'; }
   renderBoard(); renderPad(); renderView(); renderRail(); renderLive(); renderScores(); loadLogos(); renderStart(); renderForeign();
+  if (!ui.viewer && typeof address === 'function') address(false);   // the tracker's address names this game
 }
 let toastT;
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 1700); }
