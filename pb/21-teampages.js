@@ -489,7 +489,7 @@ function teamPageHtml(nameIn){
       if (!r) return ui.admin ? `<section class="bcard" id="roster"><h2 class="tp-h">Roster</h2>
         <p class="bempty">No roster for ${esc(name)} yet.</p>
         <div class="line"><button type="button" class="btn" data-tp-roster-edit>Add a roster</button></div></section>` : '';
-      const list = r.players.map(p => `<div class="tp-p"><b>${p.num ? esc(p.num) : ''}</b><span>${esc(p.name || '#' + p.num)}</span></div>`).join('');
+      const list = r.players.map(p => `<div class="tp-p"><b>${p.num ? esc(p.num) : ''}</b><span>${p.name ? plLink(p.name, name, esc(p.name)) : esc('#' + p.num)}</span></div>`).join('');
       const note = r.fromGames
         ? `${plural2(r.count, 'player')} from ${esc(name)}’s games on the site — a pasted box score gives names without numbers.
            Keep a game for them, or save their roster in Setup, and the numbers fill in for everyone.`
