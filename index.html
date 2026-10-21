@@ -6063,12 +6063,22 @@ const FORFEIT = 2;
 const dayShort = d => `${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]} ${d.getMonth() + 1}/${d.getDate()}`;
 const inQuarter = per => /^[1-4]$/.test(String(per));
 // A short name for a school with none saved: initials for two or more words, else the first letters.
+// Initials, with a compass word kept whole: "Olathe Northwest" is ONW, not ON — which is Olathe North (Chuck, 2026-10-21).
+const COMPASS = {northwest:'NW', northeast:'NE', southwest:'SW', southeast:'SE'};
+function initialsOf(name){
+  const w = String(name).replace(/[^A-Za-z ]+/g, ' ').trim().split(/\s+/).filter(Boolean);
+  if (w.length > 1) return w.map(x => COMPASS[x.toLowerCase()] || x[0]).join('').slice(0, 4).toUpperCase();
+  const one = w[0] || '?'; return (one.length <= 4 ? one : one.slice(0, 3)).toUpperCase();
+}
 function shortName(name){
   const listed = typeof listAbbr === 'function' ? listAbbr(name) : '';   // the logo list's own short name wins
-  if (listed) return listed;
-  const w = String(name).replace(/[^A-Za-z ]+/g, ' ').trim().split(/\s+/).filter(Boolean);
-  if (w.length > 1) return w.map(x => x[0]).join('').slice(0, 4).toUpperCase();
-  const one = w[0] || '?'; return (one.length <= 4 ? one : one.slice(0, 3)).toUpperCase();
+  return listed || initialsOf(name);
+}
+// A game's saved short name, unless it's only the bare initials guessed before the school list had loaded
+// ("ON" saved for Olathe Northwest): then the list's own.
+function abbrOf(t){
+  const naive = String(t.name || '').replace(/[^A-Za-z ]+/g, ' ').trim().split(/\s+/).filter(Boolean).map(x => x[0]).join('').slice(0, 4).toUpperCase();
+  return (t.abbr && t.abbr !== naive ? t.abbr : shortName(t.name)) || t.abbr || t.name;
 }
 function pushScore(x){
   // The tracker signs in through sync; a school's page signs the admin in beside the records. Either will do.
@@ -6365,7 +6375,7 @@ function scoreCard(x){
   // The record beside the school: where it stands for a game still to come, counting this one once it's final.
   const rec = s => { const r = (recordText(T[s], s, !m.fin, gameWeek(x), m.score) || '').split(',')[0].trim();
     return r ? `<span class="sc-rec">${esc(r)}</span>` : ''; };
-  const row = s => `<div class="sc-row${m.fin && lead ? (lead === s ? ' won' : ' lose') : ''}">${markFor(T[s], 20)}<span class="sc-ab">${esc(T[s].abbr || T[s].name)}</span>${rec(s)}`
+  const row = s => `<div class="sc-row${m.fin && lead ? (lead === s ? ' won' : ' lose') : ''}">${markFor(T[s], 20)}<span class="sc-ab">${esc(abbrOf(T[s]))}</span>${rec(s)}`
     + `${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}<span class="sc-pts">${m.pre ? '' : m.score[s]}</span><i class="sc-win"></i></div>`;
   // Friday is game night; a final from any other day says which one: "Final - Thurs."
   const dayName = ['Sun.', 'Mon.', 'Tues.', 'Wed.', 'Thurs.', 'Fri.', 'Sat.'][gameDay(x).getDay()];
