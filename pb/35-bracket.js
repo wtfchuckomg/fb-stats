@@ -204,6 +204,36 @@ function bkLocks(teams, val, games, B = ['beat', 'lost']){
   });
   return out;
 }
+// Out (Chuck, 2026-10-22): a district team that can't finish in the top `cut` (four go to the playoffs) however the
+// games left go. Played out the same way as bkLocks: in every outcome at least `cut` teams finish ahead of it, a tie
+// counting as ahead only when head-to-head puts them in front for certain — a tie that goes to margin could go its way.
+function bkOut(teams, val, games, B, cut = 4){
+  const out = new Set(), key = t => canonSchool(t.name);
+  const lo = t => val(t, 0, games(t).length), hi = t => val(t, games(t).length, 0);
+  teams.forEach(x => {
+    const above = teams.filter(y => y !== x && lo(y) > hi(x)).length;
+    if (above >= cut) return out.add(key(x));
+    const near = teams.filter(y => y !== x && !(lo(y) > hi(x) || hi(y) < lo(x)));
+    if (above + near.length < cut) return;
+    const who = [x, ...near], gm = new Map();
+    who.forEach(t => games(t).forEach(g => gm.set(g.key, g)));
+    const list = [...gm.keys()];
+    if (list.length > 14) return;
+    for (let m = 0; m < 1 << list.length; m++){
+      const won = new Map(list.map((k, i) => { const p = k.split('|'); return [k, m >> i & 1 ? p[1] : p[2]]; }));
+      const v = new Map(who.map(t => { const mine = games(t), w = mine.filter(g => won.get(g.key) === key(t)).length;
+        return [t, val(t, w, mine.length - w).toFixed(6)]; }));
+      const beats = (a, b) => a[B[0]].has(key(b)) || list.some(k => won.get(k) === key(a) && k.split('|').includes(key(b)));
+      const tied = who.filter(t => v.get(t) === v.get(x));
+      const clear = tied.every(a => tied.every(b => a === b || beats(a, b) || beats(b, a)));
+      const h2h = t => tied.filter(o => o !== t && beats(t, o)).length;
+      const ahead = near.filter(y => v.get(y) !== v.get(x) ? +v.get(y) > +v.get(x) : clear && h2h(y) > h2h(x)).length;
+      if (above + ahead < cut) return;      // this way it gets in
+    }
+    out.add(key(x));
+  });
+  return out;
+}
 // Season percentage after more results, and the district's (no district games yet is .500, as bkDistrict has it).
 const bkPctAfter = (t, w, l) => { const n = t.gp + w + l; return n ? (t.w + w + t.t / 2) / n : 0; };
 const bkDpctAfter = (t, w, l) => { const n = t.dgp + w + l; return n ? (t.dw + w + t.dt / 2) / n : .5; };
@@ -253,8 +283,8 @@ function bkDistrict(names){
     const g = byPct[p];
     if (g.length === 1) out.push(Object.assign(g[0], {dhow:''})); else out.push(...settle(g));
   });
-  const locks = bkLocks(out, bkDpctAfter, t => t.dleft, ['dbeat', 'dlost']);
-  return out.map((t, i) => Object.assign(t, {place:i + 1, placeLock:locks.has(canonSchool(t.name))}));
+  const locks = bkLocks(out, bkDpctAfter, t => t.dleft, ['dbeat', 'dlost']), gone = bkOut(out, bkDpctAfter, t => t.dleft, ['dbeat', 'dlost']);
+  return out.map((t, i) => Object.assign(t, {place:i + 1, placeLock:locks.has(canonSchool(t.name)), elim:gone.has(canonSchool(t.name))}));
 }
 // 3A-1A: a half's four districts, already in place order, seeded 1-16 — a place at a time, by the 4A-6A order.
 function bkDistrictSeeds(dists){
@@ -309,7 +339,7 @@ function bkDistrictHtml(d, teams){
       <th class="c-seed">#</th><th class="nm">TEAM</th><th class="num c-wl">DIST</th>
       <th class="num c-pct">W-L</th><th class="num c-marg">MARGIN</th><th class="nm c-tb">TIEBREAK</th></tr></thead>
     <tbody>${teams.map(t => `<tr${t.place > 4 ? ' class="out"' : ''}><td class="c-seed"><b>${t.place}</b></td>
-      <td class="nm"><div class="cn-in">${bkMark(t.name)}<a class="tlink${t.placeLock ? ` locked${t.place === 1 ? ' dlock' : ''}` : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a></div></td>
+      <td class="nm"><div class="cn-in">${bkMark(t.name)}<a class="tlink${t.placeLock ? ` locked${t.place === 1 ? ' dlock' : ''}` : ''}${t.elim ? ' elim' : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a></div></td>
       <td class="num c-wl">${t.dw}-${t.dl}${t.dt ? `-${t.dt}` : ''}</td>
       <td class="num c-pct">${t.gp ? esc(bkRec(t)) : '—'}</td>
       <td class="num c-marg">${t.dgp ? (t.davg > 0 ? '+' : '') + t.davg.toFixed(1) : '—'}</td>
