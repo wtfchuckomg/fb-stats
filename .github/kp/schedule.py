@@ -117,6 +117,9 @@ def main():
         return n if slug(n) not in taken else s_.replace('-', ' ').title()
     games = {}
     for me, other, g in raw:
+        # KPreps lists a bye week as a game against "OPEN" (Chuck, 2026-10-22: just remove it).
+        if other in ('open', 'bye') or (kpname.get(other) or '').strip().lower() in ('open', 'bye'):
+            continue
         home, away = (me, other) if g.get('at') != 'away' else (other, me)
         m = re.match(r'(\d{1,2})/(\d{1,2})', g.get('date', '') or '')
         if not m:

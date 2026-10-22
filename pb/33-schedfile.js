@@ -14,7 +14,9 @@ function loadSchedFile(){
   sched.want = true;
   fetch(DATA + '/schedule.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).then(d => {
     if (!d || !Array.isArray(d.games)) return;
-    sched.rows = d.games; sched.stubs = null;
+    // A bye week ("OPEN" on KPreps) isn't a game: leave it off every schedule (Chuck, 2026-10-22).
+    const bye = n => /^(open|bye)$/i.test(String(n || '').trim());
+    sched.rows = d.games.filter(r => !bye(r.hn) && !bye(r.an)); sched.stubs = null;
     if (allGames.list) indexGames();
     renderScores(); renderScoreboard(); renderTeamPage(); renderHome(); if (ui.preview) renderPreview();
   }).catch(() => {});
