@@ -469,8 +469,11 @@ table.pl-tbl{table-layout:fixed;width:100%}
 .bks-tbl tr.out td{opacity:.45}
 .bk-dt{color:var(--muted);font-size:12px;font-weight:600;flex:none}
 .bk-row .tlogo,.bk-row .tmono{width:20px!important;height:20px!important;font-size:8px!important}
-.bk-nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:inherit;text-decoration:none;font-weight:600}
+.bk-nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:inherit;text-decoration:none;font-weight:500}
 .bk-nm:hover{text-decoration:underline}
+/* Locked into its spot whatever happens in the games left (Chuck, 2026-10-22); in a district's standings, underlined too */
+.bk-nm.locked,.bks-tbl .tlink.locked{font-weight:800;color:var(--ink)}
+.bks-tbl .tlink.dlock{text-decoration:underline;text-underline-offset:3px}
 .bk-rec{color:var(--muted);font-size:12px;flex:none}
 .bk2-cell.west .bk-row{flex-direction:row-reverse}
 .bk2-cell.west .bk-nm{text-align:right}

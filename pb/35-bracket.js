@@ -125,9 +125,11 @@ async function startBracket(){
 
 // One school's season so far: record, and the average margin the KSHSAA counts (13 a game, 1 in overtime).
 function bkTeam(name){
-  const t = {name, w:0, l:0, t:0, gp:0, marg:0, beat:new Set(), lost:new Set(), games:[]};
+  const t = {name, w:0, l:0, t:0, gp:0, marg:0, beat:new Set(), lost:new Set(), games:[], left:[]};
   schoolRows(name).forEach(({x, side, opp}) => {
-    const f = finalOf(x); if (!f.fin || !f.score) return;
+    const f = finalOf(x);
+    // Not played yet (or no final on file): one of the games that can still move it, through week 8.
+    if (!f.fin || !f.score){ if (gameDay(x) <= fromYmd(BK_WEEK8_END)) t.left.push({opp:x.teams[opp].name, key:`${ymd(gameDay(x))}|${[canonSchool(name), canonSchool(x.teams[opp].name)].sort().join('|')}`}); return; }
     const mine = +f.score[side], theirs = +f.score[opp], other = x.teams[opp].name;
     const ot = (f.q || 0) > 4, cap = ot ? 1 : 13;
     const d = Math.max(-cap, Math.min(cap, mine - theirs));
@@ -162,8 +164,54 @@ function bkOrder(teams){
   });
   return out;
 }
+// The last day of week 8: games after it don't count toward seeding (the manual's weeks 1-8).
+const BK_WEEK8_END = '2026-10-24';
+// Locked (Chuck, 2026-10-22): a team that stays exactly where it is whatever happens in the games still to play.
+// val(t, w, l) is the number it's ranked by after w more wins and l more losses; games(t) the games that can change
+// it; B names its head-to-head sets ('beat'/'lost', or 'dbeat'/'dlost' in a district). Teams whose best and worst
+// can't reach this one's are always above or below it. The rest, and every game any of them has left, are played
+// out every way: locked means each finishes on the same side of it every time. Level on percentage is settled by
+// head-to-head when all the tied teams have played each other and it puts them in a clear order; otherwise it
+// goes to a margin nobody can know yet, and the team isn't locked.
+function bkLocks(teams, val, games, B = ['beat', 'lost']){
+  const out = new Set(), key = t => canonSchool(t.name);
+  const lo = t => val(t, 0, games(t).length), hi = t => val(t, games(t).length, 0);
+  teams.forEach(x => {
+    const near = teams.filter(y => y !== x && !(lo(y) > hi(x) || hi(y) < lo(x)));
+    if (!near.length) return out.add(key(x));
+    const who = [x, ...near], gm = new Map();
+    who.forEach(t => games(t).forEach(g => gm.set(g.key, g)));
+    const list = [...gm.keys()];
+    if (list.length > 14) return;          // too many to play out: leave it unmarked
+    const side = new Map();
+    for (let m = 0; m < 1 << list.length; m++){
+      // Bit i set: the first school in game i's key wins it, otherwise the second.
+      const won = new Map(list.map((k, i) => { const p = k.split('|'); return [k, m >> i & 1 ? p[1] : p[2]]; }));
+      const v = new Map(who.map(t => { const mine = games(t), w = mine.filter(g => won.get(g.key) === key(t)).length;
+        return [t, val(t, w, mine.length - w).toFixed(6)]; }));
+      const beats = (a, b) => a[B[0]].has(key(b)) || list.some(k => won.get(k) === key(a) && k.split('|').includes(key(b)));
+      const tied = who.filter(t => v.get(t) === v.get(x));
+      const clear = tied.every(a => tied.every(b => a === b || beats(a, b) || beats(b, a)));
+      const h2h = t => tied.filter(o => o !== t && beats(t, o)).length;
+      for (const y of near){
+        let d;
+        if (v.get(y) !== v.get(x)) d = Math.sign(v.get(y) - v.get(x));
+        else { if (!clear || h2h(y) === h2h(x)) return; d = Math.sign(h2h(y) - h2h(x)); }
+        if (!side.has(y)) side.set(y, d); else if (side.get(y) !== d) return;
+      }
+    }
+    out.add(key(x));
+  });
+  return out;
+}
+// Season percentage after more results, and the district's (no district games yet is .500, as bkDistrict has it).
+const bkPctAfter = (t, w, l) => { const n = t.gp + w + l; return n ? (t.w + w + t.t / 2) / n : 0; };
+const bkDpctAfter = (t, w, l) => { const n = t.dgp + w + l; return n ? (t.dw + w + t.dt / 2) / n : .5; };
 // Seeds 1-16 in one section, by the manual's criteria in order.
-const bkSeed = names => bkOrder(names.map(bkTeam)).slice(0, 16).map((t, i) => Object.assign(t, {seed:i + 1}));
+function bkSeed(names){
+  const all = bkOrder(names.map(bkTeam)), locks = bkLocks(all, bkPctAfter, t => t.left);
+  return all.slice(0, 16).map((t, i) => Object.assign(t, {seed:i + 1, lock:locks.has(canonSchool(t.name))}));
+}
 
 // One district in place order (the criteria at the top). No district games yet reads as .500, as the league
 // tables do. Past the margin the KSHSAA draws lots; before district play has settled much that's nearly everyone,
@@ -179,6 +227,7 @@ function bkDistrict(names){
       if (g.mine > g.theirs){ t.dw++; t.dbeat.add(k); } else if (g.mine < g.theirs){ t.dl++; t.dlost.add(k); } else t.dt++;
     });
     t.dpct = t.dgp ? (t.dw + t.dt / 2) / t.dgp : .5;
+    t.dleft = t.left.filter(g => inD.has(canonSchool(g.opp)));   // district games still to play
     t.davg = t.dgp ? t.dmarg / t.dgp : 0;
     return t;
   });
@@ -204,12 +253,18 @@ function bkDistrict(names){
     const g = byPct[p];
     if (g.length === 1) out.push(Object.assign(g[0], {dhow:''})); else out.push(...settle(g));
   });
-  return out.map((t, i) => Object.assign(t, {place:i + 1}));
+  const locks = bkLocks(out, bkDpctAfter, t => t.dleft, ['dbeat', 'dlost']);
+  return out.map((t, i) => Object.assign(t, {place:i + 1, placeLock:locks.has(canonSchool(t.name))}));
 }
 // 3A-1A: a half's four districts, already in place order, seeded 1-16 — a place at a time, by the 4A-6A order.
 function bkDistrictSeeds(dists){
   const seeds = [];
-  for (let p = 1; p <= 4; p++) bkOrder(dists.map(d => d[p - 1]).filter(Boolean)).forEach(t => seeds.push(t));
+  for (let p = 1; p <= 4; p++){
+    // A seed is locked once every district's team at this place is, and the order among them can't change.
+    const tier = dists.map(d => d[p - 1]).filter(Boolean);
+    const locks = tier.length === dists.length && tier.every(t => t.placeLock) ? bkLocks(tier, bkPctAfter, t => t.left) : new Set();
+    bkOrder(tier).forEach(t => seeds.push(Object.assign(t, {lock:locks.has(canonSchool(t.name))})));
+  }
   return seeds.map((t, i) => Object.assign(t, {seed:i + 1}));
 }
 
@@ -231,7 +286,7 @@ const bkGame = (a, b) => {
 function bkPill(t){
   if (!t) return `<div class="bkp empty"><span class="bk-nm">—</span></div>`;
   return `<div class="bkp"><span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>${bkMark(t.name)}
-    <a class="bk-nm" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a>
+    <a class="bk-nm${t.lock ? ' locked' : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a>
     <span class="bk-rec">${t.gp ? esc(bkRec(t)) : '<i>no games</i>'}</span></div>`;
 }
 function bkTreeHtml(seeds, side){
@@ -242,7 +297,7 @@ function bkTreeHtml(seeds, side){
 }
 // 8-player: the manual's own pairs, each team shown by its district place.
 function bk8Tree(by, side){
-  const pill = ([d, p]) => { const t = by[d] && by[d][p - 1]; return bkPill(t ? Object.assign(t, {tag:`D${d} #${p}`}) : null); };
+  const pill = ([d, p]) => { const t = by[d] && by[d][p - 1]; return bkPill(t ? Object.assign(t, {tag:`D${d} #${p}`, lock:t.placeLock}) : null); };
   return `<div class="bkt"><h3>${side}</h3>
     <div class="bkt-cols"><div class="bkt-col"><span class="bkt-h">Week 9</span><div class="bkt-pairs">${BK_8M[side].map(([a, b]) =>
       `<div class="bkt-pair">${pill(a)}${pill(b)}</div>`).join('')}</div></div></div></div>`;
@@ -254,7 +309,7 @@ function bkDistrictHtml(d, teams){
       <th class="c-seed">#</th><th class="nm">TEAM</th><th class="num c-wl">DIST</th>
       <th class="num c-pct">W-L</th><th class="num c-marg">MARGIN</th><th class="nm c-tb">TIEBREAK</th></tr></thead>
     <tbody>${teams.map(t => `<tr${t.place > 4 ? ' class="out"' : ''}><td class="c-seed"><b>${t.place}</b></td>
-      <td class="nm"><div class="cn-in">${bkMark(t.name)}<a class="tlink" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a></div></td>
+      <td class="nm"><div class="cn-in">${bkMark(t.name)}<a class="tlink${t.placeLock ? ' locked dlock' : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a></div></td>
       <td class="num c-wl">${t.dw}-${t.dl}${t.dt ? `-${t.dt}` : ''}</td>
       <td class="num c-pct">${t.gp ? esc(bkRec(t)) : '—'}</td>
       <td class="num c-marg">${t.dgp ? (t.davg > 0 ? '+' : '') + t.davg.toFixed(1) : '—'}</td>
@@ -266,7 +321,7 @@ function bkListHtml(seeds, side){
       <th class="c-seed">SEED</th><th class="nm">TEAM</th><th class="num c-wl">W-L</th>
       <th class="num c-pct">PCT</th><th class="num c-marg">MARGIN</th><th class="nm c-tb">TIEBREAK</th></tr></thead>
     <tbody>${seeds.map(t => `<tr><td class="c-seed"><b>${t.seed}</b></td>
-      <td class="nm"><div class="cn-in">${bkMark(t.name)}<a class="tlink" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a>${t.dtag ? `<span class="bk-dt">${esc(t.dtag)}</span>` : ''}</div></td>
+      <td class="nm"><div class="cn-in">${bkMark(t.name)}<a class="tlink${t.lock ? ' locked' : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a>${t.dtag ? `<span class="bk-dt">${esc(t.dtag)}</span>` : ''}</div></td>
       <td class="num c-wl">${t.gp ? esc(bkRec(t)) : '—'}</td>
       <td class="num c-pct">${t.gp ? t.pct.toFixed(3).replace(/^0/, '') : '—'}</td>
       <td class="num c-marg">${t.gp ? (t.avg > 0 ? '+' : '') + t.avg.toFixed(1) : '—'}</td>
