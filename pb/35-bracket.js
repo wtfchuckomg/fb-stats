@@ -309,7 +309,7 @@ function bkDistrictHtml(d, teams){
       <th class="c-seed">#</th><th class="nm">TEAM</th><th class="num c-wl">DIST</th>
       <th class="num c-pct">W-L</th><th class="num c-marg">MARGIN</th><th class="nm c-tb">TIEBREAK</th></tr></thead>
     <tbody>${teams.map(t => `<tr${t.place > 4 ? ' class="out"' : ''}><td class="c-seed"><b>${t.place}</b></td>
-      <td class="nm"><div class="cn-in">${bkMark(t.name)}<a class="tlink${t.placeLock ? ' locked dlock' : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a></div></td>
+      <td class="nm"><div class="cn-in">${bkMark(t.name)}<a class="tlink${t.placeLock ? ` locked${t.place === 1 ? ' dlock' : ''}` : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a></div></td>
       <td class="num c-wl">${t.dw}-${t.dl}${t.dt ? `-${t.dt}` : ''}</td>
       <td class="num c-pct">${t.gp ? esc(bkRec(t)) : '—'}</td>
       <td class="num c-marg">${t.dgp ? (t.davg > 0 ? '+' : '') + t.davg.toFixed(1) : '—'}</td>

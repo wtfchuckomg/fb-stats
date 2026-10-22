@@ -450,7 +450,7 @@ table.pl-tbl{table-layout:fixed;width:100%}
 .bk-row .tlogo,.bk-row .tmono{width:20px!important;height:20px!important;font-size:8px!important}
 .bk-nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:inherit;text-decoration:none;font-weight:500}
 .bk-nm:hover{text-decoration:underline}
-/* Locked into its spot whatever happens in the games left (Chuck, 2026-10-22); in a district's standings, underlined too */
+/* Locked into its spot whatever happens in the games left (Chuck, 2026-10-22); a district's clinched winner is underlined too */
 .bk-nm.locked,.bks-tbl .tlink.locked{font-weight:800;color:var(--ink)}
 .bks-tbl .tlink.dlock{text-decoration:underline;text-underline-offset:3px}
 .bk-rec{color:var(--muted);font-size:12px;flex:none}
@@ -12318,7 +12318,7 @@ function bkDistrictHtml(d, teams){
       <th class="c-seed">#</th><th class="nm">TEAM</th><th class="num c-wl">DIST</th>
       <th class="num c-pct">W-L</th><th class="num c-marg">MARGIN</th><th class="nm c-tb">TIEBREAK</th></tr></thead>
     <tbody>${teams.map(t => `<tr${t.place > 4 ? ' class="out"' : ''}><td class="c-seed"><b>${t.place}</b></td>
-      <td class="nm"><div class="cn-in">${bkMark(t.name)}<a class="tlink${t.placeLock ? ' locked dlock' : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a></div></td>
+      <td class="nm"><div class="cn-in">${bkMark(t.name)}<a class="tlink${t.placeLock ? ` locked${t.place === 1 ? ' dlock' : ''}` : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a></div></td>
       <td class="num c-wl">${t.dw}-${t.dl}${t.dt ? `-${t.dt}` : ''}</td>
       <td class="num c-pct">${t.gp ? esc(bkRec(t)) : '—'}</td>
       <td class="num c-marg">${t.dgp ? (t.davg > 0 ? '+' : '') + t.davg.toFixed(1) : '—'}</td>
