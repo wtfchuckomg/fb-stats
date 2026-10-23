@@ -159,6 +159,28 @@ function bkTeam(name){
 }
 
 // Teams in the 4A-6A order: season percentage, head-to-head, 13-point margin.
+// A tie nothing in the manual can break once the games are done goes to the KSHSAA's coin flip (Chuck,
+// 2026-10-23): every team in it is marked, and its line in the bracket carries all of them ("AND / KMC").
+// Only once each of them has played its last game: an exact tie with games left is just where things stand.
+const bkSame = (a, b) => Math.abs(a - b) < 1e-9;
+function bkLot(group, left){
+  if (group.length < 2 || group.some(t => left(t).length)) return false;
+  // A flip that leads into another tie (three level, the flip picks one, the other two are level again) is one
+  // flip as far as the bracket goes: any of them can end up on any of those lines, so the groups join.
+  const all = new Set(group); group.forEach(t => (t.lotWith || []).forEach(x => all.add(x)));
+  const joined = [...all];
+  joined.forEach(t => Object.assign(t, {lotWith:joined}));
+  return true;
+}
+// Teams level on everything before it, by margin; a run that's level on margin too goes to the coin flip.
+function bkByMargin(tied, val, how, left){
+  const out = [];
+  tied.slice().sort((a, b) => val(b) - val(a) || a.name.localeCompare(b.name)).forEach(t => {
+    const run = out.length && bkSame(val(out[out.length - 1][0]), val(t)) ? out[out.length - 1] : null;
+    if (run) run.push(t); else out.push([t]);
+  });
+  return out.flatMap(run => { const lot = bkLot(run, left); return run.map(t => Object.assign(t, {how:lot ? 'coin flip' : how})); });
+}
 function bkOrder(teams){
   const byPct = {};
   teams.forEach(t => { (byPct[t.pct.toFixed(4)] = byPct[t.pct.toFixed(4)] || []).push(t); });
@@ -169,13 +191,16 @@ function bkOrder(teams){
     // Head-to-head counts only when everyone tied has played everyone else.
     const all = tied.every(a => tied.every(b => a === b || a.beat.has(canonSchool(b.name)) || a.lost.has(canonSchool(b.name))));
     if (all){
-      tied = tied.slice().sort((a, b) => tied.filter(x => a.beat.has(canonSchool(x.name))).length - tied.filter(x => b.beat.has(canonSchool(x.name))).length);
-      tied.reverse();
-      tied.forEach(t => out.push(Object.assign(t, {how:'head-to-head'})));
+      // Most wins over the others first; teams level on that (A beat B, B beat C, C beat A) go to the margin.
+      const wins = t => tied.filter(x => t.beat.has(canonSchool(x.name))).length;
+      [...new Set(tied.map(wins))].sort((a, b) => b - a).forEach(w => {
+        const g = tied.filter(t => wins(t) === w);
+        if (g.length === 1) out.push(Object.assign(g[0], {how:'head-to-head'}));
+        else out.push(...bkByMargin(g, t => t.avg, '13-point margin', t => t.left));
+      });
       return;
     }
-    tied.slice().sort((a, b) => b.avg - a.avg || a.name.localeCompare(b.name))
-      .forEach(t => out.push(Object.assign(t, {how:'13-point margin'})));
+    out.push(...bkByMargin(tied, t => t.avg, '13-point margin', t => t.left));
   });
   return out;
 }
@@ -286,7 +311,13 @@ function bkDistrict(names, cut = 4){
       let pick;
       if (top){ pick = top; how = 'head-to-head'; }
       else if (by[0].davg > by[1].davg){ pick = by[0]; how = '21-point margin'; }
-      else { pick = by.filter(t => t.davg === by[0].davg).sort((a, b) => b.pct - a.pct || b.avg - a.avg || a.name.localeCompare(b.name))[0]; how = 'season record'; }
+      else {
+        // Level on the 21-point margin as well: the KSHSAA draws lots. Until the district games are done the projection
+        // goes on to the season's record and margin; once they are, it's a coin flip, and the line says so.
+        const level = by.filter(t => bkSame(t.davg, by[0].davg));
+        const lot = bkLot(level, t => t.dleft);
+        pick = level.sort((a, b) => b.pct - a.pct || b.avg - a.avg || a.name.localeCompare(b.name))[0]; how = lot ? 'coin flip' : 'season record';
+      }
       done.push(Object.assign(pick, {dhow:how})); left = left.filter(t => t !== pick);
     }
     return done.concat(left.map(t => Object.assign(t, {dhow:how})));
@@ -299,7 +330,8 @@ function bkDistrict(names, cut = 4){
     if (g.length === 1) out.push(Object.assign(g[0], {dhow:''})); else out.push(...settle(g));
   });
   const locks = bkLocks(out, bkDpctAfter, t => t.dleft, ['dbeat', 'dlost']), gone = bkOut(out, bkDpctAfter, t => t.dleft, ['dbeat', 'dlost'], cut);
-  return out.map((t, i) => Object.assign(t, {place:i + 1, placeLock:locks.has(canonSchool(t.name)), elim:gone.has(canonSchool(t.name))}));
+  return out.map((t, i) => Object.assign(t, {place:i + 1, placeLock:locks.has(canonSchool(t.name)), elim:gone.has(canonSchool(t.name))},
+    t.lotWith ? {dhow:'coin flip'} : {}));
 }
 // 3A-1A: a half's four districts, already in place order, seeded 1-16 — a place at a time, by the 4A-6A order.
 function bkDistrictSeeds(dists){
@@ -330,6 +362,13 @@ const bkGame = (a, b) => {
 // LOOK 2: the bracket. Each team its own pill, the pair joined by a connector into the next round.
 function bkPill(t){
   if (!t) return `<div class="bkp empty"><span class="bk-nm">—</span></div>`;
+  // Going to a coin flip: this line belongs to any of them, so it carries them all.
+  if (t.lotWith){
+    const L = t.lotWith, recs = [...new Set(L.map(bkRec))];
+    return `<div class="bkp lot" title="${esc(L.map(x => x.name).join(' or ') + ': KSHSAA coin flip')}"><span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>${L.map(x => bkMark(x.name)).join('')}
+      <span class="bk-nm">${L.map(x => `<a href="?team=${encodeURIComponent(x.name)}">${esc(listAbbr(x.name) || shortName(x.name))}</a>`).join(' / ')}</span>
+      <span class="bk-rec">${recs.length === 1 ? esc(recs[0]) : ''}</span></div>`;
+  }
   return `<div class="bkp"><span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>${bkMark(t.name)}
     <a class="bk-nm${t.lock ? ' locked' : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a>
     <span class="bk-rec">${t.gp ? esc(bkRec(t)) : '<i>no games</i>'}</span></div>`;
