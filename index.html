@@ -524,6 +524,8 @@ table.pl-tbl{table-layout:fixed;width:100%}
 .bkp.lot .bk-nm a{color:inherit;text-decoration:none}
 .bkp.lot .bk-nm a:hover{text-decoration:underline}
 .bkp.lot .tlogo + .tlogo,.bkp.lot .tlogo + .tmono,.bkp.lot .tmono + .tlogo{margin-left:-14px}
+.bk-flipbtn{font:inherit;font-weight:700;color:var(--blue,#0a66d6);background:none;border:0;padding:0 2px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.bk-undo{font:500 12px/1 var(--sans);color:var(--muted);background:none;border:1px solid var(--line);border-radius:6px;padding:3px 6px;margin-left:4px;cursor:pointer}
 .bkp.bye{color:var(--muted);justify-content:center;border-style:dashed;font-style:italic}
 .bkc-side{padding:0 14px 6px}
 .bkc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
@@ -5616,7 +5618,7 @@ function listen(){
       const id = ch.doc.id, d = ch.doc.data(), local = db.games[id];
       if (id === teamsDocId()) return mergeTeams(d.json);        // the saved-teams library, not a game
       if (id === mySchoolsDocId() || d.kind === 'my-schools') return mergeMySchools(d.json);   // schools this scorer added, not a game
-      if (id === HIDE_DOC || id === RECS_DOC || id === MINS_DOC || d.kind === 'roster' || d.kind === 'massey') return;   // hidden games, team records, stat minimums, shared rosters, the old Massey lines: not games
+      if (id === HIDE_DOC || id === RECS_DOC || id === MINS_DOC || d.kind === 'roster' || d.kind === 'massey' || d.kind === 'flips') return;   // hidden games, team records, stat minimums, shared rosters, the old Massey lines, coin flips: not games
       if (d.kind === 'score') return mergeScore(id, d);           // a quick score, not a game
       const lu = local ? local.updated || 0 : -1, ru = d.updated || 0;
       if (ru > lu){
@@ -12173,13 +12175,68 @@ async function startBracket(){
   if (SECTIONS[want] || DISTRICTS[want]) bk.cls = want;
   loadLogos();
   renderBracket();
+  // The admin's own devices sign in here too, to settle coin flips.
+  let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
   try {
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
-    const [appM, fsM] = await Promise.all(['app', 'firestore'].map(m => import(base + m + '.js')));
-    const fsdb = fsM.getFirestore(appM.initializeApp(firebaseConfig));
+    const [appM, fsM, authM] = await Promise.all(['app', 'firestore', ...(admin ? ['auth'] : [])].map(m => import(base + m + '.js')));
+    const app = appM.initializeApp(firebaseConfig);
+    if (authM) authM.onAuthStateChanged(authM.getAuth(app), u => { ui.admin = !!u && u.uid === ADMIN_UID; renderBracket(); });
+    const fsdb = fsM.getFirestore(app);
     scoresReady({fsM, fsdb});
+    watchFlips({fsM, fsdb});
   } catch (e) { allGames.err = 'Can’t reach the games. Check your connection and reload.'; renderBracket(); }
 }
+
+/* ---------- coin flips, as the KSHSAA calls them ----------
+   The admin taps the team that won each flip on the bracketology page (Chuck, 2026-10-23: "a button as admin").
+   One shared list, like the team records: only the admin's account writes it, anyone reads it. Each tie is
+   "<season>|<class>|<schools in it>" and holds the schools in the order the flips put them (the winner first;
+   in a three-way, the next one tapped is second, and so on). */
+const FLIPS_DOC = 'bracket-flips';
+const flips = {map:{}, api:null};
+function watchFlips(api){
+  flips.api = api;
+  const {fsM, fsdb} = api;
+  fsM.onSnapshot(fsM.doc(fsdb, 'pressbox', FLIPS_DOC), snap => {
+    const d = snap.exists() ? snap.data() : null;
+    let map = {}; if (d && d.owner === ADMIN_UID && !d.deleted){ try { map = JSON.parse(d.json).flips || {}; } catch (e) {} }
+    flips.map = map; renderBracket();
+  }, () => {});
+}
+const flipKey = group => `${BK_WEEK8_END.slice(0, 4)}|${bk.cls}|${group.map(t => canonSchool(t.name)).sort().join(',')}`;
+// The order the flips gave for a tie among `group`, from a settled tie that takes them all in (a three-way flip
+// covers the two-way tie left after it). Null when none has been settled.
+function flipOrder(group){
+  const want = group.map(t => canonSchool(t.name)), pre = `${BK_WEEK8_END.slice(0, 4)}|${bk.cls}|`;
+  for (const [k, order] of Object.entries(flips.map)){
+    if (!k.startsWith(pre)) continue;
+    const names = k.slice(pre.length).split(',');
+    if (want.every(n => names.includes(n)) && order.some(n => want.includes(n))) return {key:k, order};
+  }
+  return null;
+}
+async function saveFlips(map){
+  if (!ui.admin || !flips.api) return toast('Sign in on the Game Tracker to settle a coin flip');
+  flips.map = map; renderBracket();
+  const {fsM, fsdb} = flips.api;
+  try {
+    await fsM.setDoc(fsM.doc(fsdb, 'pressbox', FLIPS_DOC), {owner:ADMIN_UID, updated:Date.now(), public:true, kind:'flips',
+      title:'Coin flips', json:JSON.stringify({flips:map})});
+  } catch (e) { toast('Couldn’t save that. Sign in on the Game Tracker, then try again.'); }
+}
+document.addEventListener('click', e => {
+  if (!ui.bracket || !ui.admin || !e.target.closest) return;
+  const b = e.target.closest('[data-flip-key]'); if (!b) return;
+  e.preventDefault();
+  const k = b.dataset.flipKey, map = Object.assign({}, flips.map);
+  if (b.dataset.flipWin){
+    const order = (map[k] || []).filter(n => n !== b.dataset.flipWin);
+    map[k] = order.concat(b.dataset.flipWin);
+    toast(`${b.dataset.flipName} won the flip`);
+  } else { delete map[k]; toast('Coin flip cleared'); }
+  saveFlips(map);
+});
 
 // One school's season so far: record, and the average margin the KSHSAA counts (13 a game, 1 in overtime).
 function bkTeam(name){
@@ -12222,7 +12279,17 @@ function bkByMargin(tied, val, how, left){
     const run = out.length && bkSame(val(out[out.length - 1][0]), val(t)) ? out[out.length - 1] : null;
     if (run) run.push(t); else out.push([t]);
   });
-  return out.flatMap(run => { const lot = bkLot(run, left); return run.map(t => Object.assign(t, {how:lot ? 'coin flip' : how})); });
+  return out.flatMap(run => {
+    // Settled by the admin: in the order the flips gave, anyone not in it yet still level after them.
+    const f = run.length > 1 && !run.some(t => left(t).length) ? flipOrder(run) : null;
+    if (f){
+      const at = t => { const i = f.order.indexOf(canonSchool(t.name)); return i < 0 ? 99 : i; };
+      const done = run.filter(t => at(t) < 99).sort((a, b) => at(a) - at(b)), rest = run.filter(t => at(t) === 99);
+      if (rest.length > 1) bkLot(rest, left);
+      return [...done.map(t => Object.assign(t, {how:'coin flip', flipKey:f.key})), ...rest.map(t => Object.assign(t, {how:'coin flip'}))];   // the last one left is placed by the flips too
+    }
+    const lot = bkLot(run, left); return run.map(t => Object.assign(t, {how:lot ? 'coin flip' : how}));
+  });
 }
 function bkOrder(teams){
   const byPct = {};
@@ -12358,8 +12425,15 @@ function bkDistrict(names, cut = 4){
         // Level on the 21-point margin as well: the KSHSAA draws lots. Until the district games are done the projection
         // goes on to the season's record and margin; once they are, it's a coin flip, and the line says so.
         const level = by.filter(t => bkSame(t.davg, by[0].davg));
-        const lot = bkLot(level, t => t.dleft);
-        pick = level.sort((a, b) => b.pct - a.pct || b.avg - a.avg || a.name.localeCompare(b.name))[0]; how = lot ? 'coin flip' : 'season record';
+        const f = level.some(t => t.dleft.length) ? null : flipOrder(level);
+        // The one the flips put highest among those still level.
+        const won = f && level.filter(t => f.order.includes(canonSchool(t.name)))
+          .sort((a, b) => f.order.indexOf(canonSchool(a.name)) - f.order.indexOf(canonSchool(b.name)))[0];
+        if (won){ pick = Object.assign(won, {flipKey:f.key}); how = 'coin flip'; }
+        else {
+          const lot = bkLot(level, t => t.dleft);
+          pick = level.sort((a, b) => b.pct - a.pct || b.avg - a.avg || a.name.localeCompare(b.name))[0]; how = lot ? 'coin flip' : 'season record';
+        }
       }
       done.push(Object.assign(pick, {dhow:how})); left = left.filter(t => t !== pick);
     }
@@ -12388,6 +12462,8 @@ function bkDistrictSeeds(dists){
   return seeds.map((t, i) => Object.assign(t, {seed:i + 1}));
 }
 
+// The admin can take back a settled flip from the standings (a tap on the wrong team).
+const bkUndo = t => ui.admin && t.flipKey ? ` <button type="button" class="bk-undo" data-flip-key="${esc(t.flipKey)}">Undo</button>` : '';
 const bkRec = t => `${t.w}-${t.l}${t.t ? `-${t.t}` : ''}`;
 const bkMark = name => markFor({name, abbr:shortName(name), color:'#4A4B4D'}, 22);
 // One team inside a bracket game. A seed with no games on file says so instead of pretending to a record.
@@ -12409,7 +12485,9 @@ function bkPill(t){
   if (t.lotWith){
     const L = t.lotWith, recs = [...new Set(L.map(bkRec))];
     return `<div class="bkp lot" title="${esc(L.map(x => x.name).join(' or ') + ': KSHSAA coin flip')}"><span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>${L.map(x => bkMark(x.name)).join('')}
-      <span class="bk-nm">${L.map(x => `<a href="?team=${encodeURIComponent(x.name)}">${esc(listAbbr(x.name) || shortName(x.name))}</a>`).join(' / ')}</span>
+      <span class="bk-nm">${L.map(x => ui.admin
+        ? `<button type="button" class="bk-flipbtn" data-flip-key="${esc(flipKey(L))}" data-flip-win="${esc(canonSchool(x.name))}" data-flip-name="${esc(x.name)}" title="${esc(x.name)} won the flip">${esc(listAbbr(x.name) || shortName(x.name))}</button>`
+        : `<a href="?team=${encodeURIComponent(x.name)}">${esc(listAbbr(x.name) || shortName(x.name))}</a>`).join(' / ')}</span>
       <span class="bk-rec">${recs.length === 1 ? esc(recs[0]) : ''}</span></div>`;
   }
   return `<div class="bkp"><span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>${bkMark(t.name)}
@@ -12441,7 +12519,7 @@ function bkDistrictHtml(d, teams){
       <td class="num c-wl">${t.dw}-${t.dl}${t.dt ? `-${t.dt}` : ''}</td>
       <td class="num c-pct">${t.gp ? esc(bkRec(t)) : '—'}</td>
       <td class="num c-marg">${t.dgp ? (t.davg > 0 ? '+' : '') + t.davg.toFixed(1) : '—'}</td>
-      <td class="nm c-tb">${esc(t.dhow || '')}</td></tr>`).join('')}</tbody></table></div></div>`;
+      <td class="nm c-tb">${esc(t.dhow || '')}${bkUndo(t)}</td></tr>`).join('')}</tbody></table></div></div>`;
 }
 function bkListHtml(seeds, side){
   return `<div class="bk-list"><h3>${side}</h3>
@@ -12453,7 +12531,7 @@ function bkListHtml(seeds, side){
       <td class="num c-wl">${t.gp ? esc(bkRec(t)) : '—'}</td>
       <td class="num c-pct">${t.gp ? t.pct.toFixed(3).replace(/^0/, '') : '—'}</td>
       <td class="num c-marg">${t.gp ? (t.avg > 0 ? '+' : '') + t.avg.toFixed(1) : '—'}</td>
-      <td class="nm c-tb">${esc(t.how || '')}</td></tr>`).join('')}</tbody></table></div></div>`;
+      <td class="nm c-tb">${esc(t.how || '')}${bkUndo(t)}</td></tr>`).join('')}</tbody></table></div></div>`;
 }
 
 // What the marks mean (Chuck, 2026-10-23): bold everywhere; underline and strikethrough only where districts are.
