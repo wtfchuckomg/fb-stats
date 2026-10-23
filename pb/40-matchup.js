@@ -87,6 +87,7 @@ function renderMatchup(){
   const form = `<section class="bcard bhead"><div class="bhead-top"><h1>Matchup Calculator</h1></div>
     <div class="mu-form">
       <div class="fld"><label class="eyebrow" for="mu-a">Away</label>${pick('mu-a', mu.a, 'Away team')}</div>
+      <button type="button" class="mu-swap" data-mu-swap aria-label="Switch home and away" title="Switch home and away"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7h12m0 0-3-3m3 3-3 3M16 13H4m0 0 3-3m-3 3 3 3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <div class="fld"><label class="eyebrow" for="mu-h">Home</label>${pick('mu-h', mu.h, 'Home team')}</div>
       <label class="mu-neutral"><input type="checkbox" id="mu-n"${mu.neutral ? ' checked' : ''}> Neutral field</label>
     </div></section>`;
@@ -154,4 +155,9 @@ document.addEventListener('change', e => {
   if (e.target.id === 'mu-n'){ mu.neutral = e.target.checked; mu.seed = 0; muAddress(); return muRun(); }
   if (e.target.id === 'mu-a' || e.target.id === 'mu-h') muPicked(e.target);
 });
-document.addEventListener('click', e => { if (ui.matchup && e.target.closest && e.target.closest('[data-mu-again]')) muRun(true); });
+document.addEventListener('click', e => {
+  if (!ui.matchup || !e.target.closest) return;
+  if (e.target.closest('[data-mu-again]')) return muRun(true);
+  // Home and away trade places (Chuck, 2026-10-23).
+  if (e.target.closest('[data-mu-swap]')){ [mu.a, mu.h] = [mu.h, mu.a]; mu.seed = 0; muAddress(); muTeamsChanged(); muRun(); }
+});
