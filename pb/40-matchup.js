@@ -45,7 +45,27 @@ function muRand(seed){
   let s = seed >>> 0;
   return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 }
-function muSimulate(A, H, neutral, seed){
+// The ratings with the private-school bump taken back out (Chuck, 2026-10-23: "remove the private school bump for a
+// minute… see how different it is"). ratings.py lifts a bumped school's strength by `bump`, half on each side of the
+// ball, so dividing it back out gives the fit's own numbers exactly.
+let muPlainRat = null;
+function muPlain(){
+  if (muPlainRat && muPlainRat.src === pre.rat) return muPlainRat.rat;
+  const rat = Object.assign({}, pre.rat, {teams:{}});
+  Object.entries(pre.rat.teams).forEach(([k, t]) => {
+    if (!t.bump) return void (rat.teams[k] = t);
+    const lift = (t.off - t.def) * t.bump / (2 * (1 + t.bump));
+    rat.teams[k] = Object.assign({}, t, {off:t.off - lift, def:t.def + lift, rating:(t.off - t.def) / (1 + t.bump), bump:0});
+  });
+  muPlainRat = {src:pre.rat, rat};
+  return rat;
+}
+function muSimulate(A, H, neutral, seed, plain){
+  if (plain){
+    const keep = {rat:pre.rat, idx:pre.ratIdx};
+    pre.rat = muPlain(); pre.ratIdx = {};
+    try { return muSimulate(A, H, neutral, seed, false); } finally { pre.rat = keep.rat; pre.ratIdx = keep.idx; }
+  }
   const year = new Date().getFullYear(), L = gameLine(A, H, year); if (!L) return null;
   let m = L.home - L.away, total = L.total;
   if (neutral){ const B = gameLine(H, A, year); if (B){ m = (m - (B.home - B.away)) / 2; total = (total + B.total) / 2; } }
@@ -73,7 +93,7 @@ function muRun(fresh){
   if (!ui.matchup) return;
   if (mu.a && mu.h && pre.rat && canonSchool(mu.a) !== canonSchool(mu.h)){
     if (fresh || !mu.seed) mu.seed = fresh ? (Math.random() * 4294967296) >>> 0 : muSeedOf(mu.a, mu.h, mu.neutral);
-    mu.sim = muSimulate(mu.a, mu.h, mu.neutral, mu.seed);
+    mu.sim = muSimulate(mu.a, mu.h, mu.neutral, mu.seed, mu.plain);
   } else mu.sim = null;
   renderMatchup();
 }
@@ -89,7 +109,8 @@ function renderMatchup(){
       <div class="fld"><label class="eyebrow" for="mu-a">Away</label>${pick('mu-a', mu.a, 'Away team')}</div>
       <button type="button" class="mu-swap" data-mu-swap aria-label="Switch home and away" title="Switch home and away"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7h12m0 0-3-3m3 3-3 3M16 13H4m0 0 3-3m-3 3 3 3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <div class="fld"><label class="eyebrow" for="mu-h">Home</label>${pick('mu-h', mu.h, 'Home team')}</div>
-      <label class="mu-neutral"><input type="checkbox" id="mu-n"${mu.neutral ? ' checked' : ''}> Neutral field</label>
+      <div class="mu-checks"><label class="mu-neutral"><input type="checkbox" id="mu-n"${mu.neutral ? ' checked' : ''}> Neutral field</label>
+        <label class="mu-neutral"><input type="checkbox" id="mu-b"${mu.plain ? ' checked' : ''}> No private school bump</label></div>
     </div></section>`;
   // Only the result card is drawn again while someone is typing in a box, so the box keeps its text and focus.
   const res = $('#mu-res');
@@ -153,6 +174,7 @@ document.addEventListener('input', e => { if (ui.matchup && (e.target.id === 'mu
 document.addEventListener('change', e => {
   if (!ui.matchup) return;
   if (e.target.id === 'mu-n'){ mu.neutral = e.target.checked; mu.seed = 0; muAddress(); return muRun(); }
+  if (e.target.id === 'mu-b'){ mu.plain = e.target.checked; return muRun(); }   // same games, only the bump changes
   if (e.target.id === 'mu-a' || e.target.id === 'mu-h') muPicked(e.target);
 });
 document.addEventListener('click', e => {
