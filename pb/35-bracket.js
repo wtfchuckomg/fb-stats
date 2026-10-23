@@ -98,14 +98,29 @@ const DISTRICTS = {
     ["St John's", "Lakeside", "Thunder Ridge", "Osborne", "Pike Valley", "Stockton"],
     ["Dighton", "Ness City", "Quinter", "Wallace County", "St Francis", "Greeley County"],
   ],
+  // 6-player: four districts of seven, and all 28 go to the playoffs (Chuck, 2026-10-23; KSHSAA bracket 6442).
+  // The district list spells Satanta "Santana".
+  '6M':[
+    ["Altoona-Midway", "Chetopa", "Southern Coffey County", "Centre", "Elyria Christian", "Marais des Cygnes Valley", "Peabody-Burns"],
+    ["Chase", "Logan", "Otis-Bison", "Palco", "Western Plains", "Pawnee Heights", "Tescott"],
+    ["Ashland", "Bucklin", "Deerfield", "Ingalls", "South Barber", "Moscow", "Satanta"],
+    ["Northern Valley", "Cheylin", "Brewster", "Wheatland-Grinnell", "Golden Plains", "Weskan", "Winona-Triplains"],
+  ],
 };
-const BK_CLASSES = ['6A', '5A', '4A', '3A', '2A', '1A', '8M-I', '8M-II'];
-const bkTab = c => c === '8M-I' ? '8-Man I' : c === '8M-II' ? '8-Man II' : `Class ${c}`;
-const bkLabel = c => c === '8M-I' ? '8-Man Division I' : c === '8M-II' ? '8-Man Division II' : `Class ${c}`;
+const BK_CLASSES = ['6A', '5A', '4A', '3A', '2A', '1A', '8M-I', '8M-II', '6M'];
+const bkTab = c => c === '8M-I' ? '8-Man I' : c === '8M-II' ? '8-Man II' : c === '6M' ? '6-Man' : `Class ${c}`;
+const bkLabel = c => c === '8M-I' ? '8-Man Division I' : c === '8M-II' ? '8-Man Division II' : c === '6M' ? '6-Man' : `Class ${c}`;
+// How many from each district go on: four, except 6-player, where all seven do.
+const bkCut = c => c === '6M' ? 7 : 4;
 // 8-player week 9, from the manual's bracket: [district, place] against [district, place].
 const BK_8M = {
   East:[[[1, 1], [2, 4]], [[4, 2], [3, 3]], [[2, 1], [1, 4]], [[3, 2], [4, 3]], [[3, 1], [4, 4]], [[2, 2], [1, 3]], [[4, 1], [3, 4]], [[1, 2], [2, 3]]],
   West:[[[5, 1], [6, 4]], [[8, 2], [7, 3]], [[6, 1], [5, 4]], [[7, 2], [8, 3]], [[7, 1], [8, 4]], [[6, 2], [5, 3]], [[8, 1], [7, 4]], [[5, 2], [6, 3]]]};
+// 6-player week 9, KSHSAA's 2026 bracket (6442): each district champion has a bye (null). Districts 1-2 are the
+// East, 3-4 the West; the KSHSAA draws the West on top.
+const BK_6M = {
+  East:[[[1, 1], null], [[2, 4], [1, 5]], [[2, 2], [1, 7]], [[1, 3], [2, 6]], [[2, 1], null], [[1, 4], [2, 5]], [[1, 2], [2, 7]], [[2, 3], [1, 6]]],
+  West:[[[3, 1], null], [[4, 4], [3, 5]], [[4, 2], [3, 7]], [[3, 3], [4, 6]], [[4, 1], null], [[3, 4], [4, 5]], [[3, 2], [4, 7]], [[4, 3], [3, 6]]]};
 const bk = {cls:'4A'};
 
 async function startBracket(){
@@ -246,7 +261,7 @@ function bkSeed(names){
 // One district in place order (the criteria at the top). No district games yet reads as .500, as the league
 // tables do. Past the margin the KSHSAA draws lots; before district play has settled much that's nearly everyone,
 // so the projection goes on to the season's record and margin.
-function bkDistrict(names){
+function bkDistrict(names, cut = 4){
   const inD = new Set(names.map(canonSchool));
   const teams = names.map(n => {
     const t = Object.assign(bkTeam(n), {dw:0, dl:0, dt:0, dgp:0, dmarg:0, dbeat:new Set(), dlost:new Set()});
@@ -283,7 +298,7 @@ function bkDistrict(names){
     const g = byPct[p];
     if (g.length === 1) out.push(Object.assign(g[0], {dhow:''})); else out.push(...settle(g));
   });
-  const locks = bkLocks(out, bkDpctAfter, t => t.dleft, ['dbeat', 'dlost']), gone = bkOut(out, bkDpctAfter, t => t.dleft, ['dbeat', 'dlost']);
+  const locks = bkLocks(out, bkDpctAfter, t => t.dleft, ['dbeat', 'dlost']), gone = bkOut(out, bkDpctAfter, t => t.dleft, ['dbeat', 'dlost'], cut);
   return out.map((t, i) => Object.assign(t, {place:i + 1, placeLock:locks.has(canonSchool(t.name)), elim:gone.has(canonSchool(t.name))}));
 }
 // 3A-1A: a half's four districts, already in place order, seeded 1-16 — a place at a time, by the 4A-6A order.
@@ -326,10 +341,11 @@ function bkTreeHtml(seeds, side){
     <div class="bkt-cols"><div class="bkt-col"><span class="bkt-h">Week 9</span><div class="bkt-pairs">${pairs.join('')}</div></div></div></div>`;
 }
 // 8-player: the manual's own pairs, each team shown by its district place.
-function bk8Tree(by, side){
-  const pill = ([d, p]) => { const t = by[d] && by[d][p - 1]; return bkPill(t ? Object.assign(t, {tag:`D${d} #${p}`, lock:t.placeLock}) : null); };
+function bk8Tree(by, side, pairs = BK_8M){
+  const pill = slot => { if (!slot) return `<div class="bkp bye"><span class="bk-nm">Bye</span></div>`;
+    const [d, p] = slot, t = by[d] && by[d][p - 1]; return bkPill(t ? Object.assign(t, {tag:`D${d} #${p}`, lock:t.placeLock}) : null); };
   return `<div class="bkt"><h3>${side}</h3>
-    <div class="bkt-cols"><div class="bkt-col"><span class="bkt-h">Week 9</span><div class="bkt-pairs">${BK_8M[side].map(([a, b]) =>
+    <div class="bkt-cols"><div class="bkt-col"><span class="bkt-h">Week 9</span><div class="bkt-pairs">${pairs[side].map(([a, b]) =>
       `<div class="bkt-pair">${pill(a)}${pill(b)}</div>`).join('')}</div></div></div></div>`;
 }
 // A district's standings; the teams past fourth don't go on.
@@ -338,7 +354,7 @@ function bkDistrictHtml(d, teams){
     <div class="tbl-wrap"><table class="ctbl bks-tbl"><thead><tr>
       <th class="c-seed">#</th><th class="nm">TEAM</th><th class="num c-wl">DIST</th>
       <th class="num c-pct">W-L</th><th class="num c-marg">MARGIN</th><th class="nm c-tb">TIEBREAK</th></tr></thead>
-    <tbody>${teams.map(t => `<tr${t.place > 4 ? ' class="out"' : ''}><td class="c-seed"><b>${t.place}</b></td>
+    <tbody>${teams.map(t => `<tr${t.place > bkCut(bk.cls) ? ' class="out"' : ''}><td class="c-seed"><b>${t.place}</b></td>
       <td class="nm"><div class="cn-in">${bkMark(t.name)}<a class="tlink${t.placeLock ? ` locked${t.place === 1 ? ' dlock' : ''}` : ''}${t.elim ? ' elim' : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a></div></td>
       <td class="num c-wl">${t.dw}-${t.dl}${t.dt ? `-${t.dt}` : ''}</td>
       <td class="num c-pct">${t.gp ? esc(bkRec(t)) : '—'}</td>
@@ -359,15 +375,15 @@ function bkListHtml(seeds, side){
 }
 
 // What the marks mean (Chuck, 2026-10-23): bold everywhere; underline and strikethrough only where districts are.
-const bkLegend = districts => `<div class="bk-legend"><span><b class="lg-lock">Bold</b> Locked into its spot</span>${districts
-  ? '<span><b class="lg-lock lg-win">Underlined</b> Clinched the district</span><span><b class="lg-out">Struck through</b> Eliminated</span>' : ''}</div>`;
+const bkLegend = (districts, outs = districts) => `<div class="bk-legend"><span><b class="lg-lock">Bold</b> Locked into its spot</span>${districts
+  ? '<span><b class="lg-lock lg-win">Underlined</b> Clinched the district</span>' : ''}${outs ? '<span><b class="lg-out">Struck through</b> Eliminated</span>' : ''}</div>`;
 function renderBracket(){
   if (!ui.bracket) return;
   const box = $('#board'), S = SECTIONS[bk.cls];
   document.title = `${bkLabel(bk.cls)} Bracketology · ${SITE_TITLE}`;
   const head = `<section class="bcard bhead"><div class="bhead-top"><h1>${bkLabel(bk.cls)} Bracketology</h1></div>
     <div class="tp-links">${BK_CLASSES.map(c => `<a class="h-btn${c === bk.cls ? ' on' : ''}" href="?bracket=${c}">${bkTab(c)}</a>`).join('')}</div>
-    ${bkLegend(!!DISTRICTS[bk.cls])}</section>`;
+    ${bkLegend(!!DISTRICTS[bk.cls], !!DISTRICTS[bk.cls] && bkCut(bk.cls) < 7)}</section>`;
   if (!allGames.list && !allGames.err) return void (box.innerHTML = head + '<section class="bcard"><p class="bempty">Loading the season…</p></section>');
   if (allGames.err) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${esc(allGames.err)}</p></section>`);
   if (DISTRICTS[bk.cls]) return renderDistricts(box, head);
@@ -380,12 +396,13 @@ function renderBracket(){
 }
 // 3A-1A and 8-player: the districts first, then the bracket they make.
 function renderDistricts(box, head){
-  const D = DISTRICTS[bk.cls].map((names, i) => bkDistrict(names).map(t => Object.assign(t, {dtag:`D${i + 1} #${t.place}`})));
-  const eight = bk.cls.startsWith('8M');
+  const D = DISTRICTS[bk.cls].map((names, i) => bkDistrict(names, bkCut(bk.cls)).map(t => Object.assign(t, {dtag:`D${i + 1} #${t.place}`})));
+  const eight = bk.cls.startsWith('8M') || bk.cls === '6M';
   let trees, seeded = '';
   if (eight){
     const by = {}; D.forEach((d, i) => { by[i + 1] = d; });
-    trees = bk8Tree(by, 'East') + bk8Tree(by, 'West');
+    const pairs = bk.cls === '6M' ? BK_6M : BK_8M;
+    trees = bk8Tree(by, 'East', pairs) + bk8Tree(by, 'West', pairs);
   } else {
     const east = bkDistrictSeeds(D.slice(0, 4)), west = bkDistrictSeeds(D.slice(4, 8));
     trees = bkTreeHtml(east, 'East') + bkTreeHtml(west, 'West');
