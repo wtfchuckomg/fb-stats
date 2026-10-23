@@ -358,12 +358,16 @@ function bkListHtml(seeds, side){
       <td class="nm c-tb">${esc(t.how || '')}</td></tr>`).join('')}</tbody></table></div></div>`;
 }
 
+// What the marks mean (Chuck, 2026-10-23): bold everywhere; underline and strikethrough only where districts are.
+const bkLegend = districts => `<div class="bk-legend"><span><b class="lg-lock">Bold</b> Locked into its spot</span>${districts
+  ? '<span><b class="lg-lock lg-win">Underlined</b> Clinched the district</span><span><b class="lg-out">Struck through</b> Eliminated</span>' : ''}</div>`;
 function renderBracket(){
   if (!ui.bracket) return;
   const box = $('#board'), S = SECTIONS[bk.cls];
   document.title = `${bkLabel(bk.cls)} Bracketology · ${SITE_TITLE}`;
   const head = `<section class="bcard bhead"><div class="bhead-top"><h1>${bkLabel(bk.cls)} Bracketology</h1></div>
-    <div class="tp-links">${BK_CLASSES.map(c => `<a class="h-btn${c === bk.cls ? ' on' : ''}" href="?bracket=${c}">${bkTab(c)}</a>`).join('')}</div></section>`;
+    <div class="tp-links">${BK_CLASSES.map(c => `<a class="h-btn${c === bk.cls ? ' on' : ''}" href="?bracket=${c}">${bkTab(c)}</a>`).join('')}</div>
+    ${bkLegend(!!DISTRICTS[bk.cls])}</section>`;
   if (!allGames.list && !allGames.err) return void (box.innerHTML = head + '<section class="bcard"><p class="bempty">Loading the season…</p></section>');
   if (allGames.err) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${esc(allGames.err)}</p></section>`);
   if (DISTRICTS[bk.cls]) return renderDistricts(box, head);
