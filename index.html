@@ -12973,7 +12973,9 @@ document.addEventListener('change', e => {
    overtime. Neutral field takes home field out: the line both ways, averaged.
    ================================================================ */
 const MATCHUP_PAGE = PAGE_Q.has('matchup');
-const mu = {a:PAGE_Q.get('a') || '', h:PAGE_Q.get('h') || '', neutral:PAGE_Q.get('n') === '1', sim:null, rankFor:''};
+// plain: the bump is off on the calculator for now, while Chuck looks at a few things (2026-10-23) — set it back to
+// false to put the bump back in.
+const mu = {a:PAGE_Q.get('a') || '', h:PAGE_Q.get('h') || '', neutral:PAGE_Q.get('n') === '1', sim:null, rankFor:'', plain:true};
 const MU_GAMES = 1000;
 // How far a total lands from the line's, one game to the next: our totals miss by about 13 points in 11-man,
 // 15 in 8-man and 17 in 6-man on average (pb/30-pregame.js), which is a spread this wide.
@@ -13071,8 +13073,7 @@ function renderMatchup(){
       <div class="fld"><label class="eyebrow" for="mu-a">Away</label>${pick('mu-a', mu.a, 'Away team')}</div>
       <button type="button" class="mu-swap" data-mu-swap aria-label="Switch home and away" title="Switch home and away"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7h12m0 0-3-3m3 3-3 3M16 13H4m0 0 3-3m-3 3 3 3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <div class="fld"><label class="eyebrow" for="mu-h">Home</label>${pick('mu-h', mu.h, 'Home team')}</div>
-      <div class="mu-checks"><label class="mu-neutral"><input type="checkbox" id="mu-n"${mu.neutral ? ' checked' : ''}> Neutral field</label>
-        <label class="mu-neutral"><input type="checkbox" id="mu-b"${mu.plain ? ' checked' : ''}> No private school bump</label></div>
+      <div class="mu-checks"><label class="mu-neutral"><input type="checkbox" id="mu-n"${mu.neutral ? ' checked' : ''}> Neutral field</label></div>
     </div></section>`;
   // Only the result card is drawn again while someone is typing in a box, so the box keeps its text and focus.
   const res = $('#mu-res');
@@ -13136,7 +13137,6 @@ document.addEventListener('input', e => { if (ui.matchup && (e.target.id === 'mu
 document.addEventListener('change', e => {
   if (!ui.matchup) return;
   if (e.target.id === 'mu-n'){ mu.neutral = e.target.checked; mu.seed = 0; muAddress(); return muRun(); }
-  if (e.target.id === 'mu-b'){ mu.plain = e.target.checked; return muRun(); }   // same games, only the bump changes
   if (e.target.id === 'mu-a' || e.target.id === 'mu-h') muPicked(e.target);
 });
 document.addEventListener('click', e => {
