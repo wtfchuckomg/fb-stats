@@ -23,7 +23,8 @@ CLASS_PRIOR = 1.5 # points per class step (6A highest), where a team starts befo
 # 0.10 is a 10% bump. Keyed by KPreps slug. Was 15% until 2026-10-23: walked forward over 2024-2026 (125 games
 # with one of these schools, each predicted only from the games before it) 10% missed the margin by the least,
 # 14.11 against 14.28 at 15% and 14.32 with none; at 15% these schools came out 2.5 points a game too strong.
-BUMP = {'kapaun-mt-carmel': .10, 'st-thomas-aquinas': .10, 'st-james-academy': .10, 'andale': .10, 'bishop-miege': .10}
+# Only Miege and Aquinas need it (Chuck, 2026-10-23); Kapaun, St. James and Andale came off the list that day.
+BUMP = {'st-thomas-aquinas': .10, 'bishop-miege': .10}
 # How much the past counts. Walked forward through 2025 and 2026 — fit on everything before a week, then score
 # that week's games, 1,091 of them in 11-man — the old settings leaned far too hard on seasons already over:
 # they missed the margin by 13.93 points and called 81.6% of winners, against 13.36 and 82.7% at these.
