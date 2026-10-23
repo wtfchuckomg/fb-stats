@@ -11267,14 +11267,17 @@ function ourLine(A, H){
 // - Rankings again, 2026-10-23, every 11-man game in weeks 2-7 predicted from the ratings and poll of its own week
 //   (622 games): the boost only helped in week 2 (missing by 17.4 with it, 18.6 without). From week 3 on it made
 //   every week worse, 16.1 against 14.9 over the season: once the ratings know who is good, the poll counts the same
-//   thing twice. A ranked team against an unranked one came out 12.3 points too strong. So it counts in full off the
-//   preseason and week 2 polls, and not after (Chuck: "for sure").
-const RANK_PTS = 9.5, MEET_W = .05, MEET_CAP = 14;
-const rankFade = () => { const w = pre.rank && pre.rank.week; if (!w) return 0; const n = w === 'Preseason' ? 1 : +((String(w).match(/\d+/) || [])[0] || 99); return n <= 2 ? 1 : 0; };
+//   thing twice. A ranked team against an unranked one came out 12.3 points too strong.
+// - And with Chuck's 2024 and 2025 polls added (2,164 games, each week's line from that week's ratings and poll):
+//   the preseason poll made week 1 worse (17.75 without it, 18.97 at 9.5 points), the week 2 poll helped in all
+//   three seasons and most at about 7 points (17.74 without, 17.10 at 7, 17.29 at 9.5), and from week 3 on no
+//   boost at all was best (13.37 in weeks 4-8, 15.44 at 9.5). So: the week 2 poll counts 7 points, nothing else.
+const MEET_W = .05, MEET_CAP = 14;
+const rankPts = () => (pre.rank && pre.rank.week) === 'Week 2' ? 7 : 0;
 const pollScore = n => { const r = rankOf(n); if (!r) return 0; const top = r.cls === '6-Man' ? 5 : 10; return r.rank ? 1 + (top + 1 - r.rank) / top : .5; };
 function gameLine(A, H, year){
   const L = ourLine(A, H); if (!L) return null;
-  const rank = RANK_PTS * rankFade() * (pollScore(H) - pollScore(A));
+  const rank = rankPts() * (pollScore(H) - pollScore(A));
   const met = pastMeetings(A, H).filter(m => !m.old && m.year >= year - 5);
   const avg = met.length ? met.reduce((t, m) => t + (m.them - m.us), 0) / met.length : 0;   // home team's side
   const meet = MEET_W * Math.max(-MEET_CAP, Math.min(MEET_CAP, avg));
