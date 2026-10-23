@@ -385,14 +385,14 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
   // The site's plain address is Home; the Game Tracker is ?tracker (or ?edit=<id>).
   const here = q.has('tracker') || q.has('edit') ? 'tracker'
     : q.has('brackets') ? 'phist'
-    : q.has('league') ? 'leagues'
+    : q.has('league') ? 'leagues' : q.has('matchup') ? 'matchup'
     : q.has('avctl') ? 'avscores' : q.has('standings') ? 'standings' : q.has('avstats') ? 'avstats'
     : q.has('scores') ? 'scores' : q.has('state') ? 'state' : q.has('statestats') ? 'sstats'
     : q.has('stats') ? 'stats' : q.has('team') || q.has('teams') ? 'teams' : q.has('game') || q.has('live') || q.has('gamecast') || q.has('preview') ? '' : 'home';
   // Each menu's pages sit under its own name: Butler County, AVCTL, State. The AVCTL site has no menus, just a link
   // for each page, Team Stats apart from Player Stats.
   if (SITE_AV) return markSite(here === 'avstats' && q.get('avstats') === 'team' ? 'avteam' : here === 'avscores' ? 'avctl' : here);
-  const UNDER = {scores:'buco', stats:'buco', teams:'buco', avscores:'avctl', standings:'avctl', avstats:'avctl', state:'state', sstats:'state', leagues:'state'};
+  const UNDER = {scores:'buco', stats:'buco', teams:'buco', avscores:'avctl', standings:'avctl', avstats:'avctl', state:'state', sstats:'state', leagues:'state', matchup:'state'};
   const top = UNDER[here] || here;
   const a = top && document.querySelector(`.navlink[data-nav="${top}"]`);
   if (a){

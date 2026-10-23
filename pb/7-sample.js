@@ -28,6 +28,7 @@ else if (AV_STAND) startStandings();    // ?standings: the AVCTL's four division
 else if (LG_STAND) startStandings();    // ?league=<slug>: a league's standings (State › Leagues)
 else if (BOARD) startScoreboard();      // ?scores: the week's scoreboard, read-only
 else if (BRACKET_PAGE) startBracket();   // ?bracket=4A: bracketology
+else if (MATCHUP_PAGE) startMatchup();   // ?matchup: the matchup calculator
 else if (PH_PAGE) startPlayoffHistory();  // ?brackets=<year>&class=<c>: past playoff brackets
 else if (PLAYER_PAGE) startPlayerPage();  // ?player=<name>&team=<school>: one player's own page
 else if (COUNTY_PAGE) startCounty();    // ?stats: the county's season stats, read-only

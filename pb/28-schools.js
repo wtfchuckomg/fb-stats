@@ -337,7 +337,7 @@ function showSchoolSug(el){
     <span class="sch-opt-nm">${esc(m.name)}</span>${m.close ? '<span class="sch-opt-note">Close match</span>' : m.also ? `<span class="sch-opt-note">${esc(m.also)}</span>` : mine.has(logoSlug(m.name)) ? '<span class="sch-opt-note">Added by you</span>' : ''}</div>`;
   let html = close.length ? `<div class="sch-head" role="presentation">Did you mean${close.length === 1 ? '' : ' one of these'}?</div>` : '';
   html += list.map(row).join('');
-  if (q && !known) html += `<div class="sch-opt new" role="option" id="${esc(el.id)}-onew" data-pick-new="1" aria-selected="false"><span class="sch-plus" aria-hidden="true">+</span>
+  if (q && !known && !el.dataset.noadd) html += `<div class="sch-opt new" role="option" id="${esc(el.id)}-onew" data-pick-new="1" aria-selected="false"><span class="sch-plus" aria-hidden="true">+</span>
     <span class="sch-opt-nm">Add “${esc(q)}”</span><span class="sch-opt-note">Not on the list</span></div>`;
   box.innerHTML = html; box.hidden = !html; box.scrollTop = 0;
   el.setAttribute('aria-expanded', String(!!html)); el.removeAttribute('aria-activedescendant');
@@ -359,7 +359,7 @@ document.addEventListener('input', e => { if (isSchoolBox(e.target) && !e.target
 // happens on a phone the moment you touch a suggestion.
 document.addEventListener('focusout', e => { if (isSchoolBox(e.target) && !schTap) closeSchoolSug(e.target); });
 // Leaving the box with a name we don't have asks about it right then.
-document.addEventListener('change', e => { if (isSchoolBox(e.target) && !askDone) settleSchool(e.target); });
+document.addEventListener('change', e => { if (isSchoolBox(e.target) && !askDone && !e.target.dataset.noadd) settleSchool(e.target); });
 document.addEventListener('pointerdown', e => {
   const sug = e.target.closest && e.target.closest('.sch-sug');
   if (!sug){    // a touch anywhere else puts an open list away, since the box may already have lost focus
@@ -397,7 +397,7 @@ document.addEventListener('keydown', e => {
   } else if (e.key === 'Enter'){
     e.preventDefault();
     if (open && at >= 0) return pickSchoolOption(el, opts[at]);
-    closeSchoolSug(el); settleSchool(el);
+    closeSchoolSug(el); if (!el.dataset.noadd) settleSchool(el);
   } else if (e.key === 'Escape' && open){
     e.preventDefault(); e.stopPropagation(); closeSchoolSug(el);
   }
