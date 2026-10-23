@@ -248,4 +248,5 @@ def main():
     (HERE.parent.parent / 'ratings.json').write_text(json.dumps(out, separators=(',', ':')))
 
 
-main()
+if __name__ == '__main__':   # loaded by a test script, it doesn't rebuild ratings.json
+    main()
