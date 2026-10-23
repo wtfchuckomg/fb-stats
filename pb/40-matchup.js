@@ -11,9 +11,9 @@
    overtime. Neutral field takes home field out: the line both ways, averaged.
    ================================================================ */
 const MATCHUP_PAGE = PAGE_Q.has('matchup');
-// plain: the bump is off on the calculator for now, while Chuck looks at a few things (2026-10-23) — set it back to
-// false to put the bump back in.
-const mu = {a:PAGE_Q.get('a') || '', h:PAGE_Q.get('h') || '', neutral:PAGE_Q.get('n') === '1', sim:null, rankFor:'', plain:true};
+// plain: true runs the calculator without the private-school bump (muPlain). It was off for a day while Chuck looked
+// at the numbers (2026-10-23); the bump is back, at 10%.
+const mu = {a:PAGE_Q.get('a') || '', h:PAGE_Q.get('h') || '', neutral:PAGE_Q.get('n') === '1', sim:null, rankFor:'', plain:false};
 const MU_GAMES = 1000;
 // How far a total lands from the line's, one game to the next: our totals miss by about 13 points in 11-man,
 // 15 in 8-man and 17 in 6-man on average (pb/30-pregame.js), which is a spread this wide.

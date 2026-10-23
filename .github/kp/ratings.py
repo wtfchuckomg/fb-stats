@@ -20,8 +20,10 @@ RIDGE = 0.10      # how hard a team is pulled toward its class's level once it h
 EARLY = 3.0       # and how much harder before that: a team with no games starts at its class's level
 CLASS_PRIOR = 1.5 # points per class step (6A highest), where a team starts before it has played
 # Schools Chuck says play above what the numbers alone show. Their strength is lifted by this much at the end;
-# 0.15 is a 15% bump. Keyed by KPreps slug.
-BUMP = {'kapaun-mt-carmel': .15, 'st-thomas-aquinas': .15, 'st-james-academy': .15, 'andale': .15, 'bishop-miege': .15}
+# 0.10 is a 10% bump. Keyed by KPreps slug. Was 15% until 2026-10-23: walked forward over 2024-2026 (125 games
+# with one of these schools, each predicted only from the games before it) 10% missed the margin by the least,
+# 14.11 against 14.28 at 15% and 14.32 with none; at 15% these schools came out 2.5 points a game too strong.
+BUMP = {'kapaun-mt-carmel': .10, 'st-thomas-aquinas': .10, 'st-james-academy': .10, 'andale': .10, 'bishop-miege': .10}
 # How much the past counts. Walked forward through 2025 and 2026 — fit on everything before a week, then score
 # that week's games, 1,091 of them in 11-man — the old settings leaned far too hard on seasons already over:
 # they missed the margin by 13.93 points and called 81.6% of winners, against 13.36 and 82.7% at these.

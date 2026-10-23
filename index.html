@@ -11264,11 +11264,17 @@ function ourLine(A, H){
 //   the ratings lean on last season early, which is when the poll knows most that they don't.
 // - Past meetings, on 3,527 games from 2023-2025 with a meeting in the five seasons before: they add little,
 //   because those same games are already in both schools' ratings. 0.05 a point of average margin, at most 0.7.
+// - Rankings again, 2026-10-23, every 11-man game in weeks 2-7 predicted from the ratings and poll of its own week
+//   (622 games): the boost only helped in week 2 (missing by 17.4 with it, 18.6 without). From week 3 on it made
+//   every week worse, 16.1 against 14.9 over the season: once the ratings know who is good, the poll counts the same
+//   thing twice. A ranked team against an unranked one came out 12.3 points too strong. So it counts in full off the
+//   preseason and week 2 polls, and not after (Chuck: "for sure").
 const RANK_PTS = 9.5, MEET_W = .05, MEET_CAP = 14;
+const rankFade = () => { const w = pre.rank && pre.rank.week; if (!w) return 0; const n = w === 'Preseason' ? 1 : +((String(w).match(/\d+/) || [])[0] || 99); return n <= 2 ? 1 : 0; };
 const pollScore = n => { const r = rankOf(n); if (!r) return 0; const top = r.cls === '6-Man' ? 5 : 10; return r.rank ? 1 + (top + 1 - r.rank) / top : .5; };
 function gameLine(A, H, year){
   const L = ourLine(A, H); if (!L) return null;
-  const rank = RANK_PTS * (pollScore(H) - pollScore(A));
+  const rank = RANK_PTS * rankFade() * (pollScore(H) - pollScore(A));
   const met = pastMeetings(A, H).filter(m => !m.old && m.year >= year - 5);
   const avg = met.length ? met.reduce((t, m) => t + (m.them - m.us), 0) / met.length : 0;   // home team's side
   const meet = MEET_W * Math.max(-MEET_CAP, Math.min(MEET_CAP, avg));
@@ -12973,9 +12979,9 @@ document.addEventListener('change', e => {
    overtime. Neutral field takes home field out: the line both ways, averaged.
    ================================================================ */
 const MATCHUP_PAGE = PAGE_Q.has('matchup');
-// plain: the bump is off on the calculator for now, while Chuck looks at a few things (2026-10-23) — set it back to
-// false to put the bump back in.
-const mu = {a:PAGE_Q.get('a') || '', h:PAGE_Q.get('h') || '', neutral:PAGE_Q.get('n') === '1', sim:null, rankFor:'', plain:true};
+// plain: true runs the calculator without the private-school bump (muPlain). It was off for a day while Chuck looked
+// at the numbers (2026-10-23); the bump is back, at 10%.
+const mu = {a:PAGE_Q.get('a') || '', h:PAGE_Q.get('h') || '', neutral:PAGE_Q.get('n') === '1', sim:null, rankFor:'', plain:false};
 const MU_GAMES = 1000;
 // How far a total lands from the line's, one game to the next: our totals miss by about 13 points in 11-man,
 // 15 in 8-man and 17 in 6-man on average (pb/30-pregame.js), which is a spread this wide.
