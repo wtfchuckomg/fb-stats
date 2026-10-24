@@ -182,7 +182,10 @@ function dlgGames(){
       <div class="meta">${esc(x.teams.A.name)} at ${esc(x.teams.H.name)} · ${rulesOf(x).men === 8 ? '8-man · ' : ''}${gameDay(x).toLocaleDateString()} · ${r.st.final ? 'Final' : perLabel(r.st.q)} · ${x.box ? 'box score' : `${x.plays.length} plays`}</div></div>
       <div class="acts">${x.id !== g.id ? `<button class="btn small" data-open-game="${x.id}">Open</button>` : ''}<button class="btn small danger" data-del-game="${x.id}">${ui.confirm === 'g:' + x.id ? 'Tap again' : 'Delete'}</button></div></div>`; }).join('');
   // The buttons sit at the top, under the title, so New game is there without scrolling past every saved game.
-  return `${dlgHead('Games')}<div class="dlg-ft top"><button class="btn" data-open="export" style="margin-right:auto">Export</button><button class="btn" data-box-new>Paste a box score</button><button class="btn primary" data-open="new">New game</button></div>
+  // Others and Schools are the admin's, and live here rather than on the tracker's bar (Chuck, 2026-10-24: the bar was
+  // cluttered — "This is what we had and I want it back": Live, Games, Teams, Setup, Line score, Edit).
+  const adm = !!(sync.user && sync.user.uid === ADMIN_UID);
+  return `${dlgHead('Games')}<div class="dlg-ft top"><button class="btn" data-open="export">Export</button>${adm ? '<button class="btn" data-open="others">Others</button><button class="btn" data-open="schools">Schools</button>' : ''}<span style="margin-right:auto"></span><button class="btn" data-box-new>Paste a box score</button><button class="btn primary" data-open="new">New game</button></div>
     <div class="dlg-bd">${syncBlock()}${typeof turboBlock === 'function' ? turboBlock() : ''}<div class="grp"><h3>Games</h3><div class="glist">${items}</div></div>
     <p class="hint">Every game is saved in this browser${sync.user ? ' and to your Google account' : ''}. Export makes a backup you can keep anywhere.</p></div>`;
 }
