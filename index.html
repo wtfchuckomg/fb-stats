@@ -466,7 +466,7 @@ table.pl-tbl{table-layout:fixed;width:100%}
 .bks-tbl .tlink.dlock{text-decoration:underline;text-underline-offset:3px}
 /* Can't finish in its district's top four, whatever happens (Chuck, 2026-10-22) */
 .bks-tbl .tlink.elim{text-decoration:line-through}
-.bk-legend{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:14px;font:400 13px/1.3 var(--sans);color:var(--muted)}
+.bk-legend{display:flex;flex-wrap:wrap;gap:6px 20px;margin:4px 0 14px;font:400 13px/1.3 var(--sans);color:var(--muted)}
 .bk-legend b{font-weight:400;color:var(--ink-2);margin-right:4px}
 .bk-legend .lg-lock{font-weight:800;color:var(--ink)}
 .bk-legend .lg-win{text-decoration:underline;text-underline-offset:3px}
@@ -12684,6 +12684,7 @@ function bkListHtml(seeds, side){
 }
 
 // What the marks mean (Chuck, 2026-10-23): bold everywhere; underline and strikethrough only where districts are.
+// It sits atop the standings it explains (2026-10-24: "move this down here").
 const bkLegend = (districts, outs = districts) => `<div class="bk-legend"><span><b class="lg-lock">Bold</b> Locked into its spot</span>${districts
   ? '<span><b class="lg-lock lg-win">Underlined</b> Clinched the district</span>' : ''}${outs ? '<span><b class="lg-out">Struck through</b> Eliminated</span>' : ''}</div>`;
 function renderBracket(){
@@ -12693,8 +12694,7 @@ function renderBracket(){
   const title = `${BK_WEEK8_END.slice(0, 4)} ${bkLabel(bk.cls)} Playoffs`;
   document.title = `${title} · ${SITE_TITLE}`;
   const head = `<section class="bcard bhead"><div class="bhead-top"><h1>${title}</h1></div>
-    <div class="tp-links">${BK_CLASSES.map(c => `<a class="h-btn${c === bk.cls ? ' on' : ''}" href="?bracket=${c}">${bkTab(c)}</a>`).join('')}</div>
-    ${bkLegend(!!DISTRICTS[bk.cls], !!DISTRICTS[bk.cls] && bkCut(bk.cls) < 7)}</section>`;
+    <div class="tp-links">${BK_CLASSES.map(c => `<a class="h-btn${c === bk.cls ? ' on' : ''}" href="?bracket=${c}">${bkTab(c)}</a>`).join('')}</div></section>`;
   if (!allGames.list && !allGames.err) return void (box.innerHTML = head + '<section class="bcard"><p class="bempty">Loading the season…</p></section>');
   if (allGames.err) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${esc(allGames.err)}</p></section>`);
   if (DISTRICTS[bk.cls]) return renderDistricts(box, head);
@@ -12703,7 +12703,7 @@ function renderBracket(){
   box.innerHTML = head
     + `<section class="bcard ccard"><div class="ccard-hd"><h2>Week 9 matchups</h2></div>
         ${body}</section>`
-    + `<section class="bcard ccard"><div class="ccard-hd"><h2>How they're seeded</h2></div>${bkListHtml(east, 'East')}${bkListHtml(west, 'West')}</section>`;
+    + `<section class="bcard ccard"><div class="ccard-hd"><h2>How they're seeded</h2></div>${bkLegend(false)}${bkListHtml(east, 'East')}${bkListHtml(west, 'West')}</section>`;
 }
 // 3A-1A and 8-player: the districts first, then the bracket they make.
 function renderDistricts(box, head){
@@ -12725,7 +12725,7 @@ function renderDistricts(box, head){
     + `<section class="bcard ccard"><div class="ccard-hd"><h2>Week 9 matchups</h2></div>
         <div class="bk-wrap bkt-wrap has-full">${trees}</div>${full}</section>`
     + seeded
-    + `<section class="bcard ccard"><div class="ccard-hd"><h2>District standings</h2></div>${D.map((d, i) => bkDistrictHtml(i + 1, d)).join('')}</section>`;
+    + `<section class="bcard ccard"><div class="ccard-hd"><h2>District standings</h2></div>${bkLegend(true, bkCut(bk.cls) < 7)}${D.map((d, i) => bkDistrictHtml(i + 1, d)).join('')}</section>`;
 }
 /* ================================================================
    Importing someone else's gamecast (TurboStats).
