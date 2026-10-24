@@ -367,9 +367,24 @@ function bkOut(teams, val, games, B, cut = 4){
 // Season percentage after more results, and the district's (no district games yet is .500, as bkDistrict has it).
 const bkPctAfter = (t, w, l) => { const n = t.gp + w + l; return n ? (t.w + w + t.t / 2) / n : 0; };
 const bkDpctAfter = (t, w, l) => { const n = t.dgp + w + l; return n ? (t.dw + w + t.dt / 2) / n : .5; };
+// The KSHSAA's own seeds, once a bracket is out: they stand over ours (Chuck, 2026-10-24: "we messed up in 5A fix it" —
+// they have Hutchinson 9, Goddard 10, Andover Central 11, which neither the margin nor head-to-head gives).
+const BK_OFFICIAL = [
+  'Andover, Kapaun Mt. Carmel, Hays, Bishop Carroll, Salina South, Eisenhower, Salina Central, Emporia, Hutchinson, Goddard, Andover Central, Maize South, Liberal, Valley Center, Newton, Wichita West',
+  'Frontenac, Wellsville, Jefferson West, Hayden, Baldwin, Burlington, Nemaha Central, Columbus, Iola, Perry-Lecompton, Holton, Anderson County, Girard, Santa Fe Trail, Atchison, Osawatomie',
+  'Andale, Holcomb, Hesston, Hoisington, Chapman, Hugoton, Wichita Collegiate, Pratt, Cheney, Goodland, Lyons, Concordia, Clay Center, Scott City, Wichita Trinity, Larned',
+].map(l => l.split(', ').map(canonSchool));
+// Teams in the KSHSAA's order when one of their brackets covers them all; otherwise as they came.
+function bkOfficial(teams){
+  const ks = teams.map(t => canonSchool(t.name));
+  const o = BK_OFFICIAL.find(l => l.every(k => ks.includes(k)));
+  if (!o) return null;
+  return o.map(k => Object.assign(teams[ks.indexOf(k)], {lock:true})).concat(teams.filter(t => !o.includes(canonSchool(t.name))));
+}
 // Seeds 1-16 in one section, by the manual's criteria in order.
 function bkSeed(names){
-  const all = bkOrder(names.map(bkTeam)), locks = bkLocks(all, bkPctAfter, t => t.left);
+  let all = bkOrder(names.map(bkTeam)), locks = bkLocks(all, bkPctAfter, t => t.left);
+  const ks = bkOfficial(all); if (ks){ all = ks; locks = new Set(ks.slice(0, 16).map(t => canonSchool(t.name))); }
   return all.slice(0, 16).map((t, i) => Object.assign(t, {seed:i + 1, lock:locks.has(canonSchool(t.name))}));
 }
 
@@ -421,7 +436,7 @@ function bkDistrictSeeds(dists){
   }
   // No district split: the 2026 3A bracket kept the straight order (5 Chapman v 12 Concordia, 8 Columbus v 9 Iola are
   // district rematches in week 9), though the manual's playoff information point 4 reads otherwise.
-  return seeds.map((t, i) => Object.assign(t, {seed:i + 1}));
+  return (bkOfficial(seeds) || seeds).map((t, i) => Object.assign(t, {seed:i + 1}));
 }
 
 // The admin can take back a settled flip from the standings (a tap on the wrong team).
