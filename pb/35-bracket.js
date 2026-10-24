@@ -130,6 +130,12 @@ async function startBracket(){
   if (SECTIONS[want] || DISTRICTS[want]) bk.cls = want;
   loadLogos();
   renderBracket();
+  // On the site itself the address becomes the brackets' link card (po/?c=<class>), so the link people copy shows
+  // the card and still opens this class. The base keeps the page's own links pointing at the site.
+  if (location.hostname === 'stats.kansasmediarankings.com' && !location.pathname.startsWith('/po/')){
+    if (!document.querySelector('base')){ const b = document.createElement('base'); b.href = '/'; document.head.prepend(b); }
+    history.replaceState(null, '', `/po/?c=${encodeURIComponent(bk.cls)}`);
+  }
   // The admin's own devices sign in here too, to settle coin flips.
   let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
   try {
@@ -545,8 +551,10 @@ const bkLegend = (districts, outs = districts) => `<div class="bk-legend"><span>
 function renderBracket(){
   if (!ui.bracket) return;
   const box = $('#board'), S = SECTIONS[bk.cls];
-  document.title = `${bkLabel(bk.cls)} Bracketology · ${SITE_TITLE}`;
-  const head = `<section class="bcard bhead"><div class="bhead-top"><h1>${bkLabel(bk.cls)} Bracketology</h1></div>
+  // The 2026 Playoffs tab (Chuck, 2026-10-23): with the regular season done, the page is the playoff bracket.
+  const title = `${BK_WEEK8_END.slice(0, 4)} ${bkLabel(bk.cls)} Playoffs`;
+  document.title = `${title} · ${SITE_TITLE}`;
+  const head = `<section class="bcard bhead"><div class="bhead-top"><h1>${title}</h1></div>
     <div class="tp-links">${BK_CLASSES.map(c => `<a class="h-btn${c === bk.cls ? ' on' : ''}" href="?bracket=${c}">${bkTab(c)}</a>`).join('')}</div>
     ${bkLegend(!!DISTRICTS[bk.cls], !!DISTRICTS[bk.cls] && bkCut(bk.cls) < 7)}</section>`;
   if (!allGames.list && !allGames.err) return void (box.innerHTML = head + '<section class="bcard"><p class="bempty">Loading the season…</p></section>');
