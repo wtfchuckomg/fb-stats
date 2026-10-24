@@ -385,6 +385,7 @@ function teamPageHtml(nameIn){
     const f = finalOf(x); if (!f.fin) return;
     const a = f.score[side], b = f.score[opp], res = a > b ? 'w' : a < b ? 'l' : 't';
     c[res]++; if (res !== 't') c[(side === 'H' ? 'h' : 'a') + res]++;
+    c.pf = (c.pf || 0) + +a; c.pa = (c.pa || 0) + +b;
   });
   const f2 = (w, l, t) => `${w}-${l}${t ? '-' + t : ''}`;
   tpage.sug = {rec:f2(c.w, c.l, c.t), home:f2(c.hw, c.hl), away:f2(c.aw, c.al)};
@@ -437,6 +438,11 @@ function teamPageHtml(nameIn){
       ${years.map(y => `<option value="${y}"${tpage.season === y ? ' selected' : ''}>${y}</option>`).join('')}</select></div>` : '';
   const S = tpage.season && H && H.seasons[tpage.season];
   const pastRec = S ? S.record : '';
+  // Points a game for and against, under the record (Chuck, 2026-10-24: "PPG: PPA:"), from the season's played games.
+  // A past season reads its file; this one, the finals on the site (the tally above).
+  const pg = S ? (S.games || []).filter(g => g.us != null && g.them != null) : [];
+  const pts = S ? [pg.length, pg.reduce((n, g) => n + +g.us, 0), pg.reduce((n, g) => n + +g.them, 0)] : [c.w + c.l + c.t, c.pf || 0, c.pa || 0];
+  const ppg = pts[0] ? `<div class="tp-ppg"><span>PPG <b>${(pts[1] / pts[0]).toFixed(1)}</b></span><span>PPA <b>${(pts[2] / pts[0]).toFixed(1)}</b></span></div>` : '';
   const run = {w:0, l:0, t:0};   // the record as it stood after each game
   const past = S ? (S.games || []).map(g => {
     const played = g.us != null;
@@ -451,7 +457,7 @@ function teamPageHtml(nameIn){
 
   return `<section class="bcard tp-head">
       <div class="tp-id">${markFor(mark, 72)}<div><h1>${esc(name)}</h1>${(s => s ? `<p class="tp-sub">${esc(s)}</p>` : '')(schoolLine(name))}</div></div>
-      <div class="tp-recs">${recBox('rec', 'Overall')}${recBox('home', 'Home')}${recBox('away', 'Away')}</div>
+      <div class="tp-recwrap"><div class="tp-recs">${recBox('rec', 'Overall')}${recBox('home', 'Home')}${recBox('away', 'Away')}</div>${ppg}</div>
       ${ui.admin && !tpage.edit ? `<button type="button" class="bhide" data-tp-add-game>Add a game</button><button type="button" class="bhide" data-tp-edit>Edit record</button>${teamRecs.map[k] ? '<p class="h-note tp-manual">This record was set by hand, so it doesn’t come from the tally. Edit record to change or clear it.</p>' : ''}` : ''}
       ${form}
       ${inCounty || rows.some(r => r.stats) || roster || ui.admin ? (() => {

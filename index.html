@@ -708,6 +708,9 @@ button.h-btn{cursor:pointer}
 .tp-id p.tp-sub{font:600 13px/1.3 var(--sans);letter-spacing:.06em}
 .tp-manual{flex-basis:100%;margin:0}
 .tp-recs{display:flex;gap:26px}
+.tp-recwrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.tp-ppg{display:flex;gap:22px;font:600 12.5px/1 var(--sans);letter-spacing:.06em;color:var(--muted)}
+.tp-ppg b{font:800 16px/1 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink-2);margin-left:4px;letter-spacing:0}
 .tp-rec{text-align:center}
 .po-recs{margin:4px 0 12px;flex-wrap:wrap;row-gap:14px}
 .ph-scroll{overflow-x:auto;padding:4px 0 10px}
@@ -9425,6 +9428,7 @@ function teamPageHtml(nameIn){
     const f = finalOf(x); if (!f.fin) return;
     const a = f.score[side], b = f.score[opp], res = a > b ? 'w' : a < b ? 'l' : 't';
     c[res]++; if (res !== 't') c[(side === 'H' ? 'h' : 'a') + res]++;
+    c.pf = (c.pf || 0) + +a; c.pa = (c.pa || 0) + +b;
   });
   const f2 = (w, l, t) => `${w}-${l}${t ? '-' + t : ''}`;
   tpage.sug = {rec:f2(c.w, c.l, c.t), home:f2(c.hw, c.hl), away:f2(c.aw, c.al)};
@@ -9477,6 +9481,11 @@ function teamPageHtml(nameIn){
       ${years.map(y => `<option value="${y}"${tpage.season === y ? ' selected' : ''}>${y}</option>`).join('')}</select></div>` : '';
   const S = tpage.season && H && H.seasons[tpage.season];
   const pastRec = S ? S.record : '';
+  // Points a game for and against, under the record (Chuck, 2026-10-24: "PPG: PPA:"), from the season's played games.
+  // A past season reads its file; this one, the finals on the site (the tally above).
+  const pg = S ? (S.games || []).filter(g => g.us != null && g.them != null) : [];
+  const pts = S ? [pg.length, pg.reduce((n, g) => n + +g.us, 0), pg.reduce((n, g) => n + +g.them, 0)] : [c.w + c.l + c.t, c.pf || 0, c.pa || 0];
+  const ppg = pts[0] ? `<div class="tp-ppg"><span>PPG <b>${(pts[1] / pts[0]).toFixed(1)}</b></span><span>PPA <b>${(pts[2] / pts[0]).toFixed(1)}</b></span></div>` : '';
   const run = {w:0, l:0, t:0};   // the record as it stood after each game
   const past = S ? (S.games || []).map(g => {
     const played = g.us != null;
@@ -9491,7 +9500,7 @@ function teamPageHtml(nameIn){
 
   return `<section class="bcard tp-head">
       <div class="tp-id">${markFor(mark, 72)}<div><h1>${esc(name)}</h1>${(s => s ? `<p class="tp-sub">${esc(s)}</p>` : '')(schoolLine(name))}</div></div>
-      <div class="tp-recs">${recBox('rec', 'Overall')}${recBox('home', 'Home')}${recBox('away', 'Away')}</div>
+      <div class="tp-recwrap"><div class="tp-recs">${recBox('rec', 'Overall')}${recBox('home', 'Home')}${recBox('away', 'Away')}</div>${ppg}</div>
       ${ui.admin && !tpage.edit ? `<button type="button" class="bhide" data-tp-add-game>Add a game</button><button type="button" class="bhide" data-tp-edit>Edit record</button>${teamRecs.map[k] ? '<p class="h-note tp-manual">This record was set by hand, so it doesn’t come from the tally. Edit record to change or clear it.</p>' : ''}` : ''}
       ${form}
       ${inCounty || rows.some(r => r.stats) || roster || ui.admin ? (() => {
