@@ -207,9 +207,12 @@ function bkTeam(name){
     // Not played yet (or no final on file): one of the games that can still move it, through week 8.
     if (!f.fin || !f.score){ if (gameDay(x) <= fromYmd(BK_WEEK8_END)) t.left.push({opp:x.teams[opp].name, key:`${ymd(gameDay(x))}|${[canonSchool(name), canonSchool(x.teams[opp].name)].sort().join('|')}`}); return; }
     const mine = +f.score[side], theirs = +f.score[opp], other = x.teams[opp].name;
-    const ot = (f.q || 0) > 4, cap = ot ? 1 : 13;
-    const d = Math.max(-cap, Math.min(cap, mine - theirs));
-    t.gp++; t.marg += d; t.games.push({opp:other, mine, theirs, ot});
+    // A forfeit counts the most the margin allows, +13 or -13 (manual, forfeiture policy 3) — not the 1-0 or 2-0 on
+    // the scoreboard. Baldwin's forfeit win over Bishop Ward is what puts them ahead of Burlington in 3A.
+    const ff = /forfeit/i.test(f.status || '') || (Math.min(mine, theirs) === 0 && Math.max(mine, theirs) <= 2);
+    const ot = !ff && (f.q || 0) > 4, cap = ot ? 1 : 13;
+    const d = ff ? Math.sign(mine - theirs) * cap : Math.max(-cap, Math.min(cap, mine - theirs));
+    t.gp++; t.marg += d; t.games.push({opp:other, mine, theirs, ot, ff});
     if (mine > theirs){ t.w++; t.beat.add(canonSchool(other)); }
     else if (mine < theirs){ t.l++; t.lost.add(canonSchool(other)); }
     else t.t++;
@@ -380,7 +383,7 @@ function bkDistrict(names, cut = 4){
     t.games.forEach(g => {
       const k = canonSchool(g.opp); if (!inD.has(k)) return;
       const cap = g.ot ? 1 : 21;
-      t.dgp++; t.dmarg += Math.max(-cap, Math.min(cap, g.mine - g.theirs));
+      t.dgp++; t.dmarg += g.ff ? Math.sign(g.mine - g.theirs) * cap : Math.max(-cap, Math.min(cap, g.mine - g.theirs));
       if (g.mine > g.theirs){ t.dw++; t.dbeat.add(k); } else if (g.mine < g.theirs){ t.dl++; t.dlost.add(k); } else t.dt++;
     });
     t.dpct = t.dgp ? (t.dw + t.dt / 2) / t.dgp : .5;
@@ -416,33 +419,8 @@ function bkDistrictSeeds(dists){
     const locks = tier.length === dists.length && tier.every(t => t.placeLock) ? bkLocks(tier, bkPctAfter, t => t.left) : new Set();
     bkOrder(tier).forEach(t => seeds.push(Object.assign(t, {lock:locks.has(canonSchool(t.name))})));
   }
-  // Point 4 of the manual's playoff information: two teams from the same district don't meet early. A team that would
-  // meet one from its own district in week 9 or the regional (its foursome: 1-16-8-9, 4-13-5-12, 2-15-7-10, 3-14-6-11)
-  // trades places with the next team below it in its seed group (Chuck, 2026-10-24: "just flip flop the person below
-  // them in their group").
-  const dOf = new Map(); dists.forEach((d, i) => d.forEach(t => dOf.set(t, i)));
-  const GROUP = {1:0, 16:0, 8:0, 9:0, 4:1, 13:1, 5:1, 12:1, 2:2, 15:2, 7:2, 10:2, 3:3, 14:3, 6:3, 11:3};
-  // Chuck's 3A example: 5 Burlington would have met 12 Anderson County (both district 2), so Burlington and 6 Baldwin
-  // traded — the higher team in the clash is the one that moves. Rematches don't count (Baldwin then plays Anderson
-  // County, a week-8 opponent). Walking down from 5, a team that shares its foursome with a district mate flips with the
-  // team right below it in its place group, and the check goes on from that spot.
-  const clean = k => seeds.every((u, j) => j === k || GROUP[j + 1] !== GROUP[k + 1] || dOf.get(u) !== dOf.get(seeds[k]));
-  for (let k = 4; k < seeds.length; k++){
-    if (clean(k) || (k + 1) % 4 === 0 || k + 1 >= seeds.length) continue;
-    [seeds[k], seeds[k + 1]] = [seeds[k + 1], seeds[k]];
-    seeds[k].split = seeds[k + 1].split = true;
-  }
-  // Anything still meeting a district mate (a last-in-group team has no one below): that group of four takes the smallest
-  // reshuffle that clears it.
-  const perms = a => a.length < 2 ? [a] : a.flatMap((x, i) => perms([...a.slice(0, i), ...a.slice(i + 1)]).map(r => [x, ...r]));
-  for (let lo = 4; lo < seeds.length; lo += 4){
-    const tier = seeds.slice(lo, lo + 4);
-    const ok = order => order.every((t, k) => !seeds.slice(0, lo).some((u, j) => GROUP[j + 1] === GROUP[lo + k + 1] && dOf.get(u) === dOf.get(t)));
-    if (ok(tier)) continue;
-    const cost = order => order.reduce((n, t, k) => n + Math.abs(k - tier.indexOf(t)), 0);
-    const best = perms(tier).filter(ok).sort((a, b) => cost(a) - cost(b))[0];
-    if (best) best.forEach((t, k) => { if (seeds[lo + k] !== t) t.split = true; seeds[lo + k] = t; });
-  }
+  // No district split: the 2026 3A bracket kept the straight order (5 Chapman v 12 Concordia, 8 Columbus v 9 Iola are
+  // district rematches in week 9), though the manual's playoff information point 4 reads otherwise.
   return seeds.map((t, i) => Object.assign(t, {seed:i + 1}));
 }
 
