@@ -253,9 +253,13 @@ function bkOrder(teams){
 // two that didn't, level on the margin, flip (Andover, Kapaun); three level on everything flip for the top, and the
 // other two go back to head-to-head, then the margin, then another flip. A flip with games still to play is only
 // where things stand, so it reads as the margin until every one of them is done.
+// Ties Chuck sends straight to the coin flip, head-to-head or not: "<season>|<class>|<schools>" (2026-10-23:
+// "undo the head to head with maize south" — back to a coin flip).
+const BK_FLIP_ONLY = new Set(['2026|5A|hutchinson,maize-south']);
 function bkSettle(group, o){
   const k = t => canonSchool(t.name), out = [];
-  const played = g => g.every(a => g.every(b => a === b || a[o.beat].has(k(b)) || a[o.lost].has(k(b))));
+  const flipOnly = g => BK_FLIP_ONLY.has(`${BK_WEEK8_END.slice(0, 4)}|${bk.cls}|${g.map(k).sort().join(',')}`);
+  const played = g => !flipOnly(g) && g.every(a => g.every(b => a === b || a[o.beat].has(k(b)) || a[o.lost].has(k(b))));
   const wins = (t, g) => g.filter(x => x !== t && t[o.beat].has(k(x))).length;
   const best = (g, f) => { const m = Math.max(...g.map(f)); return g.filter(t => bkSame(f(t), m)); };
   let rest = group.slice(), how = '';
