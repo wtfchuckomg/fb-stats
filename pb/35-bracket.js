@@ -474,19 +474,36 @@ function bkPill(t){
     <a class="bk-nm${t.lock ? ' locked' : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a>
     <span class="bk-rec">${t.gp ? esc(bkRec(t)) : '<i>no games</i>'}</span></div>`;
 }
+// A matchup opens its game, not the teams (Chuck, 2026-10-24: "make the bracket pairing go to the preview… They can go
+// to the team profiles when they are in the preview"): the preview until there are stats, then the gamecast or box.
+function bkPairHref(a, b){
+  if (!a || !b || a.bye || b.bye || a.lotWith || b.lotWith) return '';
+  const want = canonSchool(b.name), after = fromYmd(BK_WEEK8_END);
+  const r = schoolRows(a.name).find(r => gameDay(r.x) > after && canonSchool(r.x.teams[r.opp].name) === want);
+  if (!r) return '';
+  const id = encodeURIComponent(r.x.id);
+  return hasStats(r.x) ? `?game=${id}${r.x.box ? '&tab=box' : ''}` : `?preview=${id}`;
+}
+const bkPair = (a, b, html, cls = '') => { const h = bkPairHref(a, b);
+  return `<div class="bkt-pair${cls}${h ? ' go' : ''}"${h ? ` data-bk-go="${esc(h)}" role="link" tabindex="0"` : ''}>${html}</div>`; };
+document.addEventListener('click', e => {
+  if (!ui.bracket || !e.target.closest || e.target.closest('[data-flip-key]')) return;
+  const p = e.target.closest('[data-bk-go]'); if (!p) return;
+  e.preventDefault(); location.href = p.dataset.bkGo;
+});
 function bkTreeHtml(seeds, side){
   const byNo = {}; seeds.forEach(t => { byNo[t.seed] = t; });
-  const pairs = BK_PAIRS.map(([x, y]) => `<div class="bkt-pair">${bkPill(byNo[x])}${bkPill(byNo[y])}</div>`);
+  const pairs = BK_PAIRS.map(([x, y]) => bkPair(byNo[x], byNo[y], bkPill(byNo[x]) + bkPill(byNo[y])));
   return `<div class="bkt"><h3>${side}</h3>
     <div class="bkt-cols"><div class="bkt-col"><span class="bkt-h">Week 9</span><div class="bkt-pairs">${pairs.join('')}</div></div></div></div>`;
 }
 // 8-player: the manual's own pairs, each team shown by its district place.
 function bk8Tree(by, side, pairs = BK_8M){
-  const pill = slot => { if (!slot) return `<div class="bkp bye"><span class="bk-nm">Bye</span></div>`;
-    const [d, p] = slot, t = by[d] && by[d][p - 1]; return bkPill(t ? Object.assign(t, {tag:`D${d} #${p}`, lock:t.placeLock}) : null); };
+  const team = slot => { if (!slot) return {bye:true}; const [d, p] = slot, t = by[d] && by[d][p - 1]; return t ? Object.assign(t, {tag:`D${d} #${p}`, lock:t.placeLock}) : null; };
+  const pill = t => t && t.bye ? `<div class="bkp bye"><span class="bk-nm">Bye</span></div>` : bkPill(t);
   return `<div class="bkt"><h3>${side}</h3>
-    <div class="bkt-cols"><div class="bkt-col"><span class="bkt-h">Week 9</span><div class="bkt-pairs">${pairs[side].map(([a, b]) =>
-      `<div class="bkt-pair">${pill(a)}${pill(b)}</div>`).join('')}</div></div></div></div>`;
+    <div class="bkt-cols"><div class="bkt-col"><span class="bkt-h">Week 9</span><div class="bkt-pairs">${pairs[side].map(([a, b]) => {
+      const A = team(a), B = team(b); return bkPair(A, B, pill(A) + pill(B)); }).join('')}</div></div></div></div>`;
 }
 /* ---------- the whole bracket, on a desktop (Chuck, 2026-10-23: "a left and a right bracket when it's full on a
    desktop computer now that we're finalizing") ----------
@@ -620,10 +637,10 @@ function bkFullHtml(eastSlots, westSlots){
     return {cols, champ:cur[0] || null}; };
   const E = side(eastSlots), W = side(westSlots);
   const col = (c, r, west) => `<div class="bkf-col${west ? ' w' : ''}"><span class="bkt-h">${ROUNDS[r]}</span><div class="bkf-pairs">${c.games.map((gm, i) =>
-    `<div class="bkt-pair">${bkLine(c.slots[2 * i], gm, r > 0)}${bkLine(c.slots[2 * i + 1], gm, r > 0)}</div>`).join('')}</div></div>`;
+    bkPair(c.slots[2 * i], c.slots[2 * i + 1], bkLine(c.slots[2 * i], gm, r > 0) + bkLine(c.slots[2 * i + 1], gm, r > 0))).join('')}</div></div>`;
   const fin = bkPlayed(E.champ, W.champ);
   return `<div class="bkf">${E.cols.map((c, r) => col(c, r, false)).join('')}
-    <div class="bkf-col st"><span class="bkt-h">State</span><div class="bkf-pairs"><div class="bkt-pair st">${bkLine(E.champ, fin, true)}${bkLine(W.champ, fin, true)}</div></div></div>
+    <div class="bkf-col st"><span class="bkt-h">State</span><div class="bkf-pairs">${bkPair(E.champ, W.champ, bkLine(E.champ, fin, true) + bkLine(W.champ, fin, true), ' st')}</div></div>
     ${W.cols.map((c, r) => col(c, r, true)).reverse().join('')}</div>
     <div class="bkf-sides"><span>East</span><span>West</span></div>`;
 }

@@ -538,6 +538,9 @@ table.pl-tbl{table-layout:fixed;width:100%}
 .bkt-pairs{display:flex;flex-direction:column;gap:16px}
 /* the pair's connector: an elbow from the middle of each pill, joined into one line going right */
 .bkt-pair{position:relative;display:flex;flex-direction:column;gap:5px}
+.bkt-pair.go{cursor:pointer}
+.bkt-pair.go .bk-nm{pointer-events:none}
+@media (hover:hover){.bkt-pair.go:hover .bkp{border-color:var(--accent,#0a6cff)}}
 /* The lines joining a bracket's games: darker than the site's hairlines (Chuck, 2026-10-23), and from the text color so
    they hold up on every look, dark ones included. */
 .bkt,.bkf{--bk-line:color-mix(in srgb, var(--ink, #1d1d1f) 62%, transparent);--bk-box:color-mix(in srgb, var(--ink, #1d1d1f) 26%, transparent)}
