@@ -478,7 +478,7 @@ function parseQuick(raw, st){
       if (has('oob')) p.oob = true;
       if (retNo != null) p.ret = retNo;
       p.ry = endSp ? pos(sp) - pos(endSp) : ryTold != null ? ryTold : Math.abs(+(nx[1] || 0));
-      if (p.ry < 0) return bad(`Those don’t add up: caught at the ${sp.n} and returned to the ${endSp.n}.`);
+      // Caught at the 25 and run back to the 23 is a return for a loss of 2 (Chuck, 2026-10-23: "it's a loss").
     }
     if (p.res === 'ret' && p.d == null) return bad('Say where it was caught — ko 28 at the 8 for 12 — or how far it was kicked: 15-ko-55-28-21.');
     if (p.res === 'ret' && has('td')) p.ry = st.kickFrom + p.d;
@@ -558,10 +558,12 @@ function parseQuick(raw, st){
     let retNo = null, retYds = null, retEnd = null;
     const ri = rest.findIndex(t => ['return', 'returned', 'returns', 'ret', 'rt'].includes(t));
     if (ri >= 0){
-      const prev = rest[ri - 1], ps = prev != null ? spotOf(prev) : null, ahead = rest.slice(ri + 1);
+      // "to the I30 returned …": a yard line said with to/at/the before it is where it was caught, not a returner.
+      const said = i => { const r = pRaw.indexOf(rest[i]); let j = r - 1; while (j >= 0 && pRaw[j] === 'the') j--; return r > 0 && j >= 0 && pAT.includes(pRaw[j]); };
+      const prev = rest[ri - 1], ps = prev != null && !said(ri - 1) ? spotOf(prev) : null, ahead = rest.slice(ri + 1);
       const n = ahead.find(t => isNum(t) && !bare.includes(+t)), s = ahead.map(spotOf).find(Boolean);
       if (s) retEnd = s;
-      else if (n != null) retYds = Math.abs(+n);
+      else if (n != null) retYds = +n;   // a minus is a return for a loss (Chuck, 2026-10-23)
       else if (ydNums.length) retYds = ydNums[0];
       // Where the drive starts is given, so the distance comes from that: a number before "return" is a player.
       const kickNamed = start || rest.slice(0, Math.max(0, ri - 1)).some(t => isNum(t) || spotOf(t));
@@ -575,6 +577,9 @@ function parseQuick(raw, st){
       const k = skip.indexOf(+t); if (k < 0) return true; skip.splice(k, 1); return false;
     });
     const sp = muffP ? muffP.spot || muffP.beforeToks.map(spotOf).find(Boolean) : rest.map(spotOf).find(Boolean);   // "punt to I25" or a distance
+    // "punt I30 I28", as a kickoff is typed: caught at the 30, returned to the 28 — a second yard line of the
+    // receiving team's, with no return word, is where the return ended.
+    if (!muffP && !retEnd && ri < 0){ const two = rest.map(spotOf).filter(Boolean); if (two.length === 2 && two[1].side === D && two[0].side === D) retEnd = two[1]; }
     // A punt can lose ground: one off the side of the foot that never crosses the line is minus yardage on the
     // punter (NCAA Section 6, Article 6). So a spot behind the line, or a typed "-5", keeps its sign.
     if (sp) p.d = (FL - toR(sp)) - st.spot;
@@ -602,7 +607,7 @@ function parseQuick(raw, st){
       if (retYds == null && ydNums.length) retYds = ydNums[0];
       // "caught at the 30 and returned to the 38": both are the receiving team's, so the return is the gap.
       if (retYds == null && bare.length > 1) retYds = bare[1] - bare[0];
-      if (retNo == null && nx[0] != null){ retNo = nx[0]; if (retYds == null && nx[1] != null) retYds = Math.abs(+nx[1]); }
+      if (retNo == null && nx[0] != null){ retNo = nx[0]; if (retYds == null && nx[1] != null) retYds = +nx[1]; }   // "19-punt-40-11--6": a loss of 6
       if (retNo != null || retYds != null || ri >= 0){ p.res = 'ret'; if (retNo != null) p.ret = retNo; if (retYds != null) p.ry = retYds; if (has('oob')) p.oob = true; }
       else p.res = 'spot';
       if (has('td') && p.d != null){ p.res = 'ret'; p.ry = st.spot + p.d; }

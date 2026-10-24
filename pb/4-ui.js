@@ -223,8 +223,8 @@ function blank(t, st){
   switch (t){
     case 'run': return {...base, r:'', y:'', yn:'gain', tk:['', ''], latOn:false, lat:{r:'', y:''}};
     case 'pass': return {...base, qb:first(O, 'qb'), res:'c', to:'', y:'', yn:'gain', tk:['', ''], pbu:'', ib:'', at:'', ry:'', by:['', ''], sy:''};
-    case 'punt': return {...base, k:first(O, 'punt'), d:'', res:'ret', ret:'', ry:'', tk:['', ''], by:'', b:'', mr:'', own:'', oob:false};
-    case 'ko': return {...base, k:first(O, 'kick'), d:'', res:'ret', ret:'', ry:'', tk:['', ''], by:'', mr:'', oob:false, rk:false};
+    case 'punt': return {...base, k:first(O, 'punt'), d:'', res:'ret', ret:'', ry:'', ryn:'gain', tk:['', ''], by:'', b:'', mr:'', own:'', oob:false};
+    case 'ko': return {...base, k:first(O, 'kick'), d:'', res:'ret', ret:'', ry:'', ryn:'gain', tk:['', ''], by:'', mr:'', oob:false, rk:false};
     case 'fg': return {...base, k:first(O, 'kick'), d:'', res:'good', by:'', b:'', ret:'', ry:''};
     case 'try': return {t, kind:'kick', res:'good', k:first(O, 'kick'), r:'', qb:first(O, 'qb'), to:''};
     case 'pen': return {t, pen:penBlank(O, 'acc')};
@@ -245,6 +245,7 @@ function toDraft(p, st){
     else if (k === 'lat'){ d.latOn = true; d.lat = {r:str(p.lat.r), y:str(p.lat.y)}; }
     else if (k === 'pen'){ d.pen = {...p.pen, n:str(p.pen.n)}; if (p.t !== 'pen') d.penOn = true; }
     else if (k === 'y'){ d.y = p.y ? String(Math.abs(p.y)) : ''; d.yn = p.y < 0 ? 'loss' : 'gain'; }
+    else if (k === 'ry' && (p.t === 'ko' || p.t === 'punt')){ d.ry = p.ry ? String(Math.abs(p.ry)) : ''; d.ryn = p.ry < 0 ? 'loss' : 'gain'; }
     else if (k === 'tk' || k === 'by' && Array.isArray(p.by)){ const a = p[k].map(String); d[k] = [a[0] || '', a[1] || '']; }
     else if (k !== 'clk') d[k] = str(p[k]);
   }
@@ -259,6 +260,7 @@ function buildPlay(d){
   const js = a => (a || []).map(j).filter(Boolean);
   const yy = () => (d.yn === 'loss' ? -1 : 1) * (n(d.y) || 0);
   const sn = v => Number(String(v ?? '').replace(/[^\d.-]/g, '')) || 0;   // yards that can be minus
+  const rty = () => { const v = sn(d.ry); return d.ryn === 'loss' ? -Math.abs(v) : v; };   // a kick return, gain or loss
   const yes = v => v === true || v === 'true';
   const p = {t:d.t};
   switch (d.t){
@@ -275,7 +277,7 @@ function buildPlay(d){
       break;
     case 'punt':
       Object.assign(p, {k:j(d.k), d:n(d.d), res:d.res});
-      if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:n(d.ry) || 0, tk:js(d.tk), oob:yes(d.oob) || undefined});
+      if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:rty(), tk:js(d.tk), oob:yes(d.oob) || undefined});
       if (d.res === 'fc') p.ret = j(d.ret);
       if (d.res === 'muff') Object.assign(p, {by:j(d.by), ret:j(d.ret), mr:yes(d.mr) || undefined});
       if (d.res === 'blk') Object.assign(p, d.saf ? {by:j(d.by), saf:true}
@@ -283,7 +285,7 @@ function buildPlay(d){
       break;
     case 'ko':
       Object.assign(p, {k:j(d.k), d:n(d.d) || 0, res:d.res});
-      if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:n(d.ry) || 0, tk:js(d.tk), oob:yes(d.oob) || undefined});
+      if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:rty(), tk:js(d.tk), oob:yes(d.oob) || undefined});
       if (d.res === 'fc' || d.res === 'onside') p.ret = j(d.ret);
       if (d.res === 'muff') Object.assign(p, {by:j(d.by), ret:j(d.ret), mr:yes(d.mr) || undefined});
       if (d.res === 'oob' && yes(d.rk)) p.rk = true;
@@ -336,6 +338,12 @@ function seg(k, opts){
   return `<div class="seg" role="group">${opts.map(([val, lab]) => `<button type="button" data-seg="${k}" data-v="${val}" aria-pressed="${String(v) === String(val)}">${esc(lab)}</button>`).join('')}</div>`;
 }
 const fSeg = (k, label, opts) => `<div class="fld"><span class="eyebrow">${label}</span>${seg(k, opts)}</div>`;
+// Return yards on a kickoff or punt, with Gain or Loss beside them as on a run: caught at the 25 and brought back
+// to the 23 is a return for a loss of 2, and a phone's number pad has no minus key.
+function fRY(){
+  return `<div class="fld"><label class="eyebrow" for="f-ry">Return yards</label><div class="yds">${seg('ryn', [['gain', 'Gain'], ['loss', 'Loss']])}
+    <input class="inp" id="f-ry" data-k="ry" inputmode="numeric" autocomplete="off" placeholder="0" value="${esc(ui.draft.ry ?? '')}"></div></div>`;
+}
 function fYds(){
   return `<div class="fld"><label class="eyebrow" for="f-y">Yards</label><div class="yds">${seg('yn', [['gain', 'Gain'], ['loss', 'Loss']])}
     <input class="inp" id="f-y" data-k="y" inputmode="numeric" autocomplete="off" placeholder="0" value="${esc(ui.draft.y)}">
@@ -413,7 +421,7 @@ function formHtml(){
     case 'punt': {
       let h = row(fJ('k', 'Punter', O, 'punt'), d.res === 'tb' || d.res === 'blk' ? '' : fN('d', 'Punt yards', '0'));
       h += fSeg('res', 'Result', [['ret', 'Returned'], ['fc', 'Fair catch'], ['down', 'Downed'], ['oob', 'Out of bounds'], ['tb', 'Touchback'], ['muff', 'Muffed'], ['blk', 'Blocked']]);
-      if (d.res === 'ret') h += row(fJ('ret', 'Returner', D, 'ret'), fN('ry', 'Return yards', '0')) + row(fJ('tk.0', 'Tackle', O, 'def'), fJ('tk.1', 'Assist', O)) + `<div class="checks">${tog('oob', 'Returner went out of bounds')}</div>`;
+      if (d.res === 'ret') h += row(fJ('ret', 'Returner', D, 'ret'), fRY()) + row(fJ('tk.0', 'Tackle', O, 'def'), fJ('tk.1', 'Assist', O)) + `<div class="checks">${tog('oob', 'Returner went out of bounds')}</div>`;
       if (d.res === 'fc') h += row(fJ('ret', 'Caught by', D, 'ret'));
       if (d.res === 'muff') h += muffFields(O, D, 'Punt yards to where it was muffed.');
       if (d.res === 'blk') h += row(fJ('by', 'Blocked by', D), `<div class="fld">${tog('saf', 'Out of the end zone: safety')}</div>`)
@@ -426,7 +434,7 @@ function formHtml(){
       const K = st.poss, Rr = other(K);
       let h = row(fJ('k', 'Kicker', K, 'kick'), d.res === 'tb' || d.res === 'oob' ? '' : fN('d', 'Kick yards', '0'));
       h += fSeg('res', 'Result', [['ret', 'Returned'], ['tb', 'Touchback'], ['fc', 'Fair catch'], ['down', 'Downed'], ['oob', 'Out of bounds'], ['onside', 'Onside recovery'], ['muff', 'Muffed']]);
-      if (d.res === 'ret') h += row(fJ('ret', 'Returner', Rr, 'ret'), fN('ry', 'Return yards', '0')) + row(fJ('tk.0', 'Tackle', K, 'def'), fJ('tk.1', 'Assist', K)) + `<div class="checks">${tog('oob', 'Returner went out of bounds')}</div>`;
+      if (d.res === 'ret') h += row(fJ('ret', 'Returner', Rr, 'ret'), fRY()) + row(fJ('tk.0', 'Tackle', K, 'def'), fJ('tk.1', 'Assist', K)) + `<div class="checks">${tog('oob', 'Returner went out of bounds')}</div>`;
       if (d.res === 'muff') h += muffFields(K, Rr, 'Kick yards to where it was muffed.');
       if (d.res === 'fc') h += row(fJ('ret', 'Caught by', Rr, 'ret'));
       if (d.res === 'onside') h += row(fJ('ret', 'Recovered by', K));

@@ -523,7 +523,7 @@ function replay(g, upto = g.plays.length){
     bump(ret, k1); bump(ret, k1 + 'y', ry); long(ret, k1 + 'lg', ry);
     S.team[R][k1 === 'kr' ? 'krN' : 'prN']++; S.team[R][k1 === 'kr' ? 'krY' : 'prY'] += ry;
     tackles(K, p.tk, 1);
-    let txt = `, ${nm(R, p.ret)} returns ${plural(ry, 'yard')}`;
+    let txt = ry < 0 ? `, ${nm(R, p.ret)} returns for a loss of ${fy(-ry)}` : `, ${nm(R, p.ret)} returns ${plural(ry, 'yard')}`;
     if (p.fum && p.fum.ez) return {txt: `${txt} to the ${yl(R, clamp(fin, 1, FL - 1))}.` + fumbleOut(R, p.ret, clamp(fin, 0, FL)), fin};
     if (p.fum && p.fum.lost) return {txt: `${txt} to the ${yl(R, clamp(fin, 1, (FL - 1)))}.` + fumbleLost(R, p.ret, clamp(fin, 1, (FL - 1)), p.fum), fin};
     if (fin >= FL){ bump(ret, k1 + 'td'); return {txt: txt + '.' + touchdown(R, `${nm(R, p.ret)} ${fy(ry)}-yard ${kind === 'kr' ? 'kickoff' : 'punt'} return`, ret), fin}; }

@@ -2186,7 +2186,7 @@ function replay(g, upto = g.plays.length){
     bump(ret, k1); bump(ret, k1 + 'y', ry); long(ret, k1 + 'lg', ry);
     S.team[R][k1 === 'kr' ? 'krN' : 'prN']++; S.team[R][k1 === 'kr' ? 'krY' : 'prY'] += ry;
     tackles(K, p.tk, 1);
-    let txt = `, ${nm(R, p.ret)} returns ${plural(ry, 'yard')}`;
+    let txt = ry < 0 ? `, ${nm(R, p.ret)} returns for a loss of ${fy(-ry)}` : `, ${nm(R, p.ret)} returns ${plural(ry, 'yard')}`;
     if (p.fum && p.fum.ez) return {txt: `${txt} to the ${yl(R, clamp(fin, 1, FL - 1))}.` + fumbleOut(R, p.ret, clamp(fin, 0, FL)), fin};
     if (p.fum && p.fum.lost) return {txt: `${txt} to the ${yl(R, clamp(fin, 1, (FL - 1)))}.` + fumbleLost(R, p.ret, clamp(fin, 1, (FL - 1)), p.fum), fin};
     if (fin >= FL){ bump(ret, k1 + 'td'); return {txt: txt + '.' + touchdown(R, `${nm(R, p.ret)} ${fy(ry)}-yard ${kind === 'kr' ? 'kickoff' : 'punt'} return`, ret), fin}; }
@@ -2736,8 +2736,8 @@ function blank(t, st){
   switch (t){
     case 'run': return {...base, r:'', y:'', yn:'gain', tk:['', ''], latOn:false, lat:{r:'', y:''}};
     case 'pass': return {...base, qb:first(O, 'qb'), res:'c', to:'', y:'', yn:'gain', tk:['', ''], pbu:'', ib:'', at:'', ry:'', by:['', ''], sy:''};
-    case 'punt': return {...base, k:first(O, 'punt'), d:'', res:'ret', ret:'', ry:'', tk:['', ''], by:'', b:'', mr:'', own:'', oob:false};
-    case 'ko': return {...base, k:first(O, 'kick'), d:'', res:'ret', ret:'', ry:'', tk:['', ''], by:'', mr:'', oob:false, rk:false};
+    case 'punt': return {...base, k:first(O, 'punt'), d:'', res:'ret', ret:'', ry:'', ryn:'gain', tk:['', ''], by:'', b:'', mr:'', own:'', oob:false};
+    case 'ko': return {...base, k:first(O, 'kick'), d:'', res:'ret', ret:'', ry:'', ryn:'gain', tk:['', ''], by:'', mr:'', oob:false, rk:false};
     case 'fg': return {...base, k:first(O, 'kick'), d:'', res:'good', by:'', b:'', ret:'', ry:''};
     case 'try': return {t, kind:'kick', res:'good', k:first(O, 'kick'), r:'', qb:first(O, 'qb'), to:''};
     case 'pen': return {t, pen:penBlank(O, 'acc')};
@@ -2758,6 +2758,7 @@ function toDraft(p, st){
     else if (k === 'lat'){ d.latOn = true; d.lat = {r:str(p.lat.r), y:str(p.lat.y)}; }
     else if (k === 'pen'){ d.pen = {...p.pen, n:str(p.pen.n)}; if (p.t !== 'pen') d.penOn = true; }
     else if (k === 'y'){ d.y = p.y ? String(Math.abs(p.y)) : ''; d.yn = p.y < 0 ? 'loss' : 'gain'; }
+    else if (k === 'ry' && (p.t === 'ko' || p.t === 'punt')){ d.ry = p.ry ? String(Math.abs(p.ry)) : ''; d.ryn = p.ry < 0 ? 'loss' : 'gain'; }
     else if (k === 'tk' || k === 'by' && Array.isArray(p.by)){ const a = p[k].map(String); d[k] = [a[0] || '', a[1] || '']; }
     else if (k !== 'clk') d[k] = str(p[k]);
   }
@@ -2772,6 +2773,7 @@ function buildPlay(d){
   const js = a => (a || []).map(j).filter(Boolean);
   const yy = () => (d.yn === 'loss' ? -1 : 1) * (n(d.y) || 0);
   const sn = v => Number(String(v ?? '').replace(/[^\d.-]/g, '')) || 0;   // yards that can be minus
+  const rty = () => { const v = sn(d.ry); return d.ryn === 'loss' ? -Math.abs(v) : v; };   // a kick return, gain or loss
   const yes = v => v === true || v === 'true';
   const p = {t:d.t};
   switch (d.t){
@@ -2788,7 +2790,7 @@ function buildPlay(d){
       break;
     case 'punt':
       Object.assign(p, {k:j(d.k), d:n(d.d), res:d.res});
-      if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:n(d.ry) || 0, tk:js(d.tk), oob:yes(d.oob) || undefined});
+      if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:rty(), tk:js(d.tk), oob:yes(d.oob) || undefined});
       if (d.res === 'fc') p.ret = j(d.ret);
       if (d.res === 'muff') Object.assign(p, {by:j(d.by), ret:j(d.ret), mr:yes(d.mr) || undefined});
       if (d.res === 'blk') Object.assign(p, d.saf ? {by:j(d.by), saf:true}
@@ -2796,7 +2798,7 @@ function buildPlay(d){
       break;
     case 'ko':
       Object.assign(p, {k:j(d.k), d:n(d.d) || 0, res:d.res});
-      if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:n(d.ry) || 0, tk:js(d.tk), oob:yes(d.oob) || undefined});
+      if (d.res === 'ret') Object.assign(p, {ret:j(d.ret), ry:rty(), tk:js(d.tk), oob:yes(d.oob) || undefined});
       if (d.res === 'fc' || d.res === 'onside') p.ret = j(d.ret);
       if (d.res === 'muff') Object.assign(p, {by:j(d.by), ret:j(d.ret), mr:yes(d.mr) || undefined});
       if (d.res === 'oob' && yes(d.rk)) p.rk = true;
@@ -2849,6 +2851,12 @@ function seg(k, opts){
   return `<div class="seg" role="group">${opts.map(([val, lab]) => `<button type="button" data-seg="${k}" data-v="${val}" aria-pressed="${String(v) === String(val)}">${esc(lab)}</button>`).join('')}</div>`;
 }
 const fSeg = (k, label, opts) => `<div class="fld"><span class="eyebrow">${label}</span>${seg(k, opts)}</div>`;
+// Return yards on a kickoff or punt, with Gain or Loss beside them as on a run: caught at the 25 and brought back
+// to the 23 is a return for a loss of 2, and a phone's number pad has no minus key.
+function fRY(){
+  return `<div class="fld"><label class="eyebrow" for="f-ry">Return yards</label><div class="yds">${seg('ryn', [['gain', 'Gain'], ['loss', 'Loss']])}
+    <input class="inp" id="f-ry" data-k="ry" inputmode="numeric" autocomplete="off" placeholder="0" value="${esc(ui.draft.ry ?? '')}"></div></div>`;
+}
 function fYds(){
   return `<div class="fld"><label class="eyebrow" for="f-y">Yards</label><div class="yds">${seg('yn', [['gain', 'Gain'], ['loss', 'Loss']])}
     <input class="inp" id="f-y" data-k="y" inputmode="numeric" autocomplete="off" placeholder="0" value="${esc(ui.draft.y)}">
@@ -2926,7 +2934,7 @@ function formHtml(){
     case 'punt': {
       let h = row(fJ('k', 'Punter', O, 'punt'), d.res === 'tb' || d.res === 'blk' ? '' : fN('d', 'Punt yards', '0'));
       h += fSeg('res', 'Result', [['ret', 'Returned'], ['fc', 'Fair catch'], ['down', 'Downed'], ['oob', 'Out of bounds'], ['tb', 'Touchback'], ['muff', 'Muffed'], ['blk', 'Blocked']]);
-      if (d.res === 'ret') h += row(fJ('ret', 'Returner', D, 'ret'), fN('ry', 'Return yards', '0')) + row(fJ('tk.0', 'Tackle', O, 'def'), fJ('tk.1', 'Assist', O)) + `<div class="checks">${tog('oob', 'Returner went out of bounds')}</div>`;
+      if (d.res === 'ret') h += row(fJ('ret', 'Returner', D, 'ret'), fRY()) + row(fJ('tk.0', 'Tackle', O, 'def'), fJ('tk.1', 'Assist', O)) + `<div class="checks">${tog('oob', 'Returner went out of bounds')}</div>`;
       if (d.res === 'fc') h += row(fJ('ret', 'Caught by', D, 'ret'));
       if (d.res === 'muff') h += muffFields(O, D, 'Punt yards to where it was muffed.');
       if (d.res === 'blk') h += row(fJ('by', 'Blocked by', D), `<div class="fld">${tog('saf', 'Out of the end zone: safety')}</div>`)
@@ -2939,7 +2947,7 @@ function formHtml(){
       const K = st.poss, Rr = other(K);
       let h = row(fJ('k', 'Kicker', K, 'kick'), d.res === 'tb' || d.res === 'oob' ? '' : fN('d', 'Kick yards', '0'));
       h += fSeg('res', 'Result', [['ret', 'Returned'], ['tb', 'Touchback'], ['fc', 'Fair catch'], ['down', 'Downed'], ['oob', 'Out of bounds'], ['onside', 'Onside recovery'], ['muff', 'Muffed']]);
-      if (d.res === 'ret') h += row(fJ('ret', 'Returner', Rr, 'ret'), fN('ry', 'Return yards', '0')) + row(fJ('tk.0', 'Tackle', K, 'def'), fJ('tk.1', 'Assist', K)) + `<div class="checks">${tog('oob', 'Returner went out of bounds')}</div>`;
+      if (d.res === 'ret') h += row(fJ('ret', 'Returner', Rr, 'ret'), fRY()) + row(fJ('tk.0', 'Tackle', K, 'def'), fJ('tk.1', 'Assist', K)) + `<div class="checks">${tog('oob', 'Returner went out of bounds')}</div>`;
       if (d.res === 'muff') h += muffFields(K, Rr, 'Kick yards to where it was muffed.');
       if (d.res === 'fc') h += row(fJ('ret', 'Caught by', Rr, 'ret'));
       if (d.res === 'onside') h += row(fJ('ret', 'Recovered by', K));
@@ -3529,7 +3537,7 @@ function parseQuick(raw, st){
       if (has('oob')) p.oob = true;
       if (retNo != null) p.ret = retNo;
       p.ry = endSp ? pos(sp) - pos(endSp) : ryTold != null ? ryTold : Math.abs(+(nx[1] || 0));
-      if (p.ry < 0) return bad(`Those don’t add up: caught at the ${sp.n} and returned to the ${endSp.n}.`);
+      // Caught at the 25 and run back to the 23 is a return for a loss of 2 (Chuck, 2026-10-23: "it's a loss").
     }
     if (p.res === 'ret' && p.d == null) return bad('Say where it was caught — ko 28 at the 8 for 12 — or how far it was kicked: 15-ko-55-28-21.');
     if (p.res === 'ret' && has('td')) p.ry = st.kickFrom + p.d;
@@ -3609,10 +3617,12 @@ function parseQuick(raw, st){
     let retNo = null, retYds = null, retEnd = null;
     const ri = rest.findIndex(t => ['return', 'returned', 'returns', 'ret', 'rt'].includes(t));
     if (ri >= 0){
-      const prev = rest[ri - 1], ps = prev != null ? spotOf(prev) : null, ahead = rest.slice(ri + 1);
+      // "to the I30 returned …": a yard line said with to/at/the before it is where it was caught, not a returner.
+      const said = i => { const r = pRaw.indexOf(rest[i]); let j = r - 1; while (j >= 0 && pRaw[j] === 'the') j--; return r > 0 && j >= 0 && pAT.includes(pRaw[j]); };
+      const prev = rest[ri - 1], ps = prev != null && !said(ri - 1) ? spotOf(prev) : null, ahead = rest.slice(ri + 1);
       const n = ahead.find(t => isNum(t) && !bare.includes(+t)), s = ahead.map(spotOf).find(Boolean);
       if (s) retEnd = s;
-      else if (n != null) retYds = Math.abs(+n);
+      else if (n != null) retYds = +n;   // a minus is a return for a loss (Chuck, 2026-10-23)
       else if (ydNums.length) retYds = ydNums[0];
       // Where the drive starts is given, so the distance comes from that: a number before "return" is a player.
       const kickNamed = start || rest.slice(0, Math.max(0, ri - 1)).some(t => isNum(t) || spotOf(t));
@@ -3626,6 +3636,9 @@ function parseQuick(raw, st){
       const k = skip.indexOf(+t); if (k < 0) return true; skip.splice(k, 1); return false;
     });
     const sp = muffP ? muffP.spot || muffP.beforeToks.map(spotOf).find(Boolean) : rest.map(spotOf).find(Boolean);   // "punt to I25" or a distance
+    // "punt I30 I28", as a kickoff is typed: caught at the 30, returned to the 28 — a second yard line of the
+    // receiving team's, with no return word, is where the return ended.
+    if (!muffP && !retEnd && ri < 0){ const two = rest.map(spotOf).filter(Boolean); if (two.length === 2 && two[1].side === D && two[0].side === D) retEnd = two[1]; }
     // A punt can lose ground: one off the side of the foot that never crosses the line is minus yardage on the
     // punter (NCAA Section 6, Article 6). So a spot behind the line, or a typed "-5", keeps its sign.
     if (sp) p.d = (FL - toR(sp)) - st.spot;
@@ -3653,7 +3666,7 @@ function parseQuick(raw, st){
       if (retYds == null && ydNums.length) retYds = ydNums[0];
       // "caught at the 30 and returned to the 38": both are the receiving team's, so the return is the gap.
       if (retYds == null && bare.length > 1) retYds = bare[1] - bare[0];
-      if (retNo == null && nx[0] != null){ retNo = nx[0]; if (retYds == null && nx[1] != null) retYds = Math.abs(+nx[1]); }
+      if (retNo == null && nx[0] != null){ retNo = nx[0]; if (retYds == null && nx[1] != null) retYds = +nx[1]; }   // "19-punt-40-11--6": a loss of 6
       if (retNo != null || retYds != null || ri >= 0){ p.res = 'ret'; if (retNo != null) p.ret = retNo; if (retYds != null) p.ry = retYds; if (has('oob')) p.oob = true; }
       else p.res = 'spot';
       if (has('td') && p.d != null){ p.res = 'ret'; p.ry = st.spot + p.d; }
