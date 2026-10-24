@@ -531,6 +531,11 @@ function bkAdvance(slots){
    better seed at home, on that round's Friday; State is on the 27th. Not yet played only — a final is a real game
    already. A game anyone enters, or KPreps lists, for the same two schools that week takes its place. */
 const BK_ROUND_DAYS = ['2026-10-30', '2026-11-06', '2026-11-13', '2026-11-20', '2026-11-27'];
+// Week 9 games on Thursday the 29th, by a school in them (Chuck, 2026-10-24), and the two played away from either school.
+const BK_THURSDAY = new Set(['Olathe North', 'Olathe Northwest', 'Salina Central', 'Spring Hill', 'Otis-Bison', 'Marais des Cygnes Valley',
+  'Centre', 'Logan', 'Sylvan-Lucas Unified', 'Thunder Ridge', 'Quinter', 'Marmaton Valley', 'Axtell', 'Flinthills', 'Hoxie', 'Hill City',
+  'Washington County', 'Silver Lake', 'Sabetha'].map(canonSchool));
+const BK_SITES = {'olathe-north':'ODAC', 'olathe-northwest':'CBAC'};
 function bkSides(cls){
   if (!DISTRICTS[cls]){ const S = SECTIONS[cls]; return [bkSlots(bkSeed(S.East)), bkSlots(bkSeed(S.West))]; }
   const D = DISTRICTS[cls].map(names => bkDistrict(names, bkCut(cls)));
@@ -548,9 +553,10 @@ function bkSchedRefresh(){
     const team = name => { const t = findTeam(name); return {name, abbr:(t && t.abbr) || shortName(name), color:(t && t.color) || '#4A4B4D'}; };
     const add = (cls, r, a, b) => {
       if (!a || !b || a.bye || b.bye) return;   // past week 8 by the calendar: a week-1 game with no final on file doesn't hold it up
-      const [H, A] = r < 4 && rank(b) < rank(a) ? [b, a] : [a, b], d = BK_ROUND_DAYS[r];
+      const [H, A] = r < 4 && rank(b) < rank(a) ? [b, a] : [a, b], ks = [canonSchool(a.name), canonSchool(b.name)];
+      const d = r === 0 && ks.some(k => BK_THURSDAY.has(k)) ? '2026-10-29' : BK_ROUND_DAYS[r], site = r === 0 && ks.map(k => BK_SITES[k]).find(Boolean);
       out.push({id:`bk26-${cls}-${r}-${canonSchool(A.name)}-${canonSchool(H.name)}`, kind:'score', sched:true, opp:true, file:true, playoff:true,
-        created:0, updated:0, date:d, teams:{A:team(A.name), H:team(H.name)}, A:0, H:0, per:'pre', clk:''});
+        created:0, updated:0, date:d, teams:{A:team(A.name), H:team(H.name)}, A:0, H:0, per:'pre', clk:'', ...(site ? {site} : {})});
     };
     try {
       BK_CLASSES.forEach(cls => {

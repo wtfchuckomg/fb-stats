@@ -347,7 +347,7 @@ function previewHtml(){
   const rankTag = n => { const r = rankOf(n); return r && r.rank ? `<span class="pg-rank">${r.rank}</span>` : ''; };
   const head = `<section class="bcard pg-head">
       <div class="pg-team">${markFor(T.A, 64)}<div><div class="pg-name">${rankTag(A)}<a class="tlink" href="?team=${encodeURIComponent(A)}">${esc(A)}</a></div><div class="pg-sub">${esc(recLine(A))}</div></div></div>
-      <div class="pg-when"><b>${esc(when)}</b><span>${esc(time)}</span><span class="pg-at">at ${esc(H)}</span></div>
+      <div class="pg-when"><b>${esc(when)}</b><span>${esc(time)}</span><span class="pg-at">at ${esc(x.site || H)}</span></div>
       <div class="pg-team h"><div><div class="pg-name">${rankTag(H)}<a class="tlink" href="?team=${encodeURIComponent(H)}">${esc(H)}</a></div><div class="pg-sub">${esc(recLine(H))}</div></div>${markFor(T.H, 64)}</div>
     </section>
     ${live ? `<section class="bcard pg-live"><b>This game has started.</b> <a class="bbtn" href="?game=${encodeURIComponent(live.id)}">Watch the gamecast</a></section>`
