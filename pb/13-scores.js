@@ -111,7 +111,8 @@ function dlgScore(id){
   const side = (s, label) => `<div class="qs-side"><div class="fld"><label class="eyebrow" for="qs-${s}-name">${label}</label>
       ${schoolPicker(`qs-${s}-name`, x ? x.teams[s].name : (pre && pre.side === s ? pre.name : ''), s === 'A' ? 'Visiting school' : 'Home school')}</div>
     <div class="fld qs-pts"><label class="eyebrow" for="qs-${s}-pts">Score</label>
-      <input class="inp" id="qs-${s}-pts" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" value="${x ? +x[s] || 0 : ''}" placeholder="0"></div></div>
+      <input class="inp" id="qs-${s}-pts" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" value="${x ? +x[s] || 0 : ''}" placeholder="0">
+      <button type="button" class="linkbtn qs-ffwin" data-qs-ffwin="${s}">Won by forfeit</button></div></div>
 `;
   // On a school's page the admin is signed in beside the records, not through the tracker's sync.
   const upThere = !!sync.user || (ui.admin && !!teamRecs.api);
@@ -597,6 +598,14 @@ document.addEventListener('click', e => {
         if (!(+a.value) && !(+h.value)){ a.value = String(FORFEIT); h.value = '0'; }
       }
       return;
+    }
+    // One tap for a forfeit (Chuck, 2026-10-24): that side 2, the other 0, marked Forfeit, saved.
+    const ffw = t.closest('[data-qs-ffwin]');
+    if (ffw){
+      const s = ffw.dataset.qsFfwin;
+      $(`#qs-${s}-pts`).value = String(FORFEIT); $(`#qs-${s === 'A' ? 'H' : 'A'}-pts`).value = '0';
+      $('#qs-per').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.qsPer === 'ff')));
+      return saveScore($('[data-qs-save]').dataset.qsSave);
     }
     const sv = t.closest('[data-qs-save]');
     if (sv) return saveScore(sv.dataset.qsSave);

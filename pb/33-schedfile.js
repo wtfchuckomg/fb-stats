@@ -55,7 +55,9 @@ function schedFinal(x){
   const home = kpAlias(r.teams.H.name) === kpAlias(x.teams.H.name);
   return {A:home ? r.A : r.H, H:home ? r.H : r.A};
 }
-const schedById = id => { if (!sched.rows) return null; schedStubs(); return sched.byId.get(id) || null; };
+// A bracket game (bk26-…) is looked up the same way, so its preview opens (Chuck, 2026-10-24: "previews aren't working
+// for the first round").
+const schedById = id => { if (sched.rows){ schedStubs(); const x = sched.byId.get(id); if (x) return x; } return bkSched.list.find(x => x.id === id) || null; };
 // The same two schools in the same week, however either side spells them.
 const schedPair = x => `${gameWeek(x)}|${[kpAlias(x.teams.A.name), kpAlias(x.teams.H.name)].sort().join('|')}`;
 // The schedule's games that the site doesn't already have: nothing already there is ever replaced, and a game
