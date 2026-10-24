@@ -116,12 +116,13 @@ function boardGame(x){
   const idx = m.lines ? lineCols({q:m.q, lines:m.lines}) : [];
   const nq = idx.length, played = m.fin ? nq : Math.min(m.q, nq);
   const cells = f => idx.map((i, n) => `<span>${f(i, n)}</span>`).join('');
+  const po = bkGameInfo(x);   // a playoff game: seeds before the names, the round under the teams
   const team = s => {
-    const cls = m.fin && lead ? (lead === s ? ' won' : ' lose') : '';
+    const cls = m.fin && lead ? (lead === s ? ' won' : ' lose') : '', sd = po && po.seed(T[s].name);
     // The record as entered, ESPN style "(1-2, 0-1 Away)"; until then the mascot and Away or Home.
     const rec = recordText(T[s], s, !m.fin, gameWeek(x), m.score), sub = rec ? `(${rec})` : [T[s].mascot, s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
     return `<div class="bt${cls}"><div class="bt-team">${markFor(T[s], 29)}<div class="bt-id">
-        <div class="bt-name"><span><a class="tlink" href="?team=${encodeURIComponent(schoolName(T[s].name))}">${esc(schoolName(T[s].name))}</a></span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub${rec ? ' rec' : ''}">${esc(sub)}</div></div></div>
+        <div class="bt-name"><span>${sd ? `<b class="bt-seed">${sd}</b>` : ''}<a class="tlink" href="?team=${encodeURIComponent(schoolName(T[s].name))}">${esc(schoolName(T[s].name))}</a></span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub${rec ? ' rec' : ''}">${esc(sub)}</div></div></div>
       <div class="bt-q">${cells((i, n) => m.lines[s][i] == null ? 'X' : m.typed ? m.lines[s][i] : (i < 4 && m.fin && i >= (m.qPlayed || 0)) ? 'X' : n < played ? m.lines[s][i] : '')}</div>${tCell(s)}<i class="sc-win"></i></div>`;
   };
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
@@ -134,7 +135,7 @@ function boardGame(x){
     <button type="button" class="bbtn" data-bsave>Save final</button>${['A', 'H'].map(s => `<button type="button" class="bhide" data-bff="${s}">${esc(x.teams[s].abbr || shortName(x.teams[s].name))} won by forfeit</button>`).join('')}<button type="button" class="bhide" data-bcancel>Cancel</button>` : '';
   return `<article class="bgame${m.live ? ' live' : ''}${off ? ' bhid' : ''}${typing ? ' btyping' : ''}">
     <div class="b-main"><div class="b-hd"><span class="b-st">${status}</span><div class="bt-q b-qh">${cells(i => i < 4 ? i + 1 : 'OT')}</div><span class="b-th">T</span><i></i></div>
-      ${team('A')}${team('H')}</div>
+      ${team('A')}${team('H')}${po ? `<div class="b-round">${esc(po.label)}</div>` : ''}</div>
     <div class="b-lead">${m.pre ? preLeaders(x) : m.S ? boardLeaders(x, m.S) : ''}</div>
     <div class="b-acts"><span class="b-st2">${status}</span>${typing ? typeActs : acts + hide}</div></article>`;
 }

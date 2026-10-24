@@ -553,8 +553,19 @@ function bkSides(cls){
   }
   return [bkSlots(bkDistrictSeeds(D.slice(0, 4))), bkSlots(bkDistrictSeeds(D.slice(4, 8)))];
 }
+// A playoff game's place in our bracket: {label: "Class 5A Playoffs · First Round", seed: school -> seed} (Chuck,
+// 2026-10-24: "On week 9 and beyond, we need to see what round it is"). Null for a regular-season game.
+const BK_ROUND_NAMES = ['First Round', 'Regional', 'Sectional', 'Sub-State', 'State Championship'];
+function bkGameInfo(x){
+  if (!bkSched.info || !x || !x.teams || !x.teams.A || !x.teams.H || gameDay(x) <= fromYmd(BK_WEEK8_END)) return null;
+  const i = bkSched.info.get([canonSchool(x.teams.A.name), canonSchool(x.teams.H.name)].sort().join('|'));
+  return i ? {label:`${bkLabel(i.cls)} Playoffs · ${BK_ROUND_NAMES[i.r]}`, seed:n => i.seed[canonSchool(n)] || null} : null;
+}
 function bkSchedRefresh(){
-  const out = [];
+  const out = [], info = new Map();
+  // Each playoff pairing's class, round and seeds, played or not, for the scoreboards (bkGameInfo).
+  const note = (cls, r, a, b) => { if (a && b && !a.bye && !b.bye) info.set([canonSchool(a.name), canonSchool(b.name)].sort().join('|'),
+    {cls, r, seed:{[canonSchool(a.name)]:a.tag ? null : a.seed, [canonSchool(b.name)]:b.tag ? null : b.seed}}); };
   if (allGames.idx && Date.now() >= fromYmd(BK_WEEK8_END).getTime()){
     const was = bk.cls;
     const rank = t => t.tag ? +t.tag.split('#')[1] : t.seed || 99;
@@ -572,16 +583,18 @@ function bkSchedRefresh(){
           let cur = slots;
           for (let r = 0; r < 4; r++){
             const {next, games} = bkAdvance(cur);
-            for (let i = 0; i < cur.length; i += 2) if (!games[i / 2]) add(cls, r, cur[i], cur[i + 1]);
+            for (let i = 0; i < cur.length; i += 2){ note(cls, r, cur[i], cur[i + 1]); if (!games[i / 2]) add(cls, r, cur[i], cur[i + 1]); }
             cur = next;
           }
           return cur[0] || null;
         });
+        note(cls, 4, champs[0], champs[1]);
         if (champs[0] && champs[1] && !bkPlayed(champs[0], champs[1])) add(cls, 4, champs[0], champs[1]);
       });
     } catch (e) { console.warn('playoff schedule', e); }
     bk.cls = was;
   }
+  bkSched.info = info;
   const sig = out.map(x => x.id).sort().join();
   if (sig === bkSched.sig) return false;
   bkSched.list = out; bkSched.sig = sig;
