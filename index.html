@@ -6397,6 +6397,7 @@ function summary(x){
   const r = replay(x), st = r.st;
   let status, live = false;
   if (st.final) status = st.q > 4 ? 'Final/OT' : 'Final';
+  else if (st.boxStage){ live = true; status = st.boxStage === 2 ? 'Halftime' : `End of ${ord(st.boxStage)}`; }   // a box score posted mid-game
   else if (!x.plays.length) status = 'Pregame';
   else {
     live = true;
@@ -7265,12 +7266,20 @@ function parseBox(txt){
       // A quarter is a number, or an X (or a bare dash) for one that was never played — how a mercy-rule game is
       // posted: "Flinthills 44 14 X X — 58". The dash before the total is often jammed against that last column.
       // Up to twelve columns: four quarters and as many overtimes as the game went to.
-      const ls = l.match(/^(.*?[A-Za-z][^\d]*?)\s+((?:(?:\d+|[Xx]|[—–-])\s*[ ]\s*){2,11}(?:\d+|[Xx]|[—–-]))\s*(?:[—–-]+\s*(\d+))?$/);
-      if (ls){
+      // A game still going is posted with only the quarters played and no total: "Andover 0 7" at the half
+      // (Chuck, 2026-10-23). One or two numbers count only after a school the site knows, so a heading like
+      // "October 16" isn't taken for a team.
+      const ls = l.match(/^(.*?[A-Za-z][^\d]*?)\s+((?:(?:\d+|[Xx]|[—–-])\s*[ ]\s*){0,11}(?:\d+|[Xx]|[—–-]))\s*(?:[—–-]+\s*(\d+))?$/);
+      const cells0 = ls ? ls[2].trim().split(/\s+/) : [];
+      if (ls && (cells0.length >= 3 || ls[3] != null || (typeof knownSchool === 'function' && knownSchool(ls[1].replace(/[\s:,.—–-]+$/, ''))))){
         const cell = v => /^[Xx]$/.test(v) || /^[—–-]$/.test(v) ? null : Number(v);
-        let q = ls[2].trim().split(/\s+/).map(cell), tot = ls[3] != null ? +ls[3] : null;
+        let q = cells0.map(cell), tot = ls[3] != null ? +ls[3] : null;
+        // "0 7 — 7": a dash just before the last number is the total, not a quarter never played.
+        if (tot == null && cells0.length >= 3 && /^[—–-]$/.test(cells0[cells0.length - 2]) && q[q.length - 1] != null){ tot = q.pop(); q.pop(); }
         const add = a => a.reduce((t, v) => t + (v || 0), 0);
         if (tot == null && q.length >= 5 && q[q.length - 1] != null && q[q.length - 1] === add(q.slice(0, -1))) tot = q.pop();
+        // Still being played: no total, fewer than four quarters, none marked X (an X is a quarter that won't be).
+        (out.going = out.going || []).push(tot == null && q.length < 4 && !q.includes(null) ? q.length : 0);
         // Each overtime keeps its own column, however many there were: "10 10 0 7 0 6 0 6 0 — 39".
         let name = ls[1].replace(/[\s:,.—–-]+$/, '');
         // "isenhower": a school we don't have that is one slip from one we do is that one.
@@ -7312,6 +7321,8 @@ function parseBox(txt){
     out.error = 'Couldn’t find the line score: each team’s name, its quarter scores and the total, like “Andover 7 7 8 10 — 32”.';
     return out;
   }
+  // Both teams' lines say the game is still going: how many quarters are in (2 is halftime).
+  out.stage = out.going && out.going[0] && out.going[1] ? Math.max(out.going[0], out.going[1]) : 0;
 
   // Full names from the scoring summary, so "Vega" in the stat lines reads as "Pete Vega". A "first name"
   // that is some other player's last name ("from Quinn Vega kick", with a "(" missing) isn't one.
@@ -7622,7 +7633,7 @@ function boxData(game){
   if (!boxCache.has(key)){
     const p = parseBox(b.src);
     if (p.ok && !sameSchool(p.names[0], T.A.name) && sameSchool(p.names[0], T.H.name) && sameSchool(p.names[1], T.A.name)) swapBox(p);
-    boxCache.set(key, p.ok ? {lines:p.lines, total:p.total, scoring:p.scoring, pl:p.pl, team:p.team} : b);
+    boxCache.set(key, p.ok ? {lines:p.lines, total:p.total, scoring:p.scoring, pl:p.pl, team:p.team, stage:p.stage} : b);
   }
   return boxCache.get(key);
 }
@@ -7647,7 +7658,12 @@ function boxInto(game, st, S, scoring){
   // whether the paste stopped short or spelled the unplayed quarters out as X.
   // Count only the columns that carry a figure: a trailing X (or a blank OT slot) must not read as overtime.
   const played = ['A', 'H'].reduce((n, s) => st.lines[s].reduce((m, v, i) => v != null && i + 1 > m ? i + 1 : m, n), 0);
-  Object.assign(st, {final:true, phase:'final', q:played > 4 ? 5 : 4, qPlayed:Math.min(played, 5), typed:true, drive:null});
+  if (b.stage){
+    // Posted mid-game (no total, the quarters so far): not final. The quarters to come are blank, not X, and the
+    // board says Halftime or End of 1st/3rd (summary, in 13-scores.js).
+    ['A', 'H'].forEach(s => { st.lines[s] = st.lines[s].map(v => v || 0); });
+    Object.assign(st, {final:false, phase:'kick', q:b.stage, boxStage:b.stage, typed:false, drive:null});
+  } else Object.assign(st, {final:true, phase:'final', q:played > 4 ? 5 : 4, qPlayed:Math.min(played, 5), typed:true, drive:null});
   const run = {A:0, H:0};
   (b.scoring || []).forEach(e => {
     run[e.side] += e.pts || 0;
@@ -7740,7 +7756,8 @@ function boxPreview(p){
   const where = w => `${esc(w.teams.A.name)} at ${esc(w.teams.H.name)}, ${esc(weekLabel(gameWeek(w)))}`;
   const goes = ui.boxGame || (ui.boxFrom && !prior) ? '' : `<div class="muted">${prior ? `Updates your earlier box score for ${where(prior)}.`
     : from ? `Replaces ${where(from)} on the scoreboard.` : 'Goes on the scoreboard as a new game.'}</div>`;
-  return `<div class="bx-sum"><b>${esc(p.names[0])} ${p.total.A}, ${esc(p.names[1])} ${p.total.H}</b> · Final
+  const when = p.stage ? (p.stage === 2 ? 'Halftime' : `End of ${ord(p.stage)}`) : 'Final';
+  return `<div class="bx-sum"><b>${esc(p.names[0])} ${p.total.A}, ${esc(p.names[1])} ${p.total.H}</b> · ${when}
       <div class="muted">${p.scoring.length} scoring plays · ${players} players with stats</div>${goes}</div>
     ${p.warn.map(w => `<p class="hint bx-warn">${esc(w)}</p>`).join('')}`;
 }
@@ -7783,7 +7800,7 @@ function saveBox(){
   // earlier box score's Thursday though he had set Friday).
   const touched = dv && dv !== ($('#bx-date') || {}).defaultValue;
   const date = ui.boxGame || ui.boxFrom || touched ? typed : (from && from.date) || (old && old.date) || typed;
-  const box = {lines:p.lines, total:p.total, scoring:p.scoring.map(({side, how, pts, desc, q}) => ({side, how, pts, desc, q})), pl:p.pl, team:p.team, src:txt};
+  const box = {lines:p.lines, total:p.total, scoring:p.scoring.map(({side, how, pts, desc, q}) => ({side, how, pts, desc, q})), pl:p.pl, team:p.team, src:txt, ...(p.stage ? {stage:p.stage} : {})};
   // A new one goes on everyone's scoreboard, where its Box Score opens.
   const x = old || {id:'g' + Date.now().toString(36), created:Date.now(), set:{qtr:12, men:11, firstKick:'H'}, plays:[], clk:{s:0, run:false, at:0}, share:true};
   Object.assign(x, {teams:{A:team('A'), H:team('H')}, date, box, updated:Date.now()});

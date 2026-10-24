@@ -336,6 +336,7 @@ function summary(x){
   const r = replay(x), st = r.st;
   let status, live = false;
   if (st.final) status = st.q > 4 ? 'Final/OT' : 'Final';
+  else if (st.boxStage){ live = true; status = st.boxStage === 2 ? 'Halftime' : `End of ${ord(st.boxStage)}`; }   // a box score posted mid-game
   else if (!x.plays.length) status = 'Pregame';
   else {
     live = true;
