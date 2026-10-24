@@ -60,12 +60,18 @@ const schedById = id => { if (!sched.rows) return null; schedStubs(); return sch
 const schedPair = x => `${gameWeek(x)}|${[kpAlias(x.teams.A.name), kpAlias(x.teams.H.name)].sort().join('|')}`;
 // The schedule's games that the site doesn't already have: nothing already there is ever replaced, and a game
 // the admin took off the schedules stays off.
+// Our own bracket's playoff games (pb/35-bracket.js) come after the file's: a game the file has already, or the site,
+// is that game.
 function schedMissing(have, week){
-  if (!sched.rows) return [];
   const taken = new Set(), ids = new Set();
   have.forEach(x => { if (x && x.teams && x.teams.A && x.teams.H){ taken.add(schedPair(x)); ids.add(x.id); } });
-  return schedStubs().filter(x => (!week || gameWeek(x) === week) && !ids.has(x.id) && !hideList.ids.has(x.id) && !taken.has(schedPair(x)));
+  return (sched.rows ? schedStubs() : []).concat(bkSched.list).filter(x => {
+    if ((week && gameWeek(x) !== week) || ids.has(x.id) || hideList.ids.has(x.id) || taken.has(schedPair(x))) return false;
+    taken.add(schedPair(x)); return true;
+  });
 }
+// Playoff games from our bracket, as schedule entries; filled in by bkSchedRefresh once the games are indexed.
+const bkSched = {list:[], sig:''};
 // Take a schedule game off for good. It has no document of its own to delete, so it joins the admin's hidden
 // list, which every page already reads; showing it again on a scoreboard brings it back.
 async function schedRemove(id){

@@ -525,6 +525,55 @@ function bkAdvance(slots){
   }
   return {next, games};
 }
+/* ---------- playoff games on the team schedules (Chuck, 2026-10-24: "when there are playoff games, add them
+   immediately to the team schedules" — "not the kshsaa brackets, our brackets") ----------
+   Once the regular season is in, every matchup on our bracket with both teams known goes on both schedules: the
+   better seed at home, on that round's Friday; State is on the 27th. Not yet played only — a final is a real game
+   already. A game anyone enters, or KPreps lists, for the same two schools that week takes its place. */
+const BK_ROUND_DAYS = ['2026-10-30', '2026-11-06', '2026-11-13', '2026-11-20', '2026-11-27'];
+function bkSides(cls){
+  if (!DISTRICTS[cls]){ const S = SECTIONS[cls]; return [bkSlots(bkSeed(S.East)), bkSlots(bkSeed(S.West))]; }
+  const D = DISTRICTS[cls].map(names => bkDistrict(names, bkCut(cls)));
+  if (cls.startsWith('8M') || cls === '6M'){
+    const by = {}, pairs = cls === '6M' ? BK_6M : BK_8M; D.forEach((d, i) => { by[i + 1] = d; });
+    return [bk8Slots(by, 'East', pairs), bk8Slots(by, 'West', pairs)];
+  }
+  return [bkSlots(bkDistrictSeeds(D.slice(0, 4))), bkSlots(bkDistrictSeeds(D.slice(4, 8)))];
+}
+function bkSchedRefresh(){
+  const out = [];
+  if (allGames.idx && Date.now() >= fromYmd(BK_WEEK8_END).getTime()){
+    const was = bk.cls;
+    const rank = t => t.tag ? +t.tag.split('#')[1] : t.seed || 99;
+    const team = name => { const t = findTeam(name); return {name, abbr:(t && t.abbr) || shortName(name), color:(t && t.color) || '#4A4B4D'}; };
+    const add = (cls, r, a, b) => {
+      if (!a || !b || a.bye || b.bye) return;   // past week 8 by the calendar: a week-1 game with no final on file doesn't hold it up
+      const [H, A] = r < 4 && rank(b) < rank(a) ? [b, a] : [a, b], d = BK_ROUND_DAYS[r];
+      out.push({id:`bk26-${cls}-${r}-${canonSchool(A.name)}-${canonSchool(H.name)}`, kind:'score', sched:true, opp:true, file:true, playoff:true,
+        created:0, updated:0, date:d, teams:{A:team(A.name), H:team(H.name)}, A:0, H:0, per:'pre', clk:''});
+    };
+    try {
+      BK_CLASSES.forEach(cls => {
+        bk.cls = cls;
+        const champs = bkSides(cls).map(slots => {
+          let cur = slots;
+          for (let r = 0; r < 4; r++){
+            const {next, games} = bkAdvance(cur);
+            for (let i = 0; i < cur.length; i += 2) if (!games[i / 2]) add(cls, r, cur[i], cur[i + 1]);
+            cur = next;
+          }
+          return cur[0] || null;
+        });
+        if (champs[0] && champs[1] && !bkPlayed(champs[0], champs[1])) add(cls, 4, champs[0], champs[1]);
+      });
+    } catch (e) { console.warn('playoff schedule', e); }
+    bk.cls = was;
+  }
+  const sig = out.map(x => x.id).sort().join();
+  if (sig === bkSched.sig) return false;
+  bkSched.list = out; bkSched.sig = sig;
+  return true;
+}
 function bkLine(t, game, small){
   if (t && t.bye) return `<div class="bkp bye"><span class="bk-nm">Bye</span></div>`;
   if (!t) return `<div class="bkp empty"><span class="bk-nm">&nbsp;</span></div>`;
