@@ -1589,6 +1589,7 @@ html[data-skin="liquid"] .ctbl tbody tr:nth-child(even) td{background:var(--lg-z
       <a class="navlink" data-nav="home" href="?home">Home</a>
       <button type="button" class="navlink navdrop" data-nav="buco" id="nav-buco" aria-haspopup="true" aria-expanded="false" aria-controls="nav-buco-menu">Butler County<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
       <button type="button" class="navlink navdrop" data-nav="state" id="nav-state" aria-haspopup="true" aria-expanded="false" aria-controls="nav-state-menu">State<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+      <a class="navlink" data-nav="po26" id="nav-po26" href="?bracket=6A">2026 Playoffs</a>
       <a class="navlink" data-nav="phist" id="nav-phist" href="?brackets">Playoff History</a>
       <a class="navlink" data-nav="tracker" id="nav-tracker" href="?tracker">Game Tracker</a>
     </div>
@@ -6475,7 +6476,7 @@ const chev = d => `<svg width="10" height="18" viewBox="0 0 10 18" aria-hidden="
   const q = new URLSearchParams(location.search);
   // The site's plain address is Home; the Game Tracker is ?tracker (or ?edit=<id>).
   const here = q.has('tracker') || q.has('edit') ? 'tracker'
-    : q.has('brackets') ? 'phist'
+    : q.has('brackets') ? 'phist' : q.has('bracket') ? 'po26'   // ?bracket=<class>: the 2026 Playoffs tab
     : q.has('league') ? 'leagues' : q.has('matchup') ? 'matchup'
     : q.has('avctl') ? 'avscores' : q.has('standings') ? 'standings' : q.has('avstats') ? 'avstats'
     : q.has('scores') ? 'scores' : q.has('state') ? 'state' : q.has('statestats') ? 'sstats'
