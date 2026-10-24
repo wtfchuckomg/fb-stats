@@ -415,6 +415,8 @@ function teamPageHtml(nameIn){
         <label class="tp-ot"><input type="checkbox" id="tp-s-ot"${(d.ot != null ? d.ot : x.per === 'fot') ? ' checked' : ''}> OT/F</label>
         <a class="btn" href="?tracker&amp;box=${encodeURIComponent(x.id)}">Paste box score</a>
         <button type="button" class="btn primary" data-tp-score-save>Save final</button>
+        <button type="button" class="btn" data-tp-ff="mine">${esc(x.teams[side].name)} won by forfeit</button>
+        <button type="button" class="btn" data-tp-ff="opp">${esc(o.name)} won by forfeit</button>
         ${m.fin ? '<button type="button" class="btn" data-tp-score-clear>Not played yet</button>' : ''}
         <button type="button" class="btn" data-tp-score-cancel>Cancel</button>
         ${tpage.removing === x.id
@@ -583,12 +585,12 @@ async function saveTeamScore(clear){
 }
 // Save a final typed by the admin — from a team page's schedule or straight onto a scoreboard card — into the
 // game's own document. `sc` is {A, H}, or null for "not played yet". True once it's on its way.
-async function saveFinal(x0, sc, ot){
+async function saveFinal(x0, sc, ot, per){
   if (!x0 || !teamRecs.api){ toast('Couldn’t save that score. Sign in on the Game Tracker, then try again.'); return false; }
   const x = JSON.parse(JSON.stringify(x0));
   delete x.snap; delete x.kp;   // the overnight file's result, or KPreps', for this game: now out of date
   if (!sc) Object.assign(x, {A:0, H:0, per:'pre', clk:''});
-  else Object.assign(x, {A:clamp(sc.A, 0, 199), H:clamp(sc.H, 0, 199), per:ot ? 'fot' : 'final', clk:''});
+  else Object.assign(x, {A:clamp(sc.A, 0, 199), H:clamp(sc.H, 0, 199), per:per || (ot ? 'fot' : 'final'), clk:''});
   x.updated = Date.now();
   // Shown at once, here and on the scoreboards; put back if the save is turned down.
   const before = allGames.list, wasLive = scores.docs && scores.docs[x.id];
@@ -626,6 +628,14 @@ document.addEventListener('click', e => {
   if (sc){ tpage.editing = {id:sc.dataset.tpScore, side:sc.dataset.side}; tpage.sdraft = null; tpage.removing = null; return renderTeamPage(); }
   if (t.closest('[data-tp-score-cancel]')){ tpage.editing = null; tpage.sdraft = null; tpage.removing = null; return renderTeamPage(); }
   if (t.closest('[data-tp-score-save]')) return saveTeamScore(false);
+  // A forfeit in one tap (Chuck, 2026-10-24): 2-0 to that side, marked Forfeit.
+  const tff = t.closest('[data-tp-ff]');
+  if (tff){
+    const ed = tpage.editing, x0 = ed && ((allGames.list || []).find(y => y.id === ed.id) || schedById(ed.id)); if (!x0) return;
+    const opp = ed.side === 'A' ? 'H' : 'A', win = tff.dataset.tpFf === 'mine' ? ed.side : opp;
+    tpage.editing = null; tpage.sdraft = null;
+    return saveFinal(x0, {[win]:FORFEIT, [win === 'A' ? 'H' : 'A']:0}, false, 'ff');
+  }
   if (t.closest('[data-tp-score-clear]')) return saveTeamScore(true);
   if (t.closest('[data-tp-remove]')){ tpage.removing = tpage.editing && tpage.editing.id; return renderTeamPage(); }
   if (t.closest('[data-tp-remove-no]')){ tpage.removing = null; return renderTeamPage(); }

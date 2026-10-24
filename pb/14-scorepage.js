@@ -131,7 +131,7 @@ function boardGame(x){
   const off = ui.admin && isHidden(x);
   const hide = ui.admin ? `${off ? '<span class="b-hidtag">Hidden</span>' : ''}<button type="button" class="bhide" data-hide="${esc(x.id)}"${x.opp ? ' data-opp="1"' : ''}>${off ? 'Show' : 'Hide'}</button>` : '';
   const typeActs = typing ? `<label class="b-ot"><input type="checkbox" id="bs-ot"${board.edit.ot ? ' checked' : ''}> OT/F</label>
-    <button type="button" class="bbtn" data-bsave>Save final</button><button type="button" class="bhide" data-bcancel>Cancel</button>` : '';
+    <button type="button" class="bbtn" data-bsave>Save final</button>${['A', 'H'].map(s => `<button type="button" class="bhide" data-bff="${s}">${esc(x.teams[s].abbr || shortName(x.teams[s].name))} won by forfeit</button>`).join('')}<button type="button" class="bhide" data-bcancel>Cancel</button>` : '';
   return `<article class="bgame${m.live ? ' live' : ''}${off ? ' bhid' : ''}${typing ? ' btyping' : ''}">
     <div class="b-main"><div class="b-hd"><span class="b-st">${status}</span><div class="bt-q b-qh">${cells(i => i < 4 ? i + 1 : 'OT')}</div><span class="b-th">T</span><i></i></div>
       ${team('A')}${team('H')}</div>
@@ -208,6 +208,12 @@ document.addEventListener('click', e => {
     return;
   }
   if (e.target.closest('[data-bsave]')) return saveBoardFinal();
+  // A forfeit in one tap (Chuck, 2026-10-24): 2-0 to that side, marked Forfeit.
+  const bff = e.target.closest('[data-bff]');
+  if (bff && board.edit){
+    const x = weekGames(ui.week, ui.admin, true).find(y => y.id === board.edit.id), w = bff.dataset.bff;
+    board.edit = null; saveFinal(x, {[w]:FORFEIT, [w === 'A' ? 'H' : 'A']:0}, false, 'ff'); return renderScoreboard();
+  }
   if (e.target.closest('[data-bcancel]')){ board.edit = null; return renderScoreboard(); }
   const a = e.target.closest('[data-bscroll]');
   if (a){ const wk = $('#board .bweeks'); wk.scrollBy({left:+a.dataset.bscroll * wk.clientWidth * .7, behavior:'smooth'}); }
