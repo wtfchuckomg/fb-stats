@@ -519,6 +519,31 @@ table.pl-tbl{table-layout:fixed;width:100%}
 .bkt-pair{position:relative;display:flex;flex-direction:column;gap:5px}
 .bkt-pair::after{content:"";position:absolute;left:100%;top:25%;bottom:25%;width:17px;border:1px solid var(--line);border-left:0;border-radius:0 8px 8px 0}
 .bkt-pair::before{content:"";position:absolute;left:calc(100% + 17px);top:50%;width:12px;border-top:1px solid var(--line)}
+/* The whole bracket on a desktop: East reading right, West reading left, State between them (35-bracket.js, bkFullHtml) */
+.bkf,.bkf-sides{display:none}
+@media (min-width:1200px){
+  .bkt-wrap.has-full{display:none}
+  .bkf{display:grid;grid-template-columns:minmax(220px,3fr) repeat(3,minmax(72px,1fr)) minmax(84px,1.1fr) repeat(3,minmax(72px,1fr)) minmax(220px,3fr);
+    column-gap:20px;padding:4px 12px 8px;align-items:stretch}
+  .bkf-sides{display:flex;justify-content:space-between;padding:0 14px 12px;font:700 15px/1.2 var(--sans);color:var(--ink-2)}
+  .bkf-col{display:flex;flex-direction:column;min-width:0}
+  .bkf-pairs{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:12px}
+  .bkf .bkt-pair{gap:4px}
+  .bkf .bkt-pair::after{width:10px}
+  .bkf .bkt-pair::before{left:calc(100% + 10px);width:10px}
+  .bkf .bkf-col.w .bkt-pair::after{left:auto;right:100%;border:1px solid var(--line);border-right:0;border-radius:8px 0 0 8px}
+  .bkf .bkf-col.w .bkt-pair::before{left:auto;right:calc(100% + 10px)}
+  .bkf .bkf-col.st .bkt-pair::after,.bkf .bkf-col.st .bkt-pair::before{display:none}
+  .bkf .bkf-col:nth-child(4) .bkt-pair::before,.bkf .bkf-col:nth-child(6) .bkt-pair::before{width:10px}
+  .bkf .bkp{padding:6px 8px;gap:6px;font-size:12.5px}
+  .bkf .bkp.sm .bk-seed{min-width:0}
+  .bkf .bkp.lost{opacity:.55}
+  .bkf .bkp.empty{min-height:32px}
+  .bkf .bkt-pair.st{border:2px solid var(--line);border-radius:12px;padding:6px}
+  .bkf .bkp.lot .bk-nm,.bkf .bk-nm{white-space:normal;line-height:1.2;overflow-wrap:anywhere}
+  .bkf .bkp.sm{padding:5px 6px;gap:5px}
+  .bkf .bkp.sm .bk-nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
+}
 .bkp{display:flex;align-items:center;gap:9px;padding:7px 11px;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:13.5px}
 .bkp.empty{color:var(--muted);justify-content:center}
 .bkp.lot .bk-nm a{color:inherit;text-decoration:none}
@@ -12538,6 +12563,70 @@ function bk8Tree(by, side, pairs = BK_8M){
     <div class="bkt-cols"><div class="bkt-col"><span class="bkt-h">Week 9</span><div class="bkt-pairs">${pairs[side].map(([a, b]) =>
       `<div class="bkt-pair">${pill(a)}${pill(b)}</div>`).join('')}</div></div></div></div>`;
 }
+/* ---------- the whole bracket, on a desktop (Chuck, 2026-10-23: "a left and a right bracket when it's full on a
+   desktop computer now that we're finalizing") ----------
+   East on the left reading right, West on the right reading left: Week 9, Regional, Sectional, Sub-State, and State
+   in the middle. Each side is its 16 lines in bracket order, so neighbouring pairs meet in the next round. A pair
+   moves on only when its game is final on the site (played after week 8): the winner goes through, and both lines
+   show that game's score. Until then the later rounds are open. A phone, or a narrower window, keeps the list. */
+const BYE = {bye:true};
+const bkSlots = (seeds) => { const byNo = {}; seeds.forEach(t => { byNo[t.seed] = t; }); return BK_PAIRS.flat().map(n => byNo[n] || null); };
+const bk8Slots = (by, side, pairs) => pairs[side].flat().map(slot => {
+  if (!slot) return BYE;
+  const [d, p] = slot, t = by[d] && by[d][p - 1];
+  return t ? Object.assign(t, {tag:`D${d} #${p}`, lock:t.placeLock}) : null;
+});
+// The playoff game between two teams, once it's final: who won, and each one's points.
+function bkPlayed(a, b){
+  if (!a || !b || a.bye || b.bye) return null;
+  const want = canonSchool(b.name), after = fromYmd(BK_WEEK8_END);
+  for (const r of schoolRows(a.name)){
+    if (gameDay(r.x) <= after || canonSchool(r.x.teams[r.opp].name) !== want) continue;
+    const f = finalOf(r.x); if (!f.fin || !f.score) continue;
+    const pa = +f.score[r.side], pb = +f.score[r.opp];
+    if (pa === pb) continue;
+    return {win:pa > pb ? a : b, pts:new Map([[a, pa], [b, pb]])};
+  }
+  return null;
+}
+// One round's lines in, the next round's lines out (a bye goes straight through), with each game's result.
+function bkAdvance(slots){
+  const next = [], games = [];
+  for (let i = 0; i < slots.length; i += 2){
+    const a = slots[i], b = slots[i + 1];
+    if (a && a.bye) { next.push(b || null); games.push(null); continue; }
+    if (b && b.bye) { next.push(a || null); games.push(null); continue; }
+    const g2 = bkPlayed(a, b); next.push(g2 ? g2.win : null); games.push(g2);
+  }
+  return {next, games};
+}
+function bkLine(t, game, small){
+  if (t && t.bye) return `<div class="bkp bye"><span class="bk-nm">Bye</span></div>`;
+  if (!t) return `<div class="bkp empty"><span class="bk-nm">&nbsp;</span></div>`;
+  if (!small && !game) return bkPill(t);
+  const won = game && game.win === t, lost = game && game.win !== t;
+  // A short code in the narrow rounds: the school's own if it is one ("AND"), otherwise its initials ("ING", "PB").
+  const code = n => { const a = listAbbr(n); return a && a.length <= 5 ? a : initialsOf(n); };
+  const nm = small ? esc(code(t.name)) : esc(t.name);
+  // Past week 9 the boxes are narrow: the logo and short name, no seed.
+  return `<div class="bkp${small ? ' sm' : ''}${lost ? ' lost' : ''}">${small ? '' : `<span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>`}${bkMark(t.name)}
+    <a class="bk-nm${won ? ' locked' : ''}" href="?team=${encodeURIComponent(t.name)}" title="${esc(t.name)}">${nm}</a>
+    <span class="bk-rec">${game ? `<b>${game.pts.get(t)}</b>` : small ? '' : t.gp ? esc(bkRec(t)) : ''}</span></div>`;
+}
+function bkFullHtml(eastSlots, westSlots){
+  const ROUNDS = ['Week 9', 'Regional', 'Sectional', 'Sub-State'];
+  const side = slots => { const cols = []; let cur = slots;
+    for (let r = 0; r < 4; r++){ const {next, games} = bkAdvance(cur); cols.push({slots:cur, games}); cur = next; }
+    return {cols, champ:cur[0] || null}; };
+  const E = side(eastSlots), W = side(westSlots);
+  const col = (c, r, west) => `<div class="bkf-col${west ? ' w' : ''}"><span class="bkt-h">${ROUNDS[r]}</span><div class="bkf-pairs">${c.games.map((gm, i) =>
+    `<div class="bkt-pair">${bkLine(c.slots[2 * i], gm, r > 0)}${bkLine(c.slots[2 * i + 1], gm, r > 0)}</div>`).join('')}</div></div>`;
+  const fin = bkPlayed(E.champ, W.champ);
+  return `<div class="bkf">${E.cols.map((c, r) => col(c, r, false)).join('')}
+    <div class="bkf-col st"><span class="bkt-h">State</span><div class="bkf-pairs"><div class="bkt-pair st">${bkLine(E.champ, fin, true)}${bkLine(W.champ, fin, true)}</div></div></div>
+    ${W.cols.map((c, r) => col(c, r, true)).reverse().join('')}</div>
+    <div class="bkf-sides"><span>East</span><span>West</span></div>`;
+}
 // A district's standings; the teams past fourth don't go on.
 function bkDistrictHtml(d, teams){
   return `<div class="bk-list"><h3>District ${d}</h3>
@@ -12578,7 +12667,7 @@ function renderBracket(){
   if (allGames.err) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${esc(allGames.err)}</p></section>`);
   if (DISTRICTS[bk.cls]) return renderDistricts(box, head);
   const east = bkSeed(S.East), west = bkSeed(S.West);
-  const body = `<div class="bk-wrap bkt-wrap">${bkTreeHtml(east, 'East')}${bkTreeHtml(west, 'West')}</div>`;
+  const body = `<div class="bk-wrap bkt-wrap has-full">${bkTreeHtml(east, 'East')}${bkTreeHtml(west, 'West')}</div>${bkFullHtml(bkSlots(east), bkSlots(west))}`;
   box.innerHTML = head
     + `<section class="bcard ccard"><div class="ccard-hd"><h2>Week 9 matchups</h2></div>
         ${body}</section>`
@@ -12588,19 +12677,21 @@ function renderBracket(){
 function renderDistricts(box, head){
   const D = DISTRICTS[bk.cls].map((names, i) => bkDistrict(names, bkCut(bk.cls)).map(t => Object.assign(t, {dtag:`D${i + 1} #${t.place}`})));
   const eight = bk.cls.startsWith('8M') || bk.cls === '6M';
-  let trees, seeded = '';
+  let trees, seeded = '', full = '';
   if (eight){
     const by = {}; D.forEach((d, i) => { by[i + 1] = d; });
     const pairs = bk.cls === '6M' ? BK_6M : BK_8M;
     trees = bk8Tree(by, 'East', pairs) + bk8Tree(by, 'West', pairs);
+    full = bkFullHtml(bk8Slots(by, 'East', pairs), bk8Slots(by, 'West', pairs));
   } else {
     const east = bkDistrictSeeds(D.slice(0, 4)), west = bkDistrictSeeds(D.slice(4, 8));
     trees = bkTreeHtml(east, 'East') + bkTreeHtml(west, 'West');
+    full = bkFullHtml(bkSlots(east), bkSlots(west));
     seeded = `<section class="bcard ccard"><div class="ccard-hd"><h2>How they're seeded</h2></div>${bkListHtml(east, 'East')}${bkListHtml(west, 'West')}</section>`;
   }
   box.innerHTML = head
     + `<section class="bcard ccard"><div class="ccard-hd"><h2>Week 9 matchups</h2></div>
-        <div class="bk-wrap bkt-wrap">${trees}</div></section>`
+        <div class="bk-wrap bkt-wrap has-full">${trees}</div>${full}</section>`
     + seeded
     + `<section class="bcard ccard"><div class="ccard-hd"><h2>District standings</h2></div>${D.map((d, i) => bkDistrictHtml(i + 1, d)).join('')}</section>`;
 }
