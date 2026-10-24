@@ -12529,6 +12529,33 @@ function bkDistrictSeeds(dists){
     const locks = tier.length === dists.length && tier.every(t => t.placeLock) ? bkLocks(tier, bkPctAfter, t => t.left) : new Set();
     bkOrder(tier).forEach(t => seeds.push(Object.assign(t, {lock:locks.has(canonSchool(t.name))})));
   }
+  // Point 4 of the manual's playoff information: two teams from the same district don't meet early. A team that would
+  // meet one from its own district in week 9 or the regional (its foursome: 1-16-8-9, 4-13-5-12, 2-15-7-10, 3-14-6-11)
+  // trades places with the next team below it in its seed group (Chuck, 2026-10-24: "just flip flop the person below
+  // them in their group").
+  const dOf = new Map(); dists.forEach((d, i) => d.forEach(t => dOf.set(t, i)));
+  const GROUP = {1:0, 16:0, 8:0, 9:0, 4:1, 13:1, 5:1, 12:1, 2:2, 15:2, 7:2, 10:2, 3:3, 14:3, 6:3, 11:3};
+  // Chuck's 3A example: 5 Burlington would have met 12 Anderson County (both district 2), so Burlington and 6 Baldwin
+  // traded — the higher team in the clash is the one that moves. Rematches don't count (Baldwin then plays Anderson
+  // County, a week-8 opponent). Walking down from 5, a team that shares its foursome with a district mate flips with the
+  // team right below it in its place group, and the check goes on from that spot.
+  const clean = k => seeds.every((u, j) => j === k || GROUP[j + 1] !== GROUP[k + 1] || dOf.get(u) !== dOf.get(seeds[k]));
+  for (let k = 4; k < seeds.length; k++){
+    if (clean(k) || (k + 1) % 4 === 0 || k + 1 >= seeds.length) continue;
+    [seeds[k], seeds[k + 1]] = [seeds[k + 1], seeds[k]];
+    seeds[k].split = seeds[k + 1].split = true;
+  }
+  // Anything still meeting a district mate (a last-in-group team has no one below): that group of four takes the smallest
+  // reshuffle that clears it.
+  const perms = a => a.length < 2 ? [a] : a.flatMap((x, i) => perms([...a.slice(0, i), ...a.slice(i + 1)]).map(r => [x, ...r]));
+  for (let lo = 4; lo < seeds.length; lo += 4){
+    const tier = seeds.slice(lo, lo + 4);
+    const ok = order => order.every((t, k) => !seeds.slice(0, lo).some((u, j) => GROUP[j + 1] === GROUP[lo + k + 1] && dOf.get(u) === dOf.get(t)));
+    if (ok(tier)) continue;
+    const cost = order => order.reduce((n, t, k) => n + Math.abs(k - tier.indexOf(t)), 0);
+    const best = perms(tier).filter(ok).sort((a, b) => cost(a) - cost(b))[0];
+    if (best) best.forEach((t, k) => { if (seeds[lo + k] !== t) t.split = true; seeds[lo + k] = t; });
+  }
   return seeds.map((t, i) => Object.assign(t, {seed:i + 1}));
 }
 
