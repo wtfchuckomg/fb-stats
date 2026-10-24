@@ -12478,18 +12478,21 @@ const BK_OFFICIAL = [
   'Andover, Kapaun Mt. Carmel, Hays, Bishop Carroll, Salina South, Eisenhower, Salina Central, Emporia, Hutchinson, Goddard, Andover Central, Maize South, Liberal, Valley Center, Newton, Wichita West',
   'Frontenac, Wellsville, Jefferson West, Hayden, Baldwin, Burlington, Nemaha Central, Columbus, Iola, Perry-Lecompton, Holton, Anderson County, Girard, Santa Fe Trail, Atchison, Osawatomie',
   'Andale, Holcomb, Hesston, Hoisington, Chapman, Hugoton, Wichita Collegiate, Pratt, Cheney, Goodland, Lyons, Concordia, Clay Center, Scott City, Wichita Trinity, Larned',
-].map(l => l.split(', ').map(canonSchool));
+  // 5A East, only 14-16 sent so far ("*" keeps our order there).
+  '*, *, *, *, *, *, *, *, *, *, *, *, *, Shawnee Heights, Turner, Topeka West',
+].map(l => l.split(', ').map(n => n === '*' ? null : canonSchool(n)));
 // Teams in the KSHSAA's order when one of their brackets covers them all; otherwise as they came.
 function bkOfficial(teams){
   const ks = teams.map(t => canonSchool(t.name));
-  const o = BK_OFFICIAL.find(l => l.every(k => ks.includes(k)));
+  const o = BK_OFFICIAL.find(l => l.every(k => !k || ks.includes(k)));
   if (!o) return null;
-  return o.map(k => Object.assign(teams[ks.indexOf(k)], {lock:true})).concat(teams.filter(t => !o.includes(canonSchool(t.name))));
+  const rest = teams.filter(t => !o.includes(canonSchool(t.name)));
+  return o.map(k => k ? Object.assign(teams[ks.indexOf(k)], {lock:true}) : rest.shift()).filter(Boolean).concat(rest);
 }
 // Seeds 1-16 in one section, by the manual's criteria in order.
 function bkSeed(names){
   let all = bkOrder(names.map(bkTeam)), locks = bkLocks(all, bkPctAfter, t => t.left);
-  const ks = bkOfficial(all); if (ks){ all = ks; locks = new Set(ks.slice(0, 16).map(t => canonSchool(t.name))); }
+  const ks = bkOfficial(all); if (ks){ all = ks; ks.forEach(t => { if (t.lock) locks.add(canonSchool(t.name)); }); }
   return all.slice(0, 16).map((t, i) => Object.assign(t, {seed:i + 1, lock:locks.has(canonSchool(t.name))}));
 }
 
