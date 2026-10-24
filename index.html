@@ -12843,7 +12843,7 @@ function renderBracket(){
   const east = bkSeed(S.East), west = bkSeed(S.West);
   const body = `<div class="bk-wrap bkt-wrap has-full">${bkTreeHtml(east, 'East')}${bkTreeHtml(west, 'West')}</div>${bkFullHtml(bkSlots(east), bkSlots(west))}`;
   box.innerHTML = head
-    + `<section class="bcard ccard"><div class="ccard-hd"><h2>Week 9 matchups</h2></div>
+    + `<section class="bcard ccard">
         ${body}</section>`
     + `<section class="bcard ccard"><div class="ccard-hd"><h2>How they're seeded</h2></div>${bkLegend(false)}${bkListHtml(east, 'East')}${bkListHtml(west, 'West')}</section>`;
 }
@@ -12864,7 +12864,7 @@ function renderDistricts(box, head){
     seeded = `<section class="bcard ccard"><div class="ccard-hd"><h2>How they're seeded</h2></div>${bkListHtml(east, 'East')}${bkListHtml(west, 'West')}</section>`;
   }
   box.innerHTML = head
-    + `<section class="bcard ccard"><div class="ccard-hd"><h2>Week 9 matchups</h2></div>
+    + `<section class="bcard ccard">
         <div class="bk-wrap bkt-wrap has-full">${trees}</div>${full}</section>`
     + seeded
     + `<section class="bcard ccard"><div class="ccard-hd"><h2>District standings</h2></div>${bkLegend(true, bkCut(bk.cls) < 7)}${D.map((d, i) => bkDistrictHtml(i + 1, d)).join('')}</section>`;
