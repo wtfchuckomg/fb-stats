@@ -12501,9 +12501,9 @@ function bkOut(teams, val, games, B, cut = 4){
 const bkPctAfter = (t, w, l) => { const n = t.gp + w + l; return n ? (t.w + w + t.t / 2) / n : 0; };
 const bkDpctAfter = (t, w, l) => { const n = t.dgp + w + l; return n ? (t.dw + w + t.dt / 2) / n : .5; };
 // The KSHSAA's own seeds, once a bracket is out: they stand over ours (Chuck, 2026-10-24: "we messed up in 5A fix it" —
-// they have Hutchinson 9, Goddard 10, Andover Central 11, which neither the margin nor head-to-head gives).
+// KSHSAA had Salina Central-Goddard 40-30, not 34-20, then fixed it: Andover Central 10, Goddard 11).
 const BK_OFFICIAL = [
-  'Andover, Kapaun Mt. Carmel, Hays, Bishop Carroll, Salina South, Eisenhower, Salina Central, Emporia, Hutchinson, Goddard, Andover Central, Maize South, Liberal, Valley Center, Newton, Wichita West',
+  'Andover, Kapaun Mt. Carmel, Hays, Bishop Carroll, Salina South, Eisenhower, Salina Central, Emporia, Hutchinson, Andover Central, Goddard, Maize South, Liberal, Valley Center, Newton, Wichita West',
   'Frontenac, Wellsville, Jefferson West, Hayden, Baldwin, Burlington, Nemaha Central, Columbus, Iola, Perry-Lecompton, Holton, Anderson County, Girard, Santa Fe Trail, Atchison, Osawatomie',
   'Andale, Holcomb, Hesston, Hoisington, Chapman, Hugoton, Wichita Collegiate, Pratt, Cheney, Goodland, Lyons, Concordia, Clay Center, Scott City, Wichita Trinity, Larned',
   // 5A East, only 14-16 sent so far ("*" keeps our order there).
