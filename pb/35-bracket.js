@@ -291,6 +291,10 @@ function bkLocks(teams, val, games, B = ['beat', 'lost']){
   teams.forEach(x => {
     const near = teams.filter(y => y !== x && !(lo(y) > hi(x) || hi(y) < lo(x)));
     if (!near.length) return out.add(key(x));
+    // Its record final, and every record it could be level with too: nothing left to play can move it (Chuck,
+    // 2026-10-23: "all teams should be bold if their record is finalized"). A tie still to be broken is broken by
+    // what's already happened — head-to-head, the margin, or the KSHSAA's coin flip.
+    if (!games(x).length && near.every(y => !games(y).length)) return out.add(key(x));
     const who = [x, ...near], gm = new Map();
     who.forEach(t => games(t).forEach(g => gm.set(g.key, g)));
     const list = [...gm.keys()];
@@ -516,7 +520,7 @@ function bkDistrictHtml(d, teams){
       <th class="c-seed">#</th><th class="nm">TEAM</th><th class="num c-wl">DIST</th>
       <th class="num c-pct">W-L</th><th class="num c-marg">MARGIN</th><th class="nm c-tb">TIEBREAK</th></tr></thead>
     <tbody>${teams.map(t => `<tr${t.place > bkCut(bk.cls) ? ' class="out"' : ''}><td class="c-seed"><b>${t.place}</b></td>
-      <td class="nm"><div class="cn-in">${bkMark(t.name)}<a class="tlink${t.placeLock ? ` locked${t.place === 1 ? ' dlock' : ''}` : ''}${t.elim ? ' elim' : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a></div></td>
+      <td class="nm"><div class="cn-in">${bkMark(t.name)}<a class="tlink${t.placeLock ? ` locked${t.place === 1 && !t.lotWith ? ' dlock' : ''}` : ''}${t.elim ? ' elim' : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a></div></td>
       <td class="num c-wl">${t.dw}-${t.dl}${t.dt ? `-${t.dt}` : ''}</td>
       <td class="num c-pct">${t.gp ? esc(bkRec(t)) : '—'}</td>
       <td class="num c-marg">${t.dgp ? (t.davg > 0 ? '+' : '') + t.davg.toFixed(1) : '—'}</td>
