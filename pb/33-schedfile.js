@@ -30,9 +30,9 @@ function schedStubs(){
   const team = name => { const t = findTeam(name); return {name, abbr:(t && t.abbr) || shortName(name), color:(t && t.color) || '#4A4B4D'}; };
   sched.stubs = (sched.rows || []).map(r => {
     const fin = r.hp != null && r.ap != null;
-    return {id:r.id, kind:'score', sched:true, opp:true, file:true, created:0, updated:0, date:r.d,
+    return bkWeek9Fix({id:r.id, kind:'score', sched:true, opp:true, file:true, created:0, updated:0, date:r.d,
       teams:{A:team(r.an), H:team(r.hn)}, A:fin ? r.ap : 0, H:fin ? r.hp : 0,
-      per:fin ? (r.ot ? 'fot' : 'final') : 'pre', clk:'', ...(fin ? {kp:true} : {})};
+      per:fin ? (r.ot ? 'fot' : 'final') : 'pre', clk:'', ...(fin ? {kp:true} : {})});
   });
   sched.byId = new Map(sched.stubs.map(x => [x.id, x]));
   sched.byPair = new Map(sched.stubs.map(x => [schedPair(x), x]));

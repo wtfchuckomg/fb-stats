@@ -536,6 +536,14 @@ const BK_THURSDAY = new Set(['Olathe North', 'Olathe Northwest', 'Salina Central
   'Centre', 'Logan', 'Sylvan-Lucas Unified', 'Thunder Ridge', 'Quinter', 'Marmaton Valley', 'Axtell', 'Flinthills', 'Hoxie', 'Hill City',
   'Washington County', 'Silver Lake', 'Sabetha'].map(canonSchool));
 const BK_SITES = {'olathe-north':'ODAC', 'olathe-northwest':'CBAC'};
+// The same days and sites on KPreps' copy of a week-9 game (schedule.json lists them all on the Friday).
+function bkWeek9Fix(x){
+  if (!/^2026-10-(29|30)$/.test(x.date || '')) return x;
+  const ks = [canonSchool(x.teams.A.name), canonSchool(x.teams.H.name)], site = ks.map(k => BK_SITES[k]).find(Boolean);
+  if (ks.some(k => BK_THURSDAY.has(k))) x.date = '2026-10-29';
+  if (site) x.site = site;
+  return x;
+}
 function bkSides(cls){
   if (!DISTRICTS[cls]){ const S = SECTIONS[cls]; return [bkSlots(bkSeed(S.East)), bkSlots(bkSeed(S.West))]; }
   const D = DISTRICTS[cls].map(names => bkDistrict(names, bkCut(cls)));
@@ -553,10 +561,9 @@ function bkSchedRefresh(){
     const team = name => { const t = findTeam(name); return {name, abbr:(t && t.abbr) || shortName(name), color:(t && t.color) || '#4A4B4D'}; };
     const add = (cls, r, a, b) => {
       if (!a || !b || a.bye || b.bye) return;   // past week 8 by the calendar: a week-1 game with no final on file doesn't hold it up
-      const [H, A] = r < 4 && rank(b) < rank(a) ? [b, a] : [a, b], ks = [canonSchool(a.name), canonSchool(b.name)];
-      const d = r === 0 && ks.some(k => BK_THURSDAY.has(k)) ? '2026-10-29' : BK_ROUND_DAYS[r], site = r === 0 && ks.map(k => BK_SITES[k]).find(Boolean);
-      out.push({id:`bk26-${cls}-${r}-${canonSchool(A.name)}-${canonSchool(H.name)}`, kind:'score', sched:true, opp:true, file:true, playoff:true,
-        created:0, updated:0, date:d, teams:{A:team(A.name), H:team(H.name)}, A:0, H:0, per:'pre', clk:'', ...(site ? {site} : {})});
+      const [H, A] = r < 4 && rank(b) < rank(a) ? [b, a] : [a, b];
+      out.push(bkWeek9Fix({id:`bk26-${cls}-${r}-${canonSchool(A.name)}-${canonSchool(H.name)}`, kind:'score', sched:true, opp:true, file:true, playoff:true,
+        created:0, updated:0, date:BK_ROUND_DAYS[r], teams:{A:team(A.name), H:team(H.name)}, A:0, H:0, per:'pre', clk:''}));
     };
     try {
       BK_CLASSES.forEach(cls => {
