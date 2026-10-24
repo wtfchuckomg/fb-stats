@@ -540,7 +540,8 @@ table.pl-tbl{table-layout:fixed;width:100%}
 .bkt-pair{position:relative;display:flex;flex-direction:column;gap:5px}
 /* The lines joining a bracket's games: darker than the site's hairlines (Chuck, 2026-10-23), and from the text color so
    they hold up on every look, dark ones included. */
-.bkt,.bkf{--bk-line:color-mix(in srgb, var(--ink, #1d1d1f) 42%, transparent)}
+.bkt,.bkf{--bk-line:color-mix(in srgb, var(--ink, #1d1d1f) 62%, transparent);--bk-box:color-mix(in srgb, var(--ink, #1d1d1f) 26%, transparent)}
+.bkt .bkp,.bkf .bkp{border-color:var(--bk-box)}
 .bkt-pair::after{content:"";position:absolute;left:100%;top:25%;bottom:25%;width:17px;border:1.5px solid var(--bk-line);border-left:0;border-radius:0 8px 8px 0}
 .bkt-pair::before{content:"";position:absolute;left:calc(100% + 17px);top:50%;width:12px;border-top:1.5px solid var(--bk-line)}
 /* The whole bracket on a desktop: East reading right, West reading left, State between them (35-bracket.js, bkFullHtml) */
