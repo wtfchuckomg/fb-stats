@@ -244,47 +244,56 @@ function bkOrder(teams){
   });
   return out;
 }
-// Teams level on percentage, sorted one place at a time the KSHSAA's way (Chuck, 2026-10-23: "follow the procedure"):
-//   1. everyone still level has played everyone else: the one with the most wins over the others takes the place;
-//   2. otherwise the margin (13-point here, 21-point in a district): the best one takes it;
-//   3. teams still level on the margin that have played each other: head-to-head among just them;
-//   4. a coin flip.
-// Whoever is left starts again at 1. So two teams that played are settled by that game (Hutchinson beat Maize South);
-// two that didn't, level on the margin, flip (Andover, Kapaun); three level on everything flip for the top, and the
-// other two go back to head-to-head, then the margin, then another flip. A flip with games still to play is only
-// where things stand, so it reads as the margin until every one of them is done.
+// Teams level on percentage, sorted the KSHSAA's way (Chuck, 2026-10-23: "follow the procedure"):
+//   1. head-to-head, while everyone still level has played everyone else and one of them has the most wins over
+//      the rest: that one takes the place (two teams that played: the winner);
+//   2. otherwise the margin (13-point here, 21-point in a district) orders all of them at once;
+//   3. teams level on the margin as well go to a coin flip;
+//   4. after a flip, the ones left go back to 1: head-to-head, then the margin, then another flip.
+// The margin is never followed by head-to-head: Anderson County, Osawatomie and Prairie View (3A District 2) each
+// beat one of the others, so the margin ranks all three — Anderson County, Prairie View, Osawatomie — and
+// Osawatomie's win over Prairie View doesn't come back into it; Hutchinson and Maize South, level on the margin,
+// flip. A flip with games still to play is only where things stand, so it reads as the margin until all are done.
 // Ties Chuck sends straight to the coin flip, head-to-head or not: "<season>|<class>|<schools>" (2026-10-23:
-// "undo the head to head with maize south" — back to a coin flip).
+// "undo the head to head with maize south"). Under the procedure above they flip anyway; kept so his call stands.
 const BK_FLIP_ONLY = new Set(['2026|5A|hutchinson,maize-south']);
 function bkSettle(group, o){
   const k = t => canonSchool(t.name), out = [];
   const flipOnly = g => BK_FLIP_ONLY.has(`${BK_WEEK8_END.slice(0, 4)}|${bk.cls}|${g.map(k).sort().join(',')}`);
   const played = g => !flipOnly(g) && g.every(a => g.every(b => a === b || a[o.beat].has(k(b)) || a[o.lost].has(k(b))));
   const wins = (t, g) => g.filter(x => x !== t && t[o.beat].has(k(x))).length;
-  const best = (g, f) => { const m = Math.max(...g.map(f)); return g.filter(t => bkSame(f(t), m)); };
-  let rest = group.slice(), how = '';
-  while (rest.length > 1){
-    let pick = null;
-    if (played(rest)){ const top = best(rest, t => wins(t, rest)); if (top.length === 1){ pick = top[0]; how = 'head-to-head'; } }
-    if (!pick){
-      const top = best(rest, o.marg);
-      if (top.length === 1){ pick = top[0]; how = o.mhow; }
-      else if (played(top)){ const t2 = best(top, t => wins(t, top)); if (t2.length === 1){ pick = t2[0]; how = 'head-to-head'; } }
-      if (!pick){
-        const done = !top.some(t => o.left(t).length), f = done ? flipOrder(top) : null;
-        const won = f && top.filter(t => f.order.includes(k(t))).sort((a, b) => f.order.indexOf(k(a)) - f.order.indexOf(k(b)))[0];
-        if (won){ pick = Object.assign(won, {flipKey:f.key}); how = 'coin flip'; }
-        else {
-          bkLot(top, o.left);
-          // Not flipped yet: the line carries them all; the projection goes on to the season's record and margin.
-          pick = top.slice().sort((a, b) => b.pct - a.pct || b.avg - a.avg || a.name.localeCompare(b.name))[0];
-          how = done ? 'coin flip' : o.proj || o.mhow;
-        }
-      }
-    }
-    out.push(Object.assign(pick, {how})); rest = rest.filter(t => t !== pick);
+  let rest = group.slice();
+  // 1. Head-to-head, one place at a time while it decides.
+  while (rest.length > 1 && played(rest)){
+    const m = Math.max(...rest.map(t => wins(t, rest))), top = rest.filter(t => wins(t, rest) === m);
+    if (top.length !== 1) break;
+    out.push(Object.assign(top[0], {how:'head-to-head'})); rest = rest.filter(t => t !== top[0]);
   }
-  return out.concat(rest.map(t => Object.assign(t, {how})));
+  if (rest.length === 1) return out.concat(Object.assign(rest[0], {how:out.length ? 'head-to-head' : ''}));
+  // 2. The margin, all of them at once; 3. a flip among any still level on it.
+  const runs = [];
+  rest.slice().sort((a, b) => o.marg(b) - o.marg(a) || a.name.localeCompare(b.name)).forEach(t => {
+    const r = runs.length && bkSame(o.marg(runs[runs.length - 1][0]), o.marg(t)) ? runs[runs.length - 1] : null;
+    if (r) r.push(t); else runs.push([t]);
+  });
+  runs.forEach(run => {
+    if (run.length === 1) return out.push(Object.assign(run[0], {how:o.mhow}));
+    const done = !run.some(t => o.left(t).length), f = done ? flipOrder(run) : null;
+    const won = f && run.filter(t => f.order.includes(k(t))).sort((a, b) => f.order.indexOf(k(a)) - f.order.indexOf(k(b)))[0];
+    if (won){
+      // 4. Settled by the admin: the winner takes the place, and the rest start over.
+      out.push(Object.assign(won, {how:'coin flip', flipKey:f.key}));
+      const left = run.filter(t => t !== won);
+      if (left.length === 1) out.push(Object.assign(left[0], {how:'coin flip'}));
+      else out.push(...bkSettle(left, o));
+      return;
+    }
+    bkLot(run, o.left);
+    // Not flipped yet: the line carries them all; the projection goes on to the season's record and margin.
+    run.sort((a, b) => b.pct - a.pct || b.avg - a.avg || a.name.localeCompare(b.name))
+      .forEach(t => out.push(Object.assign(t, {how:done ? 'coin flip' : o.proj || o.mhow})));
+  });
+  return out;
 }
 // The last day of week 8: games after it don't count toward seeding (the manual's weeks 1-8).
 const BK_WEEK8_END = '2026-10-24';
@@ -398,6 +407,11 @@ function bkDistrict(names, cut = 4){
     if (g.length === 1) out.push(Object.assign(g[0], {dhow:''})); else out.push(...settle(g));
   });
   const locks = bkLocks(out, bkDpctAfter, t => t.dleft, ['dbeat', 'dlost']), gone = bkOut(out, bkDpctAfter, t => t.dleft, ['dbeat', 'dlost'], cut);
+  // Every district game played: below the cut is out, unless a coin flip still to come could lift it over the line.
+  if (out.every(t => !t.dleft.length)) out.forEach((t, i) => {
+    const flipIn = t.lotWith && t.lotWith.some(x => out.indexOf(x) < cut);
+    if (i >= cut && !flipIn) gone.add(canonSchool(t.name));
+  });
   return out.map((t, i) => Object.assign(t, {place:i + 1, placeLock:locks.has(canonSchool(t.name)), elim:gone.has(canonSchool(t.name))},
     t.lotWith ? {dhow:'coin flip'} : {}));
 }
