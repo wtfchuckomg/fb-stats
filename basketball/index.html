@@ -59,6 +59,63 @@ button{cursor:pointer}
 .navlink:hover{border-bottom-color:rgba(255,255,255,.45)}
 .navlink.on{border-bottom-color:var(--red)}
 .navtools{display:flex;align-items:center;gap:4px}
+/* the Butler County, AVCTL and State menus: a panel dropping from the bar under the name */
+.navdrop{background:none;border-top:0;border-left:0;border-right:0;padding-left:0;padding-right:0;gap:7px;cursor:pointer}
+.navdrop svg{width:10px;height:6px;transition:transform .15s}
+.navdrop[aria-expanded="true"] svg{transform:rotate(180deg)}
+.navmenu{position:absolute;top:100%;z-index:50;min-width:220px;padding:8px 0;background:#FFFFFF;border-radius:0 0 6px 6px;box-shadow:0 10px 28px rgba(0,0,0,.25)}
+.navmenu a{display:block;padding:14px 26px;font:400 17px/1.2 var(--sans);color:var(--muted);text-decoration:none;white-space:nowrap}
+.navmenu a:hover{background:#F1F2F3;color:var(--ink-2)}
+.navmenu a.on{color:var(--ink-2);font-weight:600}
+/* ---------- fan pages: scoreboards, teams, standings ---------- */
+body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.bpage #start,body.bpage .navtools{display:none!important}
+.board{box-sizing:border-box;width:100%;max-width:1280px;margin:0 auto;padding:16px 16px 48px;display:flex;flex-direction:column;gap:16px}
+.fan-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.fan-hd h1{margin:0;font:800 30px/1.15 var(--sans);letter-spacing:-.02em;color:var(--ink-2);text-wrap:balance}
+.fan-tabs{display:inline-flex;gap:2px;padding:3px;border-radius:980px;background:var(--surface-2)}
+.fan-tabs a{padding:8px 16px;border-radius:980px;font:500 14px/1 var(--sans);color:var(--ink);text-decoration:none;white-space:nowrap}
+.fan-tabs a.on{background:#FFFFFF;font-weight:600;box-shadow:0 2px 8px rgba(30,40,90,.12)}
+.fan-sel{-webkit-appearance:none;appearance:none;border:0;border-radius:980px;padding:9px 34px 9px 14px;font:600 14px/1 var(--sans);color:var(--ink-2);cursor:pointer;max-width:100%;
+  background:rgba(255,255,255,.7) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%230071E3' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 13px center;box-shadow:inset 0 0 0 1px var(--line)}
+.fan-sec h2{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 12px;font:700 19px/1.2 var(--sans);color:var(--ink-2)}
+.fan-sec h2 small{font:500 13px/1 var(--sans);color:var(--muted)}
+.fan-note{margin:0;font:500 14px/1.4 var(--sans);color:var(--muted)}
+.sb-day{margin:0 0 10px;font:700 16px/1.2 var(--sans);color:var(--ink-2)}
+.sb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+.sb-game{display:block;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.62);box-shadow:inset 0 0 0 1px rgba(255,255,255,.85),0 2px 8px rgba(30,40,90,.06);color:inherit;text-decoration:none}
+.sb-game:hover{background:rgba(255,255,255,.85)}
+.sb-st{margin-bottom:8px;font:700 12px/1 var(--sans);text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
+.sb-game.live .sb-st{color:var(--red)}
+.sb-row{display:flex;align-items:center;gap:10px;min-height:32px;font:600 15.5px/1.2 var(--sans);color:var(--ink-2)}
+.sb-row span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-row b{font:700 19px/1 var(--sans);font-variant-numeric:tabular-nums}
+.sb-row.lose{color:var(--muted)}
+.sb-row.lose b{font-weight:500}
+.tm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 12px}
+.tm-card{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:10px;color:var(--ink-2);text-decoration:none;min-width:0}
+.tm-card:hover{background:rgba(255,255,255,.55)}
+.tm-card div{min-width:0}
+.tm-card b{display:block;font:600 15px/1.2 var(--sans);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tm-card small{display:block;margin-top:2px;font:400 12.5px/1.2 var(--sans);color:var(--muted);font-variant-numeric:tabular-nums}
+.tm-name{display:inline-flex;align-items:center;gap:9px;color:inherit;text-decoration:none;white-space:nowrap}
+.tm-name:hover{text-decoration:underline}
+table.st.stand td,table.st.stand th{padding-top:9px;padding-bottom:9px}
+table.st.stand th.grp{text-align:center;border-bottom:0;color:var(--ink-2)}
+.tp-head{display:flex;flex-wrap:wrap;align-items:center;gap:16px 28px}
+.tp-id{display:flex;align-items:center;gap:16px;margin-right:auto;min-width:0}
+.tp-id h1{margin:0;font:800 30px/1.1 var(--sans);letter-spacing:-.02em;color:var(--ink-2)}
+.tp-id p{margin:5px 0 0;font:500 14px/1.3 var(--sans);color:var(--muted)}
+.tp-id p a{color:var(--blue);text-decoration:none}
+.tp-recs{display:flex;gap:26px}
+.tp-rec{text-align:center}
+.tp-rec b{display:block;font:800 26px/1.1 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.tp-rec span{font:600 11.5px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.res-w{color:var(--good);font-weight:700}
+.res-l{color:var(--red);font-weight:700}
+.res-live{color:var(--red);font-weight:700}
+.fan-go{color:var(--blue);font-weight:600;text-decoration:none;white-space:nowrap}
+.fan-hd>.line{min-width:0;max-width:100%}
+@media (max-width:640px){.fan-hd>.line{width:100%}.fan-sel{width:100%}.board{padding:10px 10px 32px;gap:10px}.fan-hd h1{font-size:23px}.tp-id h1{font-size:23px}.tp-recs{gap:18px}.sb-grid{grid-template-columns:1fr}}
 .abtns,.vbtns{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 .abtn{background:none;border:0;border-radius:6px;color:#FFFFFF;padding:9px 9px;font:600 14.5px/1 var(--sans);white-space:nowrap}
 .abtn:hover{background:rgba(255,255,255,.12)}
@@ -510,6 +567,11 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .navbar .livebadge{color:var(--ink)}
 #sync .abtn:not(.syncbtn){background:var(--blue);color:#FFFFFF;border-radius:980px;padding:7px 15px;font:500 13px/1 var(--sans);box-shadow:0 4px 14px rgba(0,113,227,.35)}
 #sync .abtn:not(.syncbtn):hover{background:#0077ED}
+.navmenu{top:calc(100% + 8px);border-radius:20px;border:1px solid transparent;box-shadow:0 18px 50px rgba(30,40,90,.22),0 2px 8px rgba(30,40,90,.08);
+  background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(255,255,255,.94)) padding-box,var(--glass-rim) border-box;
+  -webkit-backdrop-filter:blur(40px) saturate(1.8);backdrop-filter:blur(40px) saturate(1.8)}
+.navmenu a{color:var(--ink);font-size:15px}
+.navmenu a:hover{background:rgba(0,113,227,.08)}
 @media (max-width:640px){.navlink{font-size:13px}.navtools{border-top-color:rgba(255,255,255,.5)}}
 
 /* ---------- cards and panels ---------- */
@@ -550,8 +612,12 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   <div class="navbar-in">
     <div class="navlinks">
       <a class="navlink" href="https://stats.kansasmediarankings.com/">Football</a>
-      <a class="navlink on" href="./">Basketball</a>
+      <button type="button" class="navlink navdrop" data-drop="buco" aria-haspopup="true" aria-expanded="false" aria-controls="navmenu">Butler County<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+      <button type="button" class="navlink navdrop" data-drop="avctl" aria-haspopup="true" aria-expanded="false" aria-controls="navmenu">AVCTL<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+      <button type="button" class="navlink navdrop" data-drop="state" aria-haspopup="true" aria-expanded="false" aria-controls="navmenu">State<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+      <a class="navlink" data-nav="tracker" href="./">Game Tracker</a>
     </div>
+    <div class="navmenu" id="navmenu" role="menu" hidden></div>
     <div class="navtools">
       <div class="livebadge" id="livebadge" hidden></div>
       <div class="vbtns" id="vbtns" hidden></div>
@@ -584,6 +650,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   <aside class="gc-rail" id="rail" aria-label="Game leaders and team stats"></aside>
 </main>
 <main class="start" id="start" hidden></main>
+<main class="board" id="board" hidden></main>
 <dialog id="dlg"></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
@@ -2648,13 +2715,14 @@ function loadLogos(){
   logoLib.busy = true;
   Promise.all(LOGO_SRC.map(src => fetch(src.base + 'teams.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : []).catch(() => [])
     .then(list => { src.list = Array.isArray(list) ? list : []; })))
-    .then(() => { logoLib.list = LOGO_SRC.flatMap(src => src.list); if (g && R) refresh(); });
+    .then(() => { logoLib.list = LOGO_SRC.flatMap(src => src.list); if (typeof schoolAliases === 'function') schoolAliases(); if (fan.on) renderFan(); else if (g && R) refresh(); });
 }
 const LOGO_MISS = new Set();
 const STATS_LOGOS = 'https://stats.kansasmediarankings.com/logos/';
 function logoUrls(team){
   if (!team) return [];
-  const keys = [logoSlug(team.name), logoSlug(team.abbr)].filter(Boolean), out = [];
+  if (team.logo === '-') return [];   // a school with no logo anywhere: its monogram
+  const keys = [logoSlug(team.logo), logoSlug(team.name), logoSlug(team.abbr)].filter(Boolean), out = [];
   keys.forEach(k => { if (LOGO_MAP[k]) out.push(LOGO_MAP[k]); });
   if (logoLib.list){
     const want = new Set(keys);
@@ -2936,8 +3004,238 @@ function sampleGame(){
   return s;
 }
 
+/* ================================================================
+   Fan pages: Butler County, AVCTL and State, each with a scoreboard,
+   its teams and the standings, built from every shared basketball game
+   (and this device's own). The schools and their leagues are the
+   KSHSAA school directory's (kshsaa.org/react/school-directory, Oct.
+   2026), named the way this site names them so logos match.
+   ================================================================ */
+const KS_LEAGUES = [{"id":"KSL0001","name":"AVCTL I & II","teams":[["Andover","5A","Andover"],["Andover Central","5A","Andover"],["Arkansas City","5A","Arkansas City"],["Campus","6A","Wichita"],["Derby","6A","Derby"],["Eisenhower","5A","Goddard"],["Goddard","5A","Goddard"],["Hutchinson","5A","Hutchinson"],["Maize","6A","Maize"],["Maize South","5A","Wichita"],["Newton","5A","Newton"],["Salina Central","5A","Salina"],["Salina South","5A","Salina"],["Valley Center","5A","Valley Center"]]},{"id":"KSL1669","name":"AVCTL III & IV","teams":[["Andale","4A","Andale"],["Augusta","4A","Augusta"],["Buhler","4A","Buhler"],["Circle","4A","Towanda"],["Clearwater","4A","Clearwater"],["El Dorado","4A","El Dorado"],["McPherson","4A","McPherson"],["Mulvane","4A","Mulvane"],["Rose Hill","4A","Rose Hill"],["Wellington","4A","Wellington"],["Wichita Collegiate","3A","Wichita"],["Winfield","4A","Winfield"]]},{"id":"KSL7194","name":"Big East","teams":[["Hiawatha","3A","Hiawatha"],["Holton","3A","Holton"],["Jefferson West","3A","Meriden"],["Nemaha Central","3A","Seneca"],["Perry-Lecompton","3A","Perry"],["Riley County","3A","Riley"],["Rossville","2A","Rossville"],["Royal Valley","3A","Hoyt"],["Sabetha","3A","Sabetha"],["Silver Lake","3A","Silver Lake"],["St Marys","2A","St. Marys"]]},{"id":"KSL0004","name":"Centennial","teams":[["Emporia","5A","Emporia"],["Hayden","4A","Topeka"],["Junction City","6A","Junction City"],["Manhattan","6A","Manhattan"],["Topeka High","6A","Topeka"],["Washburn Rural","6A","Topeka"]]},{"id":"KSL1976","name":"Central Kansas","teams":[["Cheney","3A","Cheney"],["Halstead","3A","Halstead"],["Haven","3A","Haven"],["Hesston","3A","Hesston"],["Hillsboro","3A","Hillsboro"],["Hoisington","3A","Hoisington"],["Larned","3A","Larned"],["Nickerson","3A","Nickerson"],["Pratt","4A","Pratt"],["Smoky Valley","3A","Lindsborg"]]},{"id":"KSL0005","name":"Central Plains","teams":[["Belle Plaine","2A","Belle Plaine"],["Chaparral","3A","Anthony"],["Conway Springs","2A","Conway Springs"],["Douglass","2A","Douglass"],["Garden Plain","3A","Garden Plain"],["Kingman","3A","Kingman"],["Medicine Lodge","2A","Medicine Lodge"],["Wichita Trinity","3A","Wichita"]]},{"id":"KSL0006","name":"Central Prairie","teams":[["Central Plains","1A","Claflin"],["Chase","1A","Chase"],["Ellinwood","2A","Ellinwood"],["Kinsley","1A","Kinsley"],["La Crosse","1A","La Crosse"],["Macksville","1A","Macksville"],["Ness City","1A","Ness City"],["Otis-Bison","1A","Otis"],["St John","1A","St. John"],["Victoria","1A","Victoria"]]},{"id":"KSL0009","name":"CNC","teams":[["Baxter Springs","3A","Baxter Springs"],["Columbus","3A","Columbus"],["Frontenac","3A","Frontenac"],["Galena","3A","Galena"],["Girard","3A","Girard"],["Riverton","3A","Riverton"],["St Mary's Colgan","2A","Pittsburg"]]},{"id":"KSL0012","name":"Eastern Kansas","teams":[["Bishop Miege","4A","Shawnee Mission"],["Blue Valley","6A","Stilwell"],["Blue Valley North","6A","Overland Park"],["Blue Valley Northwest","6A","Overland Park"],["Blue Valley Southwest","5A","Overland Park"],["Blue Valley West","6A","Overland Park"],["St James","5A","Lenexa"],["St Thomas Aquinas","5A","Overland Park"]]},{"id":"KSL0028","name":"Flint Hills","teams":[["Cair Paravel","2A","Topeka"],["Chase County","2A","Cottonwood Falls"],["Council Grove","3A","Council Grove"],["Lyndon","2A","Lyndon"],["Mission Valley","2A","Eskridge"],["Osage City","3A","Osage City"],["Wabaunsee","2A","Alma"],["West Franklin","3A","Pomona"]]},{"id":"KSL0110","name":"Frontier","teams":[["Baldwin","4A","Baldwin"],["Bonner Springs","5A","Bonner Springs"],["Eudora","4A","Eudora"],["Louisburg","4A","Louisburg"],["Ottawa","4A","Ottawa"],["Paola","4A","Paola"],["Tonganoxie","4A","Tonganoxie"]]},{"id":"KSL1977","name":"Great West Activities Conference","teams":[["Cimarron","3A","Cimarron"],["Colby","3A","Colby"],["Goodland","3A","Goodland"],["Holcomb","3A","Holcomb"],["Hugoton","4A","Hugoton"],["Scott City","3A","Scott City"],["Ulysses","4A","Ulysses"]]},{"id":"KSL0014","name":"Greater Wichita","teams":[["Bishop Carroll","5A","Wichita"],["Kapaun Mt Carmel","5A","Wichita"],["Wichita East","6A","Wichita"],["Wichita Heights","6A","Wichita"],["Wichita North","6A","Wichita"],["Wichita Northwest","6A","Wichita"],["Wichita South","6A","Wichita"],["Wichita Southeast","6A","Wichita"],["Wichita West","5A","Wichita"]]},{"id":"KSL0015","name":"Heart of America","teams":[["Bennington","2A","Bennington"],["Berean","2A","Elbing"],["Ell-Saline","2A","Brookville"],["Hutch Trinity","2A","Hutchinson"],["Inman","2A","Inman"],["Marion","2A","Marion"],["Moundridge","2A","Moundridge"],["Remington","2A","Whitewater"],["Sedgwick","2A","Sedgwick"],["Sterling","2A","Sterling"],["Wichita Central Christian","2A","Wichita","-"],["Wichita Classical","2A","Wichita"]]},{"id":"KSL0013","name":"Heart of the Plains","teams":[["Attica","1A","Attica"],["Burrton","1A","Burrton"],["Cunningham","1A","Cunningham"],["Fairfield","1A","Langdon"],["Hutch Central Christian","1A","Hutchinson"],["Norwich","1A","Norwich"],["Pretty Prairie","1A","Pretty Prairie"],["Skyline","1A","Pratt"],["South Barber","1A","Kiowa"],["Stafford","1A","Stafford"]]},{"id":"KSL0016","name":"Hi-Plains","teams":[["Elkhart","1A","Elkhart"],["Lakin","3A","Lakin"],["Southwestern Heights","3A","Kismet"],["Stanton County","2A","Johnson"],["Sublette","2A","Sublette"],["Syracuse","3A","Syracuse"],["Wichita County","2A","Leoti"]]},{"id":"KSL0047","name":"Independent - HS","teams":[["Kansas School for the Deaf","","Olathe"],["St Xavier","1A","Junction City"],["Wichita Independent","1A","Wichita"],["Wichita Northeast Magnet","","Bel Aire","-"]]},{"id":"KSL6933","name":"Kaw Valley Conference","teams":[["Bishop Seabury","1A","Lawrence"],["Bishop Ward","3A","Kansas City"],["Kansas City Christian","2A","Prairie Village"],["Maranatha","3A","Shawnee"],["Olathe Heritage Christian","3A","Olathe"]]},{"id":"KSL0024","name":"Lyon County","teams":[["Burlingame","1A","Burlingame"],["Hamilton","1A","Hamilton","-"],["Hartford","1A","Hartford"],["Lebo","1A","Lebo"],["Madison","1A","Madison"],["Marais des Cygnes Valley","1A","Melvern"],["Northern Heights","1A","Allen"],["Olpe","2A","Olpe"],["Waverly","1A","Waverly"]]},{"id":"KSL0021","name":"Meadowlark Conference","teams":[["Atchison","4A","Atchison"],["Harmon","6A","Kansas City"],["Highland Park","5A","Topeka"],["KC Sumner","5A","Kansas City"],["Schlagle","5A","Kansas City"],["Washington","5A","Kansas City"],["Wyandotte","6A","Kansas City"]]},{"id":"KSL0026","name":"Mid-Continent","teams":[["Ellis","1A","Ellis"],["Hill City","1A","Hill City"],["Hoxie","2A","Hoxie"],["Norton","3A","Norton"],["Oakley","2A","Oakley"],["Phillipsburg","2A","Phillipsburg"],["Plainville","2A","Plainville"],["Russell","3A","Russell"],["Smith Center","2A","Smith Center"],["Thomas More Prep","2A","Hays"],["WaKeeney-Trego","2A","WaKeeney"]]},{"id":"KSL0140","name":"North Central Activities Association","teams":[["Beloit","3A","Beloit"],["Ellsworth","3A","Ellsworth"],["Lyons","3A","Lyons"],["Minneapolis","3A","Minneapolis"],["Republic County","2A","Belleville"],["Sacred Heart","2A","Salina"],["Southeast of Saline","3A","Gypsum"]]},{"id":"KSL0033","name":"North Central Kansas","teams":[["Abilene","4A","Abilene"],["Chapman","4A","Chapman"],["Clay Center","4A","Clay Center"],["Concordia","4A","Concordia"],["Marysville","3A","Marysville"],["Rock Creek","4A","St. George"],["Wamego","4A","Wamego"]]},{"id":"KSL6600","name":"Northeast Kansas","teams":[["Atchison County","2A","Effingham"],["Horton","2A","Horton"],["Jackson Heights","2A","Holton"],["Jefferson County North","2A","Winchester"],["Maur Hill-Mount","2A","Atchison"],["McLouth","2A","McLouth"],["Oskaloosa","2A","Oskaloosa"],["Pleasant Ridge","3A","Easton"],["Riverside","3A","Wathena"],["Troy","1A","Troy"],["Valley Falls","2A","Valley Falls"]]},{"id":"KSL2173","name":"Northern Plains","teams":[["Lakeside","1A","Downs"],["Lincoln","1A","Lincoln"],["Natoma","1A","Natoma"],["Osborne","1A","Osborne"],["Pike Valley","1A","Scandia"],["Rock Hills","1A","Mankato"],["St John's","1A","Beloit"],["Stockton","1A","Stockton"],["Sylvan-Lucas Unified","1A","Sylvan Grove"],["Tescott","1A","Tescott"],["Thunder Ridge","1A","Kensington"],["Tipton Catholic","1A","Tipton","St John's"]]},{"id":"KSL0034","name":"Northwest Kansas","teams":[["Decatur","1A","Oberlin"],["Dighton","1A","Dighton"],["Greeley County","1A","Tribune"],["Quinter","1A","Quinter"],["Rawlins County","1A","Atwood"],["St Francis","1A","St. Francis"],["Wallace County","1A","Sharon Springs"]]},{"id":"KSL0158","name":"Pioneer","teams":[["Anderson County","3A","Garnett"],["Burlington","3A","Burlington"],["Iola","3A","Iola"],["Osawatomie","3A","Osawatomie"],["Prairie View","3A","LaCygne"],["Santa Fe Trail","4A","Carbondale"],["Wellsville","3A","Wellsville"]]},{"id":"KSL0039","name":"Santa Fe Trail","teams":[["Deerfield","1A","Deerfield"],["Moscow","1A","Moscow"],["Rolla","1A","Rolla"]]},{"id":"KSL0040","name":"South Central Border","teams":[["Argonia","1A","Argonia"],["Caldwell","1A","Caldwell"],["Cedar Vale","1A","Cedar Vale","Cedar Vale-Dexter"],["Central Burden","1A","Burden"],["Dexter","1A","Dexter","Cedar Vale-Dexter"],["Elk Valley","1A","Longton"],["Flinthills","1A","Rosalia"],["Oxford","2A","Oxford"],["Sedan","1A","Sedan"],["South Haven","1A","South Haven"],["Udall","1A","Udall"],["West Elk","1A","Howard"]]},{"id":"KSL0041","name":"Southeast Kansas","teams":[["Chanute","4A","Chanute"],["Field Kindley","4A","Coffeyville"],["Fort Scott","4A","Fort Scott"],["Independence","4A","Independence"],["Labette County","4A","Altamont"],["Parsons","4A","Parsons"],["Pittsburg","5A","Pittsburg"]]},{"id":"KSL0018","name":"Southern Plains-Iroquois Activities Association","teams":[["Ashland","1A","Ashland"],["Bucklin","1A","Bucklin"],["Hodgeman County","1A","Jetmore"],["Ingalls","1A","Ingalls"],["Kiowa County","1A","Greensburg"],["Meade","1A","Meade"],["Minneola","1A","Minneola"],["Pawnee Heights","1A","Rozel"],["Satanta","1A","Satanta"],["South Central","1A","Coldwater"],["South Gray","1A","Montezuma"],["Spearville","1A","Spearville"]]},{"id":"KSL0042","name":"Sunflower","teams":[["Gardner Edgerton","6A","Gardner"],["Lawrence","6A","Lawrence"],["Lawrence Free State","6A","Lawrence"],["Mill Valley","6A","Shawnee"],["Olathe East","6A","Olathe"],["Olathe North","6A","Olathe"],["Olathe Northwest","6A","Olathe"],["Olathe South","6A","Olathe"],["Olathe West","6A","Olathe"],["Shawnee Mission East","6A","Prairie Village"],["Shawnee Mission North","6A","Overland Park"],["Shawnee Mission Northwest","6A","Shawnee"],["Shawnee Mission South","6A","Shawnee Mission"],["Shawnee Mission West","6A","Shawnee Mission"]]},{"id":"KSL0043","name":"Three Rivers","teams":[["Altoona-Midway","1A","Buffalo"],["Central Heights","3A","Richmond"],["Chetopa","1A","Chetopa"],["Colony-Crest","1A","Colony"],["Erie","2A","Erie"],["Jayhawk-Linn","2A","Mound City"],["Marmaton Valley","1A","Moran"],["Northeast-Arma","2A","Arma"],["Oswego","2A","Oswego"],["Pleasanton","1A","Pleasanton"],["Southeast (Cherokee)","2A","Cherokee"],["Southern Coffey County","1A","LeRoy"],["St Paul","1A","St. Paul"],["Uniontown","2A","Uniontown"],["Yates Center","2A","Yates Center"]]},{"id":"KSL0141","name":"Tri-Valley","teams":[["Bluestem","2A","Leon"],["Caney Valley","3A","Caney"],["Cherryvale","3A","Cherryvale"],["Eureka","2A","Eureka"],["Fredonia","3A","Fredonia"],["Humboldt","2A","Humboldt"],["Neodesha","3A","Neodesha"]]},{"id":"KSL0146","name":"Twin Valley","teams":[["Axtell","1A","Axtell"],["Blue Valley-Randolph","1A","Randolph","-"],["Centralia","1A","Centralia"],["Clifton-Clyde","2A","Clyde"],["Doniphan West","2A","Highland"],["Frankfort","1A","Frankfort"],["Hanover","1A","Hanover"],["Linn","1A","Linn"],["Onaga","1A","Onaga"],["Valley Heights","2A","Blue Rapids"],["Washington County","2A","Washington"]]},{"id":"KSL6831","name":"United Kansas Conference","teams":[["Basehor-Linwood","5A","Basehor"],["De Soto","5A","De Soto"],["Lansing","5A","Lansing"],["Leavenworth","5A","Leavenworth"],["Piper","5A","Kansas City"],["Seaman","5A","Topeka"],["Shawnee Heights","5A","Tecumseh"],["Spring Hill","5A","Spring Hill"],["Topeka West","5A","Topeka"],["Turner","5A","Kansas City"]]},{"id":"KSL0117","name":"Western Athletic Conference","teams":[["Dodge City","6A","Dodge City"],["Garden City","6A","Garden City"],["Great Bend","5A","Great Bend"],["Hays","5A","Hays"],["Liberal","6A","Liberal"]]},{"id":"KSL0045","name":"Western Kansas Liberty","teams":[["Brewster","1A","Brewster","Triplains-Brewster"],["Cheylin","1A","Bird City"],["Golden Plains","1A","Rexford"],["Logan","1A","Logan"],["Northern Valley","1A","Almena"],["Palco","1A","Palco","-"],["Triplains","1A","Winona","Triplains-Brewster"],["Weskan","1A","Weskan"],["Western Plains","1A","Ransom"],["Wheatland-Grinnell","1A","Grainfield"]]},{"id":"KSL1978","name":"Wheat State","teams":[["Canton-Galva","1A","Canton"],["Centre","1A","Lost Springs"],["Elyria Christian","1A","McPherson"],["Goessel","1A","Goessel"],["Herington","2A","Herington"],["Hope","1A","Hope","-"],["Little River","1A","Little River"],["Peabody-Burns","1A","Peabody"],["Solomon","2A","Solomon"],["Wakefield","1A","Wakefield"],["White City","1A","White City","-"]]}];   // [{id, name, teams:[[school, class, city, logo?]]}]; logo '-' = none
+const COUNTY = ['Andover', 'Andover Central', 'Augusta', 'Bluestem', 'Circle', 'Douglass', 'El Dorado', 'Flinthills', 'Remington', 'Rose Hill'];
+const AVCTL_DIV = {
+  I:   ['Campus', 'Derby', 'Hutchinson', 'Maize', 'Maize South', 'Salina South', 'Valley Center'],
+  II:  ['Andover', 'Andover Central', 'Arkansas City', 'Eisenhower', 'Goddard', 'Newton', 'Salina Central'],
+  III: ['Augusta', 'Buhler', 'Circle', 'McPherson', 'Mulvane', 'Winfield'],
+  IV:  ['Andale', 'Clearwater', 'El Dorado', 'Rose Hill', 'Wellington', 'Wichita Collegiate']
+};
+const AV_NAMES = ['I', 'II', 'III', 'IV'];
+const avDiv = n => AV_NAMES.find(d => AVCTL_DIV[d].includes(n)) || null;
+const SCHOOLS = {};
+KS_LEAGUES.forEach(l => l.teams.forEach(([name, cls, city, logo]) => { SCHOOLS[name] = {name, cls, city, logo:logo || null, league:l.name, lid:l.id}; }));
+// Names people type for a school, to the school: its own name, then (once the logo list is in) every alias the logos know.
+const SCHOOL_KEY = {};
+Object.keys(SCHOOLS).forEach(n => { SCHOOL_KEY[logoSlug(n)] = n; });
+[['Campus', 'Haysville Campus'], ['Eisenhower', 'Goddard Eisenhower'], ['Circle', 'Towanda Circle'], ['El Dorado', 'Eldo'], ['Hutchinson', 'Hutch'],
+ ['Wichita Collegiate', 'Collegiate'], ['Andover Central', 'AC'], ['Maize South', 'MSHS']].forEach(([n, a]) => { SCHOOL_KEY[logoSlug(a)] = n; });
+function schoolAliases(){
+  (logoLib.list || []).forEach(t => {
+    const n = SCHOOLS[t.name] ? t.name : null; if (!n) return;
+    [t.slug, ...(t.aliases || [])].forEach(a => { const k = logoSlug(a); if (k && !SCHOOL_KEY[k]) SCHOOL_KEY[k] = n; });
+  });
+}
+const schoolOf = name => {
+  const k = logoSlug(String(name || '').replace(/\s+(high school|hs)$/i, ''));
+  return SCHOOL_KEY[k] || null;
+};
+// A school as a team for its logo: the saved team's colors and short name when there is one.
+function schoolTeam(n){
+  const sc = SCHOOLS[n] || {}, saved = typeof findTeam === 'function' ? findTeam(n) : null;
+  return {name:n, abbr:(saved && saved.abbr) || n.replace(/[^A-Za-z ]/g, '').split(/\s+/).map(w => w[0]).join('').slice(0, 3).toUpperCase() || n.slice(0, 3).toUpperCase(),
+    color:(saved && saved.color) || '#5E6A7A', logo:sc.logo};
+}
+
+const FAN_Q = new URLSearchParams(location.search);
+const FAN_PAGE = FAN_Q.has('scores') ? 'scores' : FAN_Q.has('teams') ? 'teams' : FAN_Q.has('standings') ? 'standings' : FAN_Q.has('team') ? 'team' : null;
+const SCOPE_OF = v => ['buco', 'avctl', 'state'].includes(v) ? v : 'state';
+const fan = {on:!!FAN_PAGE, page:FAN_PAGE, scope:SCOPE_OF(FAN_Q.get(FAN_PAGE === 'team' ? 'in' : FAN_PAGE)), team:FAN_Q.get('team') || '', remote:{}, err:'', ready:false,
+  league:FAN_Q.get('league') || ''};
+const SCOPE = {
+  buco:{label:'Butler County', has:n => COUNTY.includes(n), schools:() => COUNTY, peer:(a, b) => COUNTY.includes(a) && COUNTY.includes(b), recLabel:'County'},
+  avctl:{label:'AVCTL', has:n => !!avDiv(n), schools:() => AV_NAMES.flatMap(d => AVCTL_DIV[d]), peer:(a, b) => !!avDiv(a) && avDiv(a) === avDiv(b), recLabel:'Division'},
+  state:{label:'State', has:n => !!SCHOOLS[n], schools:() => Object.keys(SCHOOLS), peer:(a, b) => !!SCHOOLS[a] && !!SCHOOLS[b] && SCHOOLS[a].lid === SCHOOLS[b].lid, recLabel:'League'}};
+
+// A basketball season runs from August into the spring: the 2026-27 season is 2026.
+const seasonOf = d => d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1;
+const SEASON = seasonOf(new Date());
+const seasonLabel = y => `${y}-${String((y + 1) % 100).padStart(2, '0')}`;
+
+// Every game this page can see: the shared ones, and this device's own (the newer copy wins).
+function fanGames(){
+  const all = {...fan.remote};
+  try { Object.values(db.games || {}).forEach(x => { if (!x || x.sample || !x.teams) return; const r = all[x.id]; if (!r || (x.updated || 0) > (r.updated || 0)) all[x.id] = x; }); } catch (e) {}
+  return Object.values(all).filter(x => x && x.teams && x.teams.A && x.teams.H && seasonOf(gameDay(x)) === SEASON).map(x => {
+    let r; try { r = replay(x); } catch (e) { return null; }
+    const st = r.st, started = !!(x.box || (x.plays && x.plays.length));
+    const sch = {A:schoolOf(x.teams.A.name), H:schoolOf(x.teams.H.name)};
+    let status;
+    if (st.final) status = `Final${st.per > r.ru.n ? '/OT' : ''}`;
+    else if (!started) status = gameDay(x).toLocaleDateString(undefined, {weekday:'short', month:'numeric', day:'numeric'});
+    else { const c = x.clk || {s:0}; const left = c.run ? Math.max(0, c.s - (Date.now() - c.at) / 1000) : c.s; status = `${mmss(left)} - ${perShort(st.per, r.ru)}`; }
+    return {x, r, st, sch, final:!!st.final, live:started && !st.final, status, day:ymd(gameDay(x))};
+  }).filter(Boolean);
+}
+const inScope = (G, sc) => sc === 'state' || ['A', 'H'].some(s => G.sch[s] && SCOPE[sc].has(G.sch[s]));
+
+// Each school's season: overall, and against the scope's own (county, division, league) opponents.
+function records(G, sc){
+  const rec = {}, R0 = () => ({w:0, l:0, cw:0, cl:0, pf:0, pa:0, games:[], streak:''});
+  G.filter(g0 => g0.final).sort((a, b) => a.day.localeCompare(b.day)).forEach(g0 => {
+    ['A', 'H'].forEach(s => {
+      const n = g0.sch[s]; if (!n) return;
+      const o = s === 'A' ? 'H' : 'A', us = g0.st.score[s], them = g0.st.score[o], won = us > them;
+      const r = rec[n] || (rec[n] = R0());
+      if (us === them) return;
+      r[won ? 'w' : 'l']++; r.pf += us; r.pa += them;
+      if (g0.sch[o] && SCOPE[sc].peer(n, g0.sch[o])) r[won ? 'cw' : 'cl']++;
+      const k = won ? 'W' : 'L', m = r.streak.match(/^([WL])(\d+)$/);
+      r.streak = m && m[1] === k ? `${k}${+m[2] + 1}` : `${k}1`;
+    });
+  });
+  return rec;
+}
+const wl = (w, l) => `${w}-${l}`;
+const pctOf = (w, l) => w + l ? w / (w + l) : 0;
+const recOf = (rec, n) => rec[n] || {w:0, l:0, cw:0, cl:0, pf:0, pa:0, streak:''};
+
+/* ---------- the menus ---------- */
+const FAN_ITEMS = [['scores', 'Scoreboard'], ['teams', 'Teams'], ['standings', 'Standings']];
+function openMenu(btn){
+  const m = $('#navmenu'), sc = btn.dataset.drop, open = btn.getAttribute('aria-expanded') === 'true';
+  closeMenu(); if (open) return;
+  m.innerHTML = FAN_ITEMS.map(([k, l]) => `<a role="menuitem" href="?${k}=${sc}" class="${fan.on && fan.page === k && fan.scope === sc ? 'on' : ''}">${l}</a>`).join('');
+  m.setAttribute('aria-label', SCOPE[sc].label);
+  m.hidden = false; btn.setAttribute('aria-expanded', 'true');
+  const bar = btn.closest('.navbar').getBoundingClientRect(), b = btn.getBoundingClientRect();
+  const left = Math.max(8, Math.min(b.left - bar.left - 20, bar.width - m.offsetWidth - 8));
+  m.style.left = left + 'px';
+}
+function closeMenu(){ const m = $('#navmenu'); if (m) m.hidden = true; document.querySelectorAll('.navdrop').forEach(b => b.setAttribute('aria-expanded', 'false')); }
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('.navdrop');
+  if (b){ e.preventDefault(); return openMenu(b); }
+  if (!(e.target.closest && e.target.closest('#navmenu'))) closeMenu();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+addEventListener('resize', closeMenu);
+(function markNav(){
+  const top = fan.on ? fan.scope : FAN_Q.has('game') || FAN_Q.has('live') ? '' : 'tracker';
+  const a = top && document.querySelector(fan.on ? `.navdrop[data-drop="${top}"]` : `.navlink[data-nav="${top}"]`);
+  if (a) a.classList.add('on');
+})();
+
+/* ---------- the pages ---------- */
+async function startFan(){
+  ui.viewer = true; document.body.classList.add('viewer', 'bpage');
+  $('#board').hidden = false;
+  load(); loadLogos(); renderFan();
+  try {
+    const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
+    const [appM, fsM] = await Promise.all([import(base + 'app.js'), import(base + 'firestore.js')]);
+    const fsdb = fsM.getFirestore(appM.initializeApp(firebaseConfig));
+    fsM.onSnapshot(fsM.query(fsM.collection(fsdb, COLL), fsM.where('public', '==', true)), snap => {
+      const next = {};
+      snap.forEach(d => { const v = d.data(); if (v.deleted || (v.kind && v.kind !== 'game') || !v.json) return; try { const x = JSON.parse(v.json); x.id = d.id; x.updated = x.updated || v.updated; next[d.id] = x; } catch (e) {} });
+      fan.remote = next; fan.err = ''; fan.ready = true; renderFan();
+    }, () => { fan.err = 'Shared games can’t be loaded right now.'; fan.ready = true; renderFan(); });
+  } catch (e) { fan.err = 'Can’t reach the games. Check your connection and reload.'; fan.ready = true; renderFan(); }
+  setInterval(() => { if (fan.page === 'scores' || fan.page === 'team') renderFan(); }, 30000);
+}
+function fanHead(title, extra = ''){
+  const sc = fan.scope;
+  const tabs = FAN_ITEMS.map(([k, l]) => `<a href="?${k}=${sc}" class="${fan.page === k ? 'on' : ''}">${l}</a>`).join('');
+  return `<section class="hcard fan-hd"><h1>${esc(title)}</h1><div class="line">${extra}<nav class="fan-tabs" aria-label="${esc(SCOPE[sc].label)}">${tabs}</nav></div></section>`;
+}
+const teamLink = (n, size = 26, sc = fan.scope) => `<a class="tm-name" href="?team=${encodeURIComponent(n)}&in=${sc}">${markFor(schoolTeam(n), size)}<span>${esc(n)}</span></a>`;
+const gameHref = x => `?game=${encodeURIComponent(x.id)}`;
+// Schools grouped the way the scope is: the county, the four divisions, every KSHSAA league.
+function scopeGroups(sc){
+  if (sc === 'buco') return [{name:'Butler County', teams:COUNTY}];
+  if (sc === 'avctl') return AV_NAMES.map(d => ({name:`Division ${d}`, teams:AVCTL_DIV[d]}));
+  return KS_LEAGUES.map(l => ({name:l.name, id:l.id, teams:l.teams.map(t => t[0])}));
+}
+function leaguePicker(){
+  if (fan.scope !== 'state') return '';
+  return `<select class="fan-sel" id="fan-league" aria-label="League"><option value="">All leagues</option>${KS_LEAGUES.map(l => `<option value="${esc(l.id)}" ${fan.league === l.id ? 'selected' : ''}>${esc(l.name)}</option>`).join('')}</select>`;
+}
+document.addEventListener('change', e => {
+  if (e.target.id !== 'fan-league') return;
+  fan.league = e.target.value;
+  const q = new URLSearchParams(location.search); if (fan.league) q.set('league', fan.league); else q.delete('league');
+  history.replaceState(null, '', `${location.pathname}?${q.toString().replace(/=(?=&|$)/g, '')}`);
+  renderFan();
+});
+
+function scoreCard(G0){
+  const T = G0.x.teams, st = G0.st;
+  const won = G0.final ? (st.score.A > st.score.H ? 'A' : st.score.H > st.score.A ? 'H' : null) : null;
+  const row = s => { const n = G0.sch[s] || T[s].name, t = G0.sch[s] ? schoolTeam(G0.sch[s]) : T[s];
+    return `<div class="sb-row ${won && won !== s ? 'lose' : ''}">${markFor(t, 26)}<span>${esc(n)}</span><b>${G0.x.box || G0.live || G0.final ? st.score[s] : ''}</b></div>`; };
+  return `<a class="sb-game ${G0.live ? 'live' : ''}" href="${gameHref(G0.x)}"><div class="sb-st">${esc(G0.status)}</div>${row('A')}${row('H')}</a>`;
+}
+function pageScores(){
+  const sc = fan.scope, G = fanGames().filter(x => inScope(x, sc));
+  const days = {};
+  G.forEach(x => { (days[x.day] || (days[x.day] = [])).push(x); });
+  const order = Object.keys(days).sort((a, b) => b.localeCompare(a));
+  const dayName = d => new Date(d + 'T12:00:00').toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
+  const body = order.length ? order.map(d => `<section class="hcard"><h2 class="sb-day">${esc(dayName(d))}</h2><div class="sb-grid">${days[d]
+      .sort((a, b) => (b.live - a.live) || String(a.sch.A || a.x.teams.A.name).localeCompare(String(b.sch.A || b.x.teams.A.name))).map(scoreCard).join('')}</div></section>`).join('')
+    : `<section class="hcard"><p class="fan-note">${fan.ready ? `No ${esc(SCOPE[sc].label === 'State' ? '' : SCOPE[sc].label + ' ')}games yet in ${seasonLabel(SEASON)}.` : 'Loading games…'}</p></section>`;
+  return fanHead(`${SCOPE[sc].label} Scoreboard`) + body;
+}
+function pageTeams(){
+  const sc = fan.scope, rec = records(fanGames(), sc);
+  const groups = scopeGroups(sc).filter(gr => !fan.league || gr.id === fan.league);
+  const card = n => { const r = recOf(rec, n), s0 = SCHOOLS[n] || {};
+    return `<a class="tm-card" href="?team=${encodeURIComponent(n)}&in=${sc}">${markFor(schoolTeam(n), 40)}<div><b>${esc(n)}</b><small>${wl(r.w, r.l)}${sc === 'state' && s0.cls ? ` · ${esc(s0.cls)}` : ''}</small></div></a>`; };
+  return fanHead(`${SCOPE[sc].label} Teams`, leaguePicker())
+    + groups.map(gr => `<section class="hcard fan-sec" id="${esc(gr.id || '')}"><h2>${esc(gr.name)}<small>${gr.teams.length}</small></h2><div class="tm-grid">${gr.teams.map(card).join('')}</div></section>`).join('');
+}
+function pageStandings(){
+  const sc = fan.scope, rec = records(fanGames(), sc), lbl = SCOPE[sc].recLabel;
+  const groups = scopeGroups(sc).filter(gr => !fan.league || gr.id === fan.league);
+  const table = gr => {
+    const rows = gr.teams.map(n => ({n, r:recOf(rec, n)})).sort((a, b) =>
+      (sc === 'buco' ? 0 : pctOf(b.r.cw, b.r.cl) - pctOf(a.r.cw, a.r.cl)) || (b.r.cw - a.r.cw) || (pctOf(b.r.w, b.r.l) - pctOf(a.r.w, a.r.l)) || (b.r.w - a.r.w) || a.n.localeCompare(b.n));
+    return `<section class="hcard fan-sec"><h2>${esc(gr.name)}</h2><div class="tbl-wrap"><table class="st stand">
+      <thead><tr><th>Team</th>${sc === 'state' ? '<th>Class</th>' : ''}<th>${lbl}</th><th>Pct</th><th>Overall</th><th>Pct</th><th>PF</th><th>PA</th><th>Strk</th></tr></thead>
+      <tbody>${rows.map(({n, r}) => `<tr><td>${teamLink(n, 24, sc)}</td>${sc === 'state' ? `<td>${esc((SCHOOLS[n] || {}).cls || '')}</td>` : ''}
+        <td>${wl(r.cw, r.cl)}</td><td>${pctOf(r.cw, r.cl).toFixed(3).replace(/^0/, '')}</td><td>${wl(r.w, r.l)}</td><td>${pctOf(r.w, r.l).toFixed(3).replace(/^0/, '')}</td>
+        <td>${r.pf}</td><td>${r.pa}</td><td>${r.streak || '-'}</td></tr>`).join('')}</tbody></table></div></section>`;
+  };
+  return fanHead(`${SCOPE[sc].label} Standings`, leaguePicker()) + groups.map(table).join('');
+}
+function pageTeam(){
+  const n = schoolOf(fan.team) || fan.team, s0 = SCHOOLS[n], sc = fan.scope;
+  const G = fanGames().filter(x => x.sch.A === n || x.sch.H === n || (!x.sch.A && x.x.teams.A.name === n) || (!x.sch.H && x.x.teams.H.name === n))
+    .sort((a, b) => a.day.localeCompare(b.day));
+  const r = recOf(records(G, 'state'), n), c = recOf(records(G, sc), n);
+  const where = s0 ? [s0.cls ? `Class ${s0.cls}` : '', `<a href="?standings=state&league=${encodeURIComponent(s0.lid)}">${esc(s0.league)}</a>`,
+    avDiv(n) ? `<a href="?standings=avctl">AVCTL Division ${avDiv(n)}</a>` : '', COUNTY.includes(n) ? '<a href="?standings=buco">Butler County</a>' : ''].filter(Boolean).join(' · ') : '';
+  const rows = G.map(x => {
+    const side = x.sch.A === n || x.x.teams.A.name === n ? 'A' : 'H', o = side === 'A' ? 'H' : 'A';
+    const on = x.sch[o] || x.x.teams[o].name, us = x.st.score[side], them = x.st.score[o];
+    const res = x.final ? `<span class="${us > them ? 'res-w' : 'res-l'}">${us > them ? 'W' : 'L'}</span> ${us}-${them}` : x.live ? `<span class="res-live">${esc(x.status)}</span> ${us}-${them}` : '';
+    return `<tr><td>${new Date(x.day + 'T12:00:00').toLocaleDateString(undefined, {month:'short', day:'numeric'})}</td>
+      <td>${side === 'A' ? '@ ' : 'vs '}${x.sch[o] ? teamLink(x.sch[o], 22, sc) : esc(on)}</td><td>${res}</td><td><a class="fan-go" href="${gameHref(x.x)}">${x.final ? 'Box Score' : 'Gamecast'}</a></td></tr>`;
+  }).join('');
+  const recs = `<div class="tp-recs"><div class="tp-rec"><b>${wl(r.w, r.l)}</b><span>Overall</span></div>${s0 ? `<div class="tp-rec"><b>${wl(c.cw, c.cl)}</b><span>${SCOPE[sc].recLabel}</span></div>` : ''}</div>`;
+  return `<section class="hcard tp-head"><div class="tp-id">${markFor(schoolTeam(n), 64)}<div><h1>${esc(n)}</h1>${where ? `<p>${where}</p>` : ''}</div></div>${recs}</section>
+    <section class="hcard fan-sec"><h2>${seasonLabel(SEASON)} Schedule</h2>${rows ? `<div class="tbl-wrap"><table class="st"><thead><tr><th>Date</th><th>Opponent</th><th>Result</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
+      : `<p class="fan-note">${fan.ready ? 'No games yet.' : 'Loading games…'}</p>`}</section>`;
+}
+function renderFan(){
+  if (!fan.on) return;
+  const el = $('#board'); if (!el) return;
+  const html = fan.page === 'scores' ? pageScores() : fan.page === 'teams' ? pageTeams() : fan.page === 'standings' ? pageStandings() : pageTeam();
+  el.innerHTML = html + (fan.err ? `<p class="fan-note">${esc(fan.err)}</p>` : '');
+  document.title = `${fan.page === 'team' ? (schoolOf(fan.team) || fan.team) + ' Basketball' : `${SCOPE[fan.scope].label} ${({scores:'Scoreboard', teams:'Teams', standings:'Standings'})[fan.page]}`} · Kansas Media Stats`;
+}
+
 /* ---------- boot ---------- */
-if (LIVE_ID) startViewer(LIVE_ID);   // a shared link: watch that game, read-only
+if (fan.on) startFan();              // ?scores= ?teams= ?standings= (buco, avctl, state), ?team=<school>
+else if (LIVE_ID) startViewer(LIVE_ID);   // a shared link: watch that game, read-only
 else {
   load();
   if (db.games.sample && db.games.sample.sample !== 2) db.games.sample = sampleGame();
