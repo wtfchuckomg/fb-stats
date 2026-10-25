@@ -92,7 +92,7 @@ function dlgSetup(isNew){
   // Started from a scheduled game or quick score: its schools (with anything saved about them) and date.
   const from = isNew && ui.fromSched ? qsLib()[ui.fromSched] : null;
   if (from && from.teams) ['A', 'H'].forEach(s => { const t = findTeam(from.teams[s].name) || {};
-    src.teams[s] = {name:from.teams[s].name, mascot:t.mascot || '', abbr:t.abbr || from.teams[s].abbr, color:t.color || from.teams[s].color, roster:t.roster || {},
+    src.teams[s] = {name:from.teams[s].name, mascot:t.mascot || listMascot(from.teams[s].name), abbr:t.abbr || from.teams[s].abbr, color:t.color || from.teams[s].color, roster:t.roster || {},
       rec:from.teams[s].rec || '', hrec:from.teams[s].hrec || ''}; });
   const ru = rulesOf(src);
   const rosterTxt = s => rosterToText(src.teams[s].roster);

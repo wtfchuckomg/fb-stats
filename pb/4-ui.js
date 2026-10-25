@@ -39,7 +39,7 @@ function renderBoard(){
   // arrow points at the winner, and the timeouts go.
   const won = st.final && st.score.A !== st.score.H ? (st.score.A > st.score.H ? 'A' : 'H') : null;
   // The site's own name for the school ("Campus", not "Haysville Campus"), whatever the game was saved under.
-  const fullName = t => { const n = schoolName(t.name); return t.mascot && !String(n).toLowerCase().endsWith(t.mascot.toLowerCase()) ? `${n} ${t.mascot}` : n; };
+  const fullName = t => { const n = schoolName(t.name), mc = t.mascot || listMascot(t.name); return mc && !String(n).toLowerCase().endsWith(mc.toLowerCase()) ? `${n} ${mc}` : n; };
   const side = s => {
     const has = !st.final && st.poss === s && st.phase !== 'kick';
     return `<div class="st-side ${s === 'H' ? 'home' : 'away'}${won && won !== s ? ' lose' : ''}" style="--tc:${esc(T[s].color)}">
@@ -142,7 +142,7 @@ function renderField(){
   // The mascot if one is set, else the school. Sized from an estimate here, then measured below.
   const room = bot - top - 16;
   const ez = (side, x, rot) => {
-    const name = String(T[side].mascot || T[side].name || T[side].abbr).toUpperCase(), fs = Math.min(34, room / (0.56 * Math.max(1, name.length)));
+    const name = String(T[side].mascot || listMascot(T[side].name) || T[side].name || T[side].abbr).toUpperCase(), fs = Math.min(34, room / (0.56 * Math.max(1, name.length)));
     return `<rect x="${x}" y="${top}" width="${EZ}" height="${bot - top}" style="fill:${esc(T[side].color)}"/>`
       + `<text class="ez-name" x="${x + EZ / 2}" y="${mid}" transform="rotate(${rot} ${x + EZ / 2} ${mid})" text-anchor="middle" dominant-baseline="central" style="fill:#fff;font:800 ${fs.toFixed(1)}px ${cond};letter-spacing:1px">${esc(name)}</text>`;
   };

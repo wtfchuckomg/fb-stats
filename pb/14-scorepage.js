@@ -120,7 +120,7 @@ function boardGame(x){
   const team = s => {
     const cls = m.fin && lead ? (lead === s ? ' won' : ' lose') : '', sd = po && po.seed(T[s].name);
     // The record as entered, ESPN style "(1-2, 0-1 Away)"; until then the mascot and Away or Home.
-    const rec = recordText(T[s], s, !m.fin, gameWeek(x), m.score), sub = rec ? `(${rec})` : [T[s].mascot, s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
+    const rec = recordText(T[s], s, !m.fin, gameWeek(x), m.score), sub = rec ? `(${rec})` : [T[s].mascot || listMascot(T[s].name), s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
     return `<div class="bt${cls}"><div class="bt-team">${markFor(T[s], 29)}<div class="bt-id">
         <div class="bt-name"><span>${sd ? `<b class="bt-seed">${sd}</b>` : ''}<a class="tlink" href="?team=${encodeURIComponent(schoolName(T[s].name))}">${esc(schoolName(T[s].name))}</a></span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub${rec ? ' rec' : ''}">${esc(sub)}</div></div></div>
       <div class="bt-q">${cells((i, n) => m.lines[s][i] == null ? 'X' : m.typed ? m.lines[s][i] : (i < 4 && m.fin && i >= (m.qPlayed || 0)) ? 'X' : n < played ? m.lines[s][i] : '')}</div>${tCell(s)}<i class="sc-win"></i></div>`;

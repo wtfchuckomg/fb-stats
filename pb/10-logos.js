@@ -52,6 +52,12 @@ function listAbbr(name){
   const hit = (logoLib.list || []).find(t => t.abbr && (logoSlug(t.name) === k || t.slug === k || (t.aliases || []).some(a => logoSlug(a) === k)));
   return hit ? hit.abbr : '';
 }
+// A school's mascot from logos/teams.json (.github/kp/mascots.py fills it from KPreps): "Jaguars" for Mill Valley.
+function listMascot(name){
+  const k = logoSlug(name);
+  const hit = (logoLib.list || []).find(t => t.mascot && (logoSlug(t.name) === k || t.slug === k || (t.aliases || []).some(a => logoSlug(a) === k)));
+  return hit ? hit.mascot : '';
+}
 // A school picker: type to find a school on the list, or add one that isn't (pb/28-schools.js does the rest).
 function schoolPicker(id, value, label){
   return `<div class="sch-pick"><input class="inp sch-in" id="${esc(id)}" value="${esc(value || '')}" placeholder="${esc(label)}" aria-label="${esc(label)}"

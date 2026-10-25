@@ -2589,7 +2589,7 @@ function renderBoard(){
   // arrow points at the winner, and the timeouts go.
   const won = st.final && st.score.A !== st.score.H ? (st.score.A > st.score.H ? 'A' : 'H') : null;
   // The site's own name for the school ("Campus", not "Haysville Campus"), whatever the game was saved under.
-  const fullName = t => { const n = schoolName(t.name); return t.mascot && !String(n).toLowerCase().endsWith(t.mascot.toLowerCase()) ? `${n} ${t.mascot}` : n; };
+  const fullName = t => { const n = schoolName(t.name), mc = t.mascot || listMascot(t.name); return mc && !String(n).toLowerCase().endsWith(mc.toLowerCase()) ? `${n} ${mc}` : n; };
   const side = s => {
     const has = !st.final && st.poss === s && st.phase !== 'kick';
     return `<div class="st-side ${s === 'H' ? 'home' : 'away'}${won && won !== s ? ' lose' : ''}" style="--tc:${esc(T[s].color)}">
@@ -2692,7 +2692,7 @@ function renderField(){
   // The mascot if one is set, else the school. Sized from an estimate here, then measured below.
   const room = bot - top - 16;
   const ez = (side, x, rot) => {
-    const name = String(T[side].mascot || T[side].name || T[side].abbr).toUpperCase(), fs = Math.min(34, room / (0.56 * Math.max(1, name.length)));
+    const name = String(T[side].mascot || listMascot(T[side].name) || T[side].name || T[side].abbr).toUpperCase(), fs = Math.min(34, room / (0.56 * Math.max(1, name.length)));
     return `<rect x="${x}" y="${top}" width="${EZ}" height="${bot - top}" style="fill:${esc(T[side].color)}"/>`
       + `<text class="ez-name" x="${x + EZ / 2}" y="${mid}" transform="rotate(${rot} ${x + EZ / 2} ${mid})" text-anchor="middle" dominant-baseline="central" style="fill:#fff;font:800 ${fs.toFixed(1)}px ${cond};letter-spacing:1px">${esc(name)}</text>`;
   };
@@ -4169,7 +4169,7 @@ function dlgSetup(isNew){
   // Started from a scheduled game or quick score: its schools (with anything saved about them) and date.
   const from = isNew && ui.fromSched ? qsLib()[ui.fromSched] : null;
   if (from && from.teams) ['A', 'H'].forEach(s => { const t = findTeam(from.teams[s].name) || {};
-    src.teams[s] = {name:from.teams[s].name, mascot:t.mascot || '', abbr:t.abbr || from.teams[s].abbr, color:t.color || from.teams[s].color, roster:t.roster || {},
+    src.teams[s] = {name:from.teams[s].name, mascot:t.mascot || listMascot(from.teams[s].name), abbr:t.abbr || from.teams[s].abbr, color:t.color || from.teams[s].color, roster:t.roster || {},
       rec:from.teams[s].rec || '', hrec:from.teams[s].hrec || ''}; });
   const ru = rulesOf(src);
   const rosterTxt = s => rosterToText(src.teams[s].roster);
@@ -4692,6 +4692,12 @@ function listAbbr(name){
   const k = logoSlug(name);
   const hit = (logoLib.list || []).find(t => t.abbr && (logoSlug(t.name) === k || t.slug === k || (t.aliases || []).some(a => logoSlug(a) === k)));
   return hit ? hit.abbr : '';
+}
+// A school's mascot from logos/teams.json (.github/kp/mascots.py fills it from KPreps): "Jaguars" for Mill Valley.
+function listMascot(name){
+  const k = logoSlug(name);
+  const hit = (logoLib.list || []).find(t => t.mascot && (logoSlug(t.name) === k || t.slug === k || (t.aliases || []).some(a => logoSlug(a) === k)));
+  return hit ? hit.mascot : '';
 }
 // A school picker: type to find a school on the list, or add one that isn't (pb/28-schools.js does the rest).
 function schoolPicker(id, value, label){
@@ -6087,8 +6093,9 @@ document.addEventListener('click', e => {
 document.addEventListener('input', e => {
   const el = e.target; if (!el.id || !/^s-[AH]-name$/.test(el.id)) return;
   const s = el.id[2], t = findTeam(el.value), hint = $(`#s-${s}-lib`);
-  if (!t){ if (hint) hint.textContent = ''; return; }
-  $(`#s-${s}-mascot`).value = t.mascot || '';
+  // A school on the list but not saved as a team still brings its mascot.
+  if (!t){ if (hint) hint.textContent = ''; const mc = listMascot(el.value), f = $(`#s-${s}-mascot`); if (mc && f && !f.value) f.value = mc; return; }
+  $(`#s-${s}-mascot`).value = t.mascot || listMascot(t.name) || '';
   $(`#s-${s}-abbr`).value = t.abbr || '';
   $(`#s-${s}-color`).value = t.color || '#1F4E9C';
   const box = $(`#s-${s}-roster`), n = Object.keys(t.roster || {}).length;
@@ -6864,7 +6871,7 @@ function boardGame(x){
   const team = s => {
     const cls = m.fin && lead ? (lead === s ? ' won' : ' lose') : '', sd = po && po.seed(T[s].name);
     // The record as entered, ESPN style "(1-2, 0-1 Away)"; until then the mascot and Away or Home.
-    const rec = recordText(T[s], s, !m.fin, gameWeek(x), m.score), sub = rec ? `(${rec})` : [T[s].mascot, s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
+    const rec = recordText(T[s], s, !m.fin, gameWeek(x), m.score), sub = rec ? `(${rec})` : [T[s].mascot || listMascot(T[s].name), s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
     return `<div class="bt${cls}"><div class="bt-team">${markFor(T[s], 29)}<div class="bt-id">
         <div class="bt-name"><span>${sd ? `<b class="bt-seed">${sd}</b>` : ''}<a class="tlink" href="?team=${encodeURIComponent(schoolName(T[s].name))}">${esc(schoolName(T[s].name))}</a></span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub${rec ? ' rec' : ''}">${esc(sub)}</div></div></div>
       <div class="bt-q">${cells((i, n) => m.lines[s][i] == null ? 'X' : m.typed ? m.lines[s][i] : (i < 4 && m.fin && i >= (m.qPlayed || 0)) ? 'X' : n < played ? m.lines[s][i] : '')}</div>${tCell(s)}<i class="sc-win"></i></div>`;
@@ -9522,7 +9529,7 @@ function teamPageHtml(nameIn){
   }).join('') : '';
 
   return `<section class="bcard tp-head">
-      <div class="tp-id">${markFor(mark, 72)}<div><h1>${esc(name)}</h1>${(s => s ? `<p class="tp-sub">${esc(s)}</p>` : '')(schoolLine(name))}</div></div>
+      <div class="tp-id">${markFor(mark, 72)}<div><h1>${esc(name)}</h1>${(s => s ? `<p class="tp-sub">${esc(s)}</p>` : '')([listMascot(name).toUpperCase(), schoolLine(name)].filter(Boolean).join(' | '))}</div></div>
       <div class="tp-recwrap"><div class="tp-recs">${recBox('rec', 'Overall')}${recBox('home', 'Home')}${recBox('away', 'Away')}</div>${ppg}</div>
       ${ui.admin && !tpage.edit ? `<button type="button" class="bhide" data-tp-add-game>Add a game</button><button type="button" class="bhide" data-tp-edit>Edit record</button>${teamRecs.map[k] ? '<p class="h-note tp-manual">This record was set by hand, so it doesn’t come from the tally. Edit record to change or clear it.</p>' : ''}` : ''}
       ${form}

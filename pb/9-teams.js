@@ -131,8 +131,9 @@ document.addEventListener('click', e => {
 document.addEventListener('input', e => {
   const el = e.target; if (!el.id || !/^s-[AH]-name$/.test(el.id)) return;
   const s = el.id[2], t = findTeam(el.value), hint = $(`#s-${s}-lib`);
-  if (!t){ if (hint) hint.textContent = ''; return; }
-  $(`#s-${s}-mascot`).value = t.mascot || '';
+  // A school on the list but not saved as a team still brings its mascot.
+  if (!t){ if (hint) hint.textContent = ''; const mc = listMascot(el.value), f = $(`#s-${s}-mascot`); if (mc && f && !f.value) f.value = mc; return; }
+  $(`#s-${s}-mascot`).value = t.mascot || listMascot(t.name) || '';
   $(`#s-${s}-abbr`).value = t.abbr || '';
   $(`#s-${s}-color`).value = t.color || '#1F4E9C';
   const box = $(`#s-${s}-roster`), n = Object.keys(t.roster || {}).length;

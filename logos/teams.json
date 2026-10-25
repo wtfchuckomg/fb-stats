@@ -7,7 +7,8 @@
   "w": 230,
   "h": 217,
   "aliases": [],
-  "abbr": "Abilene"
+  "abbr": "Abilene",
+  "mascot": "Cowboys"
  },
  {
   "name": "Altoona-Midway",
@@ -17,7 +18,8 @@
   "w": 400,
   "h": 324,
   "aliases": [],
-  "abbr": "AM"
+  "abbr": "AM",
+  "mascot": "Jets"
  },
  {
   "name": "Andale",
@@ -27,7 +29,8 @@
   "w": 400,
   "h": 347,
   "aliases": [],
-  "abbr": "Andale"
+  "abbr": "Andale",
+  "mascot": "Indians"
  },
  {
   "name": "Anderson County",
@@ -37,7 +40,8 @@
   "w": 400,
   "h": 246,
   "aliases": [],
-  "abbr": "AC"
+  "abbr": "AC",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Andover Central",
@@ -47,7 +51,8 @@
   "w": 400,
   "h": 150,
   "aliases": [],
-  "abbr": "AC"
+  "abbr": "AC",
+  "mascot": "Jaguars"
  },
  {
   "name": "Andover",
@@ -57,7 +62,8 @@
   "w": 400,
   "h": 266,
   "aliases": [],
-  "abbr": "Andover"
+  "abbr": "Andover",
+  "mascot": "Trojans"
  },
  {
   "name": "Argonia",
@@ -79,7 +85,8 @@
   "aliases": [
    "Ark City"
   ],
-  "abbr": "ArkC"
+  "abbr": "ArkC",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Ashland",
@@ -89,7 +96,8 @@
   "w": 400,
   "h": 250,
   "aliases": [],
-  "abbr": "Ashland"
+  "abbr": "Ashland",
+  "mascot": "Blue Jays"
  },
  {
   "name": "Atchison County",
@@ -99,7 +107,8 @@
   "w": 400,
   "h": 199,
   "aliases": [],
-  "abbr": "AtCo"
+  "abbr": "AtCo",
+  "mascot": "Tigers"
  },
  {
   "name": "Atchison",
@@ -109,7 +118,8 @@
   "w": 400,
   "h": 320,
   "aliases": [],
-  "abbr": "Atchison"
+  "abbr": "Atchison",
+  "mascot": "Phoenix"
  },
  {
   "name": "Attica-Argonia",
@@ -121,7 +131,8 @@
   "aliases": [
    "Argonia-Attica"
   ],
-  "abbr": "AA"
+  "abbr": "AA",
+  "mascot": "Titans"
  },
  {
   "name": "Attica",
@@ -141,7 +152,8 @@
   "w": 400,
   "h": 270,
   "aliases": [],
-  "abbr": "Augusta"
+  "abbr": "Augusta",
+  "mascot": "Orioles"
  },
  {
   "name": "Axtell",
@@ -151,7 +163,8 @@
   "w": 400,
   "h": 165,
   "aliases": [],
-  "abbr": "Axtell"
+  "abbr": "Axtell",
+  "mascot": "Eagles"
  },
  {
   "name": "BV Randolph",
@@ -161,7 +174,8 @@
   "w": 387,
   "h": 400,
   "aliases": [],
-  "abbr": "BR"
+  "abbr": "BR",
+  "mascot": "Rams"
  },
  {
   "name": "Baldwin",
@@ -171,7 +185,8 @@
   "w": 400,
   "h": 330,
   "aliases": [],
-  "abbr": "Baldwin"
+  "abbr": "Baldwin",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Basehor-Linwood",
@@ -181,7 +196,8 @@
   "w": 400,
   "h": 287,
   "aliases": [],
-  "abbr": "BL"
+  "abbr": "BL",
+  "mascot": "Bobcats"
  },
  {
   "name": "Baxter Springs",
@@ -191,7 +207,8 @@
   "w": 300,
   "h": 230,
   "aliases": [],
-  "abbr": "BS"
+  "abbr": "BS",
+  "mascot": "Lions"
  },
  {
   "name": "Belle Plaine",
@@ -201,7 +218,8 @@
   "w": 400,
   "h": 243,
   "aliases": [],
-  "abbr": "BP"
+  "abbr": "BP",
+  "mascot": "Dragons"
  },
  {
   "name": "Beloit",
@@ -211,7 +229,8 @@
   "w": 380,
   "h": 400,
   "aliases": [],
-  "abbr": "Beloit"
+  "abbr": "Beloit",
+  "mascot": "Trojans"
  },
  {
   "name": "Bennington",
@@ -221,7 +240,8 @@
   "w": 400,
   "h": 240,
   "aliases": [],
-  "abbr": "Bennington"
+  "abbr": "Bennington",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Berean",
@@ -241,7 +261,8 @@
   "w": 373,
   "h": 400,
   "aliases": [],
-  "abbr": "BC"
+  "abbr": "BC",
+  "mascot": "Eagles"
  },
  {
   "name": "Bishop Miege",
@@ -251,7 +272,8 @@
   "w": 207,
   "h": 400,
   "aliases": [],
-  "abbr": "BM"
+  "abbr": "BM",
+  "mascot": "Stags"
  },
  {
   "name": "Bishop Seabury",
@@ -271,7 +293,8 @@
   "w": 400,
   "h": 288,
   "aliases": [],
-  "abbr": "BW"
+  "abbr": "BW",
+  "mascot": "Cyclones"
  },
  {
   "name": "Blue Valley North",
@@ -281,7 +304,8 @@
   "w": 400,
   "h": 336,
   "aliases": [],
-  "abbr": "BVN"
+  "abbr": "BVN",
+  "mascot": "Mustangs"
  },
  {
   "name": "Blue Valley Northwest",
@@ -294,7 +318,8 @@
    "BV Northwest",
    "BVNW"
   ],
-  "abbr": "BVNW"
+  "abbr": "BVNW",
+  "mascot": "Huskies"
  },
  {
   "name": "Blue Valley Southwest",
@@ -307,7 +332,8 @@
    "BV Southwest",
    "BVSW"
   ],
-  "abbr": "BVSW"
+  "abbr": "BVSW",
+  "mascot": "Timberwolves"
  },
  {
   "name": "Blue Valley West",
@@ -320,7 +346,8 @@
    "BV West",
    "BVW"
   ],
-  "abbr": "BVW"
+  "abbr": "BVW",
+  "mascot": "Jaguars"
  },
  {
   "name": "Blue Valley",
@@ -332,7 +359,8 @@
   "aliases": [
    "BV"
   ],
-  "abbr": "BV"
+  "abbr": "BV",
+  "mascot": "Tigers"
  },
  {
   "name": "Bluestem",
@@ -344,7 +372,8 @@
   "aliases": [
    "Leon-Bluestem"
   ],
-  "abbr": "Bluestem"
+  "abbr": "Bluestem",
+  "mascot": "Lions"
  },
  {
   "name": "Bonner Springs",
@@ -354,7 +383,8 @@
   "w": 400,
   "h": 384,
   "aliases": [],
-  "abbr": "BS"
+  "abbr": "BS",
+  "mascot": "Braves"
  },
  {
   "name": "Bucklin",
@@ -364,7 +394,8 @@
   "w": 400,
   "h": 254,
   "aliases": [],
-  "abbr": "Bucklin"
+  "abbr": "Bucklin",
+  "mascot": "Red Aces"
  },
  {
   "name": "Buhler",
@@ -374,7 +405,8 @@
   "w": 396,
   "h": 400,
   "aliases": [],
-  "abbr": "Buhler"
+  "abbr": "Buhler",
+  "mascot": "Crusaders"
  },
  {
   "name": "Burlingame",
@@ -384,7 +416,8 @@
   "w": 250,
   "h": 214,
   "aliases": [],
-  "abbr": "Burlingame"
+  "abbr": "Burlingame",
+  "mascot": "Bearcats"
  },
  {
   "name": "Burlington",
@@ -394,7 +427,8 @@
   "w": 400,
   "h": 310,
   "aliases": [],
-  "abbr": "Burlington"
+  "abbr": "Burlington",
+  "mascot": "Wildcats"
  },
  {
   "name": "Burrton",
@@ -414,7 +448,8 @@
   "w": 375,
   "h": 400,
   "aliases": [],
-  "abbr": "Cair"
+  "abbr": "Cair",
+  "mascot": "Lions"
  },
  {
   "name": "Caldwell",
@@ -436,7 +471,8 @@
   "aliases": [
    "Haysville Campus"
   ],
-  "abbr": "Campus"
+  "abbr": "Campus",
+  "mascot": "Colts"
  },
  {
   "name": "Caney Valley",
@@ -446,7 +482,8 @@
   "w": 379,
   "h": 400,
   "aliases": [],
-  "abbr": "CV"
+  "abbr": "CV",
+  "mascot": "Bullpups"
  },
  {
   "name": "Canton-Galva",
@@ -456,7 +493,8 @@
   "w": 400,
   "h": 174,
   "aliases": [],
-  "abbr": "CG"
+  "abbr": "CG",
+  "mascot": "Eagles"
  },
  {
   "name": "Cedar Vale-Dexter",
@@ -466,7 +504,8 @@
   "w": 361,
   "h": 400,
   "aliases": [],
-  "abbr": "CVD"
+  "abbr": "CVD",
+  "mascot": "Spartans"
  },
  {
   "name": "Hutch Central Christian",
@@ -479,7 +518,8 @@
    "Central Christian",
    "Hutchinson Central Christian"
   ],
-  "abbr": "HCC"
+  "abbr": "HCC",
+  "mascot": "Cougars"
  },
  {
   "name": "Central Heights",
@@ -489,7 +529,8 @@
   "w": 400,
   "h": 362,
   "aliases": [],
-  "abbr": "CH"
+  "abbr": "CH",
+  "mascot": "Vikings"
  },
  {
   "name": "Central Plains",
@@ -499,7 +540,8 @@
   "w": 216,
   "h": 250,
   "aliases": [],
-  "abbr": "CP"
+  "abbr": "CP",
+  "mascot": "Oilers"
  },
  {
   "name": "Central Burden",
@@ -511,7 +553,8 @@
   "aliases": [
    "Central"
   ],
-  "abbr": "CB"
+  "abbr": "CB",
+  "mascot": "Raiders"
  },
  {
   "name": "Centralia",
@@ -521,7 +564,8 @@
   "w": 400,
   "h": 303,
   "aliases": [],
-  "abbr": "Centralia"
+  "abbr": "Centralia",
+  "mascot": "Panthers"
  },
  {
   "name": "Centre",
@@ -531,7 +575,8 @@
   "w": 400,
   "h": 206,
   "aliases": [],
-  "abbr": "Centre"
+  "abbr": "Centre",
+  "mascot": "Cougars"
  },
  {
   "name": "Chanute",
@@ -541,7 +586,8 @@
   "w": 400,
   "h": 225,
   "aliases": [],
-  "abbr": "Chanute"
+  "abbr": "Chanute",
+  "mascot": "Blue Comets"
  },
  {
   "name": "Chaparral",
@@ -551,7 +597,8 @@
   "w": 391,
   "h": 400,
   "aliases": [],
-  "abbr": "Chaparral"
+  "abbr": "Chaparral",
+  "mascot": "Roadrunners"
  },
  {
   "name": "Chapman",
@@ -561,7 +608,8 @@
   "w": 353,
   "h": 400,
   "aliases": [],
-  "abbr": "Chapman"
+  "abbr": "Chapman",
+  "mascot": "Fighting Irish"
  },
  {
   "name": "Chase County",
@@ -571,7 +619,8 @@
   "w": 400,
   "h": 368,
   "aliases": [],
-  "abbr": "CCHS"
+  "abbr": "CCHS",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Chase",
@@ -581,7 +630,8 @@
   "w": 380,
   "h": 400,
   "aliases": [],
-  "abbr": "Chase"
+  "abbr": "Chase",
+  "mascot": "Kats"
  },
  {
   "name": "Cheney",
@@ -591,7 +641,8 @@
   "w": 261,
   "h": 400,
   "aliases": [],
-  "abbr": "Cheney"
+  "abbr": "Cheney",
+  "mascot": "Cardinals"
  },
  {
   "name": "Cherryvale",
@@ -601,7 +652,8 @@
   "w": 209,
   "h": 250,
   "aliases": [],
-  "abbr": "Cherryvale"
+  "abbr": "Cherryvale",
+  "mascot": "Chargers"
  },
  {
   "name": "Chetopa",
@@ -611,7 +663,8 @@
   "w": 332,
   "h": 400,
   "aliases": [],
-  "abbr": "Chetopa"
+  "abbr": "Chetopa",
+  "mascot": "Green Hornets"
  },
  {
   "name": "Cheylin",
@@ -621,7 +674,8 @@
   "w": 267,
   "h": 202,
   "aliases": [],
-  "abbr": "Cheylin"
+  "abbr": "Cheylin",
+  "mascot": "Cougars"
  },
  {
   "name": "Cimarron",
@@ -631,7 +685,8 @@
   "w": 400,
   "h": 292,
   "aliases": [],
-  "abbr": "Cimarron"
+  "abbr": "Cimarron",
+  "mascot": "Bluejays"
  },
  {
   "name": "Circle",
@@ -643,7 +698,8 @@
   "aliases": [
    "Towanda-Circle"
   ],
-  "abbr": "Circle"
+  "abbr": "Circle",
+  "mascot": "Thunderbirds"
  },
  {
   "name": "Clay Center",
@@ -653,7 +709,8 @@
   "w": 400,
   "h": 335,
   "aliases": [],
-  "abbr": "Clay"
+  "abbr": "Clay",
+  "mascot": "Tigers"
  },
  {
   "name": "Clearwater",
@@ -663,7 +720,8 @@
   "w": 345,
   "h": 400,
   "aliases": [],
-  "abbr": "Clearwater"
+  "abbr": "Clearwater",
+  "mascot": "Fighting Indians"
  },
  {
   "name": "Clifton-Clyde",
@@ -673,7 +731,8 @@
   "w": 400,
   "h": 172,
   "aliases": [],
-  "abbr": "Clyd"
+  "abbr": "Clyd",
+  "mascot": "Eagles"
  },
  {
   "name": "Field Kindley",
@@ -685,7 +744,8 @@
   "aliases": [
    "Coffeyville"
   ],
-  "abbr": "FK"
+  "abbr": "FK",
+  "mascot": "Golden Tornado"
  },
  {
   "name": "Colby",
@@ -695,7 +755,8 @@
   "w": 400,
   "h": 335,
   "aliases": [],
-  "abbr": "Colby"
+  "abbr": "Colby",
+  "mascot": "Eagles"
  },
  {
   "name": "Colony-Crest",
@@ -705,7 +766,8 @@
   "w": 400,
   "h": 380,
   "aliases": [],
-  "abbr": "Cres"
+  "abbr": "Cres",
+  "mascot": "Lancers"
  },
  {
   "name": "Columbus",
@@ -715,7 +777,8 @@
   "w": 250,
   "h": 232,
   "aliases": [],
-  "abbr": "Columbus"
+  "abbr": "Columbus",
+  "mascot": "Titans"
  },
  {
   "name": "Concordia",
@@ -725,7 +788,8 @@
   "w": 400,
   "h": 366,
   "aliases": [],
-  "abbr": "Concordia"
+  "abbr": "Concordia",
+  "mascot": "Panthers"
  },
  {
   "name": "Conway Springs",
@@ -735,7 +799,8 @@
   "w": 400,
   "h": 230,
   "aliases": [],
-  "abbr": "CS"
+  "abbr": "CS",
+  "mascot": "Cardinals"
  },
  {
   "name": "Council Grove",
@@ -745,7 +810,8 @@
   "w": 283,
   "h": 351,
   "aliases": [],
-  "abbr": "CG"
+  "abbr": "CG",
+  "mascot": "Braves"
  },
  {
   "name": "Cunningham",
@@ -755,7 +821,8 @@
   "w": 400,
   "h": 273,
   "aliases": [],
-  "abbr": "Cunningham"
+  "abbr": "Cunningham",
+  "mascot": "Wildcats"
  },
  {
   "name": "De Soto",
@@ -765,7 +832,8 @@
   "w": 400,
   "h": 390,
   "aliases": [],
-  "abbr": "DS"
+  "abbr": "DS",
+  "mascot": "Wildcats"
  },
  {
   "name": "Decatur",
@@ -778,7 +846,8 @@
    "Decatur Community",
    "Oberlin-Decatur"
   ],
-  "abbr": "Decatur"
+  "abbr": "Decatur",
+  "mascot": "Red Devils"
  },
  {
   "name": "Deerfield",
@@ -788,7 +857,8 @@
   "w": 382,
   "h": 400,
   "aliases": [],
-  "abbr": "Deerfield"
+  "abbr": "Deerfield",
+  "mascot": "Spartans"
  },
  {
   "name": "Derby",
@@ -798,7 +868,8 @@
   "w": 400,
   "h": 386,
   "aliases": [],
-  "abbr": "Derby"
+  "abbr": "Derby",
+  "mascot": "Panthers"
  },
  {
   "name": "Dighton",
@@ -808,7 +879,8 @@
   "w": 333,
   "h": 400,
   "aliases": [],
-  "abbr": "Dighton"
+  "abbr": "Dighton",
+  "mascot": "Hornets"
  },
  {
   "name": "Dodge City",
@@ -818,7 +890,8 @@
   "w": 301,
   "h": 336,
   "aliases": [],
-  "abbr": "DC"
+  "abbr": "DC",
+  "mascot": "Red Demons"
  },
  {
   "name": "Doniphan West",
@@ -828,7 +901,8 @@
   "w": 400,
   "h": 228,
   "aliases": [],
-  "abbr": "DW"
+  "abbr": "DW",
+  "mascot": "Mustangs"
  },
  {
   "name": "Douglass",
@@ -838,7 +912,8 @@
   "w": 400,
   "h": 306,
   "aliases": [],
-  "abbr": "Douglass"
+  "abbr": "Douglass",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Eisenhower",
@@ -850,7 +925,8 @@
   "aliases": [
    "Goddard-Eisenhower"
   ],
-  "abbr": "Eisenhower"
+  "abbr": "Eisenhower",
+  "mascot": "Tigers"
  },
  {
   "name": "El Dorado",
@@ -860,7 +936,8 @@
   "w": 400,
   "h": 308,
   "aliases": [],
-  "abbr": "ED"
+  "abbr": "ED",
+  "mascot": "Wildcats"
  },
  {
   "name": "Elk Valley",
@@ -880,7 +957,8 @@
   "w": 400,
   "h": 311,
   "aliases": [],
-  "abbr": "Elkhart"
+  "abbr": "Elkhart",
+  "mascot": "Wildcats"
  },
  {
   "name": "Ell-Saline",
@@ -890,7 +968,8 @@
   "w": 400,
   "h": 283,
   "aliases": [],
-  "abbr": "ES"
+  "abbr": "ES",
+  "mascot": "Cardinals"
  },
  {
   "name": "Ellinwood",
@@ -900,7 +979,8 @@
   "w": 400,
   "h": 240,
   "aliases": [],
-  "abbr": "Ellinwood"
+  "abbr": "Ellinwood",
+  "mascot": "Eagles"
  },
  {
   "name": "Ellis",
@@ -910,7 +990,8 @@
   "w": 355,
   "h": 256,
   "aliases": [],
-  "abbr": "Ellis"
+  "abbr": "Ellis",
+  "mascot": "Railroaders"
  },
  {
   "name": "Ellsworth",
@@ -920,7 +1001,8 @@
   "w": 400,
   "h": 355,
   "aliases": [],
-  "abbr": "Ellsworth"
+  "abbr": "Ellsworth",
+  "mascot": "Bearcats"
  },
  {
   "name": "Elyria Christian",
@@ -930,7 +1012,8 @@
   "w": 400,
   "h": 238,
   "aliases": [],
-  "abbr": "EC"
+  "abbr": "EC",
+  "mascot": "Eagles"
  },
  {
   "name": "Emporia",
@@ -940,7 +1023,8 @@
   "w": 380,
   "h": 400,
   "aliases": [],
-  "abbr": "Emporia"
+  "abbr": "Emporia",
+  "mascot": "Spartans"
  },
  {
   "name": "Erie",
@@ -950,7 +1034,8 @@
   "w": 300,
   "h": 250,
   "aliases": [],
-  "abbr": "Erie"
+  "abbr": "Erie",
+  "mascot": "Red Devils"
  },
  {
   "name": "Eudora",
@@ -960,7 +1045,8 @@
   "w": 400,
   "h": 271,
   "aliases": [],
-  "abbr": "Eudora"
+  "abbr": "Eudora",
+  "mascot": "Cardinals"
  },
  {
   "name": "Eureka",
@@ -970,7 +1056,8 @@
   "w": 400,
   "h": 394,
   "aliases": [],
-  "abbr": "Eureka"
+  "abbr": "Eureka",
+  "mascot": "Tornadoes"
  },
  {
   "name": "Fairfield",
@@ -980,7 +1067,8 @@
   "w": 400,
   "h": 261,
   "aliases": [],
-  "abbr": "Fairfield"
+  "abbr": "Fairfield",
+  "mascot": "Falcons"
  },
  {
   "name": "Flinthills",
@@ -990,7 +1078,8 @@
   "w": 293,
   "h": 400,
   "aliases": [],
-  "abbr": "Flinthills"
+  "abbr": "Flinthills",
+  "mascot": "Mustangs"
  },
  {
   "name": "Fort Scott",
@@ -1000,7 +1089,8 @@
   "w": 250,
   "h": 233,
   "aliases": [],
-  "abbr": "FS"
+  "abbr": "FS",
+  "mascot": "Tigers"
  },
  {
   "name": "Frankfort",
@@ -1010,7 +1100,8 @@
   "w": 400,
   "h": 369,
   "aliases": [],
-  "abbr": "Frankfort"
+  "abbr": "Frankfort",
+  "mascot": "Wildcats"
  },
  {
   "name": "Fredonia",
@@ -1020,7 +1111,8 @@
   "w": 287,
   "h": 400,
   "aliases": [],
-  "abbr": "Fredonia"
+  "abbr": "Fredonia",
+  "mascot": "Yellow Jackets"
  },
  {
   "name": "Frontenac",
@@ -1030,7 +1122,8 @@
   "w": 323,
   "h": 400,
   "aliases": [],
-  "abbr": "Frontenac"
+  "abbr": "Frontenac",
+  "mascot": "Raiders"
  },
  {
   "name": "Galena",
@@ -1040,7 +1133,8 @@
   "w": 384,
   "h": 400,
   "aliases": [],
-  "abbr": "Galena"
+  "abbr": "Galena",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Garden City",
@@ -1050,7 +1144,8 @@
   "w": 400,
   "h": 222,
   "aliases": [],
-  "abbr": "GC"
+  "abbr": "GC",
+  "mascot": "Buffaloes"
  },
  {
   "name": "Garden Plain",
@@ -1060,7 +1155,8 @@
   "w": 400,
   "h": 313,
   "aliases": [],
-  "abbr": "GP"
+  "abbr": "GP",
+  "mascot": "Owls"
  },
  {
   "name": "Gardner-Edgerton",
@@ -1070,7 +1166,8 @@
   "w": 281,
   "h": 188,
   "aliases": [],
-  "abbr": "GE"
+  "abbr": "GE",
+  "mascot": "Trailblazers"
  },
  {
   "name": "Girard",
@@ -1080,7 +1177,8 @@
   "w": 355,
   "h": 400,
   "aliases": [],
-  "abbr": "Girard"
+  "abbr": "Girard",
+  "mascot": "Trojans"
  },
  {
   "name": "Goddard",
@@ -1090,7 +1188,8 @@
   "w": 400,
   "h": 328,
   "aliases": [],
-  "abbr": "Goddard"
+  "abbr": "Goddard",
+  "mascot": "Lions"
  },
  {
   "name": "Goessel",
@@ -1100,7 +1199,8 @@
   "w": 400,
   "h": 138,
   "aliases": [],
-  "abbr": "Goessel"
+  "abbr": "Goessel",
+  "mascot": "Bluebirds"
  },
  {
   "name": "Golden Plains",
@@ -1110,7 +1210,8 @@
   "w": 400,
   "h": 266,
   "aliases": [],
-  "abbr": "GP"
+  "abbr": "GP",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Goodland",
@@ -1120,7 +1221,8 @@
   "w": 250,
   "h": 242,
   "aliases": [],
-  "abbr": "Goodland"
+  "abbr": "Goodland",
+  "mascot": "Cowboys"
  },
  {
   "name": "Great Bend",
@@ -1130,7 +1232,8 @@
   "w": 250,
   "h": 188,
   "aliases": [],
-  "abbr": "GB"
+  "abbr": "GB",
+  "mascot": "Panthers"
  },
  {
   "name": "Greeley County",
@@ -1140,7 +1243,8 @@
   "w": 343,
   "h": 400,
   "aliases": [],
-  "abbr": "GC"
+  "abbr": "GC",
+  "mascot": "Jackrabbits"
  },
  {
   "name": "Halstead",
@@ -1150,7 +1254,8 @@
   "w": 400,
   "h": 248,
   "aliases": [],
-  "abbr": "Halstead"
+  "abbr": "Halstead",
+  "mascot": "Dragons"
  },
  {
   "name": "Hanover",
@@ -1160,7 +1265,8 @@
   "w": 400,
   "h": 316,
   "aliases": [],
-  "abbr": "Hanover"
+  "abbr": "Hanover",
+  "mascot": "Wildcats"
  },
  {
   "name": "Harmon",
@@ -1172,7 +1278,8 @@
   "aliases": [
    "JC Harmon"
   ],
-  "abbr": "Harmon"
+  "abbr": "Harmon",
+  "mascot": "Hawks"
  },
  {
   "name": "Hartford",
@@ -1182,7 +1289,8 @@
   "w": 400,
   "h": 338,
   "aliases": [],
-  "abbr": "Hartford"
+  "abbr": "Hartford",
+  "mascot": "Jaguars"
  },
  {
   "name": "Haven",
@@ -1192,7 +1300,8 @@
   "w": 400,
   "h": 216,
   "aliases": [],
-  "abbr": "Haven"
+  "abbr": "Haven",
+  "mascot": "Wildcats"
  },
  {
   "name": "Hayden",
@@ -1204,7 +1313,8 @@
   "aliases": [
    "Topeka Hayden"
   ],
-  "abbr": "Hayden"
+  "abbr": "Hayden",
+  "mascot": "Wildcats"
  },
  {
   "name": "Hays",
@@ -1214,7 +1324,8 @@
   "w": 400,
   "h": 264,
   "aliases": [],
-  "abbr": "Hays"
+  "abbr": "Hays",
+  "mascot": "Indians"
  },
  {
   "name": "Wichita Heights",
@@ -1226,7 +1337,8 @@
   "aliases": [
    "Heights"
   ],
-  "abbr": "WH"
+  "abbr": "WH",
+  "mascot": "Falcons"
  },
  {
   "name": "Herington",
@@ -1236,7 +1348,8 @@
   "w": 400,
   "h": 276,
   "aliases": [],
-  "abbr": "Herington"
+  "abbr": "Herington",
+  "mascot": "Railers"
  },
  {
   "name": "Hesston",
@@ -1246,7 +1359,8 @@
   "w": 400,
   "h": 260,
   "aliases": [],
-  "abbr": "Hesston"
+  "abbr": "Hesston",
+  "mascot": "Swathers"
  },
  {
   "name": "Hiawatha",
@@ -1256,7 +1370,8 @@
   "w": 400,
   "h": 332,
   "aliases": [],
-  "abbr": "Hiawatha"
+  "abbr": "Hiawatha",
+  "mascot": "Redhawks"
  },
  {
   "name": "Highland Park",
@@ -1268,7 +1383,8 @@
   "aliases": [
    "Topeka Highland Park"
   ],
-  "abbr": "HP"
+  "abbr": "HP",
+  "mascot": "Scots"
  },
  {
   "name": "Hill City",
@@ -1278,7 +1394,8 @@
   "w": 400,
   "h": 288,
   "aliases": [],
-  "abbr": "Hill"
+  "abbr": "Hill",
+  "mascot": "Ringnecks"
  },
  {
   "name": "Hillsboro",
@@ -1288,7 +1405,8 @@
   "w": 386,
   "h": 400,
   "aliases": [],
-  "abbr": "Hillsboro"
+  "abbr": "Hillsboro",
+  "mascot": "Trojans"
  },
  {
   "name": "Hodgeman County",
@@ -1298,7 +1416,8 @@
   "w": 400,
   "h": 204,
   "aliases": [],
-  "abbr": "HODG"
+  "abbr": "HODG",
+  "mascot": "Longhorns"
  },
  {
   "name": "Hoisington",
@@ -1308,7 +1427,8 @@
   "w": 340,
   "h": 400,
   "aliases": [],
-  "abbr": "Hoisington"
+  "abbr": "Hoisington",
+  "mascot": "Cardinals"
  },
  {
   "name": "Holcomb",
@@ -1318,7 +1438,8 @@
   "w": 300,
   "h": 168,
   "aliases": [],
-  "abbr": "Holcomb"
+  "abbr": "Holcomb",
+  "mascot": "Longhorns"
  },
  {
   "name": "Holton",
@@ -1328,7 +1449,8 @@
   "w": 400,
   "h": 366,
   "aliases": [],
-  "abbr": "Holton"
+  "abbr": "Holton",
+  "mascot": "Wildcats"
  },
  {
   "name": "Horton",
@@ -1338,7 +1460,8 @@
   "w": 400,
   "h": 195,
   "aliases": [],
-  "abbr": "Horton"
+  "abbr": "Horton",
+  "mascot": "Chargers"
  },
  {
   "name": "Hoxie",
@@ -1348,7 +1471,8 @@
   "w": 389,
   "h": 400,
   "aliases": [],
-  "abbr": "Hoxie"
+  "abbr": "Hoxie",
+  "mascot": "Indians"
  },
  {
   "name": "Hugoton",
@@ -1358,7 +1482,8 @@
   "w": 400,
   "h": 230,
   "aliases": [],
-  "abbr": "Hugoton"
+  "abbr": "Hugoton",
+  "mascot": "Eagles"
  },
  {
   "name": "Humboldt",
@@ -1368,7 +1493,8 @@
   "w": 400,
   "h": 383,
   "aliases": [],
-  "abbr": "Humboldt"
+  "abbr": "Humboldt",
+  "mascot": "Cubs"
  },
  {
   "name": "Hutch Trinity",
@@ -1380,7 +1506,8 @@
   "aliases": [
    "Hutchinson Trinity"
   ],
-  "abbr": "HT"
+  "abbr": "HT",
+  "mascot": "Celtics"
  },
  {
   "name": "Hutchinson",
@@ -1390,7 +1517,8 @@
   "w": 400,
   "h": 236,
   "aliases": [],
-  "abbr": "Hutchinson"
+  "abbr": "Hutchinson",
+  "mascot": "Salthawks"
  },
  {
   "name": "Independence",
@@ -1400,7 +1528,8 @@
   "w": 400,
   "h": 329,
   "aliases": [],
-  "abbr": "Independence"
+  "abbr": "Independence",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Ingalls",
@@ -1410,7 +1539,8 @@
   "w": 400,
   "h": 310,
   "aliases": [],
-  "abbr": "Ingalls"
+  "abbr": "Ingalls",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Inman",
@@ -1420,7 +1550,8 @@
   "w": 344,
   "h": 362,
   "aliases": [],
-  "abbr": "Inman"
+  "abbr": "Inman",
+  "mascot": "Teutons"
  },
  {
   "name": "Iola",
@@ -1430,7 +1561,8 @@
   "w": 250,
   "h": 123,
   "aliases": [],
-  "abbr": "Iola"
+  "abbr": "Iola",
+  "mascot": "Mustangs"
  },
  {
   "name": "Jackson Heights",
@@ -1440,7 +1572,8 @@
   "w": 400,
   "h": 309,
   "aliases": [],
-  "abbr": "JH"
+  "abbr": "JH",
+  "mascot": "Cobras"
  },
  {
   "name": "Jayhawk-Linn",
@@ -1450,7 +1583,8 @@
   "w": 359,
   "h": 400,
   "aliases": [],
-  "abbr": "JL"
+  "abbr": "JL",
+  "mascot": "Jayhawks"
  },
  {
   "name": "Jefferson County North",
@@ -1460,7 +1594,8 @@
   "w": 283,
   "h": 400,
   "aliases": [],
-  "abbr": "JCN"
+  "abbr": "JCN",
+  "mascot": "Chargers"
  },
  {
   "name": "Jefferson West",
@@ -1470,7 +1605,8 @@
   "w": 400,
   "h": 387,
   "aliases": [],
-  "abbr": "JW"
+  "abbr": "JW",
+  "mascot": "Tigers"
  },
  {
   "name": "Jennings",
@@ -1490,7 +1626,8 @@
   "w": 312,
   "h": 322,
   "aliases": [],
-  "abbr": "JC"
+  "abbr": "JC",
+  "mascot": "Blue Jays"
  },
  {
   "name": "KC Sumner",
@@ -1504,7 +1641,8 @@
    "Sumner Academy",
    "Kansas City-Sumner Academy"
   ],
-  "abbr": "KS"
+  "abbr": "KS",
+  "mascot": "Sabres"
  },
  {
   "name": "Kansas City Christian",
@@ -1534,7 +1672,8 @@
   "w": 205,
   "h": 280,
   "aliases": [],
-  "abbr": "KMC"
+  "abbr": "KMC",
+  "mascot": "Crusaders"
  },
  {
   "name": "Kingman",
@@ -1544,7 +1683,8 @@
   "w": 400,
   "h": 220,
   "aliases": [],
-  "abbr": "Kingman"
+  "abbr": "Kingman",
+  "mascot": "Eagles"
  },
  {
   "name": "Kinsley",
@@ -1554,7 +1694,8 @@
   "w": 400,
   "h": 365,
   "aliases": [],
-  "abbr": "Kinsley"
+  "abbr": "Kinsley",
+  "mascot": "Coyotes"
  },
  {
   "name": "Kiowa County",
@@ -1564,7 +1705,8 @@
   "w": 400,
   "h": 200,
   "aliases": [],
-  "abbr": "KC"
+  "abbr": "KC",
+  "mascot": "Mavericks"
  },
  {
   "name": "La Crosse",
@@ -1574,7 +1716,8 @@
   "w": 400,
   "h": 320,
   "aliases": [],
-  "abbr": "LC"
+  "abbr": "LC",
+  "mascot": "Leopards"
  },
  {
   "name": "Labette County",
@@ -1584,7 +1727,8 @@
   "w": 250,
   "h": 234,
   "aliases": [],
-  "abbr": "LC"
+  "abbr": "LC",
+  "mascot": "Grizzlies"
  },
  {
   "name": "Lakeside",
@@ -1594,7 +1738,8 @@
   "w": 400,
   "h": 232,
   "aliases": [],
-  "abbr": "Lakeside"
+  "abbr": "Lakeside",
+  "mascot": "Knights"
  },
  {
   "name": "Lakin",
@@ -1604,7 +1749,8 @@
   "w": 400,
   "h": 301,
   "aliases": [],
-  "abbr": "Lakin"
+  "abbr": "Lakin",
+  "mascot": "Broncs"
  },
  {
   "name": "Lansing",
@@ -1614,7 +1760,8 @@
   "w": 400,
   "h": 338,
   "aliases": [],
-  "abbr": "Lansing"
+  "abbr": "Lansing",
+  "mascot": "Lions"
  },
  {
   "name": "Larned",
@@ -1624,7 +1771,8 @@
   "w": 202,
   "h": 250,
   "aliases": [],
-  "abbr": "Larned"
+  "abbr": "Larned",
+  "mascot": "Indians"
  },
  {
   "name": "Lawrence Free State",
@@ -1636,7 +1784,8 @@
   "aliases": [
    "Free State"
   ],
-  "abbr": "LFS"
+  "abbr": "LFS",
+  "mascot": "Firebirds"
  },
  {
   "name": "Lawrence",
@@ -1646,7 +1795,8 @@
   "w": 112,
   "h": 200,
   "aliases": [],
-  "abbr": "Lawrence"
+  "abbr": "Lawrence",
+  "mascot": "Lions"
  },
  {
   "name": "Leavenworth",
@@ -1656,7 +1806,8 @@
   "w": 317,
   "h": 400,
   "aliases": [],
-  "abbr": "Leavenworth"
+  "abbr": "Leavenworth",
+  "mascot": "Pioneers"
  },
  {
   "name": "Lebo",
@@ -1666,7 +1817,8 @@
   "w": 273,
   "h": 400,
   "aliases": [],
-  "abbr": "Lebo"
+  "abbr": "Lebo",
+  "mascot": "Wolves"
  },
  {
   "name": "Liberal",
@@ -1676,7 +1828,8 @@
   "w": 270,
   "h": 400,
   "aliases": [],
-  "abbr": "Liberal"
+  "abbr": "Liberal",
+  "mascot": "Redskins"
  },
  {
   "name": "Life Prep",
@@ -1696,7 +1849,8 @@
   "w": 400,
   "h": 350,
   "aliases": [],
-  "abbr": "Lincoln"
+  "abbr": "Lincoln",
+  "mascot": "Leopards"
  },
  {
   "name": "Linn",
@@ -1706,7 +1860,8 @@
   "w": 370,
   "h": 400,
   "aliases": [],
-  "abbr": "Linn"
+  "abbr": "Linn",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Little River",
@@ -1716,7 +1871,8 @@
   "w": 374,
   "h": 400,
   "aliases": [],
-  "abbr": "LR"
+  "abbr": "LR",
+  "mascot": "Redskins"
  },
  {
   "name": "Logan",
@@ -1726,7 +1882,8 @@
   "w": 400,
   "h": 356,
   "aliases": [],
-  "abbr": "Logan"
+  "abbr": "Logan",
+  "mascot": "Trojans"
  },
  {
   "name": "Louisburg",
@@ -1736,7 +1893,8 @@
   "w": 400,
   "h": 386,
   "aliases": [],
-  "abbr": "Louisburg"
+  "abbr": "Louisburg",
+  "mascot": "Wildcats"
  },
  {
   "name": "Lyndon",
@@ -1746,7 +1904,8 @@
   "w": 210,
   "h": 151,
   "aliases": [],
-  "abbr": "Lyndon"
+  "abbr": "Lyndon",
+  "mascot": "Tigers"
  },
  {
   "name": "Lyons",
@@ -1756,7 +1915,8 @@
   "w": 361,
   "h": 400,
   "aliases": [],
-  "abbr": "Lyons"
+  "abbr": "Lyons",
+  "mascot": "Lions"
  },
  {
   "name": "Macksville",
@@ -1766,7 +1926,8 @@
   "w": 250,
   "h": 196,
   "aliases": [],
-  "abbr": "Macksville"
+  "abbr": "Macksville",
+  "mascot": "Mustangs"
  },
  {
   "name": "Madison",
@@ -1776,7 +1937,8 @@
   "w": 332,
   "h": 289,
   "aliases": [],
-  "abbr": "Madison"
+  "abbr": "Madison",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Maize South",
@@ -1788,7 +1950,8 @@
   "aliases": [
    "Maize S"
   ],
-  "abbr": "MS"
+  "abbr": "MS",
+  "mascot": "Mavericks"
  },
  {
   "name": "Maize",
@@ -1798,7 +1961,8 @@
   "w": 400,
   "h": 175,
   "aliases": [],
-  "abbr": "Maize"
+  "abbr": "Maize",
+  "mascot": "Eagles"
  },
  {
   "name": "Manhattan",
@@ -1808,7 +1972,8 @@
   "w": 400,
   "h": 375,
   "aliases": [],
-  "abbr": "Manhattan"
+  "abbr": "Manhattan",
+  "mascot": "Indians"
  },
  {
   "name": "Marais des Cygnes Valley",
@@ -1818,7 +1983,8 @@
   "w": 400,
   "h": 342,
   "aliases": [],
-  "abbr": "MDCV"
+  "abbr": "MDCV",
+  "mascot": "Trojans"
  },
  {
   "name": "Maranatha",
@@ -1828,7 +1994,8 @@
   "w": 90,
   "h": 81,
   "aliases": [],
-  "abbr": "Maranatha"
+  "abbr": "Maranatha",
+  "mascot": "Eagles"
  },
  {
   "name": "Marion",
@@ -1838,7 +2005,8 @@
   "w": 395,
   "h": 400,
   "aliases": [],
-  "abbr": "Marion"
+  "abbr": "Marion",
+  "mascot": "Warriors"
  },
  {
   "name": "Marmaton Valley",
@@ -1848,7 +2016,8 @@
   "w": 354,
   "h": 400,
   "aliases": [],
-  "abbr": "MV"
+  "abbr": "MV",
+  "mascot": "Wildcats"
  },
  {
   "name": "Marysville",
@@ -1858,7 +2027,8 @@
   "w": 400,
   "h": 321,
   "aliases": [],
-  "abbr": "Marysville"
+  "abbr": "Marysville",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Maur Hill-Mount",
@@ -1868,7 +2038,8 @@
   "w": 212,
   "h": 250,
   "aliases": [],
-  "abbr": "MHM"
+  "abbr": "MHM",
+  "mascot": "Ravens"
  },
  {
   "name": "McLouth",
@@ -1878,7 +2049,8 @@
   "w": 400,
   "h": 363,
   "aliases": [],
-  "abbr": "McLouth"
+  "abbr": "McLouth",
+  "mascot": "Bulldogs"
  },
  {
   "name": "McPherson",
@@ -1888,7 +2060,8 @@
   "w": 400,
   "h": 398,
   "aliases": [],
-  "abbr": "McPherson"
+  "abbr": "McPherson",
+  "mascot": "Bullpups"
  },
  {
   "name": "Meade",
@@ -1898,7 +2071,8 @@
   "w": 288,
   "h": 194,
   "aliases": [],
-  "abbr": "Meade"
+  "abbr": "Meade",
+  "mascot": "Buffaloes"
  },
  {
   "name": "Medicine Lodge",
@@ -1908,7 +2082,8 @@
   "w": 400,
   "h": 333,
   "aliases": [],
-  "abbr": "ML"
+  "abbr": "ML",
+  "mascot": "Indians"
  },
  {
   "name": "Mill Valley",
@@ -1918,7 +2093,8 @@
   "w": 400,
   "h": 309,
   "aliases": [],
-  "abbr": "MV"
+  "abbr": "MV",
+  "mascot": "Jaguars"
  },
  {
   "name": "Minneapolis",
@@ -1928,7 +2104,8 @@
   "w": 250,
   "h": 158,
   "aliases": [],
-  "abbr": "Minneapolis"
+  "abbr": "Minneapolis",
+  "mascot": "Lions"
  },
  {
   "name": "Minneola",
@@ -1938,7 +2115,8 @@
   "w": 400,
   "h": 323,
   "aliases": [],
-  "abbr": "Minneola"
+  "abbr": "Minneola",
+  "mascot": "Wildcats"
  },
  {
   "name": "Mission Valley",
@@ -1948,7 +2126,8 @@
   "w": 264,
   "h": 400,
   "aliases": [],
-  "abbr": "MV"
+  "abbr": "MV",
+  "mascot": "Vikings"
  },
  {
   "name": "Moscow",
@@ -1958,7 +2137,8 @@
   "w": 400,
   "h": 329,
   "aliases": [],
-  "abbr": "Moscow"
+  "abbr": "Moscow",
+  "mascot": "Wildcats"
  },
  {
   "name": "Moundridge",
@@ -1968,7 +2148,8 @@
   "w": 400,
   "h": 359,
   "aliases": [],
-  "abbr": "Moundridge"
+  "abbr": "Moundridge",
+  "mascot": "Wildcats"
  },
  {
   "name": "Mulvane",
@@ -1978,7 +2159,8 @@
   "w": 400,
   "h": 349,
   "aliases": [],
-  "abbr": "Mulvane"
+  "abbr": "Mulvane",
+  "mascot": "Wildcats"
  },
  {
   "name": "Natoma",
@@ -1998,7 +2180,8 @@
   "w": 340,
   "h": 400,
   "aliases": [],
-  "abbr": "NC"
+  "abbr": "NC",
+  "mascot": "Thunder"
  },
  {
   "name": "Neodesha",
@@ -2008,7 +2191,8 @@
   "w": 400,
   "h": 220,
   "aliases": [],
-  "abbr": "Neodesha"
+  "abbr": "Neodesha",
+  "mascot": "Blue Streaks"
  },
  {
   "name": "Ness City",
@@ -2018,7 +2202,8 @@
   "w": 400,
   "h": 178,
   "aliases": [],
-  "abbr": "NC"
+  "abbr": "NC",
+  "mascot": "Eagles"
  },
  {
   "name": "Newton",
@@ -2028,7 +2213,8 @@
   "w": 262,
   "h": 400,
   "aliases": [],
-  "abbr": "Newton"
+  "abbr": "Newton",
+  "mascot": "Railers"
  },
  {
   "name": "Nickerson",
@@ -2038,7 +2224,8 @@
   "w": 292,
   "h": 400,
   "aliases": [],
-  "abbr": "Nickerson"
+  "abbr": "Nickerson",
+  "mascot": "Panthers"
  },
  {
   "name": "Wichita North",
@@ -2050,7 +2237,8 @@
   "aliases": [
    "North"
   ],
-  "abbr": "WN"
+  "abbr": "WN",
+  "mascot": "Redhawks"
  },
  {
   "name": "Northeast-Arma",
@@ -2065,7 +2253,8 @@
    "Arma Northeast",
    "Northeast-Arma Vikings"
   ],
-  "abbr": "NEA"
+  "abbr": "NEA",
+  "mascot": "Vikings"
  },
  {
   "name": "Northern Heights",
@@ -2075,7 +2264,8 @@
   "w": 348,
   "h": 307,
   "aliases": [],
-  "abbr": "NH"
+  "abbr": "NH",
+  "mascot": "Wildcats"
  },
  {
   "name": "Northern Valley",
@@ -2085,7 +2275,8 @@
   "w": 400,
   "h": 349,
   "aliases": [],
-  "abbr": "NV"
+  "abbr": "NV",
+  "mascot": "Huskies"
  },
  {
   "name": "Norton",
@@ -2095,7 +2286,8 @@
   "w": 394,
   "h": 400,
   "aliases": [],
-  "abbr": "Norton"
+  "abbr": "Norton",
+  "mascot": "Bluejays"
  },
  {
   "name": "Norwich",
@@ -2105,7 +2297,8 @@
   "w": 400,
   "h": 215,
   "aliases": [],
-  "abbr": "Norwich"
+  "abbr": "Norwich",
+  "mascot": "Eagles"
  },
  {
   "name": "Oakley",
@@ -2115,7 +2308,8 @@
   "w": 282,
   "h": 400,
   "aliases": [],
-  "abbr": "Oakley"
+  "abbr": "Oakley",
+  "mascot": "Plainsmen"
  },
  {
   "name": "Olathe East",
@@ -2125,7 +2319,8 @@
   "w": 400,
   "h": 365,
   "aliases": [],
-  "abbr": "OE"
+  "abbr": "OE",
+  "mascot": "Hawks"
  },
  {
   "name": "Olathe Heritage Christian",
@@ -2145,7 +2340,8 @@
   "w": 400,
   "h": 371,
   "aliases": [],
-  "abbr": "ON"
+  "abbr": "ON",
+  "mascot": "Eagles"
  },
  {
   "name": "Olathe Northwest",
@@ -2155,7 +2351,8 @@
   "w": 400,
   "h": 159,
   "aliases": [],
-  "abbr": "ONW"
+  "abbr": "ONW",
+  "mascot": "Ravens"
  },
  {
   "name": "Olathe South",
@@ -2165,7 +2362,8 @@
   "w": 400,
   "h": 215,
   "aliases": [],
-  "abbr": "OS"
+  "abbr": "OS",
+  "mascot": "Falcons"
  },
  {
   "name": "Olathe West",
@@ -2175,7 +2373,8 @@
   "w": 387,
   "h": 400,
   "aliases": [],
-  "abbr": "OW"
+  "abbr": "OW",
+  "mascot": "Owls"
  },
  {
   "name": "Olpe",
@@ -2185,7 +2384,8 @@
   "w": 319,
   "h": 312,
   "aliases": [],
-  "abbr": "Olpe"
+  "abbr": "Olpe",
+  "mascot": "Eagles"
  },
  {
   "name": "Onaga",
@@ -2195,7 +2395,8 @@
   "w": 400,
   "h": 272,
   "aliases": [],
-  "abbr": "Onaga"
+  "abbr": "Onaga",
+  "mascot": "Buffaloes"
  },
  {
   "name": "Osage City",
@@ -2205,7 +2406,8 @@
   "w": 400,
   "h": 400,
   "aliases": [],
-  "abbr": "OC"
+  "abbr": "OC",
+  "mascot": "Indians"
  },
  {
   "name": "Osawatomie",
@@ -2215,7 +2417,8 @@
   "w": 397,
   "h": 400,
   "aliases": [],
-  "abbr": "Osawatomie"
+  "abbr": "Osawatomie",
+  "mascot": "Trojans"
  },
  {
   "name": "Osborne",
@@ -2225,7 +2428,8 @@
   "w": 300,
   "h": 400,
   "aliases": [],
-  "abbr": "Osborne"
+  "abbr": "Osborne",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Oskaloosa",
@@ -2235,7 +2439,8 @@
   "w": 349,
   "h": 400,
   "aliases": [],
-  "abbr": "Oskaloosa"
+  "abbr": "Oskaloosa",
+  "mascot": "Bears"
  },
  {
   "name": "Oswego",
@@ -2245,7 +2450,8 @@
   "w": 400,
   "h": 240,
   "aliases": [],
-  "abbr": "Oswego"
+  "abbr": "Oswego",
+  "mascot": "Indians"
  },
  {
   "name": "Otis-Bison",
@@ -2255,7 +2461,8 @@
   "w": 298,
   "h": 287,
   "aliases": [],
-  "abbr": "OB"
+  "abbr": "OB",
+  "mascot": "Cougars"
  },
  {
   "name": "Ottawa",
@@ -2265,7 +2472,8 @@
   "w": 400,
   "h": 389,
   "aliases": [],
-  "abbr": "Ottawa"
+  "abbr": "Ottawa",
+  "mascot": "Cyclones"
  },
  {
   "name": "Oxford",
@@ -2275,7 +2483,8 @@
   "w": 333,
   "h": 352,
   "aliases": [],
-  "abbr": "Oxford"
+  "abbr": "Oxford",
+  "mascot": "Wildcats"
  },
  {
   "name": "Paola",
@@ -2285,7 +2494,8 @@
   "w": 316,
   "h": 225,
   "aliases": [],
-  "abbr": "Paola"
+  "abbr": "Paola",
+  "mascot": "Panthers"
  },
  {
   "name": "Parsons",
@@ -2295,7 +2505,8 @@
   "w": 400,
   "h": 366,
   "aliases": [],
-  "abbr": "Parsons"
+  "abbr": "Parsons",
+  "mascot": "Vikings"
  },
  {
   "name": "Pawnee Heights",
@@ -2305,7 +2516,8 @@
   "w": 400,
   "h": 276,
   "aliases": [],
-  "abbr": "PH"
+  "abbr": "PH",
+  "mascot": "Tigers"
  },
  {
   "name": "Peabody-Burns",
@@ -2315,7 +2527,8 @@
   "w": 337,
   "h": 341,
   "aliases": [],
-  "abbr": "PB"
+  "abbr": "PB",
+  "mascot": "Warriors"
  },
  {
   "name": "Perry-Lecompton",
@@ -2325,7 +2538,8 @@
   "w": 400,
   "h": 200,
   "aliases": [],
-  "abbr": "PL"
+  "abbr": "PL",
+  "mascot": "Kaws"
  },
  {
   "name": "Phillipsburg",
@@ -2335,7 +2549,8 @@
   "w": 400,
   "h": 239,
   "aliases": [],
-  "abbr": "Phillipsburg"
+  "abbr": "Phillipsburg",
+  "mascot": "Panthers"
  },
  {
   "name": "Pike Valley",
@@ -2345,7 +2560,8 @@
   "w": 365,
   "h": 400,
   "aliases": [],
-  "abbr": "PK"
+  "abbr": "PK",
+  "mascot": "Panthers"
  },
  {
   "name": "Piper",
@@ -2358,7 +2574,8 @@
    "KC Piper",
    "Kansas City-Piper"
   ],
-  "abbr": "Piper"
+  "abbr": "Piper",
+  "mascot": "Pirates"
  },
  {
   "name": "Pittsburg",
@@ -2368,7 +2585,8 @@
   "w": 256,
   "h": 221,
   "aliases": [],
-  "abbr": "Pittsburg"
+  "abbr": "Pittsburg",
+  "mascot": "Purple Dragons"
  },
  {
   "name": "Plainville",
@@ -2378,7 +2596,8 @@
   "w": 348,
   "h": 400,
   "aliases": [],
-  "abbr": "Plainville"
+  "abbr": "Plainville",
+  "mascot": "Cardinals"
  },
  {
   "name": "Pleasant Ridge",
@@ -2388,7 +2607,8 @@
   "w": 400,
   "h": 297,
   "aliases": [],
-  "abbr": "PR"
+  "abbr": "PR",
+  "mascot": "Rams"
  },
  {
   "name": "Pleasanton",
@@ -2398,7 +2618,8 @@
   "w": 400,
   "h": 388,
   "aliases": [],
-  "abbr": "Pleasanton"
+  "abbr": "Pleasanton",
+  "mascot": "Blu-Jays"
  },
  {
   "name": "Prairie View",
@@ -2408,7 +2629,8 @@
   "w": 353,
   "h": 400,
   "aliases": [],
-  "abbr": "PV"
+  "abbr": "PV",
+  "mascot": "Buffalos"
  },
  {
   "name": "Pratt",
@@ -2418,7 +2640,8 @@
   "w": 265,
   "h": 385,
   "aliases": [],
-  "abbr": "Pratt"
+  "abbr": "Pratt",
+  "mascot": "Greenbacks"
  },
  {
   "name": "Pretty Prairie",
@@ -2428,7 +2651,8 @@
   "w": 400,
   "h": 316,
   "aliases": [],
-  "abbr": "PP"
+  "abbr": "PP",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Quinter",
@@ -2438,7 +2662,8 @@
   "w": 400,
   "h": 234,
   "aliases": [],
-  "abbr": "Quinter"
+  "abbr": "Quinter",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Rawlins County",
@@ -2448,7 +2673,8 @@
   "w": 241,
   "h": 203,
   "aliases": [],
-  "abbr": "RAWL"
+  "abbr": "RAWL",
+  "mascot": "Buffaloes"
  },
  {
   "name": "Remington",
@@ -2460,7 +2686,8 @@
   "aliases": [
    "Whitewater-Remington"
   ],
-  "abbr": "Remington"
+  "abbr": "Remington",
+  "mascot": "Broncos"
  },
  {
   "name": "Republic County",
@@ -2470,7 +2697,8 @@
   "w": 287,
   "h": 242,
   "aliases": [],
-  "abbr": "RepC"
+  "abbr": "RepC",
+  "mascot": "Buffaloes"
  },
  {
   "name": "Riley County",
@@ -2480,7 +2708,8 @@
   "w": 400,
   "h": 336,
   "aliases": [],
-  "abbr": "RC"
+  "abbr": "RC",
+  "mascot": "Falcons"
  },
  {
   "name": "Riverside",
@@ -2490,7 +2719,8 @@
   "w": 400,
   "h": 384,
   "aliases": [],
-  "abbr": "Riverside"
+  "abbr": "Riverside",
+  "mascot": "Cyclones"
  },
  {
   "name": "Riverton",
@@ -2500,7 +2730,8 @@
   "w": 400,
   "h": 327,
   "aliases": [],
-  "abbr": "Riverton"
+  "abbr": "Riverton",
+  "mascot": "Rams"
  },
  {
   "name": "Rock Creek",
@@ -2510,7 +2741,8 @@
   "w": 247,
   "h": 360,
   "aliases": [],
-  "abbr": "ROCR"
+  "abbr": "ROCR",
+  "mascot": "Mustangs"
  },
  {
   "name": "Rock Hills",
@@ -2520,7 +2752,8 @@
   "w": 400,
   "h": 339,
   "aliases": [],
-  "abbr": "RH"
+  "abbr": "RH",
+  "mascot": "Grizzlies"
  },
  {
   "name": "Rolla",
@@ -2540,7 +2773,8 @@
   "w": 400,
   "h": 359,
   "aliases": [],
-  "abbr": "RH"
+  "abbr": "RH",
+  "mascot": "Rockets"
  },
  {
   "name": "Rossville",
@@ -2550,7 +2784,8 @@
   "w": 400,
   "h": 389,
   "aliases": [],
-  "abbr": "Rossville"
+  "abbr": "Rossville",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Royal Valley",
@@ -2560,7 +2795,8 @@
   "w": 400,
   "h": 323,
   "aliases": [],
-  "abbr": "RV"
+  "abbr": "RV",
+  "mascot": "Panthers"
  },
  {
   "name": "Rural Vista",
@@ -2570,7 +2806,8 @@
   "w": 400,
   "h": 328,
   "aliases": [],
-  "abbr": "RV"
+  "abbr": "RV",
+  "mascot": "Heat"
  },
  {
   "name": "Russell",
@@ -2580,7 +2817,8 @@
   "w": 400,
   "h": 309,
   "aliases": [],
-  "abbr": "Russell"
+  "abbr": "Russell",
+  "mascot": "Broncos"
  },
  {
   "name": "Sabetha",
@@ -2590,7 +2828,8 @@
   "w": 250,
   "h": 200,
   "aliases": [],
-  "abbr": "Sabetha"
+  "abbr": "Sabetha",
+  "mascot": "Bluejays"
  },
  {
   "name": "Sacred Heart",
@@ -2600,7 +2839,8 @@
   "w": 400,
   "h": 181,
   "aliases": [],
-  "abbr": "SH"
+  "abbr": "SH",
+  "mascot": "Knights"
  },
  {
   "name": "Saint Mary's Academy",
@@ -2620,7 +2860,8 @@
   "w": 261,
   "h": 262,
   "aliases": [],
-  "abbr": "SC"
+  "abbr": "SC",
+  "mascot": "Mustangs"
  },
  {
   "name": "Salina South",
@@ -2630,7 +2871,8 @@
   "w": 384,
   "h": 400,
   "aliases": [],
-  "abbr": "SS"
+  "abbr": "SS",
+  "mascot": "Cougars"
  },
  {
   "name": "Santa Fe Trail",
@@ -2640,7 +2882,8 @@
   "w": 102,
   "h": 250,
   "aliases": [],
-  "abbr": "SFT"
+  "abbr": "SFT",
+  "mascot": "Chargers"
  },
  {
   "name": "Satanta",
@@ -2650,7 +2893,8 @@
   "w": 399,
   "h": 400,
   "aliases": [],
-  "abbr": "Satanta"
+  "abbr": "Satanta",
+  "mascot": "Indians"
  },
  {
   "name": "Schlagle",
@@ -2665,7 +2909,8 @@
    "KC F.L. Schlagle",
    "Kansas City-F. L. Schlagle"
   ],
-  "abbr": "Schlagle"
+  "abbr": "Schlagle",
+  "mascot": "Stallions"
  },
  {
   "name": "Scott City",
@@ -2675,7 +2920,8 @@
   "w": 400,
   "h": 196,
   "aliases": [],
-  "abbr": "SC"
+  "abbr": "SC",
+  "mascot": "Beavers"
  },
  {
   "name": "Seaman",
@@ -2687,7 +2933,8 @@
   "aliases": [
    "Topeka Seaman"
   ],
-  "abbr": "Seaman"
+  "abbr": "Seaman",
+  "mascot": "Vikings"
  },
  {
   "name": "Sedan",
@@ -2697,7 +2944,8 @@
   "w": 331,
   "h": 400,
   "aliases": [],
-  "abbr": "Sedan"
+  "abbr": "Sedan",
+  "mascot": "Blue Devils"
  },
  {
   "name": "Sedgwick",
@@ -2707,7 +2955,8 @@
   "w": 363,
   "h": 400,
   "aliases": [],
-  "abbr": "Sedgwick"
+  "abbr": "Sedgwick",
+  "mascot": "Cardinals"
  },
  {
   "name": "Shawnee Heights",
@@ -2717,7 +2966,8 @@
   "w": 400,
   "h": 118,
   "aliases": [],
-  "abbr": "SH"
+  "abbr": "SH",
+  "mascot": "T-Birds"
  },
  {
   "name": "Shawnee Mission East",
@@ -2727,7 +2977,8 @@
   "w": 368,
   "h": 400,
   "aliases": [],
-  "abbr": "SME"
+  "abbr": "SME",
+  "mascot": "Lancers"
  },
  {
   "name": "Shawnee Mission North",
@@ -2740,7 +2991,8 @@
    "SM North",
    "SMN"
   ],
-  "abbr": "SMN"
+  "abbr": "SMN",
+  "mascot": "Bison"
  },
  {
   "name": "Shawnee Mission Northwest",
@@ -2750,7 +3002,8 @@
   "w": 400,
   "h": 342,
   "aliases": [],
-  "abbr": "SMNW"
+  "abbr": "SMNW",
+  "mascot": "Cougars"
  },
  {
   "name": "Shawnee Mission South",
@@ -2760,7 +3013,8 @@
   "w": 224,
   "h": 400,
   "aliases": [],
-  "abbr": "SMS"
+  "abbr": "SMS",
+  "mascot": "Raiders"
  },
  {
   "name": "Shawnee Mission West",
@@ -2773,7 +3027,8 @@
    "SM West",
    "SMW"
   ],
-  "abbr": "SMW"
+  "abbr": "SMW",
+  "mascot": "Vikings"
  },
  {
   "name": "Silver Lake",
@@ -2783,7 +3038,8 @@
   "w": 400,
   "h": 158,
   "aliases": [],
-  "abbr": "SL"
+  "abbr": "SL",
+  "mascot": "Eagles"
  },
  {
   "name": "Skyline",
@@ -2793,7 +3049,8 @@
   "w": 400,
   "h": 117,
   "aliases": [],
-  "abbr": "Skyline"
+  "abbr": "Skyline",
+  "mascot": "Thunderbirds"
  },
  {
   "name": "Smith Center",
@@ -2803,7 +3060,8 @@
   "w": 400,
   "h": 387,
   "aliases": [],
-  "abbr": "SC"
+  "abbr": "SC",
+  "mascot": "Redmen"
  },
  {
   "name": "Smoky Valley",
@@ -2813,7 +3071,8 @@
   "w": 248,
   "h": 368,
   "aliases": [],
-  "abbr": "SV"
+  "abbr": "SV",
+  "mascot": "Vikings"
  },
  {
   "name": "Solomon",
@@ -2823,7 +3082,8 @@
   "w": 400,
   "h": 400,
   "aliases": [],
-  "abbr": "Solomon"
+  "abbr": "Solomon",
+  "mascot": "Gorillas"
  },
  {
   "name": "South Barber",
@@ -2833,7 +3093,8 @@
   "w": 396,
   "h": 400,
   "aliases": [],
-  "abbr": "SB"
+  "abbr": "SB",
+  "mascot": "Chieftains"
  },
  {
   "name": "South Central",
@@ -2843,7 +3104,8 @@
   "w": 373,
   "h": 400,
   "aliases": [],
-  "abbr": "SC"
+  "abbr": "SC",
+  "mascot": "Timberwolves"
  },
  {
   "name": "South Gray",
@@ -2853,7 +3115,8 @@
   "w": 400,
   "h": 387,
   "aliases": [],
-  "abbr": "SG"
+  "abbr": "SG",
+  "mascot": "Rebels"
  },
  {
   "name": "South Haven",
@@ -2875,7 +3138,8 @@
   "aliases": [
    "South Sumner County"
   ],
-  "abbr": "SS"
+  "abbr": "SS",
+  "mascot": "Outlaws"
  },
  {
   "name": "Southeast (Cherokee)",
@@ -2885,7 +3149,8 @@
   "w": 302,
   "h": 400,
   "aliases": [],
-  "abbr": "SEC"
+  "abbr": "SEC",
+  "mascot": "Lancers"
  },
  {
   "name": "Wichita Southeast",
@@ -2900,7 +3165,8 @@
    "Southeast-Wichita",
    "Wichita SE"
   ],
-  "abbr": "SEW"
+  "abbr": "SEW",
+  "mascot": "Golden Buffaloes"
  },
  {
   "name": "Southeast of Saline",
@@ -2912,7 +3178,8 @@
   "aliases": [
    "Southeast Saline"
   ],
-  "abbr": "SEOS"
+  "abbr": "SEOS",
+  "mascot": "Trojans"
  },
  {
   "name": "Southern Cloud",
@@ -2932,7 +3199,8 @@
   "w": 360,
   "h": 283,
   "aliases": [],
-  "abbr": "SCC"
+  "abbr": "SCC",
+  "mascot": "Titans"
  },
  {
   "name": "Southwestern Heights",
@@ -2942,7 +3210,8 @@
   "w": 300,
   "h": 160,
   "aliases": [],
-  "abbr": "SH"
+  "abbr": "SH",
+  "mascot": "Mustangs"
  },
  {
   "name": "Spearville",
@@ -2952,7 +3221,8 @@
   "w": 400,
   "h": 193,
   "aliases": [],
-  "abbr": "Spearville"
+  "abbr": "Spearville",
+  "mascot": "Royal Lancers"
  },
  {
   "name": "Spring Hill",
@@ -2962,7 +3232,8 @@
   "w": 226,
   "h": 400,
   "aliases": [],
-  "abbr": "SH"
+  "abbr": "SH",
+  "mascot": "Broncos"
  },
  {
   "name": "St Francis",
@@ -2972,7 +3243,8 @@
   "w": 377,
   "h": 400,
   "aliases": [],
-  "abbr": "SF"
+  "abbr": "SF",
+  "mascot": "Indians"
  },
  {
   "name": "St James",
@@ -2985,7 +3257,8 @@
    "St James Academy",
    "St. James Academy"
   ],
-  "abbr": "SJA"
+  "abbr": "SJA",
+  "mascot": "Thunder"
  },
  {
   "name": "St John's",
@@ -2997,7 +3270,8 @@
   "aliases": [
    "Beloit St. Johns-Tipton"
   ],
-  "abbr": "SJ"
+  "abbr": "SJ",
+  "mascot": "Blujays"
  },
  {
   "name": "St John",
@@ -3007,7 +3281,8 @@
   "w": 262,
   "h": 267,
   "aliases": [],
-  "abbr": "SJ"
+  "abbr": "SJ",
+  "mascot": "Tigers"
  },
  {
   "name": "St Mary's Colgan",
@@ -3020,7 +3295,8 @@
    "St Marys Colgan",
    "St. Marys Colgan"
   ],
-  "abbr": "SMC"
+  "abbr": "SMC",
+  "mascot": "Panthers"
  },
  {
   "name": "St Marys",
@@ -3033,7 +3309,8 @@
    "St Marys",
    "St. Mary's"
   ],
-  "abbr": "SM"
+  "abbr": "SM",
+  "mascot": "Bears"
  },
  {
   "name": "St Paul",
@@ -3043,7 +3320,8 @@
   "w": 400,
   "h": 380,
   "aliases": [],
-  "abbr": "SP"
+  "abbr": "SP",
+  "mascot": "Indians"
  },
  {
   "name": "St Thomas Aquinas",
@@ -3056,7 +3334,8 @@
    "Aquinas",
    "STA"
   ],
-  "abbr": "STA"
+  "abbr": "STA",
+  "mascot": "Saints"
  },
  {
   "name": "St Xavier",
@@ -3076,7 +3355,8 @@
   "w": 365,
   "h": 400,
   "aliases": [],
-  "abbr": "Stafford"
+  "abbr": "Stafford",
+  "mascot": "Trojans"
  },
  {
   "name": "Stanton County",
@@ -3086,7 +3366,8 @@
   "w": 380,
   "h": 400,
   "aliases": [],
-  "abbr": "SC"
+  "abbr": "SC",
+  "mascot": "Trojans"
  },
  {
   "name": "Sterling",
@@ -3096,7 +3377,8 @@
   "w": 400,
   "h": 357,
   "aliases": [],
-  "abbr": "Sterling"
+  "abbr": "Sterling",
+  "mascot": "Black Bears"
  },
  {
   "name": "Stockton",
@@ -3106,7 +3388,8 @@
   "w": 400,
   "h": 287,
   "aliases": [],
-  "abbr": "Stockton"
+  "abbr": "Stockton",
+  "mascot": "Tigers"
  },
  {
   "name": "Sublette",
@@ -3116,7 +3399,8 @@
   "w": 400,
   "h": 292,
   "aliases": [],
-  "abbr": "Sublette"
+  "abbr": "Sublette",
+  "mascot": "Larks"
  },
  {
   "name": "Sunrise Christian",
@@ -3136,7 +3420,8 @@
   "w": 400,
   "h": 206,
   "aliases": [],
-  "abbr": "SLU"
+  "abbr": "SLU",
+  "mascot": "Mustangs"
  },
  {
   "name": "Syracuse",
@@ -3146,7 +3431,8 @@
   "w": 90,
   "h": 72,
   "aliases": [],
-  "abbr": "Syracuse"
+  "abbr": "Syracuse",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Tescott",
@@ -3156,7 +3442,8 @@
   "w": 362,
   "h": 400,
   "aliases": [],
-  "abbr": "Tescott"
+  "abbr": "Tescott",
+  "mascot": "Trojans"
  },
  {
   "name": "Thomas More Prep",
@@ -3169,7 +3456,8 @@
    "TMP-Marian",
    "Thomas More Prep-Marian"
   ],
-  "abbr": "TMP"
+  "abbr": "TMP",
+  "mascot": "Monarchs"
  },
  {
   "name": "Thunder Ridge",
@@ -3179,7 +3467,8 @@
   "w": 400,
   "h": 209,
   "aliases": [],
-  "abbr": "TR"
+  "abbr": "TR",
+  "mascot": "Longhorns"
  },
  {
   "name": "Tonganoxie",
@@ -3189,7 +3478,8 @@
   "w": 400,
   "h": 274,
   "aliases": [],
-  "abbr": "Tonganoxie"
+  "abbr": "Tonganoxie",
+  "mascot": "Chieftains"
  },
  {
   "name": "Topeka West",
@@ -3199,7 +3489,8 @@
   "w": 299,
   "h": 400,
   "aliases": [],
-  "abbr": "TW"
+  "abbr": "TW",
+  "mascot": "Chargers"
  },
  {
   "name": "Topeka High",
@@ -3211,7 +3502,8 @@
   "aliases": [
    "Topeka"
   ],
-  "abbr": "Topeka"
+  "abbr": "Topeka",
+  "mascot": "Trojans"
  },
  {
   "name": "Triplains-Brewster",
@@ -3231,7 +3523,8 @@
   "w": 359,
   "h": 343,
   "aliases": [],
-  "abbr": "Troy"
+  "abbr": "Troy",
+  "mascot": "Trojans"
  },
  {
   "name": "Turner",
@@ -3244,7 +3537,8 @@
    "KC Turner",
    "Kansas City-Turner"
   ],
-  "abbr": "Turner"
+  "abbr": "Turner",
+  "mascot": "Golden Bears"
  },
  {
   "name": "Udall",
@@ -3254,7 +3548,8 @@
   "w": 400,
   "h": 241,
   "aliases": [],
-  "abbr": "Udall"
+  "abbr": "Udall",
+  "mascot": "Eagles"
  },
  {
   "name": "Ulysses",
@@ -3264,7 +3559,8 @@
   "w": 400,
   "h": 303,
   "aliases": [],
-  "abbr": "Ulysses"
+  "abbr": "Ulysses",
+  "mascot": "Tigers"
  },
  {
   "name": "Uniontown",
@@ -3274,7 +3570,8 @@
   "w": 400,
   "h": 218,
   "aliases": [],
-  "abbr": "Uniontown"
+  "abbr": "Uniontown",
+  "mascot": "Eagles"
  },
  {
   "name": "Valley Center",
@@ -3284,7 +3581,8 @@
   "w": 400,
   "h": 374,
   "aliases": [],
-  "abbr": "VC"
+  "abbr": "VC",
+  "mascot": "Hornets"
  },
  {
   "name": "Valley Falls",
@@ -3294,7 +3592,8 @@
   "w": 250,
   "h": 117,
   "aliases": [],
-  "abbr": "VF"
+  "abbr": "VF",
+  "mascot": "Dragons"
  },
  {
   "name": "Valley Heights",
@@ -3304,7 +3603,8 @@
   "w": 400,
   "h": 240,
   "aliases": [],
-  "abbr": "VH"
+  "abbr": "VH",
+  "mascot": "Mustangs"
  },
  {
   "name": "Veritas Christian",
@@ -3324,7 +3624,8 @@
   "w": 400,
   "h": 325,
   "aliases": [],
-  "abbr": "Victoria"
+  "abbr": "Victoria",
+  "mascot": "Knights"
  },
  {
   "name": "WaKeeney-Trego",
@@ -3334,7 +3635,8 @@
   "w": 400,
   "h": 297,
   "aliases": [],
-  "abbr": "WT"
+  "abbr": "WT",
+  "mascot": "Golden Eagles"
  },
  {
   "name": "Wabaunsee",
@@ -3344,7 +3646,8 @@
   "w": 299,
   "h": 400,
   "aliases": [],
-  "abbr": "Wabaunsee"
+  "abbr": "Wabaunsee",
+  "mascot": "Chargers"
  },
  {
   "name": "Wakefield",
@@ -3354,7 +3657,8 @@
   "w": 400,
   "h": 177,
   "aliases": [],
-  "abbr": "Wakefield"
+  "abbr": "Wakefield",
+  "mascot": "Bombers"
  },
  {
   "name": "Wallace County",
@@ -3364,7 +3668,8 @@
   "w": 353,
   "h": 400,
   "aliases": [],
-  "abbr": "WC"
+  "abbr": "WC",
+  "mascot": "Wildcats"
  },
  {
   "name": "Wamego",
@@ -3374,7 +3679,8 @@
   "w": 400,
   "h": 284,
   "aliases": [],
-  "abbr": "Wamego"
+  "abbr": "Wamego",
+  "mascot": "Red Raiders"
  },
  {
   "name": "Washburn Rural",
@@ -3384,7 +3690,8 @@
   "w": 400,
   "h": 261,
   "aliases": [],
-  "abbr": "WR"
+  "abbr": "WR",
+  "mascot": "Junior Blues"
  },
  {
   "name": "Washington County",
@@ -3394,7 +3701,8 @@
   "w": 400,
   "h": 313,
   "aliases": [],
-  "abbr": "WC"
+  "abbr": "WC",
+  "mascot": "Tigers"
  },
  {
   "name": "Washington",
@@ -3407,7 +3715,8 @@
    "KC Washington",
    "Kansas City-Washington"
   ],
-  "abbr": "Washington"
+  "abbr": "Washington",
+  "mascot": "Wildcats"
  },
  {
   "name": "Waverly",
@@ -3417,7 +3726,8 @@
   "w": 400,
   "h": 241,
   "aliases": [],
-  "abbr": "Waverly"
+  "abbr": "Waverly",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Wellington",
@@ -3427,7 +3737,8 @@
   "w": 269,
   "h": 400,
   "aliases": [],
-  "abbr": "Wellington"
+  "abbr": "Wellington",
+  "mascot": "Crusaders"
  },
  {
   "name": "Wellsville",
@@ -3437,7 +3748,8 @@
   "w": 400,
   "h": 225,
   "aliases": [],
-  "abbr": "Wellsville"
+  "abbr": "Wellsville",
+  "mascot": "Eagles"
  },
  {
   "name": "Weskan",
@@ -3447,7 +3759,8 @@
   "w": 250,
   "h": 166,
   "aliases": [],
-  "abbr": "Weskan"
+  "abbr": "Weskan",
+  "mascot": "Coyotes"
  },
  {
   "name": "West Elk",
@@ -3459,7 +3772,8 @@
   "aliases": [
    "West Elk-Elk Valley"
   ],
-  "abbr": "WE"
+  "abbr": "WE",
+  "mascot": "Patriots"
  },
  {
   "name": "West Franklin",
@@ -3469,7 +3783,8 @@
   "w": 400,
   "h": 312,
   "aliases": [],
-  "abbr": "WF"
+  "abbr": "WF",
+  "mascot": "Falcons"
  },
  {
   "name": "Western Plains",
@@ -3479,7 +3794,8 @@
   "w": 400,
   "h": 200,
   "aliases": [],
-  "abbr": "WP"
+  "abbr": "WP",
+  "mascot": "Bobcats"
  },
  {
   "name": "Wheatland-Grinnell",
@@ -3489,7 +3805,8 @@
   "w": 377,
   "h": 400,
   "aliases": [],
-  "abbr": "WG"
+  "abbr": "WG",
+  "mascot": "Thunderhawks"
  },
  {
   "name": "Wichita Classical",
@@ -3511,7 +3828,8 @@
   "aliases": [
    "Collegiate"
   ],
-  "abbr": "WCS"
+  "abbr": "WCS",
+  "mascot": "Spartans"
  },
  {
   "name": "Wichita County",
@@ -3524,7 +3842,8 @@
    "Leoti",
    "Leoti-Wichita Co."
   ],
-  "abbr": "WC"
+  "abbr": "WC",
+  "mascot": "Indians"
  },
  {
   "name": "Wichita East",
@@ -3534,7 +3853,8 @@
   "w": 400,
   "h": 199,
   "aliases": [],
-  "abbr": "WE"
+  "abbr": "WE",
+  "mascot": "Blue Aces"
  },
  {
   "name": "Wichita Independent",
@@ -3554,7 +3874,8 @@
   "w": 321,
   "h": 400,
   "aliases": [],
-  "abbr": "WNW"
+  "abbr": "WNW",
+  "mascot": "Grizzlies"
  },
  {
   "name": "Wichita South",
@@ -3564,7 +3885,8 @@
   "w": 400,
   "h": 307,
   "aliases": [],
-  "abbr": "WS"
+  "abbr": "WS",
+  "mascot": "Titans"
  },
  {
   "name": "Wichita Trinity",
@@ -3574,7 +3896,8 @@
   "w": 362,
   "h": 400,
   "aliases": [],
-  "abbr": "WT"
+  "abbr": "WT",
+  "mascot": "Knights"
  },
  {
   "name": "Wichita West",
@@ -3584,7 +3907,8 @@
   "w": 400,
   "h": 326,
   "aliases": [],
-  "abbr": "WW"
+  "abbr": "WW",
+  "mascot": "Pioneers"
  },
  {
   "name": "Wichita",
@@ -3604,7 +3928,8 @@
   "w": 375,
   "h": 400,
   "aliases": [],
-  "abbr": "Winfield"
+  "abbr": "Winfield",
+  "mascot": "Vikings"
  },
  {
   "name": "Wyandotte",
@@ -3617,7 +3942,8 @@
    "KC Wyandotte",
    "Kansas City-Wyandotte"
   ],
-  "abbr": "Wyandotte"
+  "abbr": "Wyandotte",
+  "mascot": "Bulldogs"
  },
  {
   "name": "Yates Center",
@@ -3627,6 +3953,7 @@
   "w": 400,
   "h": 316,
   "aliases": [],
-  "abbr": "YC"
+  "abbr": "YC",
+  "mascot": "Wildcats"
  }
 ]
