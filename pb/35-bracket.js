@@ -623,7 +623,7 @@ function bkLine(t, game, small){
   if (!small && !game) return bkPill(t);
   const won = game && game.win === t, lost = game && game.win !== t;
   // A short code in the narrow rounds: the school's own if it is one ("AND"), otherwise its initials ("ING", "PB").
-  const code = n => { const a = listAbbr(n); return a && a.length <= 5 ? a : initialsOf(n); };
+  const code = n => { const a = listAbbr(n); return a && a.length <= 4 ? a : initialsOf(n).slice(0, 4); };
   const nm = small ? esc(code(t.name)) : esc(t.name);
   // Past week 9 the boxes are narrow: the logo and short name, no seed.
   return `<div class="bkp${small ? ' sm' : ''}${lost ? ' lost' : ''}">${small ? '' : `<span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>`}${bkMark(t.name)}
@@ -638,11 +638,17 @@ function bkFullHtml(eastSlots, westSlots){
   const E = side(eastSlots), W = side(westSlots);
   const col = (c, r, west) => `<div class="bkf-col${west ? ' w' : ''}"><span class="bkt-h">${ROUNDS[r]}</span><div class="bkf-pairs">${c.games.map((gm, i) =>
     bkPair(c.slots[2 * i], c.slots[2 * i + 1], bkLine(c.slots[2 * i], gm, r > 0) + bkLine(c.slots[2 * i + 1], gm, r > 0))).join('')}</div></div>`;
-  const fin = bkPlayed(E.champ, W.champ);
+  const fin = bkPlayed(E.champ, W.champ), state = bkPair(E.champ, W.champ, bkLine(E.champ, fin, true) + bkLine(W.champ, fin, true), ' st');
+  // A phone (Chuck, 2026-10-25: "shrink it… so we can see multiple rounds at the same time"): each side's four rounds
+  // across in small boxes, the logo and short name, then State under both.
+  const mcol = (c, r) => `<div class="bkm-col"><span class="bkt-h">${ROUNDS[r]}</span><div class="bkm-pairs">${c.games.map((gm, i) =>
+    bkPair(c.slots[2 * i], c.slots[2 * i + 1], bkLine(c.slots[2 * i], gm, true) + bkLine(c.slots[2 * i + 1], gm, true))).join('')}</div></div>`;
+  const mside = (S, name) => `<div class="bkm-side"><h3>${name}</h3><div class="bkm-grid">${S.cols.map(mcol).join('')}</div></div>`;
   return `<div class="bkf">${E.cols.map((c, r) => col(c, r, false)).join('')}
-    <div class="bkf-col st"><span class="bkt-h">State</span><div class="bkf-pairs">${bkPair(E.champ, W.champ, bkLine(E.champ, fin, true) + bkLine(W.champ, fin, true), ' st')}</div></div>
+    <div class="bkf-col st"><span class="bkt-h">State</span><div class="bkf-pairs">${state}</div></div>
     ${W.cols.map((c, r) => col(c, r, true)).reverse().join('')}</div>
-    <div class="bkf-sides"><span>East</span><span>West</span></div>`;
+    <div class="bkf-sides"><span>East</span><span>West</span></div>
+    <div class="bkm">${mside(E, 'East')}${mside(W, 'West')}<div class="bkm-side bkm-st"><h3>State</h3>${state}</div></div>`;
 }
 // A district's standings; the teams past fourth don't go on.
 function bkDistrictHtml(d, teams){

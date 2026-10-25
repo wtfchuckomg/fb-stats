@@ -547,6 +547,31 @@ table.pl-tbl{table-layout:fixed;width:100%}
 .bkt .bkp,.bkf .bkp{border-color:var(--bk-box)}
 .bkt-pair::after{content:"";position:absolute;left:100%;top:25%;bottom:25%;width:17px;border:1.5px solid var(--bk-line);border-left:0;border-radius:0 8px 8px 0}
 .bkt-pair::before{content:"";position:absolute;left:calc(100% + 17px);top:50%;width:12px;border-top:1.5px solid var(--bk-line)}
+/* The whole bracket on a phone or tablet: each side's rounds across in small boxes, State under both (bkFullHtml) */
+.bkm{display:none}
+@media (max-width:1199px){
+  .bkt-wrap.has-full{display:none}
+  .bkm{display:block;padding:0 2px 6px}
+  .bkm h3{margin:0;padding:6px 4px 10px;font:700 16px/1.2 var(--sans)}
+  .bkm-side + .bkm-side{margin-top:22px}
+  .bkm-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));column-gap:11px;padding-bottom:4px}
+  .bkm-col{display:flex;flex-direction:column;min-width:0}
+  .bkm-pairs{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:10px}
+  .bkm .bkt-pair{gap:4px}
+  .bkm .bkt-pair::after,.bkm .bkt-pair::before{display:block}
+  .bkm .bkt-pair::after{width:5px}
+  .bkm .bkt-pair::before{left:calc(100% + 5px);width:6px}
+  .bkm .bkm-col:last-child .bkt-pair::after,.bkm .bkm-col:last-child .bkt-pair::before,.bkm .bkt-pair.st::after,.bkm .bkt-pair.st::before{display:none}
+  .bkm .bkp{padding:5px 4px;gap:4px;font-size:11px;border-radius:8px;border-color:var(--bk-box)}
+  .bkm .bkp .tlogo,.bkm .bkp .tmono{width:17px !important;height:17px !important;flex:none}
+  .bkm .bkt-h{font-size:9.5px;letter-spacing:.03em;white-space:nowrap}
+  .bkm .bkp .bk-nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .bkm .bkp.lost{opacity:.55}
+  .bkm .bkp.empty,.bkm .bkp.bye{min-height:30px;padding:4px 6px}
+  .bkm .bk-rec b{font-size:12px}
+  .bkm-st .bkt-pair{max-width:190px;margin:0 auto;border:2px solid var(--bk-line);border-radius:12px;padding:6px}
+  .bkm{--bk-line:color-mix(in srgb, var(--ink, #1d1d1f) 62%, transparent);--bk-box:color-mix(in srgb, var(--ink, #1d1d1f) 26%, transparent)}
+}
 /* The whole bracket on a desktop: East reading right, West reading left, State between them (35-bracket.js, bkFullHtml) */
 .bkf,.bkf-sides{display:none}
 @media (min-width:1200px){
