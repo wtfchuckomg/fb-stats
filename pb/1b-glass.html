@@ -41,6 +41,25 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .sitelink{padding:15px 0;font:400 12px/1 var(--sans);letter-spacing:-.01em;text-transform:none;color:rgba(255,255,255,.8)}
 .sitelink.active{border-bottom-color:transparent;color:#FFFFFF}
 .mark img{height:30px}
+/* ---------- phones: the site links fold into a menu button on the right of the bar ---------- */
+.sitemenu-btn{display:none;flex:none;width:44px;height:44px;margin-left:auto;margin-right:-8px;padding:0;border:0;background:none;cursor:pointer;
+  flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:10px}
+.sitemenu-btn span{display:block;width:24px;height:3px;border-radius:2px;background:#FFFFFF}
+.sitemenu-btn:focus-visible{outline:2px solid #FFFFFF;outline-offset:-2px}
+.sitebar.open .sitemenu-btn span:nth-child(1){transform:translateY(8px) rotate(45deg)}
+.sitebar.open .sitemenu-btn span:nth-child(2){opacity:0}
+.sitebar.open .sitemenu-btn span:nth-child(3){transform:translateY(-8px) rotate(-45deg)}
+@media (max-width:640px){
+  .sitebar{position:relative;z-index:60}
+  .sitemenu-btn{display:flex}
+  .sitelinks{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;padding:6px 0 12px;overflow:visible;
+    background:#161617;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+  .sitebar.open .sitelinks{display:flex}
+  .sitelinks .sitelink{padding:15px 20px;border-bottom:0;border-left:3px solid transparent;font:500 17px/1.2 var(--sans);letter-spacing:-.01em;text-transform:none;color:rgba(255,255,255,.82)}
+  .sitelinks .sitelink.active{border-left-color:#D6001C;color:#FFFFFF;font-weight:600}
+  .sitelinks .sitelink:hover{background:rgba(255,255,255,.06);color:#FFFFFF}
+}
+
 
 /* ---------- the scores strip and the menu: glass shelves; the menu stays put ---------- */
 .scores{border-width:0 0 1px;box-shadow:0 1px 0 rgba(255,255,255,.6)}

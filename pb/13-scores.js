@@ -644,3 +644,14 @@ setInterval(() => {
   if (!box || box.hidden || document.hidden || (document.activeElement && document.activeElement.id === 'scweek')) return;
   if (box.querySelector('.sc-game.live')) renderScores();
 }, 5000);
+
+// Phones: the site bar's menu button opens and closes the list of Kansas Media sites.
+(function(){
+  const bar = document.querySelector('.sitebar'), btn = document.getElementById('sitemenu-btn');
+  if (!bar || !btn) return;
+  const set = open => { bar.classList.toggle('open', open); btn.setAttribute('aria-expanded', String(open)); };
+  btn.addEventListener('click', e => { e.stopPropagation(); set(!bar.classList.contains('open')); });
+  document.addEventListener('click', e => { if (bar.classList.contains('open') && !bar.contains(e.target)) set(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && bar.classList.contains('open')){ set(false); btn.focus(); } });
+  addEventListener('resize', () => { if (innerWidth > 640) set(false); });
+})();
