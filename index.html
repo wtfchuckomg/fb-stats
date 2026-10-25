@@ -12943,7 +12943,16 @@ async function turboGame(feed, id){
   const side = {A:gi.visId || 'V', H:gi.homeId || 'H'};            // their code for each side
   const codeSide = c => String(c || '').toUpperCase() === String(side.A).toUpperCase() ? 'A'
     : String(c || '').toUpperCase() === String(side.H).toUpperCase() ? 'H' : null;
-  const rows = feed.playbyplay.filter(r => r && r.qtr && /^[1-9]$/.test(String(r.qtr)));
+  // A crew can key a quarter wrong: McPherson at Winfield (10/23/26) went 1, 2, 3 and then back to "2" for the whole
+  // fourth, which filed the fourth under the third and left "End 3rd" and "End 4th" side by side (Chuck, 2026-10-25).
+  // Their quarter number changing at all is the next quarter; a jump up (into overtime) is taken as written.
+  let qPrev = null, qNow = 0;
+  const rows = feed.playbyplay.filter(r => r && r.qtr && /^[1-9]$/.test(String(r.qtr))).map(r => {
+    const n = +r.qtr;
+    if (qPrev === null) qNow = n; else if (n !== qPrev) qNow = Math.max(n, qNow + 1);
+    qPrev = n;
+    return n === qNow ? r : Object.assign({}, r, {qtr:String(qNow)});
+  });
   const FL = 100;
 
   // Their names carry the mascot ("Winfield Vikings"); the site's own spelling wins when it knows the school.
@@ -13084,9 +13093,12 @@ async function turboGame(feed, id){
     if (t === 'Rush'){
       const n = turboNum(r.player) || turboNum(r.number);
       if (isTry){ add({t:'try', kind:'run', ...(n ? {r:n} : {}), res:turboGood(ev, gained(i, s))}, r, says); continue; }
-      if (yds == null){ skipped.push(ev); continue; }
+      // ":Safety:" on a run their crew wrote as 0 yards at the 2 (McPherson at Winfield, 10/23/26): it ends in the end
+      // zone, so it goes all the way back there — otherwise the two points never count.
+      const saf = /:Safety:/i.test(ev) && spot != null;
+      if (yds == null && !saf){ skipped.push(ev); continue; }
       const fum = fumOf();
-      add({t:'run', ...(n ? {r:n} : {}), y:yds, ...(fum ? {fum} : {})}, r, says);
+      add({t:'run', ...(n ? {r:n} : {}), y:saf ? -spot : yds, ...(fum ? {fum} : {})}, r, says);
       continue;
     }
 
@@ -13105,7 +13117,8 @@ async function turboGame(feed, id){
       if (isTry){ add({t:'try', kind:'pass', ...(qb ? {qb} : {}), ...(to ? {to} : {}), res:turboGood(ev, gained(i, s))}, r, says); continue; }
       if (/incomplete/i.test(ev)){ add({t:'pass', ...(qb ? {qb} : {}), ...(to ? {to} : {}), res:'i'}, r, says); continue; }
       if (/sack/i.test(ev)){ const fum = fumOf();
-        add({t:'pass', ...(qb ? {qb} : {}), res:'s', sy:Math.abs(yds || 0), ...(fum ? {fum} : {})}, r, says); continue; }
+        const saf = /:Safety:/i.test(ev) && spot != null;   // sacked in the end zone, as with a run
+        add({t:'pass', ...(qb ? {qb} : {}), res:'s', sy:saf ? spot : Math.abs(yds || 0), ...(fum ? {fum} : {})}, r, says); continue; }
       if (yds == null){ skipped.push(ev); continue; }
       const fum = fumOf();
       add({t:'pass', ...(qb ? {qb} : {}), ...(to ? {to} : {}), res:'c', y:yds, ...(fum ? {fum} : {})}, r, says);
