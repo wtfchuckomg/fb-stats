@@ -277,7 +277,7 @@ const ELEVEN_MAN = [
   "Chapman", "Cheney", "Cherryvale", "Cimarron", "Circle", "Clay Center", "Clearwater", "Colby",
   "Columbus", "Concordia", "Conway Springs", "Council Grove", "De Soto", "Derby", "Dodge City", "Doniphan West",
   "Douglass", "Eisenhower", "El Dorado", "Ellinwood", "Ellsworth", "Emporia", "Eudora", "Eureka",
-  "Field Kindley", "Fort Scott", "Fredonia", "Frontenac", "Galena", "Garden City", "Garden Plain", "Gardner-Edgerton",
+  "Field Kindley", "Fort Scott", "Fredonia", "Frontenac", "Galena", "Garden City", "Garden Plain", "Gardner Edgerton",
   "Girard", "Goddard", "Goodland", "Great Bend", "Halstead", "Harmon", "Haven", "Hayden",
   "Hays", "Hesston", "Hiawatha", "Highland Park", "Hillsboro", "Hoisington", "Holcomb", "Holton",
   "Horton", "Hugoton", "Humboldt", "Hutch Trinity", "Hutchinson", "Independence", "Inman", "Iola",

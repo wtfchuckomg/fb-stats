@@ -39,7 +39,7 @@ const SECTIONS = {
     West:['Andover', 'Andover Central', 'Emporia', 'Goddard', 'Eisenhower', 'Hays', 'Hutchinson', 'Liberal', 'Maize South', 'Newton',
       'Salina Central', 'Salina South', 'Valley Center', 'Bishop Carroll', 'Kapaun Mt. Carmel', 'Wichita West']},
   '6A': {
-    East:['Gardner-Edgerton', 'Wyandotte', 'Lawrence', 'Olathe East', 'Olathe North', 'Olathe Northwest', 'Olathe South', 'Olathe West',
+    East:['Gardner Edgerton', 'Wyandotte', 'Lawrence', 'Olathe East', 'Olathe North', 'Olathe Northwest', 'Olathe South', 'Olathe West',
       'BV Northwest', 'BV West', 'Shawnee Mission East', 'Shawnee Mission North', 'Shawnee Mission Northwest', 'Shawnee Mission South',
       'Shawnee Mission West', 'Mill Valley'],
     West:['Derby', 'Dodge City', 'Garden City', 'Campus', 'Junction City', 'Lawrence Free State', 'Maize', 'Manhattan', 'Topeka High',

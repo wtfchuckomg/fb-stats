@@ -1159,13 +1159,15 @@
   "mascot": "Owls"
  },
  {
-  "name": "Gardner-Edgerton",
+  "name": "Gardner Edgerton",
   "slug": "gardner-edgerton",
   "file": "Gardner-Edgerton.png",
   "city": "",
   "w": 281,
   "h": 188,
-  "aliases": [],
+  "aliases": [
+   "Gardner-Edgerton"
+  ],
   "abbr": "GE",
   "mascot": "Trailblazers"
  },

@@ -5563,7 +5563,7 @@ const LEAGUES = [
   {slug:'pioneer-league', name:"Pioneer League", teams:["Anderson County", "Burlington", "Iola", "Osawatomie", "Prairie View", "Santa Fe Trail", "Wellsville"]},
   {slug:'south-central-border-league', name:"South Central Border League", teams:["Cedar Vale-Dexter", "Central Burden", "Flinthills", "Oxford", "Sedan", "South Sumner", "Udall", "West Elk"]},
   {slug:'southeast-kansas-league', name:"Southeast Kansas League", teams:["Chanute", "Field Kindley", "Fort Scott", "Independence", "Labette County"]},
-  {slug:'sunflower-league', name:"Sunflower League", teams:["Gardner-Edgerton", "Lawrence", "Lawrence Free State", "Mill Valley", "Olathe East", "Olathe North", "Olathe Northwest", "Olathe South", "Olathe West", "Shawnee Mission East", "Shawnee Mission North", "Shawnee Mission Northwest", "Shawnee Mission South", "Shawnee Mission West"]},
+  {slug:'sunflower-league', name:"Sunflower League", teams:["Gardner Edgerton", "Lawrence", "Lawrence Free State", "Mill Valley", "Olathe East", "Olathe North", "Olathe Northwest", "Olathe South", "Olathe West", "Shawnee Mission East", "Shawnee Mission North", "Shawnee Mission Northwest", "Shawnee Mission South", "Shawnee Mission West"]},
   {slug:'three-rivers-league', name:"Three Rivers League", teams:["Central Heights", "Jayhawk-Linn", "Northeast-Arma", "Uniontown"]},
   {slug:'tri-valley-league', name:"Tri-Valley League", teams:["Bluestem", "Caney Valley", "Cherryvale", "Eureka", "Fredonia", "Humboldt", "Neodesha"]},
   {slug:'twin-valley-league', name:"Twin Valley League", teams:["Centralia", "Doniphan West", "Onaga", "Valley Heights"]},
@@ -9347,7 +9347,7 @@ const ELEVEN_MAN = [
   "Chapman", "Cheney", "Cherryvale", "Cimarron", "Circle", "Clay Center", "Clearwater", "Colby",
   "Columbus", "Concordia", "Conway Springs", "Council Grove", "De Soto", "Derby", "Dodge City", "Doniphan West",
   "Douglass", "Eisenhower", "El Dorado", "Ellinwood", "Ellsworth", "Emporia", "Eudora", "Eureka",
-  "Field Kindley", "Fort Scott", "Fredonia", "Frontenac", "Galena", "Garden City", "Garden Plain", "Gardner-Edgerton",
+  "Field Kindley", "Fort Scott", "Fredonia", "Frontenac", "Galena", "Garden City", "Garden Plain", "Gardner Edgerton",
   "Girard", "Goddard", "Goodland", "Great Bend", "Halstead", "Harmon", "Haven", "Hayden",
   "Hays", "Hesston", "Hiawatha", "Highland Park", "Hillsboro", "Hoisington", "Holcomb", "Holton",
   "Horton", "Hugoton", "Humboldt", "Hutch Trinity", "Hutchinson", "Independence", "Inman", "Iola",
@@ -10086,7 +10086,7 @@ function schoolLine(name){
 /* The classes the Media Rankings poll uses, as that site lists them (kansasmediarankings.com). A school not in
    SCHOOL_INFO still needs its class for the rankings and the pregame predictor. */
 const RANK_CLASSES = {
-  '6A':['Wichita East', 'Derby', 'Wichita Southeast', 'Garden City', 'Wichita North', 'Dodge City', 'Manhattan', 'KC Wyandotte', 'Olathe Northwest', 'Washburn Rural', 'Olathe North', 'Wichita South', 'Wichita Heights', 'Olathe South', 'Gardner-Edgerton', 'Junction City', 'Shawnee Mission East', 'Olathe East', 'Campus', 'Topeka High', 'BV Northwest', 'BV West', 'Shawnee Mission Northwest', 'Lawrence Free State', 'Lawrence', 'Shawnee Mission South', 'Shawnee Mission West', 'Olathe West', 'Maize', 'Wichita Northwest', 'Shawnee Mission North', 'Mill Valley'],
+  '6A':['Wichita East', 'Derby', 'Wichita Southeast', 'Garden City', 'Wichita North', 'Dodge City', 'Manhattan', 'KC Wyandotte', 'Olathe Northwest', 'Washburn Rural', 'Olathe North', 'Wichita South', 'Wichita Heights', 'Olathe South', 'Gardner Edgerton', 'Junction City', 'Shawnee Mission East', 'Olathe East', 'Campus', 'Topeka High', 'BV Northwest', 'BV West', 'Shawnee Mission Northwest', 'Lawrence Free State', 'Lawrence', 'Shawnee Mission South', 'Shawnee Mission West', 'Olathe West', 'Maize', 'Wichita Northwest', 'Shawnee Mission North', 'Mill Valley'],
   '5A':['Blue Valley', 'Liberal', 'Blue Valley North', 'Wichita West', 'KC Washington', 'JC Harmon', 'Bishop Carroll', 'Leavenworth', 'Hutchinson', 'Emporia', 'Topeka West', 'Blue Valley Southwest', 'Spring Hill', 'Seaman', 'Maize South', 'KC Turner', 'Hays', 'Shawnee Heights', 'Valley Center', 'Salina South', 'St. James Academy', 'KC Piper', 'Andover', 'De Soto', 'Salina Central', 'Pittsburg', 'Goddard', 'Eisenhower', 'Newton', 'Kapaun Mt. Carmel', 'Basehor-Linwood', 'Andover Central'],
   '4A':['Arkansas City', 'Lansing', 'KC Sumner Academy', 'Great Bend', 'Highland Park', 'St. Thomas Aquinas', 'KC Schlagle', 'Bonner Springs', 'Bishop Miege', 'Ottawa', 'Buhler', 'McPherson', 'Circle', 'Paola', 'Tonganoxie', 'Winfield', 'Eudora', 'Louisburg', 'Mulvane', 'Independence', 'Fort Scott', 'Augusta', 'Field Kindley', 'Rose Hill', 'Chanute', 'Wamego', 'El Dorado', 'Abilene', 'Wellington', 'Labette County', 'Rock Creek', 'Ulysses'],
   '3A':['Baldwin', 'Andale', 'Parsons', 'Atchison', 'Concordia', 'Clearwater', 'Chapman', 'Hayden', 'Perry-Lecompton/Bishop Seabury', 'Pratt', 'Clay Center', 'Santa Fe Trail', 'Hugoton', 'Hesston', 'Holton', 'Frontenac', 'Iola', 'Girard', 'Scott City', 'Osawatomie', 'Colby', 'Jefferson West', 'Anderson County', 'KC Bishop Ward', 'Columbus', 'Holcomb', 'Nemaha Central', 'Prairie View', 'Goodland', 'Wichita Collegiate', 'Hoisington', 'Burlington', 'Hiawatha', 'Larned', 'Wichita Trinity Academy', 'Smoky Valley', 'Wellsville', 'Lyons', 'Nickerson', 'Cheney'],
@@ -12199,7 +12199,7 @@ const SECTIONS = {
     West:['Andover', 'Andover Central', 'Emporia', 'Goddard', 'Eisenhower', 'Hays', 'Hutchinson', 'Liberal', 'Maize South', 'Newton',
       'Salina Central', 'Salina South', 'Valley Center', 'Bishop Carroll', 'Kapaun Mt. Carmel', 'Wichita West']},
   '6A': {
-    East:['Gardner-Edgerton', 'Wyandotte', 'Lawrence', 'Olathe East', 'Olathe North', 'Olathe Northwest', 'Olathe South', 'Olathe West',
+    East:['Gardner Edgerton', 'Wyandotte', 'Lawrence', 'Olathe East', 'Olathe North', 'Olathe Northwest', 'Olathe South', 'Olathe West',
       'BV Northwest', 'BV West', 'Shawnee Mission East', 'Shawnee Mission North', 'Shawnee Mission Northwest', 'Shawnee Mission South',
       'Shawnee Mission West', 'Mill Valley'],
     West:['Derby', 'Dodge City', 'Garden City', 'Campus', 'Junction City', 'Lawrence Free State', 'Maize', 'Manhattan', 'Topeka High',

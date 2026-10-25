@@ -36,7 +36,7 @@ const LEAGUES = [
   {slug:'pioneer-league', name:"Pioneer League", teams:["Anderson County", "Burlington", "Iola", "Osawatomie", "Prairie View", "Santa Fe Trail", "Wellsville"]},
   {slug:'south-central-border-league', name:"South Central Border League", teams:["Cedar Vale-Dexter", "Central Burden", "Flinthills", "Oxford", "Sedan", "South Sumner", "Udall", "West Elk"]},
   {slug:'southeast-kansas-league', name:"Southeast Kansas League", teams:["Chanute", "Field Kindley", "Fort Scott", "Independence", "Labette County"]},
-  {slug:'sunflower-league', name:"Sunflower League", teams:["Gardner-Edgerton", "Lawrence", "Lawrence Free State", "Mill Valley", "Olathe East", "Olathe North", "Olathe Northwest", "Olathe South", "Olathe West", "Shawnee Mission East", "Shawnee Mission North", "Shawnee Mission Northwest", "Shawnee Mission South", "Shawnee Mission West"]},
+  {slug:'sunflower-league', name:"Sunflower League", teams:["Gardner Edgerton", "Lawrence", "Lawrence Free State", "Mill Valley", "Olathe East", "Olathe North", "Olathe Northwest", "Olathe South", "Olathe West", "Shawnee Mission East", "Shawnee Mission North", "Shawnee Mission Northwest", "Shawnee Mission South", "Shawnee Mission West"]},
   {slug:'three-rivers-league', name:"Three Rivers League", teams:["Central Heights", "Jayhawk-Linn", "Northeast-Arma", "Uniontown"]},
   {slug:'tri-valley-league', name:"Tri-Valley League", teams:["Bluestem", "Caney Valley", "Cherryvale", "Eureka", "Fredonia", "Humboldt", "Neodesha"]},
   {slug:'twin-valley-league', name:"Twin Valley League", teams:["Centralia", "Doniphan West", "Onaga", "Valley Heights"]},
