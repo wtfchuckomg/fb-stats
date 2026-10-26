@@ -11404,10 +11404,19 @@ function loadRatings(){
     .then(d => { if (d && d.teams){ pre.rat = d; renderPreview(); if (typeof renderRail === 'function') renderRail(); } }).catch(() => {});
 }
 // The ratings are keyed the way KPreps writes a school ("towanda-circle"); match ours to them once each.
+const RAT_ALIAS = {'field-kindley':'coffeyville'};
 function ratingOf(name){
   const k = canonSchool(name); if (!k || !pre.rat) return null;
   if (pre.ratIdx[k] !== undefined) return pre.ratIdx[k];
   let hit = pre.rat.teams[k] ? k : null;
+  // KPreps' names, which the ratings use: County is "co", and a county school carries its town in front
+  // ("tribune-greeley-co" for Greeley County, "atwood-rawlins-co"); Field Kindley is Coffeyville (Chuck, 2026-10-26:
+  // "some match ups aren't populating" — Jefferson County North, among eight).
+  if (!hit){
+    const co = k.replace(/-county(?=-|$)/g, '-co');
+    hit = pre.rat.teams[co] ? co : /-county(-|$)/.test(k) ? Object.keys(pre.rat.teams).find(s => s.endsWith('-' + co)) || null : null;
+    if (!hit && RAT_ALIAS[k] && pre.rat.teams[RAT_ALIAS[k]]) hit = RAT_ALIAS[k];
+  }
   if (!hit){
     let best = 0;
     Object.keys(pre.rat.teams).forEach(s => {
