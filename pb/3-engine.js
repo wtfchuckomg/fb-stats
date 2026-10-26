@@ -150,9 +150,17 @@ function replay(g, upto = g.plays.length){
     return pos < HALF ? `${ab(s)} ${fy(pos)}` : `${ab(other(s))} ${fy(FL - pos)}`; };
   const yds = g => g > 0 ? `for ${fy(g)} yard${g === 1 ? '' : 's'}` : g < 0 ? `for a loss of ${fy(-g)}` : 'for no gain';
   const plural = (n, w) => `${fy(n)} ${w}${n === 1 ? '' : 's'}`;
+  // A player who changed jerseys (Chuck, 2026-10-26: Flinthills' Beau Hall showed up twice) is one line: a number
+  // whose name is already on a line for that side adds to that line.
+  const nameAt = (s, j) => playerName(rosterGet(T[s].roster, j, s)) || playerName(fillName(T[s].name, j, s));
   const pl = (s, n) => {
     if (n === '' || n == null) return null;
-    const k = n === 'team' ? 'team' : worn(s, n);
+    let k = n === 'team' ? 'team' : worn(s, n);
+    if (k !== 'team' && !S.pl[s][k]){
+      const nm = nameAt(s, k);
+      const twin = nm && Object.keys(S.pl[s]).find(j => j !== 'team' && nameAt(s, j) === nm);
+      if (twin) k = twin;
+    }
     return S.pl[s][k] || (S.pl[s][k] = Object.assign({n:k}, zeros(PL_KEYS)));
   };
   const bump = (o, k, v = 1) => { if (o) o[k] += v; };
