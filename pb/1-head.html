@@ -310,6 +310,10 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .mu-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr);gap:16px;align-items:start;margin-top:16px}
 .mu-grid .bcard{margin:0}
 #mu-ring:empty{display:none}
+/* The percentages hold the size they had in a narrow column, centered, however wide the middle column runs (Chuck,
+   2026-10-26: "the size of the layout like at the beginning"). */
+#mu-ring .pg-pred,#mu-ring .mu-avg{max-width:300px;margin-left:auto;margin-right:auto}
+#mu-ring .pg-ringwrap{max-width:130px}
 /* A narrower screen: the percentages and stats first, how the games went and past meetings beside each other under them. */
 @media (max-width:1180px){.mu-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .mu-grid > :nth-child(2){grid-column:1 / -1;order:-1}}
 @media (max-width:700px){.mu-grid > :nth-child(2){order:-1}}
