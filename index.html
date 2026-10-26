@@ -551,7 +551,7 @@ table.pl-tbl{table-layout:fixed;width:100%}
   .bkm-st .bkt-pair{max-width:190px;margin:0 auto;border:2px solid var(--bk-line);border-radius:12px;padding:6px}
   .bkm{--bk-line:color-mix(in srgb, var(--ink, #1d1d1f) 62%, transparent);--bk-box:color-mix(in srgb, var(--ink, #1d1d1f) 26%, transparent)}
 }
-/* The whole bracket on a desktop: East reading right, West reading left, State between them (35-bracket.js, bkFullHtml) */
+/* The whole bracket on a desktop: West reading right, East reading left, State between them (35-bracket.js, bkFullHtml) */
 .bkf,.bkf-sides{display:none}
 @media (min-width:1200px){
   .bkt-wrap.has-full{display:none}
@@ -12746,7 +12746,7 @@ function bk8Tree(by, side, pairs = BK_8M){
 }
 /* ---------- the whole bracket, on a desktop (Chuck, 2026-10-23: "a left and a right bracket when it's full on a
    desktop computer now that we're finalizing") ----------
-   East on the left reading right, West on the right reading left: Week 9, Regional, Sectional, Sub-State, and State
+   West on the left reading right, East on the right reading left: Week 9, Regional, Sectional, Sub-State, and State
    in the middle. Each side is its 16 lines in bracket order, so neighbouring pairs meet in the next round. A pair
    moves on only when its game is final on the site (played after week 8): the winner goes through, and both lines
    show that game's score. Until then the later rounds are open. A phone, or a narrower window, keeps the list. */
@@ -12877,17 +12877,18 @@ function bkFullHtml(eastSlots, westSlots){
   const E = side(eastSlots), W = side(westSlots);
   const col = (c, r, west) => `<div class="bkf-col${west ? ' w' : ''}"><span class="bkt-h">${ROUNDS[r]}</span><div class="bkf-pairs">${c.games.map((gm, i) =>
     bkPair(c.slots[2 * i], c.slots[2 * i + 1], bkLine(c.slots[2 * i], gm, r > 0) + bkLine(c.slots[2 * i + 1], gm, r > 0))).join('')}</div></div>`;
-  const fin = bkPlayed(E.champ, W.champ), state = bkPair(E.champ, W.champ, bkLine(E.champ, fin, true) + bkLine(W.champ, fin, true), ' st');
+  const fin = bkPlayed(W.champ, E.champ), state = bkPair(W.champ, E.champ, bkLine(W.champ, fin, true) + bkLine(E.champ, fin, true), ' st');
   // A phone (Chuck, 2026-10-25: "shrink it… so we can see multiple rounds at the same time"): each side's four rounds
   // across in small boxes, the logo and short name, then State under both.
   const mcol = (c, r) => `<div class="bkm-col"><span class="bkt-h">${ROUNDS[r]}</span><div class="bkm-pairs">${c.games.map((gm, i) =>
     bkPair(c.slots[2 * i], c.slots[2 * i + 1], bkLine(c.slots[2 * i], gm, true) + bkLine(c.slots[2 * i + 1], gm, true))).join('')}</div></div>`;
   const mside = (S, name) => `<div class="bkm-side"><h3>${name}</h3><div class="bkm-grid">${S.cols.map(mcol).join('')}</div></div>`;
-  return `<div class="bkf">${E.cols.map((c, r) => col(c, r, false)).join('')}
+  // West on the left, East on the right, the way they sit on a map (Chuck, 2026-10-26).
+  return `<div class="bkf">${W.cols.map((c, r) => col(c, r, false)).join('')}
     <div class="bkf-col st"><span class="bkt-h">State</span><div class="bkf-pairs">${state}</div></div>
-    ${W.cols.map((c, r) => col(c, r, true)).reverse().join('')}</div>
-    <div class="bkf-sides"><span>East</span><span>West</span></div>
-    <div class="bkm">${mside(E, 'East')}${mside(W, 'West')}<div class="bkm-side bkm-st"><h3>State</h3>${state}</div></div>`;
+    ${E.cols.map((c, r) => col(c, r, true)).reverse().join('')}</div>
+    <div class="bkf-sides"><span>West</span><span>East</span></div>
+    <div class="bkm">${mside(W, 'West')}${mside(E, 'East')}<div class="bkm-side bkm-st"><h3>State</h3>${state}</div></div>`;
 }
 // A district's standings; the teams past fourth don't go on.
 function bkDistrictHtml(d, teams){
