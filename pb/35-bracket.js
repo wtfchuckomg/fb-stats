@@ -206,8 +206,10 @@ function bkTeam(name){
     // Seeding is weeks 1-8 only: a playoff game, once it's final, changes nobody's record or margin here.
     if (gameDay(x) > fromYmd(BK_WEEK8_END)) return;
     const f = finalOf(x);
-    // Not played yet (or no final on file): one of the games that can still move it, through week 8.
-    if (!f.fin || !f.score){ if (gameDay(x) <= fromYmd(BK_WEEK8_END)) t.left.push({opp:x.teams[opp].name, key:`${ymd(gameDay(x))}|${[canonSchool(name), canonSchool(x.teams[opp].name)].sort().join('|')}`}); return; }
+    // Not played yet (or no final on file): one of the games that can still move it, through week 8. Once week 8 is
+    // over, a game with no score is the manual's "no game played" (Ellinwood at Southwestern Heights, 9/4) and holds
+    // nothing up.
+    if (!f.fin || !f.score){ if (gameDay(x) <= fromYmd(BK_WEEK8_END) && Date.now() < fromYmd(BK_WEEK8_END).getTime() + 864e5) t.left.push({opp:x.teams[opp].name, key:`${ymd(gameDay(x))}|${[canonSchool(name), canonSchool(x.teams[opp].name)].sort().join('|')}`}); return; }
     const mine = +f.score[side], theirs = +f.score[opp], other = x.teams[opp].name;
     // A forfeit counts the most the margin allows, +13 or -13 (manual, forfeiture policy 3) — not the 1-0 or 2-0 on
     // the scoreboard. Baldwin's forfeit win over Bishop Ward is what puts them ahead of Burlington in 3A.
