@@ -309,7 +309,10 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .pg-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.75fr) minmax(0,1fr);gap:16px;align-items:start;margin-top:16px}
 .mu-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr);gap:16px;align-items:start;margin-top:16px}
 .mu-grid .bcard{margin:0}
-@media (max-width:1180px){.mu-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .mu-grid > :nth-child(3){grid-column:1 / -1}}
+#mu-ring:empty{display:none}
+/* A narrower screen: the percentages and stats first, how the games went and past meetings beside each other under them. */
+@media (max-width:1180px){.mu-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .mu-grid > :nth-child(2){grid-column:1 / -1;order:-1}}
+@media (max-width:700px){.mu-grid > :nth-child(2){order:-1}}
 @media (max-width:700px){.mu-grid{grid-template-columns:minmax(0,1fr)}}
 .pg-col{display:grid;gap:16px;min-width:0}
 .pg-card{padding:18px 20px}

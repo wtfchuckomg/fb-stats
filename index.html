@@ -288,7 +288,10 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .pg-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.75fr) minmax(0,1fr);gap:16px;align-items:start;margin-top:16px}
 .mu-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr);gap:16px;align-items:start;margin-top:16px}
 .mu-grid .bcard{margin:0}
-@media (max-width:1180px){.mu-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .mu-grid > :nth-child(3){grid-column:1 / -1}}
+#mu-ring:empty{display:none}
+/* A narrower screen: the percentages and stats first, how the games went and past meetings beside each other under them. */
+@media (max-width:1180px){.mu-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .mu-grid > :nth-child(2){grid-column:1 / -1;order:-1}}
+@media (max-width:700px){.mu-grid > :nth-child(2){order:-1}}
 @media (max-width:700px){.mu-grid{grid-template-columns:minmax(0,1fr)}}
 .pg-col{display:grid;gap:16px;min-width:0}
 .pg-card{padding:18px 20px}
@@ -13627,23 +13630,27 @@ function renderMatchup(){
       <div class="mu-checks"><label class="mu-neutral"><input type="checkbox" id="mu-n"${mu.neutral ? ' checked' : ''}> Neutral field</label></div>
     </div></section>`;
   // Only the result card is drawn again while someone is typing in a box, so the box keeps its text and focus.
-  const res = $('#mu-res');
-  if (res && keepFocus) return void (res.innerHTML = muResult());
-  // On a computer three columns, the way a game's preview reads (Chuck, 2026-10-26: "bring these together on desktop"):
-  // the simulation, then the teams' stats (leaders, last five), then past meetings and standings.
-  box.innerHTML = form + `<div class="mu-grid"><div class="pg-col" id="mu-res">${muResult()}</div>${muHistory()}</div>`;
+  const ringBox = $('#mu-ring'), howBox = $('#mu-how');
+  if (ringBox && howBox && keepFocus){ ringBox.innerHTML = muResult('ring'); howBox.innerHTML = muResult('how'); return; }
+  // On a computer three columns, the way a game's preview reads (Chuck, 2026-10-26: "bring these together on desktop"…
+  // "put the percentages back in the middle. move the sim stats up"): how the games went; the percentages over the
+  // teams' stats; past meetings and standings.
+  const h = muHistory();
+  box.innerHTML = form + `<div class="mu-grid"><div class="pg-col" id="mu-how">${muResult('how')}</div>
+    <div class="pg-col"><div id="mu-ring">${muResult('ring')}</div>${h.mid}</div><div class="pg-col">${h.right}</div></div>`;
 }
 // The two schools' cards beside the result, the same as a game's preview: season leaders and last five games, then
 // past meetings and their AVCTL standings when they have one.
 function muHistory(){
-  if (!mu.a || !mu.h || canonSchool(mu.a) === canonSchool(mu.h) || !knownSchool(mu.a) || !knownSchool(mu.h)) return '';
+  if (!mu.a || !mu.h || canonSchool(mu.a) === canonSchool(mu.h) || !knownSchool(mu.a) || !knownSchool(mu.h)) return {mid:'', right:''};
   const team = name => ({name, abbr:listAbbr(name) || shortName(name), color:'#4A4B4D'});
   const c = pgCards({A:team(mu.a), H:team(mu.h)});
-  return `<div class="pg-col">${c.leaders}${c.five}</div><div class="pg-col">${c.past}${c.standings}</div>`;
+  return {mid:c.leaders + c.five, right:c.past + c.standings};
 }
-function muResult(){
+// part: 'ring' (the percentages), 'how' (how the games went), or both. A message (loading, no ratings) goes with the ring.
+function muResult(part){
   const S = mu.sim;
-  if (!mu.a || !mu.h) return '';
+  if (!mu.a || !mu.h || (part === 'how' && (!S || !pre.rat || canonSchool(mu.a) === canonSchool(mu.h)))) return '';
   if (canonSchool(mu.a) === canonSchool(mu.h)) return '<section class="bcard"><p class="bempty">Pick two different schools.</p></section>';
   if (!pre.rat) return '<section class="bcard"><p class="bempty">Loading…</p></section>';
   if (!S) return `<section class="bcard"><p class="bempty">${!ratingOf(mu.a) || !ratingOf(mu.h) ? 'No ratings for one of these schools yet.' : 'These two don’t play the same game (11-man, 8-man, 6-man).'}</p></section>`;
@@ -13661,14 +13668,14 @@ function muResult(){
   const pct = v => `${Math.round(v / n * 1000) / 10}%`;
   const row = (k, v) => `<div class="pg-info"><b>${k}</b><span>${v}</span></div>`;
   const big = s => { const b = S.big[s]; return b ? `${s === 'A' ? b.a : b.h}-${s === 'A' ? b.h : b.a}` : '—'; };
-  return `<section class="bcard pg-card"><h2 class="pg-h">${n.toLocaleString()} games${S.neutral ? ' · neutral field' : ` · at ${esc(H)}`}</h2>
+  const card = `<section class="bcard pg-card"><h2 class="pg-h">${n.toLocaleString()} games${S.neutral ? ' · neutral field' : ` · at ${esc(H)}`}</h2>
       <div class="pg-pred"><div class="pg-pct"><b>${(pA * 100).toFixed(1)}%</b><span>${esc(ab(A))}</span></div>
         <div class="pg-ringwrap">${ring}<div class="pg-marks">${mark(A, 34)}${mark(H, 34)}</div></div>
         <div class="pg-pct r"><b>${(pH * 100).toFixed(1)}%</b><span>${esc(ab(H))}</span></div></div>
       <div class="mu-avg"><span>${esc(A)} <b>${avgA.toFixed(1)}</b></span><span>${esc(H)} <b>${avgH.toFixed(1)}</b></span></div>
       <p class="mu-line">${by < .05 ? 'Dead even on average' : `${esc(fav)} by <b>${by.toFixed(1)}</b> on average`}</p>
-    </section>
-    <section class="bcard pg-card"><h2 class="pg-h">How the games went</h2>
+    </section>`;
+  const how = `<section class="bcard pg-card"><h2 class="pg-h">How the games went</h2>
       ${row(`${esc(A)} wins`, `${S.w.A.toLocaleString()} of ${n.toLocaleString()}${S.w.A ? `, by ${movA.toFixed(1)} on average` : ''}`)}
       ${row(`${esc(H)} wins`, `${S.w.H.toLocaleString()} of ${n.toLocaleString()}${S.w.H ? `, by ${movH.toFixed(1)} on average` : ''}`)}
       ${row('Most common score', `${esc(ta > th ? A : H)} ${Math.max(ta, th)}-${Math.min(ta, th)}`)}
@@ -13679,6 +13686,7 @@ function muResult(){
       ${row(`Biggest ${esc(H)} win`, big('H'))}
       <div class="line" style="margin-top:12px"><button type="button" class="btn" data-mu-again>Run again</button></div>
     </section>`;
+  return part === 'ring' ? card : part === 'how' ? how : card + how;
 }
 
 // A school picked in either box, the neutral box ticked, or Run again.
