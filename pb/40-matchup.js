@@ -117,15 +117,17 @@ function renderMatchup(){
   // Only the result card is drawn again while someone is typing in a box, so the box keeps its text and focus.
   const res = $('#mu-res');
   if (res && keepFocus) return void (res.innerHTML = muResult());
-  box.innerHTML = form + `<div id="mu-res">${muResult()}</div>${muHistory()}`;
+  // On a computer three columns, the way a game's preview reads (Chuck, 2026-10-26: "bring these together on desktop"):
+  // the simulation, then the teams' stats (leaders, last five), then past meetings and standings.
+  box.innerHTML = form + `<div class="mu-grid"><div class="pg-col" id="mu-res">${muResult()}</div>${muHistory()}</div>`;
 }
-// The two schools' history under the result, the same cards as a game's preview: past meetings, last five games,
-// season leaders, and their AVCTL standings when they have one.
+// The two schools' cards beside the result, the same as a game's preview: season leaders and last five games, then
+// past meetings and their AVCTL standings when they have one.
 function muHistory(){
   if (!mu.a || !mu.h || canonSchool(mu.a) === canonSchool(mu.h) || !knownSchool(mu.a) || !knownSchool(mu.h)) return '';
   const team = name => ({name, abbr:listAbbr(name) || shortName(name), color:'#4A4B4D'});
   const c = pgCards({A:team(mu.a), H:team(mu.h)});
-  return `<div class="mu-hist">${c.past}${c.five}${c.leaders}${c.standings}</div>`;
+  return `<div class="pg-col">${c.leaders}${c.five}</div><div class="pg-col">${c.past}${c.standings}</div>`;
 }
 function muResult(){
   const S = mu.sim;

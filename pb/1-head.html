@@ -307,6 +307,10 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .pg-at{margin-top:4px;padding:3px 10px;border:1px solid var(--line);border-radius:6px;font-size:12px}
 .pg-live{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font:500 15px/1.3 var(--sans)}
 .pg-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.75fr) minmax(0,1fr);gap:16px;align-items:start;margin-top:16px}
+.mu-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr);gap:16px;align-items:start;margin-top:16px}
+.mu-grid .bcard{margin:0}
+@media (max-width:1180px){.mu-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .mu-grid > :nth-child(3){grid-column:1 / -1}}
+@media (max-width:700px){.mu-grid{grid-template-columns:minmax(0,1fr)}}
 .pg-col{display:grid;gap:16px;min-width:0}
 .pg-card{padding:18px 20px}
 /* Matchup Calculator (?matchup) */
