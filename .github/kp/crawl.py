@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Every Kansas school's results, 2021 through this season, from KPreps team pages.
+"""Every Kansas school's results, from KPreps team pages: 2021 through this season every night, and 2008-2020 read once
+(KP_YEARS=2020,...,2008 — Chuck, 2026-10-26: "add in seasons through 2000"; KPreps goes back to 2008).
 
 Writes kp/teams.json (name, id, slug, class) and kp/seasons/<slug>.json ({year: [games]}).
 One page at a time with a pause between, so it is gentle on their site.
@@ -13,6 +14,8 @@ UA = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit
 CLASSES = ['6A', '5A', '4A', '3A', '2A', '1A', '8M-I', '8M-II', '6M']
 import os
 YEARS = [int(y) for y in os.environ.get('KP_YEARS', '2026,2025,2024,2023,2022,2021').split(',')]
+# This season: read again every night, from the team's current page. Earlier seasons come from the archive once.
+CUR = int(os.environ.get('KP_CUR', YEARS[0]))
 PAUSE = .5
 
 def get(url, tries=3):
@@ -38,7 +41,9 @@ def teams():
     return out
 
 def season(tid, slug, year, cur):
+    # 2008-2012 live at archive/ — archive.php answers those years with a database error and no games.
     url = (f'https://kpreps.com/kansas/teams/football/?id={tid}&t={slug}' if cur
+           else f'https://kpreps.com/kansas/teams/football/archive/?year={year}&id={tid}&t={slug}' if year <= 2012
            else f'https://kpreps.com/kansas/teams/football/archive.php?year={year}&id={tid}&t={slug}')
     html = get(url)
     name = re.search(r'<h1[^>]*>(.*?)</h1>', html, re.S)
@@ -75,13 +80,14 @@ def main():
         have = json.loads(out_path.read_text()) if out_path.exists() else {}
         for year in YEARS:
             # this season is read again every night; earlier ones only once
-            if str(year) in have and have[str(year)].get('games') and year != YEARS[0]: continue
+            if str(year) in have and have[str(year)].get('games') and year != CUR: continue
             try:
-                have[str(year)] = season(t['id'], t['slug'], year, year == YEARS[0])
+                have[str(year)] = season(t['id'], t['slug'], year, year == CUR)
             except Exception as e:
                 print(f"{t['slug']} {year}: {e}", flush=True)
             time.sleep(PAUSE)
         out_path.write_text(json.dumps(have, separators=(',', ':'), ensure_ascii=False))
         if i % 10 == 0: print(f'{i}/{len(ts)}', flush=True)
 
-main()
+if __name__ == '__main__':
+    main()

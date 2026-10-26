@@ -173,7 +173,9 @@ function fiveYear(name){
   const f = pre.hist[logoSlug(name)];
   if (!f || !f.seasons) return null;
   const r = {w:0, l:0, t:0, pf:0, pa:0, gp:0, years:0};
-  Object.values(f.seasons).forEach(s => {
+  // The five seasons before this one, and this one: the files reach back to 2000 now.
+  const from = new Date().getFullYear() - 5;
+  Object.entries(f.seasons).filter(([y]) => +y >= from).map(([, s]) => s).forEach(s => {
     let played = 0;
     (s.games || []).forEach(g => { if (g.us == null) return; played++;
       r.gp++; r.pf += g.us; r.pa += g.them; r[g.us > g.them ? 'w' : g.us < g.them ? 'l' : 't']++; });
@@ -186,12 +188,17 @@ function fiveYear(name){
 const ratingSlug = n => { const r = typeof ratingOf === 'function' ? ratingOf(n) : null; return (r && r.slug) || logoSlug(n); };
 function pastMeetings(a, b){
   const want = canonSchool(b), out = [], seen = new Set();
+  // The other school by our name or by KPreps' ("Towanda-Circle" is Circle).
+  const kpA = ratingSlug(a), kpB = ratingSlug(b);
+  const isOpp = (g, flip) => canonSchool(g.opp) === (flip ? canonSchool(a) : want) || logoSlug(g.opp) === (flip ? kpA : kpB);
   const take = (file, flip) => {
     if (!file || !file.seasons) return;
     Object.entries(file.seasons).forEach(([year, s]) => (s.games || []).forEach(g => {
-      if (g.us == null || canonSchool(g.opp) !== (flip ? canonSchool(a) : want)) return;
-      const key = `${year}|${g.date}`; if (seen.has(key)) return; seen.add(key);
-      out.push({year:+year, date:g.date, ot:g.ot,
+      if (g.us == null || !isOpp(g, flip)) return;
+      // A dated game is itself; an undated one (the archive's seasons) is its score told from the first school's side,
+      // so the copy in the other school's file is the same game.
+      const key = `${year}|${g.date || 'old' + (flip ? g.them + '-' + g.us : g.us + '-' + g.them)}`; if (seen.has(key)) return; seen.add(key);
+      out.push({year:+year, date:g.date || '', ot:g.ot, ...(g.date ? {} : {old:true}),
         us:flip ? g.them : g.us, them:flip ? g.us : g.them,
         at:flip ? (g.at === 'home' ? 'away' : g.at === 'away' ? 'home' : g.at) : g.at});
     }));
@@ -202,11 +209,14 @@ function pastMeetings(a, b){
   const older = (file, other, flip) => {
     const rows = file && file.opp && file.opp[other]; if (!rows) return;
     rows.forEach(([year, us, them, note]) => {
+      if (held.has(+year)) return;
       const key = `${year}|old`; if (seen.has(key)) return; seen.add(key);
       out.push({year:+year, date:'', ot:/ot$/.test(note || ''), old:true,
         us:flip ? them : us, them:flip ? us : them, at:''});
     });
   };
+  // The meetings archive is older than the history files used to be; any year they now hold is already in.
+  const held = new Set([pre.hist[logoSlug(a)], pre.hist[logoSlug(b)]].flatMap(f => f && f.seasons ? Object.keys(f.seasons).map(Number) : []));
   const slugA = ratingSlug(a), slugB = ratingSlug(b);
   if (slugB) older(pre.meet[logoSlug(a)], slugB, false);
   if (slugA) older(pre.meet[logoSlug(b)], slugA, true);
@@ -444,7 +454,7 @@ function pgCards(T){
           const same = out.some(o => canonSchool(o.opp) === canonSchool(g.opp) && o.when === g.date);
           if (same) return;
           const opp = schoolName(g.opp) || g.opp;
-          out.push({when:`${g.date}/${year.slice(2)}`, at:g.at === 'away' ? 'A' : 'H', opp, abbr:tag(listAbbr(opp) || shortName(opp)),
+          out.push({when:g.date ? `${g.date}/${year.slice(2)}` : year, at:g.at === 'away' ? 'A' : 'H', opp, abbr:tag(listAbbr(opp) || shortName(opp)),
             mark:markFor({name:opp, abbr:shortName(opp), color:'#4A4B4D'}, 20), us:g.us, them:g.them, old:true});
         });
       });

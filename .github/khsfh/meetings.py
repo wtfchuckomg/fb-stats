@@ -61,13 +61,12 @@ def our_teams():
     return out
 
 
-def main():
-    ours = our_teams()
+def matcher(ours):
+    """A name from their archive -> our slug, or None if nothing is close enough. history.py uses it too."""
     by_slug = {slug(v): k for k, v in ours.items()}
     cache = {}
 
     def match(name):
-        """A name from their archive -> our slug, or None if nothing is close enough."""
         if name in cache:
             return cache[name]
         k = slug(name)
@@ -81,6 +80,12 @@ def main():
             hit = best if score >= .8 else None
         cache[name] = hit
         return hit
+    return match
+
+
+def main():
+    ours = our_teams()
+    match = matcher(ours)
 
     files = sorted(RAW.glob('*.json'))
     print(f'{len(files)} schools crawled')
@@ -120,4 +125,5 @@ def main():
             print('   no match:', name)
 
 
-main()
+if __name__ == '__main__':
+    main()

@@ -452,9 +452,10 @@ function teamPageHtml(nameIn){
     if (played) run[g.us > g.them ? 'w' : g.us < g.them ? 'l' : 't']++;
     const res = played ? `<b class="${g.us > g.them ? 'w' : g.us < g.them ? 'l' : ''}">${g.us > g.them ? 'W' : g.us < g.them ? 'L' : 'T'}</b> ${g.us}-${g.them}${g.ot ? ' (OT)' : ''}` : '&#8212;';
     const opp = schoolName(g.opp) || g.opp, md = String(g.date || '').match(/^(\d{1,2})\/(\d{1,2})/);
-    const rnd = md ? roundOf(new Date(+tpage.season, +md[1] - 1, +md[2]), name) : '';
+    // Seasons before KPreps (2000-2007, kansashsfootballhistory.com) have no dates or sides; a playoff game says so.
+    const rnd = md ? roundOf(new Date(+tpage.season, +md[1] - 1, +md[2]), name) : g.po ? 'Playoffs' : '';
     return `<tr><td class="wk">${esc(g.date || '')}</td>
-      <td class="opp"><em>${g.at === 'away' ? 'at' : 'vs'}</em><a href="?team=${encodeURIComponent(schoolName(opp))}">${markFor({name:opp, abbr:shortName(opp), color:'#4A4B4D'}, 24)}${esc(schoolName(opp))}</a>${roundTag(rnd)}</td>
+      <td class="opp"><em>${g.at === 'away' ? 'at' : g.at ? 'vs' : ''}</em><a href="?team=${encodeURIComponent(schoolName(opp))}">${markFor({name:opp, abbr:shortName(opp), color:'#4A4B4D'}, 24)}${esc(schoolName(opp))}</a>${roundTag(rnd)}</td>
       <td class="res">${res}</td><td class="lnk tp-run">${played ? `${run.w}-${run.l}${run.t ? '-' + run.t : ''}` : ''}</td></tr>`;
   }).join('') : '';
 
