@@ -203,6 +203,8 @@ document.addEventListener('click', e => {
 function bkTeam(name){
   const t = {name, w:0, l:0, t:0, gp:0, marg:0, beat:new Set(), lost:new Set(), games:[], left:[]};
   schoolRows(name).forEach(({x, side, opp}) => {
+    // Seeding is weeks 1-8 only: a playoff game, once it's final, changes nobody's record or margin here.
+    if (gameDay(x) > fromYmd(BK_WEEK8_END)) return;
     const f = finalOf(x);
     // Not played yet (or no final on file): one of the games that can still move it, through week 8.
     if (!f.fin || !f.score){ if (gameDay(x) <= fromYmd(BK_WEEK8_END)) t.left.push({opp:x.teams[opp].name, key:`${ymd(gameDay(x))}|${[canonSchool(name), canonSchool(x.teams[opp].name)].sort().join('|')}`}); return; }
