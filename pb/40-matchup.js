@@ -23,11 +23,10 @@ function startMatchup(){
   ui.viewer = true; ui.matchup = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
   document.title = `Matchup Calculator · ${SITE_TITLE}`;
-  loadLogos(); loadRatings(); loadStatsFile();
+  loadLogos(); loadRatings();
   renderMatchup();
   muTeamsChanged();
-  // The scores strip, and the season's stats for the leaders card.
-  viewerApi().then(api => { scoresReady({fsM:api.fsM, fsdb:api.fsdb}); loadStats({fsM:api.fsM, fsdb:api.fsdb}); }).catch(() => {});
+  viewerApi().then(api => scoresReady({fsM:api.fsM, fsdb:api.fsdb})).catch(() => {});   // the scores strip
   // The ratings and the school list arrive on their own; draw again once they're here.
   const wait = setInterval(() => { if (pre.rat && logoLib.list){ clearInterval(wait); muRun(); } }, 300);
 }
@@ -119,18 +118,18 @@ function renderMatchup(){
   if (ringBox && howBox && keepFocus){ ringBox.innerHTML = muResult('ring'); howBox.innerHTML = muResult('how'); return; }
   // On a computer three columns, the way a game's preview reads (Chuck, 2026-10-26: "bring these together on desktop"…
   // "put the percentages back in the middle. move the sim stats up"): how the games went; the percentages over the
-  // teams' stats; past meetings and standings.
+  // last five games; past meetings and standings.
   const h = muHistory();
   box.innerHTML = form + `<div class="mu-grid"><div class="pg-col" id="mu-how">${muResult('how')}</div>
     <div class="pg-col"><div id="mu-ring">${muResult('ring')}</div>${h.mid}</div><div class="pg-col">${h.right}</div></div>`;
 }
-// The two schools' cards beside the result, the same as a game's preview: season leaders and last five games, then
-// past meetings and their AVCTL standings when they have one.
+// The two schools' cards beside the result, the same as a game's preview: last five games, then past meetings and
+// their AVCTL standings when they have one. No season leaders here (Chuck, 2026-10-26).
 function muHistory(){
   if (!mu.a || !mu.h || canonSchool(mu.a) === canonSchool(mu.h) || !knownSchool(mu.a) || !knownSchool(mu.h)) return {mid:'', right:''};
   const team = name => ({name, abbr:listAbbr(name) || shortName(name), color:'#4A4B4D'});
   const c = pgCards({A:team(mu.a), H:team(mu.h)});
-  return {mid:c.leaders + c.five, right:c.past + c.standings};
+  return {mid:c.five, right:c.past + c.standings};
 }
 // part: 'ring' (the percentages), 'how' (how the games went), or both. A message (loading, no ratings) goes with the ring.
 function muResult(part){

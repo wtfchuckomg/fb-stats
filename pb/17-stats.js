@@ -53,7 +53,7 @@ async function startCounty(){
 
 // The season's numbers feed three pages: the stats pages, a pregame page, and the scoreboard, where a game
 // that hasn't kicked off shows each team's season leaders where a played game shows its own.
-function statsArrived(){ if (ui.matchup) renderMatchup(); if (typeof g !== 'undefined' && g && g.box && typeof refresh === 'function' && !ui.board) refresh(); renderCounty(); renderAvHome(); if (ui.player) renderPlayer(); if (ui.preview) renderPreview(); if (ui.board) renderScoreboard(); }
+function statsArrived(){ if (typeof g !== 'undefined' && g && g.box && typeof refresh === 'function' && !ui.board) refresh(); renderCounty(); renderAvHome(); if (ui.player) renderPlayer(); if (ui.preview) renderPreview(); if (ui.board) renderScoreboard(); }
 // A game as the stats file carries it: the numbers already added up, and just enough around them to be
 // filtered by week and team.
 const statsGame = e => ({id:e.id, date:e.date || '', wk:e.wk, updated:e.updated || 0, opp:e.opp,
