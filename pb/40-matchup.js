@@ -23,10 +23,11 @@ function startMatchup(){
   ui.viewer = true; ui.matchup = true; document.body.classList.add('viewer', 'bpage');
   $('#board').hidden = false;
   document.title = `Matchup Calculator · ${SITE_TITLE}`;
-  loadLogos(); loadRatings();
+  loadLogos(); loadRatings(); loadStatsFile();
   renderMatchup();
   muTeamsChanged();
-  viewerApi().then(api => scoresReady({fsM:api.fsM, fsdb:api.fsdb})).catch(() => {});   // the scores strip
+  // The scores strip, and the season's stats for the leaders card.
+  viewerApi().then(api => { scoresReady({fsM:api.fsM, fsdb:api.fsdb}); loadStats({fsM:api.fsM, fsdb:api.fsdb}); }).catch(() => {});
   // The ratings and the school list arrive on their own; draw again once they're here.
   const wait = setInterval(() => { if (pre.rat && logoLib.list){ clearInterval(wait); muRun(); } }, 300);
 }
@@ -116,7 +117,15 @@ function renderMatchup(){
   // Only the result card is drawn again while someone is typing in a box, so the box keeps its text and focus.
   const res = $('#mu-res');
   if (res && keepFocus) return void (res.innerHTML = muResult());
-  box.innerHTML = form + `<div id="mu-res">${muResult()}</div>`;
+  box.innerHTML = form + `<div id="mu-res">${muResult()}</div>${muHistory()}`;
+}
+// The two schools' history under the result, the same cards as a game's preview: past meetings, last five games,
+// season leaders, and their AVCTL standings when they have one.
+function muHistory(){
+  if (!mu.a || !mu.h || canonSchool(mu.a) === canonSchool(mu.h) || !knownSchool(mu.a) || !knownSchool(mu.h)) return '';
+  const team = name => ({name, abbr:listAbbr(name) || shortName(name), color:'#4A4B4D'});
+  const c = pgCards({A:team(mu.a), H:team(mu.h)});
+  return `<div class="mu-hist">${c.past}${c.five}${c.leaders}${c.standings}</div>`;
 }
 function muResult(){
   const S = mu.sim;

@@ -149,15 +149,15 @@ function loadMeetings(name){
   const tries = [k], r = typeof ratingOf === 'function' ? ratingOf(name) : null;
   if (r && r.slug && !tries.includes(r.slug)) tries.push(r.slug);
   (function next(i){
-    if (i >= tries.length){ pre.meet[k] = false; return renderPreview(); }
+    if (i >= tries.length){ pre.meet[k] = false; if (ui.matchup) renderMatchup(); return renderPreview(); }
     fetch(`${DATA}/meetings/${tries[i]}.json`, {cache:'no-cache'}).then(x => x.ok ? x.json() : null)
-      .then(d => { if (!d) return next(i + 1); pre.meet[k] = d; renderPreview(); }).catch(() => next(i + 1));
+      .then(d => { if (!d) return next(i + 1); pre.meet[k] = d; renderPreview(); if (ui.matchup) renderMatchup(); }).catch(() => next(i + 1));
   })(0);
 }
 function loadHistory(name){
   const k = logoSlug(name); if (!k || pre.hist[k] !== undefined) return;
   pre.hist[k] = null;
-  fetchHistory(name, d => { pre.hist[k] = d || false; renderPreview(); });
+  fetchHistory(name, d => { pre.hist[k] = d || false; renderPreview(); if (ui.matchup) renderMatchup(); });
 }
 // How a school has done over the seasons on file: wins, losses and points, for the predictor's longer view.
 function fiveYear(name){
@@ -389,6 +389,18 @@ function previewHtml(){
       ${OL ? '' : `<p class="hint">No line for this game yet: the ratings don't have both schools.</p>`}
     </section>`;
 
+  const {leaders, five, past, standings} = pgCards(T);
+
+  // Three columns on a computer, the way a gamecast reads: the predictor and the game's details down the left, the
+  // leaders and last games in the middle, the line and standings down the right.
+  return `${head}<div class="pg-grid"><div class="pg-col">${predictor}${gameInfo}</div><div class="pg-col pg-mid">${leaders}${five}${past}</div><div class="pg-col">${odds}${standings}</div></div>`;
+}
+
+// The two teams' cards — season leaders, last five games, past meetings, AVCTL standings — for the preview and the
+// Matchup Calculator (Chuck, 2026-10-26: "put the history of the two schools as well… the stuff we'd see on the preview
+// page"). T is {A, H}, each a team as a game carries it (name, abbr, color).
+function pgCards(T){
+  const A = T.A.name, H = T.H.name;
   // Season leaders, the two teams side by side.
   const LA = seasonLeaders(A), LH = seasonLeaders(H);
   const line = (p, k) => !p ? '' : k === 'pass' ? `${p.pc || 0}/${p.pa || 0}, ${p.ptd || 0} TD${p.pint ? `, ${p.pint} INT` : ''}` : k === 'rush' ? `${p.ru || 0} CAR, ${p.rtd || 0} TD` : `${p.re || 0} REC, ${p.retd || 0} TD`;
@@ -459,9 +471,7 @@ function previewHtml(){
           <td class="num">${avRec(o.r.dw, o.r.dl, o.r.dt)}</td><td class="num">${esc((o.rec && o.rec.rec) || avRec(o.r.w, o.r.l, o.r.t))}</td></tr>`).join('')}</tbody></table></div>`).join('')}
     </section>` : '';
 
-  // Three columns on a computer, the way a gamecast reads: the predictor and the game's details down the left, the
-  // leaders and last games in the middle, the line and standings down the right.
-  return `${head}<div class="pg-grid"><div class="pg-col">${predictor}${gameInfo}</div><div class="pg-col pg-mid">${leaders}${five}${past}</div><div class="pg-col">${odds}${standings}</div></div>`;
+  return {leaders, five, past, standings};
 }
 
 /* ---------- strength of schedule ----------
