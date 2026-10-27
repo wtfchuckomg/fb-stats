@@ -125,7 +125,7 @@ function parseBox(txt){
   const cellsOf = raw.map(l => /\t/.test(l.trim()) ? l.split('\t').map(x => x.trim()).filter(Boolean) : null);
   // "RUSHING: Andover — …", "RUSHING – Winfield: …", "RUSHING—Winfield, …", "PASSING (cmp-att-yds-td-int): …",
   // "Passing: (cmp-att-yds-td-int): Douglass – …"
-  const SEC = /^(RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|MISSED FIELD GOALS|MISSED FGS?|FIELD GOAL ATTEMPTS|BLOCKED KICKS|INTERCEPTIONS|TACKLES|DEFENSE|DEFENSIVE|PUNTING|PUNT RETURNS|KICKOFF RETURNS|KICK RETURNS|FUMBLES|SACKS|TEAM STATS|TEAM STATISTICS)\b\s*[:—–-]?\s*(\([^)]*\))?\s*[:—–-]?\s*(.*)$/i;
+  const SEC = /^(FUMBLES? RECOVER(?:Y|IES|ED)|FORCED FUMBLES?|FUMBLES? FORCED|RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|MISSED FIELD GOALS|MISSED FGS?|FIELD GOAL ATTEMPTS|BLOCKED KICKS|INTERCEPTIONS|TACKLES|DEFENSE|DEFENSIVE|PUNTING|PUNT RETURNS|KICKOFF RETURNS|KICK RETURNS|FUMBLES|SACKS|TEAM STATS|TEAM STATISTICS)\b\s*[:—–-]?\s*(\([^)]*\))?\s*[:—–-]?\s*(.*)$/i;
   // "First Quarter", "1st Qtr", "3rd Q", "3Q", "Q3", "OT", and each overtime by number: "2OT", "OT2", "Second Overtime".
   const QTR = /^(?:(first|second|third|fourth|1st|2nd|3rd|4th)\s*(?:quarter|qtr|q)|([1-4])\s*(?:qtr|q)|q\s*([1-4])|(?:(\d)\s*(?:st|nd|rd|th)?\s*|(double|triple|second|third|fourth|fifth|sixth)\s+)?(ot|overtime)\s*(\d)?)\b/i;
   const OTN = {double:2, second:2, triple:3, third:3, fourth:4, fifth:5, sixth:6};
@@ -219,6 +219,8 @@ function parseBox(txt){
     const m = l.match(SEC);
     if (m){
       sec = {kind:m[1].toUpperCase(), head:m[2] || '', body:m[3], side:teamAbove}; sections.push(sec);
+      // "Fumble recoveries: Newton — Brown 1", "Forced fumbles: …": a defensive line with that one column.
+      if (/RECOVER|FORCED/.test(sec.kind)){ sec.head = sec.head || (/RECOVER/.test(sec.kind) ? '(fr)' : '(ff)'); sec.kind = 'DEFENSE'; }
       if (/^TEAM/.test(sec.kind) && !m[3].trim() && out.names.length === 2){ tbl = {order:['A', 'H'], head:false}; sec.parts = {A:[], H:[]}; }
       continue;
     }
@@ -437,15 +439,18 @@ function parseBox(txt){
     const order = kind === 'pass' ? named
       : KIND_COLS[kind] ? (named.map(w => COL_WORDS[w] || w).filter(w => w) .length ? named.map(w => COL_WORDS[w] || w) : KIND_COLS[kind].order)
       : null;
+    const one = kind === 'fum' || (order && order.length === 1);   // a column of one number: "Brown 1, Smith 2"
     for (const [s, part] of teamsOf(sc)){
       // Players are split by semicolons, or by commas when the next thing is another player ("Chattam 16-133, Bergeson
       // 10-124"); a comma before "TD" or "3 TD" stays with its player.
-      part.split(/;\s*|\.\s+(?=totals?\b)/i).flatMap(x => x.split(/,\s*(?=[A-Za-z][A-Za-z.'’ -]*\s\(?-?\d+\)?\s*-\s*\(?-?\d)/))
+      part.split(/;\s*|\.\s+(?=totals?\b)/i).flatMap(x => x.split(one ? /,\s*(?=[A-Za-z])/ : /,\s*(?=[A-Za-z][A-Za-z.'’ -]*\s\(?-?\d+\)?\s*-\s*\(?-?\d)/))
         .map(x => x.trim().replace(/\.$/, '')).filter(Boolean).forEach(item => {
+        // In a one-number list a name with no number is one: "Fumble recoveries: Brown, Smith".
+        if (one && kind !== 'fum' && !/\d/.test(item)) item += ' 1';
         const tot = item.match(/^totals?:?\s*(.*)$/i);
         if (tot){ const v = nums(tot[1]); if (kind === 'rush' && v.length >= 2) Object.assign(out.team[s], {rushN:v[0], rushY:v[1]}); return; }
         // A fumbles line can be one number ("Conrad 1"); every other kind has at least two ("Becker 8-81").
-        const m = item.match(kind === 'fum' ? /^(.+?)\s+(\(?-?\d+\)?(?:\s*-\s*\(?-?\d+\)?)*)(.*)$/ : /^(.+?)\s+(\(?-?\d+\)?(?:\s*-\s*\(?-?\d+\)?)+)(.*)$/);
+        const m = item.match(one ? /^(.+?)\s+(\(?-?\d+\)?(?:\s*-\s*\(?-?\d+\)?)*)(.*)$/ : /^(.+?)\s+(\(?-?\d+\)?(?:\s*-\s*\(?-?\d+\)?)+)(.*)$/);
         if (!m) return;
         const v = nums(m[2]);
         // Passing yards written after a space: "Telles 16-24-0 354" is cmp-att-int and then the yards.
