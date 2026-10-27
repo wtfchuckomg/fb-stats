@@ -11796,12 +11796,12 @@ function pgCards(T){
           const same = out.some(o => canonSchool(o.opp) === canonSchool(g.opp) && o.when === g.date);
           if (same) return;
           const opp = schoolName(g.opp) || g.opp;
-          out.push({when:g.date ? `${g.date}/${year.slice(2)}` : year, at:g.at === 'away' ? 'A' : 'H', opp, abbr:tag(listAbbr(opp) || shortName(opp)),
+          out.push({when:g.date ? `${g.date}/${year.slice(2)}` : year, at:g.at === 'away' ? 'A' : g.at ? 'H' : '', opp, abbr:tag(listAbbr(opp) || shortName(opp)),
             mark:markFor({name:opp, abbr:shortName(opp), color:'#4A4B4D'}, 20), us:g.us, them:g.them, old:true});
         });
       });
     }
-    const rows = out.slice(0, 5).map(r => `<tr><td class="num">${esc(r.when)}</td><td><span class="pg-opp">${r.at === 'H' ? 'vs' : '@'} ${r.mark}<a class="tlink" href="?team=${encodeURIComponent(r.opp)}">${esc(r.abbr)}</a></span></td>
+    const rows = out.slice(0, 5).map(r => `<tr><td class="num">${esc(r.when)}</td><td><span class="pg-opp">${r.at === 'H' ? 'vs' : r.at ? '@' : ''} ${r.mark}<a class="tlink" href="?team=${encodeURIComponent(r.opp)}">${esc(r.abbr)}</a></span></td>
         <td class="num"><b class="${r.us > r.them ? 'pg-w' : r.us < r.them ? 'pg-lo' : ''}">${r.us > r.them ? 'W' : r.us < r.them ? 'L' : 'T'}</b> ${r.us}-${r.them}</td></tr>`).join('');
     return `<div class="pg-five"><div class="pg-fhead">${markFor({name:n, abbr:shortName(n), color:'#4A4B4D'}, 26)}<b>${esc(n)}</b></div>
       ${rows ? `<div class="pg-tbl"><table class="ctbl"><thead><tr><th>Date</th><th>Opp</th><th class="num">Result</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="bempty">No finals on the site yet.</p>'}</div>`;

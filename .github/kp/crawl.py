@@ -56,6 +56,7 @@ def season(tid, slug, year, cur):
         raw = text(o.group(1))
         if raw.lower() in ('opponent', ''): continue
         where = 'away' if raw.startswith('@') else 'home' if raw.lower().startswith('vs') else 'neutral'
+        if not cur and year <= 2012: where = ''      # those pages write "vs." for every game, home or away
         opp = re.sub(r'^(@|vs\.?)\s*', '', raw).strip()
         oid = re.search(r'football/\?id=(\d+)&t=([a-z0-9\-]+)', row)
         r = re.search(r'scheduleResult">(.*?)</div>', row, re.S)
