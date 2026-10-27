@@ -28,6 +28,7 @@ were rebuilt by splitting the deployed index.html back apart, so a few of the
 filenames are reconstructions rather than the originals.
 """
 
+import base64
 import hashlib
 import re
 import sys
@@ -125,11 +126,40 @@ def build(site='kmr'):
     return page
 
 
+# Pictures the parts carry as data: addresses (the site mark, the home page art, the icons) go out as files in
+# img/, named by their own hash (Chuck, 2026-10-27). Baked in, they were 125 KB of every visit's 436 KB, didn't
+# compress, and were downloaded again with every new build; as files the browser keeps them.
+DATA_IMG = re.compile(r'data:image/(png|jpeg|gif|webp|svg\+xml);base64,([A-Za-z0-9+/=]{2000,})')
+IMG_EXT = {'png': 'png', 'jpeg': 'jpg', 'gif': 'gif', 'webp': 'webp', 'svg+xml': 'svg'}
+
+
+def pictures(page):
+    files = {}
+    def out(m):
+        raw = base64.b64decode(m.group(2))
+        name = f'img/{hashlib.sha256(raw).hexdigest()[:12]}.{IMG_EXT[m.group(1)]}'
+        files[name] = raw
+        return name
+    return DATA_IMG.sub(out, page), files
+
+
+def write_pictures(folder, files):
+    d = folder / 'img'
+    d.mkdir(exist_ok=True)
+    for name, raw in files.items():
+        f = folder / name
+        if not f.exists() or f.read_bytes() != raw:
+            f.write_bytes(raw)
+    for f in d.iterdir():                     # only ever this script's files: a picture no part uses any more goes
+        if f'img/{f.name}' not in files:
+            f.unlink()
+
+
 def main():
     check = '--check' in sys.argv
     changed = False
     for site, folder in SITES.items():
-        page = build(site)
+        page, files = pictures(build(site))
         out = folder / 'index.html'
         old = out.read_text(encoding='utf-8') if out.exists() else ''
         same = old == page
@@ -142,6 +172,7 @@ def main():
         # stats/KMR also keeps a copy one folder up, where it has always been previewed from.
         for target in (out, HERE.parent / 'index.html') if site == 'kmr' else (out,):
             target.write_text(page, encoding='utf-8')
+            write_pictures(target.parent, files)
             print('wrote', target)
         # The offline cache, stamped with this build's own hash so a new page means a new cache.
         sw = (PB / 'sw.js').read_text(encoding='utf-8').replace('__BUILD__', hashlib.sha256(page.encode()).hexdigest()[:12])
