@@ -183,7 +183,7 @@ function renderScoreboard(){
   const old = box.querySelector('.bweeks'), keep = old ? old.scrollLeft : 0;
   const act = document.activeElement, focusId = act && box.contains(act) && act.id && act.id.startsWith('bs-') ? act.id : null;
   const adminNote = ui.admin ? `<p class="badmin">Signed in as the admin: Hide takes a game off both scoreboards, the scores strip and BUCO Stats for everyone.${ui.state ? ' Games between other schools stay hidden (they still count toward records) until you Show one.' : ''}</p>` : '';
-  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1>${boardName()} Scoreboard</h1></div>${adminNote}
+  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1 class="b-title">${boardName()} Scoreboard</h1></div>${adminNote}
     <div class="bweeks-wrap"><button type="button" class="bw-arrow" data-bscroll="-1" aria-label="Earlier weeks">${chev('M9 1L1 9l8 8')}</button>
       <div class="bweeks">${tabs}</div>
       <button type="button" class="bw-arrow" data-bscroll="1" aria-label="Later weeks">${chev('M1 1l8 8-8 8')}</button></div></section>${body}`;
