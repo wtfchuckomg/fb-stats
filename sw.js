@@ -1,10 +1,10 @@
 /* Press Box offline cache.
-   Built by build.py, which stamps 1615f78f3e68 with the page's own hash, so every new build is a new cache.
+   Built by build.py, which stamps fa3c793cc8bd with the page's own hash, so every new build is a new cache.
 
    The page is one big file. Keep the last good copy of it, and of the season files the pages read, so the
    site opens at a field with no signal. The network is still asked first whenever it can answer quickly:
    a cached app that won't update is worse than a slow one. */
-const VER = '1615f78f3e68';
+const VER = 'fa3c793cc8bd';
 const SHELL = 'pb-shell-' + VER, DATA = 'pb-data-' + VER;
 const NET_MS = 3000;                 // how long to wait for the network before reaching for the cache
 
@@ -25,6 +25,8 @@ self.addEventListener('activate', e => {
 const isShell = url => url.pathname === '/' || url.pathname === '/index.html';
 // Worth having offline, but the page still works without it.
 const isData = url => /\.(json|png|jpe?g|svg|webp|ico)$/i.test(url.pathname);
+// The Game Tracker's tools (tracker-<hash>.js): named by their contents, so a copy never goes stale. Cache first.
+const isTracker = url => /\/tracker-[0-9a-f]+\.js$/.test(url.pathname);
 
 async function fromNet(req, cacheName, ms, fresh){
   const ctrl = new AbortController(), t = setTimeout(() => ctrl.abort(), ms);
@@ -48,6 +50,10 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;                       // sign-in and saving are never cached
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;        // Firestore, Google, anything off this site: straight through
+  if (isTracker(url)) return e.respondWith((async () => {
+    const hit = await caches.match(req, {ignoreSearch:true});
+    return hit || await fromNet(req, SHELL, 15000) || new Response('', {status:504, statusText:'Offline'});
+  })());
   const shell = isShell(url), data = !shell && isData(url);
   if (!shell && !data) return;
   e.respondWith((async () => {

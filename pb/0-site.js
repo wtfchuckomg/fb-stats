@@ -8,6 +8,8 @@
    ================================================================ */
 const SITE = '__SITE__';
 const SITE_AV = SITE === 'avctl';
+// The scorer's tools (shorthand, voice, imports, the spreadsheet) are a file of their own, named by build.py.
+const TRACKER_JS = '__TRACKER__';
 const SITE_NAME = SITE_AV ? 'Ark Valley Chisholm Trail League statistics and leaders' : 'Kansas Media Stats';
 const SITE_TITLE = SITE_AV ? 'AVCTL Stats' : 'Kansas Media Stats';   // after the page's own name in a tab's title
 // Where the nightly files (season.json, stats.json, schedules, logos, game snapshots) live: stats/KMR builds

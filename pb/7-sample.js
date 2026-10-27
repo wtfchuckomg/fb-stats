@@ -36,7 +36,18 @@ else if (TEAM_PAGE) startTeamPage();    // ?teams, ?team=<name>: the schools, an
 // ?edit=<id> is the scorer coming back to their own game, and wins over ?game= — the preview page forwards both.
 else if (SCHOOL_CAST) startSchoolCast(SCHOOL_CAST);   // ?gamecast=<school>: that school's current game, for embedding
 else if (LIVE_ID && !new URLSearchParams(location.search).has('edit')) startViewer(LIVE_ID); // a shared link: watch that game, read-only
-else {
+else loadTracker(startTracker);   // the Game Tracker: its tools first, then the game
+
+// The Game Tracker's tools come in their own file (build.py), so no fan's visit downloads them.
+function loadTracker(then){
+  if (typeof parseQuick === 'function') return then();
+  const s = document.createElement('script');
+  s.src = TRACKER_JS;
+  s.onload = then;
+  s.onerror = () => document.body.insertAdjacentHTML('afterbegin', '<p style="margin:0;padding:14px 16px;background:#FDECEC;color:#8A1C2B;font:600 15px/1.4 var(--sans)">The Game Tracker didn’t load. Check your signal, then reload the page.</p>');
+  document.head.appendChild(s);
+}
+function startTracker(){
   load();
   if (db.games.sample && db.games.sample.sample !== 2) db.games.sample = sampleGame();
   seedTeamLibrary();
@@ -72,3 +83,9 @@ startEmbed();   // ?embed=1: whatever page this is, it is inside someone else's
 if ('serviceWorker' in navigator && !EMBEDDED && window.isSecureContext){
   addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
 }
+// A scorer's phone (games kept here, or signed in on the tracker) fetches the tracker's file on every page, so sw.js
+// has this build's copy when the next game is at a field with no signal.
+try {
+  if (!EMBEDDED && (localStorage.getItem('pressbox.v1') || localStorage.getItem('pressbox.scorer')))
+    addEventListener('load', () => setTimeout(() => fetch(TRACKER_JS).catch(() => {}), 2500));
+} catch (e) {}

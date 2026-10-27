@@ -86,6 +86,11 @@ PARTS_JS = [
     '7-sample.js',       # the sample game, then boot. Always last.
 ]
 
+# The scorer's tools, which no fan's visit runs: they go out as a file of their own, tracker-<hash>.js, that the
+# Game Tracker loads before it starts (7-sample.js, loadTracker) and a scorer's phone fetches ahead so sw.js has it
+# at a field with no signal (Chuck, 2026-10-27). They still share the one scope, and load after every other part.
+TRACKER_JS = ['4b-quick.js', '4c-voice.js', '36-turbo.js', '36b-hudl.js', '12-xlsx.js']
+
 # Anything declared at the top level of a part (column 0) shares one scope with
 # every other part.
 TOP_LEVEL = re.compile(r'^(?:async\s+)?(?:function|const|let|var|class)\s+([A-Za-z_$][\w$]*)')
@@ -121,9 +126,12 @@ def build(site='kmr'):
             print(f'! {who} is declared at the top level of both {first} and {second}')
     page = ''.join((PB / p).read_text(encoding='utf-8') for p in PARTS_HTML)
     page = MARKED.sub(lambda m: m.group(2) if m.group(1) == site else '', page)
-    page += ''.join(text.replace("'__SITE__'", f"'{site}'") if p == '0-site.js' else text for p, text in js)
+    tracker = ''.join(text for p, text in js if p in TRACKER_JS)
+    tname = f'tracker-{hashlib.sha256(tracker.encode()).hexdigest()[:10]}.js'
+    page += ''.join(text.replace("'__SITE__'", f"'{site}'").replace("'__TRACKER__'", f"'{tname}'") if p == '0-site.js' else text
+                    for p, text in js if p not in TRACKER_JS)
     page += '</script>\n'
-    return page
+    return page, (tname, tracker)
 
 
 # Pictures the parts carry as data: addresses (the site mark, the home page art, the icons) go out as files in
@@ -159,7 +167,8 @@ def main():
     check = '--check' in sys.argv
     changed = False
     for site, folder in SITES.items():
-        page, files = pictures(build(site))
+        page, (tname, tracker) = build(site)
+        page, files = pictures(page)
         out = folder / 'index.html'
         old = out.read_text(encoding='utf-8') if out.exists() else ''
         same = old == page
@@ -173,6 +182,10 @@ def main():
         for target in (out, HERE.parent / 'index.html') if site == 'kmr' else (out,):
             target.write_text(page, encoding='utf-8')
             write_pictures(target.parent, files)
+            for old in target.parent.glob('tracker-*.js'):
+                if old.name != tname:
+                    old.unlink()
+            (target.parent / tname).write_text(tracker, encoding='utf-8')
             print('wrote', target)
         # The offline cache, stamped with this build's own hash so a new page means a new cache.
         sw = (PB / 'sw.js').read_text(encoding='utf-8').replace('__BUILD__', hashlib.sha256(page.encode()).hexdigest()[:12])
