@@ -41,6 +41,7 @@ async function startSync(){
     try { localStorage.setItem('pressbox.admin', ui.admin ? '1' : ''); localStorage.setItem('pressbox.scorer', user ? '1' : ''); } catch (e) {}
     sync.state = user ? 'saving' : 'signed-out';
     if (user) listen();
+    if (ui.admin) setTimeout(pushPrivateFinals, 4000);   // after the page has drawn
     renderSync();
   });
   addEventListener('online', () => { retryFailed(); renderSync(); });
@@ -72,6 +73,10 @@ function listen(){
       } else if (local && lu > ru) syncPush(local, 0);
       // A game saved before the scoreboard existed gets its week, so fans' scoreboards can find it.
       else if (local && !d.deleted && !d.week) syncPush(local, 0);
+      // The admin put this private game on the scoreboards once it was final: this device keeps it there too, or its
+      // next save would take it back off.
+      const cur = db.games[id];
+      if (cur && d.public && d.finalLive && !cur.share && !cur.finalLive){ cur.share = true; cur.finalLive = true; changed = true; }
     });
     if (sync.first){
       sync.first = false;

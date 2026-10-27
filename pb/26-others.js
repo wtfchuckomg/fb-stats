@@ -97,6 +97,27 @@ const scorerName = uid => `scorer ${String(uid || '').slice(0, 6)}`;
    isAdmin), so this sets the one field that decides who can see it. Nothing else about the game is touched:
    they go on keeping it, and every play they enter shows up live. The week goes in alongside, because that is
    what the scoreboards ask the database for, and a game saved before weeks existed hasn't got one. */
+// Other scorers' private games that are already final go on the scoreboards too (Chuck, 2026-10-27), each once:
+// finalLive marks it, so one the scorer or the admin takes off again stays off. Run when the admin signs in.
+async function pushPrivateFinals(){
+  if (!sync.api || !sync.user || sync.user.uid !== ADMIN_UID) return;
+  const {fsM, fsdb} = sync.api;
+  try {
+    const snap = await fsM.getDocs(fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', false)));
+    let n = 0;
+    for (const d of snap.docs){
+      const v = d.data();
+      if (v.deleted || !v.json || v.finalLive || v.owner === ADMIN_UID || v.kind) continue;
+      let x; try { x = Object.assign(JSON.parse(v.json), {id:d.id}); } catch (e) { continue; }
+      if (!x.teams || !x.teams.A || !x.teams.H || x.sample || x.finalLive) continue;
+      let fin = false; try { fin = !!summary(Object.assign({plays:[]}, x)).fin; } catch (e) {}
+      if (!fin) continue;
+      await fsM.updateDoc(fsM.doc(fsdb, 'pressbox', d.id), {public:true, finalLive:true, week:gameWeek(x)});
+      n++;
+    }
+    if (n) toast(`${n} private final${n === 1 ? '' : 's'} put on the scoreboards`);
+  } catch (e) {}
+}
 async function pushOthersLive(id){
   const o = (others.list || []).find(v => v.x.id === id);
   if (!o || !sync.api || !sync.user) return toast('That game isn’t loaded any more');

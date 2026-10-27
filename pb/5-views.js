@@ -284,7 +284,11 @@ function resetUi(){ Object.assign(ui, {type:null, draft:null, editing:null, ins:
 function refresh(){
   R = replay(g);
   // The game just went final (its last play, or End game): on to the start screen for the next one.
-  if (!ui.viewer && R.st.final && ui.seen && ui.seen.id === g.id && !ui.seen.final) ui.start = true;
+  if (!ui.viewer && R.st.final && ui.seen && ui.seen.id === g.id && !ui.seen.final){
+    ui.start = true;
+    // A private game goes on the scoreboards once it's final (Chuck, 2026-10-27), once: made private again after, it stays.
+    if (!g.share && !g.finalLive && !g.sample){ g.share = true; g.finalLive = true; save(); }
+  }
   ui.seen = {id:g.id, final:!!R.st.final};
   ui.ctx = ui.editing != null ? Object.assign(replay(g, ui.editing), {}) : R;
   $('#sample').hidden = !g.sample || !!ui.viewer;
