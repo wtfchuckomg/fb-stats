@@ -7309,8 +7309,9 @@ function parseBox(txt){
   // "RUSHING: Andover — …", "RUSHING – Winfield: …", "RUSHING—Winfield, …", "PASSING (cmp-att-yds-td-int): …",
   // "Passing: (cmp-att-yds-td-int): Douglass – …"
   const SEC = /^(RUSHING|PASSING|RECEIVING|KICKING|FIELD GOALS|MISSED FIELD GOALS|MISSED FGS?|FIELD GOAL ATTEMPTS|BLOCKED KICKS|INTERCEPTIONS|TACKLES|DEFENSE|DEFENSIVE|PUNTING|PUNT RETURNS|KICKOFF RETURNS|KICK RETURNS|FUMBLES|SACKS|TEAM STATS|TEAM STATISTICS)\b\s*[:—–-]?\s*(\([^)]*\))?\s*[:—–-]?\s*(.*)$/i;
-  // "First Quarter", "1st Qtr", "3rd Q", "3Q", "Q3", "OT".
-  const QTR = /^(?:(first|second|third|fourth|1st|2nd|3rd|4th)\s*(?:quarter|qtr|q)|([1-4])\s*(?:qtr|q)|q\s*([1-4])|(ot|overtime))\b/i;
+  // "First Quarter", "1st Qtr", "3rd Q", "3Q", "Q3", "OT", and each overtime by number: "2OT", "OT2", "Second Overtime".
+  const QTR = /^(?:(first|second|third|fourth|1st|2nd|3rd|4th)\s*(?:quarter|qtr|q)|([1-4])\s*(?:qtr|q)|q\s*([1-4])|(?:(\d)\s*(?:st|nd|rd|th)?\s*|(double|triple|second|third|fourth|fifth|sixth)\s+)?(ot|overtime)\s*(\d)?)\b/i;
+  const OTN = {double:2, second:2, triple:3, third:3, fourth:4, fifth:5, sixth:6};
   const QN = {first:1, '1st':1, second:2, '2nd':2, third:3, '3rd':3, fourth:4, '4th':4};
   // Which team a label like "And", "Hutch" or "Andover" means.
   // A typo in either spelling ("Shawnee Misison West" over "Shawnee Mission West") still names the team when most
@@ -7437,8 +7438,10 @@ function parseBox(txt){
     // "1st Quarter" as a heading, or in front of the play itself: "1st Quarter: McPherson: Becker 2 run (Hoover kick)".
     const qh = l.match(QTR);
     if (qh){
-      curQ = qh[4] ? 5 : qh[2] || qh[3] ? +(qh[2] || qh[3]) : QN[qh[1].toLowerCase()]; sec = null;
       const rest = l.slice(qh[0].length).replace(/^\s*[:—–.-]\s*/, '').trim();
+      // An overtime with no number: the first one, or the next one when it's a heading of its own under another.
+      const otn = qh[6] && (+(qh[4] || qh[7]) || OTN[String(qh[5] || '').toLowerCase()]);
+      curQ = qh[6] ? (otn ? 4 + otn : !rest && curQ >= 5 ? curQ + 1 : 5) : qh[2] || qh[3] ? +(qh[2] || qh[3]) : QN[qh[1].toLowerCase()]; sec = null;
       if (!rest) continue;
       l = rest;
     }
@@ -7737,6 +7740,14 @@ function parseBox(txt){
     const nq = Math.max(out.lines.A.length, out.lines.H.length), run = {A:0, H:0}, thru = (s, i) => out.lines[s].slice(0, i + 1).reduce((a, b) => a + (b || 0), 0);
     let q = 0;
     out.scoring.forEach(e => { run[e.side] += e.pts; while (q < nq - 1 && thru(e.side, q) < run[e.side]) q++; e.q = q + 1; });
+  }
+  // Every overtime under one "OT" heading, with a line-score column for each: split them the same way, from the
+  // regulation totals on.
+  const ncol = Math.max(out.lines.A.length, out.lines.H.length), ots = out.scoring.filter(e => e.q >= 5);
+  if (ncol > 5 && ots.length && ots.every(e => e.q === 5)){
+    const thru = (s, i) => out.lines[s].slice(0, i + 1).reduce((a, b) => a + (b || 0), 0), run = {A:thru('A', 3), H:thru('H', 3)};
+    let q = 4;
+    ots.forEach(e => { run[e.side] += e.pts; while (q < ncol - 1 && thru(e.side, q) < run[e.side]) q++; e.q = q + 1; });
   }
   ['A', 'H'].forEach((s, i) => {
     const pts = out.scoring.filter(e => e.side === s).reduce((a, e) => a + e.pts, 0);
@@ -13447,7 +13458,7 @@ function hudlText(html){
   let run = [0, 0];
   doc.querySelectorAll('.scoring-summary table').forEach(t => {
     const head = txt(t.querySelector('thead th'));
-    out.push(/over|^ot/i.test(head) ? 'OT' : head);
+    out.push(/over|^ot/i.test(head) ? (/\d/.test(head) ? head : 'OT') : head);
     t.querySelectorAll('tbody tr').forEach(tr => {
       const c = [...tr.cells]; if (c.length < 5) return;
       const kind = txt(c[1]), at = [num(txt(c[3])), num(txt(c[4]))];

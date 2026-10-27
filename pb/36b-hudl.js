@@ -62,7 +62,7 @@ function hudlText(html){
   let run = [0, 0];
   doc.querySelectorAll('.scoring-summary table').forEach(t => {
     const head = txt(t.querySelector('thead th'));
-    out.push(/over|^ot/i.test(head) ? 'OT' : head);
+    out.push(/over|^ot/i.test(head) ? (/\d/.test(head) ? head : 'OT') : head);
     t.querySelectorAll('tbody tr').forEach(tr => {
       const c = [...tr.cells]; if (c.length < 5) return;
       const kind = txt(c[1]), at = [num(txt(c[3])), num(txt(c[4]))];
