@@ -321,7 +321,7 @@ function replay(g, upto = g.plays.length){
     bump(pl(h1, f.by), f.lost ? 'fr' : 'ofr'); if (f.ff) bump(pl(other(cs), f.ff), 'ff');
     tags.push(['to', 'Fumble']);
     if (f.lost && st.drive && st.drive.team === cs) closeDrive('Fumble', p1);
-    let txt = ` ${f.lost ? 'FUMBLE' : 'Fumble'}, recovered by ${f.by ? nm(h1, f.by) : ab(h1)} at the ${yl(cs, p1)}`;
+    let txt = ` ${f.lost ? 'FUMBLE' : 'Fumble'}${f.ff ? ` forced by ${nm(other(cs), f.ff)}` : ''}, recovered by ${f.by ? nm(h1, f.by) : ab(h1)} at the ${yl(cs, p1)}`;
     const from = h1 === cs ? p1 : FL - p1, ry = +f.ry || 0, end = clamp(from + ry, 0, FL);
     if (ry){ leg('run', h1, from, end); txt += `, ${ry > 0 ? 'returned ' + plural(ry, 'yard') : 'back ' + plural(-ry, 'yard')} to the ${yl(h1, end)}`; }
     txt += '.';
@@ -340,7 +340,7 @@ function replay(g, upto = g.plays.length){
     if (f.ff) bump(pl(other(cs), f.ff), 'ff');
     const adv = end != null ? +f.ry || 0 : 0;
     if (adv) leg('run', cs, end, clamp(end + adv, 0, FL));
-    return ` Fumble, recovered by ${f.by ? nm(cs, f.by) : f.self ? nm(cs, cn) : ab(cs)}${f.at && end != null ? ` at the ${yl(cs, end)}` : ''}${adv ? `, ${adv > 0 ? 'advanced ' + plural(adv, 'yard') : 'lost ' + plural(-adv, 'yard')} to the ${yl(cs, clamp(end + adv, 0, FL))}` : ''}.`;
+    return ` Fumble${f.ff ? ` forced by ${nm(other(cs), f.ff)}` : ''}, recovered by ${f.by ? nm(cs, f.by) : f.self ? nm(cs, cn) : ab(cs)}${f.at && end != null ? ` at the ${yl(cs, end)}` : ''}${adv ? `, ${adv > 0 ? 'advanced ' + plural(adv, 'yard') : 'lost ' + plural(-adv, 'yard')} to the ${yl(cs, clamp(end + adv, 0, FL))}` : ''}.`;
   }
 
   /* ---- penalties ---- */

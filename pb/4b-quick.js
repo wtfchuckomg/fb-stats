@@ -99,6 +99,8 @@ function plainWords(line){
     .replace(new RegExp(`\\b(?:intercepted|picked off|picked)\\s+by\\s+${who}${num}`, 'g'), (m, w, n) => ` ${keep(w)}int ${n} `)
     // "recovered by indy 31" → rec indy31 (a team-lettered number is the recoverer)
     .replace(new RegExp(`\\b(?:recovered|recovers|recovery)\\s+by\\s+${who}${num}`, 'g'), (m, w, n) => team(w) ? ` rec ${w}${n} ` : ` rec ${keep(w)}${n} `)
+    // who knocked it loose (always the defense): "forced by 44", "caused by indy 44" → ff 44
+    .replace(new RegExp(`\\b(?:forced|caused)(?:\\s+(?:it|the\\s+fumble))?\\s+(?:by\\s+)?(?:the\\s+)?${who}${num}`, 'g'), (m, w, n) => ` ${keep(w)}ff ${n} `)
     .replace(new RegExp(`\\breturned\\s+by\\s+${who}${num}`, 'g'), (m, w, n) => team(w) ? ` ${w}${n} return ` : ` ${keep(w)}${n} return `)
     // passes: "passes to 88", "throws a pass to aug 88", "complete to 88" → 88
     .replace(new RegExp(`\\b(?:complete[sd]?|throws?|threw|pass(?:es|ed)?|hits|finds|found|connects with)(?:\\s+(?:a|the))?(?:\\s+pass)?\\s+(?:to\\s+)?${who}${num}`, 'g'),
@@ -268,7 +270,7 @@ function parseQuick(raw, st){
     if (fum && !p.fum && (p.t === 'ko' || p.t === 'punt')){
       if (p.res !== 'ret') return bad('Say the return first, then the fumble: punt 40 returned 10 fum ' + L(O) + ' rec 31.');
       p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self ? {self:true} : {}),
-               ...(fum.at ? {at:fum.at} : {}), ...(fum.lost && fum.tdLine ? {td:true} : {}), ...(fum.ez ? {ez:true} : {}), ry:fum.ry};
+               ...(fum.at ? {at:fum.at} : {}), ...(fum.lost && fum.tdLine ? {td:true} : {}), ...(fum.ez ? {ez:true} : {}), ...(fum.ff ? {ff:fum.ff} : {}), ry:fum.ry};
     }
     if (pen){
       // The flag's yard line counts from whoever has the ball once the play is over: the receiving team after a
@@ -315,6 +317,15 @@ function parseQuick(raw, st){
         if (!endSpot) return {err:`Say where the ball ended up, like ball on ${L(D)}24.`};
         ft = ft.slice(0, bi);
       }
+      // "ff 44" or "ff44": who forced it, always a man on the other side from the carrier.
+      let ff = null;
+      const fk = ft.findIndex(t => t === 'ff' || /^ff\d+$/.test(t));
+      if (fk >= 0){
+        const own = ft[fk].slice(2), nx = ft[fk + 1], sp = nx != null && spotOf(nx);
+        if (own){ ff = own; ft = ft.slice(0, fk).concat(ft.slice(fk + 1)); }
+        else if (nx != null && (isNum(nx) || sp)){ ff = sp ? String(sp.n) : nx; ft = ft.slice(0, fk).concat(ft.slice(fk + 2)); }
+        else return {err:'Who forced it? Put his number after ff, like ff 44.'};
+      }
       // "A31" is team A's #31 recovering; a bare "A" is just the team.
       const who = ft.map(spotOf).find(Boolean), fn = ft.filter(isNum);
       // "recovered it himself": the man who dropped it fell on it, so it stays with the offense.
@@ -327,7 +338,7 @@ function parseQuick(raw, st){
       // "fumbles out of the end zone". Only when no one is named as recovering it.
       const ez = ft.includes('tb') || ((ft.includes('end') && ft.includes('zone')) && !who && !fn.length);
       return {lost, by, ry:Math.abs(+(adv || 0)), td:lost && tdLine, endSpot, at:recAt, self:selfRec && by == null,
-              rs:who ? who.side : ft.map(T).find(Boolean) || null, selfRec, tdLine, ...(ez ? {ez:true} : {})};
+              rs:who ? who.side : ft.map(T).find(Boolean) || null, selfRec, tdLine, ...(ez ? {ez:true} : {}), ...(ff ? {ff} : {})};
     };
     fum = readTail(ft, carrier);
     if (fum.err) return bad(fum.err);
@@ -668,7 +679,7 @@ function parseQuick(raw, st){
       }
     }
     if (fum.td) ry = at;                     // the recovering team runs it back the whole way
-    p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self ? {self:true} : {}), ...(fum.at ? {at:fum.at} : {}), ...(fum.td ? {td:true} : {}), ...(fum.ez ? {ez:true} : {}), ry, ...(fum.then ? {endLost:!!fum.endLost, then:slim(fum.then)} : {})};
+    p.fum = {lost:fum.lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self ? {self:true} : {}), ...(fum.at ? {at:fum.at} : {}), ...(fum.td ? {td:true} : {}), ...(fum.ez ? {ez:true} : {}), ...(fum.ff ? {ff:fum.ff} : {}), ry, ...(fum.then ? {endLost:!!fum.endLost, then:slim(fum.then)} : {})};
     return p;
   };
   /* ---- a lateral: "8-5 lateral 11-35" is #8 for 5, then #11 for 35 more ---- */
@@ -719,7 +730,7 @@ function parseQuick(raw, st){
       }
       if (fum.tdLine) ry = FL - recPos;
       p.fum = {lost, ...(fum.by != null ? {by:fum.by} : {}), ...(fum.self || (fum.selfRec && fum.by == null) ? {self:true} : {}), ...(fum.ez ? {ez:true} : {}),
-        ...(fum.at ? {at:fum.at} : {}), ry};
+        ...(fum.at ? {at:fum.at} : {}), ...(fum.ff ? {ff:fum.ff} : {}), ry};
     }
     return flag(p);
   }
@@ -765,6 +776,7 @@ function cheatHtml(a, h){
     [`7-int-24-${h}10-12 &nbsp;·&nbsp; 7-int-24-td &nbsp;·&nbsp; 7-int-24-ez`, 'Returned 12 yards / returned for a touchdown / picked off in the end zone (a touchback if not returned)'],
     [`7-int-24-${h}10-${h}40 fum ${a} rec 22`, `Picked off, returned to the ${h} 40, then fumbled; ${a}'s #22 recovers and the ball goes back to ${a}. Add td if the recovery was run in.`],
     [`5-5-fum-rec-${h}31-1`, `#5 runs for 5 and fumbles; ${h}'s #31 recovers and advances 1. Just fum ${h} rec if you don't know who.`],
+    [`5-5-fum ff 44 ${h} rec 31`, `Add ff and a number for who forced it (or say forced by 44). It always goes to the defense.`],
     [`5-5-fum-rec-${h}10 ball on ${a}24`, 'Same, with the advance worked out from where the next snap is.'],
     ['22--5 fum tb', 'Fumbled out of bounds beyond a goal line, nobody on it: a touchback through their end zone, a safety out of your own.'],
     [`10-0 fum ${h} rec td`, `Fumble, ${h} recovers and returns it for a touchdown.`],
