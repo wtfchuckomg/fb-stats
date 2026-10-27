@@ -68,7 +68,7 @@ function schoolPicker(id, value, label){
 // Every place a school's logo might be, best first: the logo map (checked ahead of time across the three sites),
 // then the logo lists, then, for a school neither knows, its own name in this site's logos folder. An address
 // that failed to load once is skipped from then on.
-const LOGO_MISS = new Set();
+const LOGO_MISS = new Set(), LOGO_GUESS = new Set();
 const STATS_LOGOS = 'https://stats.kansasmediarankings.com/logos/';
 function logoUrls(team){
   if (!team) return [];
@@ -81,7 +81,10 @@ function logoUrls(team){
       if (hit) out.push(src.base + encodeURIComponent(hit.file));   // some file names have spaces
     });
   }
-  if (!out.length && team.name) out.push(STATS_LOGOS + encodeURIComponent(String(team.name).trim()) + '.png', STATS_LOGOS + logoSlug(team.name) + '.png');
+  if (!out.length && team.name){
+    const guesses = [STATS_LOGOS + encodeURIComponent(String(team.name).trim()) + '.png', STATS_LOGOS + logoSlug(team.name) + '.png'];
+    guesses.forEach(u => LOGO_GUESS.add(u)); out.push(...guesses);
+  }
   return [...new Set(out)].filter(u => !LOGO_MISS.has(u));
 }
 // A logo that won't load gives way to the next place it might be, then to the monogram: never a broken image.
@@ -99,7 +102,8 @@ function teamMark(s, size){ return markFor(g.teams[s], size); }
 function markFor(t, size){
   let [url, ...alts] = logoUrls(t);
   // The small copy first, and the full logo behind it if the copy isn't there yet.
-  if (url && size <= 56){ const sm = smallLogo(url); if (sm !== url){ alts.unshift(url); url = sm; } }
+  // Not for a school with no logo on file, whose addresses are only guesses at its name: a guess is enough misses.
+  if (url && size <= 56 && !LOGO_GUESS.has(url)){ const sm = smallLogo(url); if (sm !== url){ alts.unshift(url); url = sm; } }
   const txt = String(t.abbr || t.name || '?').slice(0, size >= 40 ? 4 : 3);
   const fs = Math.max(8, Math.round(size * (txt.length > 3 ? .28 : .36)));
   const mono = hide => `<span class="tmono" aria-hidden="true"${hide ? ' hidden' : ''} style="--tc:${esc(t.color)};width:${size}px;height:${size}px;font-size:${fs}px">${esc(txt)}</span>`;
