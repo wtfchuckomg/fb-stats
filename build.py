@@ -77,6 +77,7 @@ PARTS_JS = [
     '34-player.js',     # ?player=<name>&team=<school>: one player's stats and game log
     '35-bracket.js',
     '36-turbo.js',    # importing a TurboStats gamecast as real plays    # ?bracket=4A: where the playoff bracket stands, seeded the KSHSAA way
+    '36b-hudl.js',      # a Hudl box score by its link, read as a pasted one
     '37-avhome.js',      # AVCTLstats.com's front page: leaders and the four divisions
     '39-phistory.js',
     '40-matchup.js',    # ?matchup: any two schools, played 1,000 times (State › Matchup Calculator)   # ?brackets=<year>&class=<c>: every playoff bracket since 1969 (State › Playoff History)

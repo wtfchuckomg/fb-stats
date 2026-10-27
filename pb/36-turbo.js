@@ -331,18 +331,25 @@ const turbo = {busy:false, msg:'', ok:null};
 function turboBlock(){
   if (!sync.user || sync.user.uid !== ADMIN_UID) return '';   // the admin's own tool, like the Others list
   const note = turbo.msg ? `<p class="hint"${turbo.ok === false ? ' style="color:var(--flag-ink)"' : ''}>${esc(turbo.msg)}</p>` : '';
-  return `<div class="grp"><h3>Import a gamecast</h3>
+  return `<div class="grp"><h3>Import a game</h3>
     <div class="acct"><div style="flex:1;min-width:0">
-      <p class="hint">Paste the link to a TurboStats gamecast (turbogamecast.com) and its play-by-play comes in as a game of its own — gamecast, box score, drive chart and every player's stats, worked out here from the plays. It goes on the scoreboards straight away; the Share window takes it back off.</p>
-      <input class="inp" id="tg-link" placeholder="https://turbogamecast.com/football/webcast/…" autocomplete="off" spellcheck="false"></div>
+      <p class="hint">Paste a TurboStats gamecast link (its whole play-by-play comes in) or a Hudl box score link (the box score comes in). It goes on the scoreboards straight away; the Share window takes it back off.</p>
+      <input class="inp" id="tg-link" placeholder="turbogamecast.com or hudl.com link" autocomplete="off" spellcheck="false"></div>
       <button class="btn small primary" data-turbo="go"${turbo.busy ? ' disabled' : ''}>${turbo.busy ? 'Reading…' : 'Import'}</button></div>
     ${note}</div>`;
 }
 async function turboImport(){
   const el = $('#tg-link'), link = el ? el.value.trim() : '';
-  if (!link) return toast('Paste the gamecast link first');
+  if (!link) return toast('Paste the link first');
   turbo.busy = true; turbo.msg = ''; turbo.ok = null; redrawGames();
   try {
+    if (isHudl(link)){
+      const {game, p} = await hudlImport(link), A = game.teams.A, H = game.teams.H;
+      turbo.ok = !p.warn.length;
+      turbo.msg = `${A.name} ${p.total.A} at ${H.name} ${p.total.H} — the Hudl box score.${p.warn.length ? ' ' + p.warn.join(' ') : ''} It’s live on the scoreboards.`;
+      turbo.busy = false; return;
+    }
+    if (!turboId(link)) throw new Error('That isn’t a TurboStats or Hudl link.');
     const {id, feed} = await turboFetch(link);
     const {game, skipped} = await turboGame(feed, id);
     if (!game.plays.filter(p => PLAY_KINDS.includes(p.t)).length) throw new Error('That gamecast hasn’t got any plays in it yet.');

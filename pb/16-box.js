@@ -733,10 +733,11 @@ function dlgBox(){
     <div class="fld"><label class="eyebrow" for="bx-date">Game date</label><input class="inp" type="date" id="bx-date" value="${date}"></div></div>
     <div class="dlg-ft"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" data-box-save>Save box score</button></div>`;
 }
-function saveBox(){
-  const txt = $('#bx-txt').value, p = parseBox(txt);
+// From the window, or handed the text by an import (a Hudl link): {txt, date, extra}.
+function saveBox(given){
+  const txt = given ? given.txt : $('#bx-txt').value, p = parseBox(txt);
   if (!p.ok) return toast(p.error || 'Couldn’t read that box score');
-  const dv = $('#bx-date').value;
+  const dv = given ? given.date || '' : $('#bx-date').value;
   // Opened from a card, that card; otherwise the scheduled game or quick score it matches, if there is one.
   const from = ui.boxGame ? null : ui.boxFrom ? qsLib()[ui.boxFrom] : boxMatch(p, dv);
   // Pasting again for the same game updates the earlier box score rather than adding a second game.
@@ -759,12 +760,12 @@ function saveBox(){
   const typed = /^\d{4}-\d\d-\d\d$/.test(dv) ? dv : ymd(new Date());
   // A date changed by hand in the window always wins (Chuck, 2026-10-17: Augusta-Mulvane kept going back to the
   // earlier box score's Thursday though he had set Friday).
-  const touched = dv && dv !== ($('#bx-date') || {}).defaultValue;
+  const touched = !given && dv && dv !== ($('#bx-date') || {}).defaultValue;
   const date = ui.boxGame || ui.boxFrom || touched ? typed : (from && from.date) || (old && old.date) || typed;
   const box = {lines:p.lines, total:p.total, scoring:p.scoring.map(({side, how, pts, desc, q}) => ({side, how, pts, desc, q})), pl:p.pl, team:p.team, src:txt, ...(p.stage ? {stage:p.stage} : {})};
   // A new one goes on everyone's scoreboard, where its Box Score opens.
   const x = old || {id:'g' + Date.now().toString(36), created:Date.now(), set:{qtr:12, men:11, firstKick:'H'}, plays:[], clk:{s:0, run:false, at:0}, share:true};
-  Object.assign(x, {teams:{A:team('A'), H:team('H')}, date, box, updated:Date.now()});
+  Object.assign(x, {teams:{A:team('A'), H:team('H')}, date, box, updated:Date.now()}, given && given.extra || {});
   db.games[x.id] = x; persist(); syncPush(x, 0);
   closeDialog();
   // Show the week it went into, in case that isn't the week on screen.
@@ -774,6 +775,7 @@ function saveBox(){
   if (!busy){ g = x; resetUi(); ui.tab = 'box'; setCurrent(); refresh(); scrollTo({top:0, behavior:'smooth'}); }
   else renderScores();
   toast(`Box score ${replaced ? 'updated' : 'saved'} in ${weekLabel(wk)}: ${x.teams.A.abbr} ${p.total.A}, ${x.teams.H.abbr} ${p.total.H}${busy ? '. Tap its card to see it.' : ''}`);
+  return x;
 }
 // Edit on a box-score game opens its box score, pasted text and all: the Edit button on the game's own page, or
 // Edit in the scorer's menu (Chuck, 2026-10-19). Only on Edit — never just for opening the game.
@@ -791,7 +793,7 @@ document.addEventListener('click', e => {
   if ('statboxOpen' in d) return openDialog('statbox');
   if ('statboxSave' in d) return saveStatBox(false);
   if ('statboxClear' in d) return saveStatBox(true);
-  if ('boxSave' in d) return saveBox();
+  if ('boxSave' in d) return void saveBox();
 });
 document.addEventListener('input', e => { if (e.target.id === 'bx-txt' || e.target.id === 'bx-date') $('#bx-prev').innerHTML = boxPreview(parseBox($('#bx-txt').value)); });
 document.addEventListener('input', e => { if (e.target.id === 'sb-txt') $('#sb-prev').innerHTML = statBoxPreview(e.target.value); });
