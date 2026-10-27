@@ -49,7 +49,7 @@ function othersRow(o){
   return `<div class="gitem"><div><b>${esc(A.abbr || A.name)} ${m.pre ? '' : m.score.A} at ${esc(H.abbr || H.name)} ${m.pre ? '' : m.score.H}</b>`
     + `<span class="cur-tag"${o.shared ? '' : ' style="color:var(--flag-ink)"'}>${o.shared ? 'Shared' : 'Not shared'}</span>
     <div class="meta">${esc(A.name)} at ${esc(H.name)} · ${gameDay(x).toLocaleDateString()} · ${esc(m.status)} · ${how} · scorer ${esc(o.owner.slice(0, 6))} · updated ${agoText(o.updated)}</div></div>
-    <div class="acts">${watch}${edit}${live}</div></div>`;
+    <div class="acts">${watch}${edit}${live}<button class="btn small danger" data-odel="${esc(x.id)}">${ui.confirm === 'o:' + x.id ? 'Tap again' : 'Delete'}</button></div></div>`;
 }
 function dlgOthers(){
   let body;
@@ -117,6 +117,29 @@ async function pushPrivateFinals(){
     }
     if (n) toast(`${n} private final${n === 1 ? '' : 's'} put on the scoreboards`);
   } catch (e) {}
+}
+/* Deleting another scorer's game (Chuck, 2026-10-27: old games "just sitting, taking up space"). The rules let the
+   admin update a scorer's document but not remove it, so it's emptied and marked deleted, the way a scorer's own
+   Delete does it: off every scoreboard and list, and their devices drop it too. */
+async function deleteOthersGame(id){
+  if (ui.confirm !== 'o:' + id){ ui.confirm = 'o:' + id; dlg().innerHTML = dlgOthers(); return; }
+  ui.confirm = null;
+  if (!sync.api || !sync.user) return toast('Sign in first');
+  try {
+    const {fsM, fsdb} = sync.api;
+    await fsM.updateDoc(fsM.doc(fsdb, 'pressbox', id), {deleted:true, json:'', public:false, updated:Date.now()});
+    if (db.games[id] && db.games[id].foreign){
+      delete db.games[id];
+      if (g && g.id === id){ g = newestGame() || sampleGame(); resetUi(); ui.start = idleGame(g); }
+      setCurrent(); refresh();
+    }
+    toast('Game deleted');
+  } catch (e) {
+    toast(String((e && e.code) || '').includes('permission')
+      ? 'The database wouldn’t allow that. Publish the updated rules (fb stats/firestore.rules), then try again.'
+      : 'Couldn’t delete that game. Check your connection and try again.');
+  }
+  if (ui.dlg === 'others' && dlg().open) dlg().innerHTML = dlgOthers();
 }
 async function pushOthersLive(id){
   const o = (others.list || []).find(v => v.x.id === id);
@@ -189,6 +212,8 @@ document.addEventListener('click', e => {
   if (a) return adoptGame(a.dataset.adopt);
   const L = e.target.closest && e.target.closest('[data-golive]');
   if (L) return void pushOthersLive(L.dataset.golive);
+  const X = e.target.closest && e.target.closest('[data-odel]');
+  if (X) return void deleteOthersGame(X.dataset.odel);
   const b = e.target.closest && e.target.closest('[data-foreign]'); if (!b) return;
   if (b.dataset.foreign === 'save') return saveForeign(ui.confirm === 'foreign');
   if (b.dataset.foreign === 'drop') return dropForeign();
