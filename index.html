@@ -4809,10 +4809,14 @@ function logoMiss(img){
   else { img.nextElementSibling.hidden = false; img.remove(); }
 }
 const logoUrl = team => logoUrls(team)[0] || '';
+// This site's own logos have a small copy in logos/sm (.github/logos_sm.py), for anything shown 56 pixels or less.
+const smallLogo = u => String(u).replace(/^((?:https:\/\/stats\.kansasmediarankings\.com\/)?logos\/)(?!sm\/)([^/]+\.png)$/i, '$1sm/$2');
 function teamMark(s, size){ return markFor(g.teams[s], size); }
 // Any team's mark, for places that show other games (the scoreboard).
 function markFor(t, size){
-  const [url, ...alts] = logoUrls(t);
+  let [url, ...alts] = logoUrls(t);
+  // The small copy first, and the full logo behind it if the copy isn't there yet.
+  if (url && size <= 56){ const sm = smallLogo(url); if (sm !== url){ alts.unshift(url); url = sm; } }
   const txt = String(t.abbr || t.name || '?').slice(0, size >= 40 ? 4 : 3);
   const fs = Math.max(8, Math.round(size * (txt.length > 3 ? .28 : .36)));
   const mono = hide => `<span class="tmono" aria-hidden="true"${hide ? ' hidden' : ''} style="--tc:${esc(t.color)};width:${size}px;height:${size}px;font-size:${fs}px">${esc(txt)}</span>`;
