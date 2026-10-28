@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "type": "rich",
+  "provider_name": "Kansas Media Stats",
+  "provider_url": "https://stats.kansasmediarankings.com",
+  "title": "Wellington 7th grade at Rose Hill 7th Grade",
+  "width": 700,
+  "height": 1000,
+  "cache_age": 86400,
+  "html": "<iframe src=\"https://stats.kansasmediarankings.com/?game=gmu5zd6jr&amp;embed=1\" width=\"700\" height=\"1000\" frameborder=\"0\" scrolling=\"yes\" title=\"Wellington 7th grade at Rose Hill 7th Grade - Kansas Media Stats\"></iframe>"
+}
