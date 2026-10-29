@@ -11778,16 +11778,15 @@ function bkAdvance(slots){
    better seed at home, on that round's Friday; State is on the 27th. Not yet played only — a final is a real game
    already. A game anyone enters, or KPreps lists, for the same two schools that week takes its place. */
 const BK_ROUND_DAYS = ['2026-10-30', '2026-11-06', '2026-11-13', '2026-11-20', '2026-11-27'];
-// Week 9 games on Thursday the 29th, by a school in them (Chuck, 2026-10-24), and the two played away from either school.
-const BK_THURSDAY = new Set(['Olathe North', 'Olathe Northwest', 'Salina Central', 'Spring Hill', 'Otis-Bison', 'Marais des Cygnes Valley',
-  'Centre', 'Logan', 'Sylvan-Lucas Unified', 'Thunder Ridge', 'Quinter', 'Marmaton Valley', 'Axtell', 'Flinthills', 'Hoxie', 'Hill City',
-  'Washington County', 'Silver Lake', 'Sabetha'].map(canonSchool));
+// Week 9 games on Thursday the 29th, by a school in them: KPreps' "Thursday Games" list, checked 2026-10-29 (52 games),
+// and the two played away from either school.
+const BK_THURSDAY = new Set(['Abilene', 'Altoona-Midway', 'Andover Central', 'Ashland', 'Attica-Argonia', 'Axtell', 'BV West', 'Beloit', 'Bennington', 'Bluestem', 'Caney Valley', 'Canton-Galva', 'Cedar Vale-Dexter', 'Central Burden', 'Central Plains', 'Centralia', 'Centre', 'Chase', 'Chase County', 'Cherryvale', 'Cheylin', 'Clifton-Clyde', 'Conway Springs', 'Cunningham', 'Decatur', 'Deerfield', 'Dighton', 'Elkhart', 'Ell-Saline', 'Ellis', 'Erie', 'Flinthills', 'Gardner Edgerton', 'Hanover', 'Hartford', 'Highland Park', 'Hill City', 'Hodgeman County', 'Hoxie', 'Hutch Central Christian', 'Jackson Heights', 'Jayhawk-Linn', 'Kiowa County', 'Lakeside', 'Lebo', 'Lincoln', 'Linn', 'Little River', 'Logan', 'Lyndon', 'Madison', 'Marais des Cygnes Valley', 'Marmaton Valley', 'Meade', 'Minneola', 'Moscow', 'Neodesha', 'Ness City', 'Northeast-Arma', 'Norwich', 'Olathe East', 'Olathe North', 'Olathe Northwest', 'Olpe', 'Osborne', 'Oswego', 'Otis-Bison', 'Oxford', 'Pleasant Ridge', 'Pleasanton', 'Quinter', 'Rawlins County', 'Remington', 'Rock Creek', 'Sabetha', 'Salina Central', 'Sedan', 'Silver Lake', 'Solomon', 'South Central', 'South Gray', 'South Sumner', 'Southeast (Cherokee)', 'Southern Coffey County', 'Southwestern Heights', 'Spearville', 'Spring Hill', 'St John\'s', 'Stanton County', 'Sylvan-Lucas Unified', 'Thomas More Prep', 'Thunder Ridge', 'Turner', 'WaKeeney-Trego', 'Wakefield', 'Wallace County', 'Wamego', 'West Franklin', 'Western Plains', 'Wheatland-Grinnell', 'Wichita County', 'Winona-Triplains', 'Wyandotte', 'Yates Center'].map(canonSchool));
 const BK_SITES = {'olathe-north':'ODAC', 'olathe-northwest':'CBAC'};
 // The same days and sites on KPreps' copy of a week-9 game (schedule.json lists them all on the Friday).
 function bkWeek9Fix(x){
   if (!/^2026-10-(29|30)$/.test(x.date || '')) return x;
   const ks = [canonSchool(x.teams.A.name), canonSchool(x.teams.H.name)], site = ks.map(k => BK_SITES[k]).find(Boolean);
-  if (ks.some(k => BK_THURSDAY.has(k))) x.date = '2026-10-29';
+  x.date = ks.some(k => BK_THURSDAY.has(k)) ? '2026-10-29' : '2026-10-30';
   if (site) x.site = site;
   return x;
 }
