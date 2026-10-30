@@ -78,7 +78,10 @@ function listen(){
       const cur = db.games[id];
       if (cur && d.public && d.finalLive && !cur.share && !cur.finalLive){ cur.share = true; cur.finalLive = true; changed = true; }
     });
-    if (sync.first){
+    // Only the database's own answer says which games it has. The first answer can come from the browser's copy,
+    // holding only the games other parts of the page happened to read, and taking that for the whole list sent
+    // every game on this device up again on each visit: 206 at once on Chuck's laptop, which froze the page.
+    if (sync.first && !snap.metadata.fromCache){
       sync.first = false;
       // Games made on this device before signing in go up to the account.
       const remoteIds = new Set(snap.docs.map(x => x.id));
