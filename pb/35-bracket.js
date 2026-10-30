@@ -639,8 +639,15 @@ function bkFullHtml(eastSlots, westSlots){
     for (let r = 0; r < 4; r++){ const {next, games} = bkAdvance(cur); cols.push({slots:cur, games}); cur = next; }
     return {cols, champ:cur[0] || null}; };
   const E = side(eastSlots), W = side(westSlots);
+  // The round being played is the wide one, with seeds and full names; the rest are narrow (Chuck, 2026-10-30: "after
+  // the first round, shrink the first round and make the current round the primary round"). A round is done when
+  // every pairing in it, both sides, has a final (a bye needs none).
+  const done = c => c.games.every((gm, i) => gm || (c.slots[2 * i] || {}).bye || (c.slots[2 * i + 1] || {}).bye);
+  let cur = 0; while (cur < 3 && done(W.cols[cur]) && done(E.cols[cur])) cur++;
+  const width = r => r === cur ? 'minmax(220px,3fr)' : r < cur ? 'minmax(112px,1.4fr)' : 'minmax(72px,1fr)';   // a finished round has scores to fit
+  const grid = [0, 1, 2, 3].map(width).join(' ') + ' minmax(84px,1.1fr) ' + [3, 2, 1, 0].map(width).join(' ');
   const col = (c, r, west) => `<div class="bkf-col${west ? ' w' : ''}"><span class="bkt-h">${ROUNDS[r]}</span><div class="bkf-pairs">${c.games.map((gm, i) =>
-    bkPair(c.slots[2 * i], c.slots[2 * i + 1], bkLine(c.slots[2 * i], gm, r > 0) + bkLine(c.slots[2 * i + 1], gm, r > 0))).join('')}</div></div>`;
+    bkPair(c.slots[2 * i], c.slots[2 * i + 1], bkLine(c.slots[2 * i], gm, r !== cur) + bkLine(c.slots[2 * i + 1], gm, r !== cur))).join('')}</div></div>`;
   const fin = bkPlayed(W.champ, E.champ), state = bkPair(W.champ, E.champ, bkLine(W.champ, fin, true) + bkLine(E.champ, fin, true), ' st');
   // A phone (Chuck, 2026-10-25: "shrink it… so we can see multiple rounds at the same time"): each side's four rounds
   // across in small boxes, the logo and short name, then State under both.
@@ -648,7 +655,7 @@ function bkFullHtml(eastSlots, westSlots){
     bkPair(c.slots[2 * i], c.slots[2 * i + 1], bkLine(c.slots[2 * i], gm, true) + bkLine(c.slots[2 * i + 1], gm, true))).join('')}</div></div>`;
   const mside = (S, name) => `<div class="bkm-side"><h3>${name}</h3><div class="bkm-grid">${S.cols.map(mcol).join('')}</div></div>`;
   // West on the left, East on the right, the way they sit on a map (Chuck, 2026-10-26).
-  return `<div class="bkf">${W.cols.map((c, r) => col(c, r, false)).join('')}
+  return `<div class="bkf" style="grid-template-columns:${grid}">${W.cols.map((c, r) => col(c, r, false)).join('')}
     <div class="bkf-col st"><span class="bkt-h">State</span><div class="bkf-pairs">${state}</div></div>
     ${E.cols.map((c, r) => col(c, r, true)).reverse().join('')}</div>
     <div class="bkf-sides"><span>West</span><span>East</span></div>
