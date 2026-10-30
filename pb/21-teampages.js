@@ -64,8 +64,10 @@ function watchSince(api, built){
     const q = fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('public', '==', true), fsM.where('updated', '>', built));
     allGames.since = fsM.onSnapshot(q, snap => {
       let changed = false;
-      snap.forEach(d => {
-        const v = d.data();
+      // Only what changed: the rest are as they were, and reading every game's plays again on each save is slow.
+      snap.docChanges().forEach(ch => {
+        if (ch.type === 'removed') return;
+        const d = ch.doc, v = d.data();
         if (!v || v.public !== true) return;
         const at = allGames.list.findIndex(x => x.id === d.id);
         if (v.deleted || !v.json){ if (at >= 0){ allGames.list.splice(at, 1); changed = true; } return; }
@@ -75,7 +77,7 @@ function watchSince(api, built){
         if (at >= 0) allGames.list[at] = x; else allGames.list.push(x);
         changed = true;
       });
-      if (changed){ indexGames(); recordsChanged(); }
+      if (changed) calmly('records', () => { indexGames(); recordsChanged(); }, 4000);
     }, e => {
       // The query needs a composite index (public + updated). Until it exists, read every game the way this used
       // to: dearer, but a box score pasted for an old week still shows the moment it's saved.
@@ -94,7 +96,8 @@ function watchAllGamesLive(api){
       const v = d.data(); if (v.deleted || !v.json) return;
       try { const x = JSON.parse(v.json); if (x.teams && x.teams.A && x.teams.H) out.push(Object.assign(x, {id:d.id})); } catch (e) {}
     });
-    allGames.list = out; allGames.err = ''; indexGames(); recordsChanged();
+    allGames.list = out; allGames.err = '';
+    calmly('records', () => { indexGames(); recordsChanged(); }, 4000);
   }, () => { allGames.err = 'Can’t load the games right now. Reload to try again.'; allGames.list = allGames.list || []; renderTeamPage(); });
 }
 // Each school's games, one per week and opponent: the one with stats if there is one, else the newest copy.
@@ -120,7 +123,9 @@ function indexGames(){
   });
   allGames.idx = idx; recCache.clear();
   pushLocalScores();   // anything added on this device that never went up
-  if (bkSchedRefresh()) indexGames();   // the bracket's games changed: once more with them in
+  // The bracket's games changed: once more with them in. Only once: two versions of the bracket that each bring
+  // the other back would otherwise go round and round and freeze the page.
+  if (!indexGames.again && bkSchedRefresh()){ indexGames.again = true; try { indexGames(); } finally { indexGames.again = false; } }
 }
 const schoolRows = name => Object.values((allGames.idx && allGames.idx.get(canonSchool(name))) || {}).sort((a, b) => gameDay(a.x) - gameDay(b.x));
 // Whether a game is final and its score, worked out once per version of the game (a replay isn't free).

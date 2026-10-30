@@ -94,12 +94,13 @@ async function loadStats(api){
 function listenStats(fsM, q, onRefused){
   fsM.onSnapshot(q, snap => {
     const by = new Map((county.games || []).map(x => [x.id, x]));
-    snap.forEach(d => {
-      const v = d.data(); if (!v || v.public !== true) return;
+    snap.docChanges().forEach(ch => {
+      if (ch.type === 'removed') return;
+      const d = ch.doc, v = d.data(); if (!v || v.public !== true) return;
       if (v.deleted || v.kind === 'score' || !v.json){ by.delete(d.id); return; }
       try { const x = JSON.parse(v.json); if (x.teams && ((x.plays && x.plays.length) || x.box)) by.set(d.id, Object.assign(x, {id:d.id})); } catch (e) {}
     });
-    county.games = [...by.values()]; county.err = ''; statsArrived();
+    county.games = [...by.values()]; county.err = ''; calmly('stats', statsArrived, 4000);
   }, e => {
     if (onRefused) return onRefused(e);
     if (!county.games){ county.err = 'Can’t load the stats right now. Reload to try again.'; renderCounty(); }

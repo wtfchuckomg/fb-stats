@@ -216,6 +216,15 @@ async function toggleHide(id){
     if (!hideList.unsub) watchHidden(hideList.api);   // the first save makes the list: follow it from now on
   } catch (e) { toast('Couldn’t save that. Sign in on the Game Tracker, then try again.'); }
 }
+// On a game night every play any scorer saves comes in live, several a second across the state, and redrawing for each
+// one (a second's work on the scoreboard) left the page no time to scroll or tap: it froze (Chuck, 2026-10-30). The
+// work runs a moment after the first change and then no more than once every `gap` ms, with whatever is newest.
+function calmly(key, fn, gap){
+  const s = calmly.s || (calmly.s = {}), k = s[key] || (s[key] = {t:0, last:0});
+  k.fn = fn;
+  if (k.t) return;
+  k.t = setTimeout(() => { k.t = 0; k.last = Date.now(); k.fn(); }, Math.max(250, k.last + gap - Date.now()));
+}
 function watchWeek(key){
   if (!scores.api || scores.key === key) return;
   if (scores.unsub) scores.unsub();
@@ -225,7 +234,8 @@ function watchWeek(key){
   scores.unsub = fsM.onSnapshot(q, snap => {
     const docs = {};
     snap.forEach(x => { const d = x.data(); if (d.deleted || !d.json) return; try { docs[x.id] = JSON.parse(d.json); } catch (e) {} });
-    scores.docs = docs; scores.ready = key; renderScores(); renderScoreboard(); renderHome();
+    scores.docs = docs; scores.ready = key;
+    calmly('week', () => { renderScores(); renderScoreboard(); renderHome(); }, 2000);
   }, () => { scores.docs = {}; scores.ready = key; renderScores(); renderScoreboard(); renderHome(); });
 }
 
