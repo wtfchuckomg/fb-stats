@@ -130,7 +130,7 @@ function playsList(oldFirst = false){
     return h;
   };
   // Every play goes in a drive (Chuck, 2026-10-19, ESPN's play-by-play): a finished drive folds into one line —
-  // how it ended, plays, yards and time, the score after it — and opens on a tap. The drive under way stays open.
+  // how it ended, plays, yards and time, the score after it — and opens or folds on a tap.
   // Plays between drives: a kickoff opens the next drive, a try or the end of a quarter closes the last one.
   // Plays after the last drive with none to follow (the kickoff just recorded) stand on their own, always open.
   const D = R.drives, CK = driveClocks(), groups = D.map((d, k) => ({d, k, plays:[]})), loose = [];
@@ -167,11 +167,10 @@ function playsList(oldFirst = false){
     if (it.q !== lastQ){ h += `<div class="qhd">${qName(it.q)}</div>`; lastQ = it.q; }
     const plays = oldFirst ? it.plays : it.plays.slice().reverse();
     if (!it.gr){ h += plays.map(row).join(''); continue; }
-    const key = it.gr.d.i0, pick = ui.pbpFold && ui.pbpFold[key];
-    // The play being worked on keeps its drive open, and so, for the scorer, does the drive just finished
-    // until the next one starts (the try and the kickoff are still to come).
-    const latest = !ui.viewer && !R.st.final && it.gr === groups.filter(x => x.plays.length).slice(-1)[0];
-    const isOpen = pick != null ? pick : it.gr.d.open || latest || it.plays.some(e => e.i === ui.open);
+    const key = `${g.id}:${it.gr.d.i0}`, pick = ui.pbpFold && ui.pbpFold[key];
+    // The scorer sees every drive open and folds what they like (Chuck, 2026-10-30); anyone on a link sees them
+    // folded, all but the drive under way.
+    const isOpen = pick != null ? pick : !ui.viewer || it.gr.d.open;
     h += head(it.gr, isOpen) + (isOpen ? `<div class="pbd-plays">${plays.map(row).join('')}</div>` : '');
   }
   return `<div class="plays">${h}</div>`;
