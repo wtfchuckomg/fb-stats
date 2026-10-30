@@ -3982,16 +3982,20 @@ function playsList(oldFirst = false){
   const D = R.drives, CK = driveClocks(), groups = D.map((d, k) => ({d, k, plays:[]})), loose = [];
   const owner = [];
   D.forEach((d, k) => { if (d.i0 == null) return; const end = d.open || d.i1 == null ? R.log.length - 1 : d.i1; for (let i = d.i0; i <= end; i++) owner[i] = k; });
+  let kicked;   // where the last kickoff went; a flag before the first snap goes with it, or it lands ahead of the kick
   R.log.forEach(e => {
     if (!shown(e)) return;
     let k = owner[e.i];
-    if (k == null){
+    if (k != null) kicked = undefined;
+    else if (kicked !== undefined) k = kicked;
+    else {
       const next = D.findIndex(d => d.i0 != null && d.i0 > e.i);
       let prev = -1; D.forEach((d, j) => { if (d.i1 != null && d.i1 < e.i) prev = j; });
       // An end of quarter logged while a kickoff was due is still the end of the quarter, not a kick.
       const kick = e.t === 'ko' || (e.phase === 'kick' && !['endq', 'final', 'to', 'note'].includes(e.t));
       k = kick ? (next >= 0 ? next : null) : prev >= 0 ? prev : next >= 0 ? next : null;
       if (k === prev && next < 0 && !['try', 'endq', 'final', 'to', 'pen', 'note'].includes(e.t) && e.phase !== 'try') k = null;
+      if (kick) kicked = k;
     }
     if (k == null) loose.push(e); else groups[k].plays.push(e);
   });
