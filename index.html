@@ -251,6 +251,7 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .bw-arrow{flex:none;width:30px;height:44px;border:0;padding:0;background:none;color:var(--blue);display:grid;place-items:center;cursor:pointer}
 .bempty{margin:0;color:var(--muted);font:500 15px/1.4 var(--sans)}
 .bhead-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.bhead-top .bcls{margin:0 0 14px;align-self:center}
 .bhead-top h1{margin:0 0 14px;font:800 28px/1.1 var(--sans);letter-spacing:-.015em;color:var(--ink-2)}
 .bhead-link{color:var(--blue);font:600 14px/1 var(--sans);text-decoration:none;white-space:nowrap}
 /* ---------- county stats page (?stats) ---------- */
@@ -5707,7 +5708,7 @@ document.addEventListener('change', e => {
   if (e.target.id !== 'scweek') return;
   ui.week = e.target.value; renderScores();
   // On the scoreboard page the page below follows the strip to that week.
-  if (ui.board){ history.pushState(null, '', `?${boardParam()}=${ui.week}`); renderScoreboard(); }
+  if (ui.board){ history.pushState(null, '', boardUrl()); renderScoreboard(); }
 });
 // Tapping a score clears it for the new one, with the old one showing faintly; leave it blank to keep it.
 // (Selecting the text instead is unreliable on phones, where lifting the finger drops the selection.)
@@ -5750,7 +5751,25 @@ const boardName = () => ui.av ? 'AVCTL' : ui.state ? 'State' : 'BUCO';
 // Every game goes on the State and AVCTL boards: tracked, scored by hand or from KPreps, played or still to come.
 const onStateBoard = x => !!x;
 const SEASON_WEEKS = 13;   // nine regular-season weeks, then regionals, sectionals, sub-state and state
-const board = {err:'', seen:null};
+const board = {err:'', seen:null, cls:new URLSearchParams(location.search).get('class') || ''};
+// The State Scoreboard one class at a time (Chuck, 2026-10-30): a game is in a class when either school is.
+const BOARD_CLASSES = ['6A', '5A', '4A', '3A', '2A', '1A', '8-Man I', '8-Man II', '6-Man'];
+// Schools the poll's class lists spell another way.
+const BOARD_CLASS_AKA = {'Lakeside':'Lakeside Downs', 'Madison':'Madison/Hamilton', "St John's":"St. John's/Tipton Catholic", 'Elkhart':'Elkhart/Rolla',
+  'Skyline':'Pratt Skyline', 'Maranatha':'Maranatha Academy', 'Plainville':'Plainville/Natoma', 'Perry-Lecompton':'Perry-Lecompton/Bishop Seabury',
+  'St John':'St. John-Hudson', 'Maur Hill-Mount':'Maur Hill-Mount Academy'};
+// Its own index, made again once the school list (and with it every school's other names) has arrived: one made
+// before then only knows the names exactly as the class lists spell them.
+const boardCls = {idx:null, lib:undefined};
+function boardClassOf(n){
+  if (!boardCls.idx || boardCls.lib !== logoLib.list){
+    boardCls.lib = logoLib.list; boardCls.idx = new Map();
+    Object.entries(RANK_CLASSES).forEach(([cls, list]) => list.forEach(x => boardCls.idx.set(canonSchool(x), cls)));
+  }
+  return boardCls.idx.get(canonSchool(n)) || boardCls.idx.get(canonSchool(BOARD_CLASS_AKA[n] || '')) || null;
+}
+const inBoardClass = x => !board.cls || !ui.state || ['A', 'H'].some(s => boardClassOf(x.teams[s].name) === board.cls);
+const boardUrl = () => `?${boardParam()}=${ui.week}${board.cls && ui.state ? '&class=' + encodeURIComponent(board.cls) : ''}`;
 const seasonKeys = y => Array.from({length:SEASON_WEEKS}, (_, i) => weekKey(week1(y).getTime() + i * WEEK_MS + 3 * 864e5));
 // This week, kept inside the season: before Week 1 it opens Week 1, after the finals the last week.
 function boardDefaultWeek(){
@@ -5885,11 +5904,11 @@ function renderScoreboard(){
     <b>${esc(weekLabel(k).toUpperCase())}</b><span>${weekRange(k)}</span></button>`).join('');
   // The State Scoreboard: games with stats kept on them, and games still to come. The admin also sees hidden games, faded.
   // The league board draws on the same pool as the State board, then keeps its own schools' games.
-  const games = weekGames(key, ui.admin, ui.state || ui.av).filter(x => (!ui.state && !ui.av) ? inBuco(x) : (onStateBoard(x) && (!ui.av || inAvctl(x)))), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
+  const games = weekGames(key, ui.admin, ui.state || ui.av).filter(x => (!ui.state && !ui.av) ? inBuco(x) : (onStateBoard(x) && (!ui.av || inAvctl(x)) && inBoardClass(x))), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (board.err) body = note(board.err);
   else if (scores.ready !== key && !allGames.list) body = note('Loading scores…');
-  else if (!games.length) body = note(`No games for ${weekLabel(key)} yet.`);
+  else if (!games.length) body = note(`No ${board.cls && ui.state ? board.cls + ' ' : ''}games for ${weekLabel(key)} yet.`);
   else {
     const days = [];
     games.forEach(x => {
@@ -5906,7 +5925,8 @@ function renderScoreboard(){
     days.sort((a, b) => (b.live ? 1 : 0) - (a.live ? 1 : 0) || a.k.localeCompare(b.k));
     // The first dozen cards now, the rest as they scroll near (a State week is 160 games); the card being typed on
     // is always drawn.
-    if (board.lazyKey !== 'board|' + boardName() + '|' + key){ lazyReset(); board.lazyKey = 'board|' + boardName() + '|' + key; }
+    const lk = 'board|' + boardName() + '|' + key + '|' + board.cls;
+    if (board.lazyKey !== lk){ lazyReset(); board.lazyKey = lk; }
     let room = 12;
     body = days.map((day, di) => { const first = board.edit && day.games.some(x => x.id === board.edit.id) ? day.games.length : room;
       room = Math.max(0, room - day.games.length);
@@ -5916,7 +5936,8 @@ function renderScoreboard(){
   const old = box.querySelector('.bweeks'), keep = old ? old.scrollLeft : 0;
   const act = document.activeElement, focusId = act && box.contains(act) && act.id && act.id.startsWith('bs-') ? act.id : null;
   const adminNote = ui.admin ? `<p class="badmin">Signed in as the admin: Hide takes a game off both scoreboards, the scores strip and BUCO Stats for everyone.${ui.state ? ' Games between other schools stay hidden (they still count toward records) until you Show one.' : ''}</p>` : '';
-  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1 class="b-title">${boardName()} Scoreboard</h1></div>${adminNote}
+  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1 class="b-title">${boardName()} Scoreboard</h1>${ui.state ? `<select class="c-sel bcls" id="bcls" aria-label="Class">
+      ${['', ...BOARD_CLASSES].map(c => `<option value="${esc(c)}"${c === board.cls ? ' selected' : ''}>${c ? esc(c) : 'All classes'}</option>`).join('')}</select>` : ''}</div>${adminNote}
     <div class="bweeks-wrap"><button type="button" class="bw-arrow" data-bscroll="-1" aria-label="Earlier weeks">${chev('M9 1L1 9l8 8')}</button>
       <div class="bweeks">${tabs}</div>
       <button type="button" class="bw-arrow" data-bscroll="1" aria-label="Later weeks">${chev('M1 1l8 8-8 8')}</button></div></section>${body}`;
@@ -5931,7 +5952,7 @@ function renderScoreboard(){
 document.addEventListener('click', e => {
   if (!ui.board || !e.target.closest) return;
   const w = e.target.closest('[data-bweek]');
-  if (w){ ui.week = w.dataset.bweek; history.pushState(null, '', `?${boardParam()}=${ui.week}`); renderScores(); return renderScoreboard(); }
+  if (w){ ui.week = w.dataset.bweek; history.pushState(null, '', boardUrl()); renderScores(); return renderScoreboard(); }
   const h = e.target.closest('[data-hide]');
   if (h) return toggleHide(h.dataset.hide, !!h.dataset.opp);
   const ty = e.target.closest('[data-bscore]');
@@ -5951,6 +5972,10 @@ document.addEventListener('click', e => {
   if (e.target.closest('[data-bcancel]')){ board.edit = null; return renderScoreboard(); }
   const a = e.target.closest('[data-bscroll]');
   if (a){ const wk = $('#board .bweeks'); wk.scrollBy({left:+a.dataset.bscroll * wk.clientWidth * .7, behavior:'smooth'}); }
+});
+document.addEventListener('change', e => {
+  if (!ui.board || e.target.id !== 'bcls') return;
+  board.cls = e.target.value; history.pushState(null, '', boardUrl()); renderScoreboard();
 });
 // The final typed on a card: both boxes filled, then saved the same way as from a team page.
 function saveBoardFinal(){
@@ -12411,6 +12436,10 @@ addEventListener('popstate', () => {
   if (['all', 'scoring', 'drives'].includes(plays) && ui.pbp !== plays){ ui.pbp = plays; drew = true; }
   // A board address with no week on it means this week, so going back to it has to come back here.
   const wkAt = ['scores', 'avctl', 'state'].find(k => q.has(k));
+  if (wkAt === 'state' && typeof board !== 'undefined' && board.cls !== (q.get('class') || '')){
+    board.cls = q.get('class') || ''; board.seen = null;
+    if (ui.week === (q.get(wkAt) || boardDefaultWeek()) && ui.board) return void renderScoreboard();
+  }
   if (wkAt && typeof ui.week !== 'undefined'){
     const want = q.get(wkAt) || (typeof boardDefaultWeek === 'function' ? boardDefaultWeek() : weekKey(Date.now()));
     if (ui.week !== want){

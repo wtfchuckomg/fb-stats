@@ -59,6 +59,10 @@ addEventListener('popstate', () => {
   if (['all', 'scoring', 'drives'].includes(plays) && ui.pbp !== plays){ ui.pbp = plays; drew = true; }
   // A board address with no week on it means this week, so going back to it has to come back here.
   const wkAt = ['scores', 'avctl', 'state'].find(k => q.has(k));
+  if (wkAt === 'state' && typeof board !== 'undefined' && board.cls !== (q.get('class') || '')){
+    board.cls = q.get('class') || ''; board.seen = null;
+    if (ui.week === (q.get(wkAt) || boardDefaultWeek()) && ui.board) return void renderScoreboard();
+  }
   if (wkAt && typeof ui.week !== 'undefined'){
     const want = q.get(wkAt) || (typeof boardDefaultWeek === 'function' ? boardDefaultWeek() : weekKey(Date.now()));
     if (ui.week !== want){
