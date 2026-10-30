@@ -203,8 +203,9 @@ function renderSync(){
   const label = {unavailable:'This device only', 'signed-out':'Sign in to sync', on:'Synced', saving:'Saving…', offline:'Offline · saved here', error:'Sync problem'}[s];
   const cls = {on:'ok', saving:'busy', offline:'busy', error:'bad'}[s] || '';
   const tip = sync.err || (sync.user ? `Signed in as ${sync.user.email || ''}` : s === 'unavailable' ? 'Syncing works on your own site' : 'Keep your games on every device');
-  // All's well: nothing on the bar (Chuck, 2026-10-24); only a state that needs a look shows.
-  el.innerHTML = s === 'on' ? '' : `<button class="abtn syncbtn ${cls}" data-sync title="${esc(tip)}"><i></i>${label}</button>`;
+  // The same bar as the other pages (Chuck, 2026-10-30): Synced, Live, Games, Others, Setup.
+  el.innerHTML = `<button class="abtn syncbtn ${cls}" data-sync title="${esc(tip)}"><i></i>${label}</button>`;
+  const ob = $('#othersbtn'); if (ob) ob.hidden = !ui.admin;
   if (ui.dlg === 'others' && dlg().open) dlg().innerHTML = dlgOthers();
   if (ui.dlg === 'games' && dlg().open){ const a = $('#acct'); if (a) a.outerHTML = syncBlock(); }
   if (ui.dlg === 'share' && dlg().open) dlg().innerHTML = dlgShare();

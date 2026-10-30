@@ -714,7 +714,7 @@ table.pl-log td.nm .cn-in,table.pl-log td.nm .pl-opp{min-width:0;overflow:hidden
 
 /* ---------- Game Tracker start screen: no game under way, so the game pieces give way to it ---------- */
 body.starting .strip,body.starting .gtabs,body.starting main.gc,body.starting .sample{display:none!important}
-body.starting #sharebtn,body.starting .navtools [data-open="setup"],body.starting .navtools [data-open="export"],body.starting .navtools [data-open="lines"]{display:none}
+body.starting .navtools [data-open="export"],body.starting .navtools [data-open="lines"]{display:none}
 .start{box-sizing:border-box;max-width:1280px;margin:0 auto;padding:16px 16px 40px;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
 .s-main{display:flex;flex-direction:column;gap:16px;min-width:0}
 .s-side{min-width:0}
@@ -1686,6 +1686,7 @@ html[data-skin="liquid"] .ctbl tbody tr:nth-child(even) td{background:var(--lg-z
         <button class="abtn" data-open="share" id="sharebtn">Share</button>
         <button class="abtn" data-open="games">Games</button>
         <button class="abtn" data-open="teams">Teams</button>
+        <button class="abtn" data-open="others" id="othersbtn" hidden>Others</button>
         <button class="abtn" data-open="setup">Setup</button>
         <button class="abtn" data-open="lines">Line score</button>
         <button class="abtn" data-box-pop id="boxpopbtn" hidden>Edit</button>
@@ -4777,8 +4778,9 @@ function renderSync(){
   const label = {unavailable:'This device only', 'signed-out':'Sign in to sync', on:'Synced', saving:'Saving…', offline:'Offline · saved here', error:'Sync problem'}[s];
   const cls = {on:'ok', saving:'busy', offline:'busy', error:'bad'}[s] || '';
   const tip = sync.err || (sync.user ? `Signed in as ${sync.user.email || ''}` : s === 'unavailable' ? 'Syncing works on your own site' : 'Keep your games on every device');
-  // All's well: nothing on the bar (Chuck, 2026-10-24); only a state that needs a look shows.
-  el.innerHTML = s === 'on' ? '' : `<button class="abtn syncbtn ${cls}" data-sync title="${esc(tip)}"><i></i>${label}</button>`;
+  // The same bar as the other pages (Chuck, 2026-10-30): Synced, Live, Games, Others, Setup.
+  el.innerHTML = `<button class="abtn syncbtn ${cls}" data-sync title="${esc(tip)}"><i></i>${label}</button>`;
+  const ob = $('#othersbtn'); if (ob) ob.hidden = !ui.admin;
   if (ui.dlg === 'others' && dlg().open) dlg().innerHTML = dlgOthers();
   if (ui.dlg === 'games' && dlg().open){ const a = $('#acct'); if (a) a.outerHTML = syncBlock(); }
   if (ui.dlg === 'share' && dlg().open) dlg().innerHTML = dlgShare();
