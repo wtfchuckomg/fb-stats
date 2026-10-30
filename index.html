@@ -5923,10 +5923,10 @@ function renderScoreboard(){
     });
     // Live games first, then finals, then games still to come; a day with a game going on moves to the top.
     const rank = new Map(games.map(x => { const m = summary(x); return [x, m.live ? 0 : m.fin ? 1 : 2]; }));
-    // Within a day, by home school, so the cards sit in the same order in the snapshot and in the live copy
-    // that replaces it a moment later — nothing jumps under the reader's finger.
-    const bySchool = x => canonSchool(x.teams.H.name);
-    days.forEach(day => { day.games.sort((a, b) => rank.get(a) - rank.get(b) || bySchool(a).localeCompare(bySchool(b))); day.live = rank.get(day.games[0]) === 0; });
+    // Within a day, A to Z by the visiting school (Chuck, 2026-10-30), so the cards sit in the same order in the
+    // snapshot and in the live copy that replaces it a moment later — nothing jumps under the reader's finger.
+    const bySchool = x => x.teams.A.name.toLowerCase();
+    days.forEach(day => { day.games.sort((a, b) => rank.get(a) - rank.get(b) || bySchool(a).localeCompare(bySchool(b)) || canonSchool(a.teams.H.name).localeCompare(canonSchool(b.teams.H.name))); day.live = rank.get(day.games[0]) === 0; });
     days.sort((a, b) => (b.live ? 1 : 0) - (a.live ? 1 : 0) || a.k.localeCompare(b.k));
     // The first dozen cards now, the rest as they scroll near (a State week is 160 games); the card being typed on
     // is always drawn.
