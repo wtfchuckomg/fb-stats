@@ -169,6 +169,13 @@ body.bpage.signin .navtools{display:flex}
   .navbar .abtn{padding:8px 7px;font-size:14px}
   .navbar .livebadge{margin-right:4px}
 }
+/* a scorer's bar carries the pages and eight buttons: tight enough for one row in a full window (Chuck, 2026-10-30) */
+@media (min-width:641px){
+  body:not(.viewer) .navbar-in,body.scorer .navbar-in{column-gap:12px}
+  body:not(.viewer) .navlinks,body.scorer .navlinks{gap:14px}
+  body:not(.viewer) .navbar .abtns,body.scorer .navbar .abtns{gap:2px}
+  body:not(.viewer) .navbar .abtn,body.scorer .navbar .abtn{padding:8px 6px}
+}
 /* phones: the pages on one row, the buttons spread across the row below */
 @media (max-width:640px){
   .navbar-in{padding:0 12px}
