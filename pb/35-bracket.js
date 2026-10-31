@@ -377,16 +377,18 @@ const BK_OFFICIAL = [
   'Andover, Kapaun Mt. Carmel, Hays, Bishop Carroll, Salina South, Eisenhower, Salina Central, Emporia, Hutchinson, Andover Central, Goddard, Maize South, Liberal, Valley Center, Newton, Wichita West',
   'Frontenac, Wellsville, Jefferson West, Hayden, Baldwin, Burlington, Nemaha Central, Columbus, Iola, Perry-Lecompton, Holton, Anderson County, Girard, Santa Fe Trail, Atchison, Osawatomie',
   'Andale, Holcomb, Hesston, Hoisington, Chapman, Hugoton, Wichita Collegiate, Pratt, Cheney, Goodland, Lyons, Concordia, Clay Center, Scott City, Wichita Trinity, Larned',
-  // 5A East, only 14-16 sent so far ("*" keeps our order there).
-  '*, *, *, *, *, *, *, *, *, *, *, *, *, Shawnee Heights, Turner, Topeka West',
-].map(l => l.split(', ').map(n => n === '*' ? null : canonSchool(n)));
+  // 5A East and 6A from the KSHSAA's posted brackets (2026-10-30): Blue Valley and Washington tie all the way down, and
+  // with no official order here a tie could fall the other way and show playoff games nobody is playing.
+  'De Soto, Spring Hill, Basehor-Linwood, Washington, Blue Valley, Piper, Seaman, St. James Academy, JC Harmon, Blue Valley North, Pittsburg, Leavenworth, Blue Valley Southwest, Shawnee Heights, Turner, Topeka West',
+  'Mill Valley, Gardner Edgerton, Olathe Northwest, Lawrence, Olathe North, Olathe West, Shawnee Mission Northwest, Olathe South, Shawnee Mission North, BV Northwest, Shawnee Mission East, Wyandotte, Shawnee Mission South, BV West, Olathe East, Shawnee Mission West',
+  'Derby, Maize, Manhattan, Wichita Northwest, Wichita Southeast, Garden City, Junction City, Lawrence Free State, Dodge City, Washburn Rural, Wichita East, Wichita Heights, Wichita South, Topeka High, Campus, Wichita North',
+];
 // Teams in the KSHSAA's order when one of their brackets covers them all; otherwise as they came.
 function bkOfficial(teams){
   const ks = teams.map(t => canonSchool(t.name));
-  const o = BK_OFFICIAL.find(l => l.every(k => !k || ks.includes(k)));
-  if (!o) return null;
-  const rest = teams.filter(t => !o.includes(canonSchool(t.name)));
-  return o.map(k => k ? Object.assign(teams[ks.indexOf(k)], {lock:true}) : rest.shift()).filter(Boolean).concat(rest);
+  // Read here, not when the page starts: school aliases load later, and St. James and Harmon go by them.
+  const o = BK_OFFICIAL.map(l => l.split(', ').map(canonSchool)).find(l => l.every(k => ks.includes(k)));
+  return o ? o.map(k => Object.assign(teams[ks.indexOf(k)], {lock:true})) : null;
 }
 // Seeds 1-16 in one section, by the manual's criteria in order.
 function bkSeed(names){
