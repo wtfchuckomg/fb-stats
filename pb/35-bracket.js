@@ -382,6 +382,14 @@ const BK_OFFICIAL = [
   'De Soto, Spring Hill, Basehor-Linwood, Washington, Blue Valley, Piper, Seaman, St. James Academy, JC Harmon, Blue Valley North, Pittsburg, Leavenworth, Blue Valley Southwest, Shawnee Heights, Turner, Topeka West',
   'Mill Valley, Gardner Edgerton, Olathe Northwest, Lawrence, Olathe North, Olathe West, Shawnee Mission Northwest, Olathe South, Shawnee Mission North, BV Northwest, Shawnee Mission East, Wyandotte, Shawnee Mission South, BV West, Olathe East, Shawnee Mission West',
   'Derby, Maize, Manhattan, Wichita Northwest, Wichita Southeast, Garden City, Junction City, Lawrence Free State, Dodge City, Washburn Rural, Wichita East, Wichita Heights, Wichita South, Topeka High, Campus, Wichita North',
+  // 4A, 2A and 1A too: outside the bracket page the coin flips aren't loaded, so a tie settled by one (Silver Lake and
+  // Caney Valley) fell the other way on the scoreboards.
+  'Bishop Miege, Louisburg, KC Sumner, Fort Scott, Eudora, Independence, Tonganoxie, Paola, St. Thomas Aquinas, Labette County, Ottawa, Chanute, Lansing, Schlagle, Bonner Springs, Field Kindley',
+  'McPherson, Wamego, Buhler, Wellington, Ulysses, Great Bend, Rock Creek, Augusta, Rose Hill, Highland Park, Mulvane, Winfield, Arkansas City, Circle, Abilene, El Dorado',
+  'Silver Lake, Caney Valley, Sabetha, Neodesha, Riverside, Osage City, Baxter Springs, Humboldt, Central Heights, Royal Valley, Riverton, Oskaloosa, Pleasant Ridge, Cherryvale, Jayhawk-Linn, West Franklin',
+  'Chaparral, Beloit, Marysville, Garden Plain, Haven, Kingman, Riley County, Norton, Council Grove, Halstead, Phillipsburg, Cimarron, Douglass, Southeast of Saline, Southwestern Heights, Russell',
+  "Jefferson County North, Rossville, Olpe, Centralia, McLouth, Valley Heights, St. Mary's Colgan, St. Marys, Onaga, Maur Hill-Mount, Wabaunsee, Uniontown, Jackson Heights, Northeast, Atchison County, Mission Valley",
+  'Sterling, Thomas More Prep, Inman, Conway Springs, Smith Center, Hillsboro, Medicine Lodge, Belle Plaine, Moundridge, Plainville, Ellinwood, Sedgwick, Remington, Sacred Heart, Bluestem, Syracuse',
 ];
 // Teams in the KSHSAA's order when one of their brackets covers them all; otherwise as they came.
 function bkOfficial(teams){
