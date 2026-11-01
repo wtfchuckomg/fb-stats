@@ -166,7 +166,13 @@ function earlierMeeting(x){
 }
 function gameStory(x, m, po){
   const a = +m.score.A, b = +m.score.H, hi = Math.max(a, b), lo = Math.min(a, b);
-  if (!m.fin || m.ff || /forfeit/i.test(m.status || '') || (!lo && hi <= 2)) return null;
+  if (!m.fin) return null;
+  // A forfeit (Chuck, 2026-11-01): one marked as one, or a 1-0, a score no game can end on. A bare 2-0 is left alone: it could be played.
+  if (a !== b && (m.ff || /forfeit/i.test(m.status || '') || (!lo && hi === 1))){
+    const s = a > b ? 'A' : 'H', r = (recordText(x.teams[s], s, false, gameWeek(x), m.score) || '').split(',')[0];
+    return {head:`${schoolName(x.teams[s].name)} won by forfeit${/^\d+-\d+/.test(r) ? ` and improves to ${r}` : ''}`, text:''};
+  }
+  if (!lo && hi <= 2) return null;
   if (a === b) return {head:`${schoolName(x.teams.A.name)} and ${schoolName(x.teams.H.name)} play to a tie`, text:storyNote(x)};
   const W = a > b ? 'A' : 'H', L = W === 'A' ? 'H' : 'A', gap = hi - lo, won = schoolName(x.teams[W].name), lost = schoolName(x.teams[L].name);
   const ot = m.q > 4 || /OT/.test(m.status || '');
