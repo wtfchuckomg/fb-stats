@@ -2637,35 +2637,51 @@ function stepTrace(){
 function renderField(){
   const box = $('#field'); if (!box || !R) return;
   const st = R.st, T = g.teams, FL = R.FL, HALF = FL / 2;
-  const W = 1200, H = 206, k = W / (FL + 20), X = y => (10 + y) * k, EZ = 10 * k;
-  const top = 26, bot = 170, mid = (top + bot) / 2;
+  const W = 1200, H = 220, k = W / (FL + 20), X = y => (10 + y) * k, EZ = 10 * k;
+  const top = 46, bot = 184, mid = (top + bot) / 2, LIP = 8;
+  // The field tips away from you, like ESPN's (Chuck, 2026-11-01): v is how far back on the field, 0 at the near
+  // sideline and 1 at the far one, and the far side is a tenth narrower. P(x, v) is a spot on it, flat x going in.
+  const PX = (x, v) => W / 2 + (x - W / 2) * (1 - .1 * v), PY = v => bot - (bot - top) * v, P = (x, v) => `${PX(x, v).toFixed(1)} ${PY(v).toFixed(1)}`;
+  const band = (x0, x1) => `M${P(x0, 0)} L${P(x1, 0)} L${P(x1, 1)} L${P(x0, 1)} Z`;
   const abs = (side, pos) => side === 'A' ? pos : FL - pos;   // yards from the visitors' goal (left)
   const cond = "'Roboto Condensed','Arial Narrow',sans-serif", sans = "-apple-system,system-ui,Roboto,Arial,sans-serif";
   let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Field position">`;
-  for (let i = 0; i < FL / 10; i++) s += `<rect x="${X(i * 10)}" y="${top}" width="${10 * k}" height="${bot - top}" style="fill:var(${i % 2 ? '--fld-b' : '--fld-a'})"/>`;
-  for (let y = 5; y < FL; y += 5) s += `<line x1="${X(y)}" y1="${top}" x2="${X(y)}" y2="${bot}" style="stroke:var(--fld-line);stroke-width:${y === HALF ? 3 : y % 10 === 0 ? 1.6 : .8}"/>`;
-  // The mascot if one is set, else the school. Sized from an estimate here, then measured below.
+  // The field's near edge, then the field on it.
+  s += `<rect x="0" y="${bot}" width="${W}" height="${LIP}" style="fill:var(--fld-line)"/>`;
+  for (let i = 0; i < FL / 10; i++) s += `<path d="${band(X(i * 10), X((i + 1) * 10))}" style="fill:var(${i % 2 ? '--fld-b' : '--fld-a'})"/>`;
+  for (let y = 5; y < FL; y += 5) s += `<path d="M${P(X(y), 0)} L${P(X(y), 1)}" style="stroke:var(--fld-line);stroke-width:${y === HALF ? 3 : y % 10 === 0 ? 1.6 : .8}"/>`;
+  let hash = ''; for (let y = 1; y < FL; y++) if (y % 5) hash += `M${P(X(y), .04)} L${P(X(y), .08)} M${P(X(y), .92)} L${P(X(y), .96)} `;
+  s += `<path d="${hash}" style="stroke:var(--fld-line);stroke-width:1.2"/>`;
+  // The mascot if one is set, else the school, leaning with the end zone. Sized from an estimate here, then measured below.
   const room = bot - top - 16;
   const ez = (side, x, rot) => {
     const name = String(T[side].mascot || listMascot(T[side].name) || T[side].name || T[side].abbr).toUpperCase(), fs = Math.min(34, room / (0.56 * Math.max(1, name.length)));
-    return `<rect x="${x}" y="${top}" width="${EZ}" height="${bot - top}" style="fill:${esc(T[side].color)}"/>`
-      + `<text class="ez-name" x="${x + EZ / 2}" y="${mid}" transform="rotate(${rot} ${x + EZ / 2} ${mid})" text-anchor="middle" dominant-baseline="central" style="fill:#fff;font:800 ${fs.toFixed(1)}px ${cond};letter-spacing:1px">${esc(name)}</text>`;
+    const cx = x + EZ / 2, lean = (PX(cx, 1) - PX(cx, 0)) / (top - bot);
+    return `<rect x="${x}" y="${bot}" width="${EZ}" height="${LIP}" style="fill:${esc(T[side].color)}"/><rect x="${x}" y="${bot}" width="${EZ}" height="${LIP}" style="fill:#000;opacity:.25"/>`
+      + `<path d="${band(x, x + EZ)}" style="fill:${esc(T[side].color)}"/>`
+      + `<text class="ez-name" transform="translate(${PX(cx, .5).toFixed(1)} ${mid}) matrix(1 0 ${lean.toFixed(4)} 1 0 0) rotate(${rot})" text-anchor="middle" dominant-baseline="central" style="fill:#fff;font:800 ${fs.toFixed(1)}px ${cond};letter-spacing:1px">${esc(name)}</text>`;
   };
   s += ez('A', 0, -90) + ez('H', W - EZ, 90);
-  s += `<path d="M3 ${mid - 36} v72 M${W - 3} ${mid - 36} v72" style="stroke:var(--ltg);stroke-width:5;stroke-linecap:round"/>`;
+  // The goalposts, standing on the end lines.
+  [0, W].forEach(x => {
+    const a = [PX(x, .34), PY(.34) - 34], b = [PX(x, .66), PY(.66) - 34], m = [PX(x, .5), PY(.5) - 22];
+    s += `<path d="M${PX(x, .5).toFixed(1)} ${PY(.5) + 12} V${m[1]}" style="stroke:#6C6D6F;stroke-width:6;stroke-linecap:round"/>`
+      + `<path d="M${m[0].toFixed(1)} ${m[1]} L${(a[0] + b[0]) / 2} ${(a[1] + b[1]) / 2} M${a[0].toFixed(1)} ${a[1] - 40} V${a[1]} L${b[0].toFixed(1)} ${b[1]} V${b[1] - 40}" style="fill:none;stroke:var(--ltg);stroke-width:4;stroke-linecap:round;stroke-linejoin:round"/>`;
+  });
   const lbl = (x, t) => `<text x="${x}" y="${H - 8}" text-anchor="middle" style="fill:var(--fld-num);font:500 19px ${sans}">${esc(t)}</text>`;
   s += lbl(X(0), T.A.abbr) + lbl(X(FL), T.H.abbr);
   for (let y = 10; y < FL; y += 10) s += lbl(X(y), y <= HALF ? y : FL - y);
+  const low = mid + 30, lowV = (bot - low) / (bot - top), LX = x => PX(x, lowV);   // the line the ball travels along
   // The last play's legs, one after another; stepTrace() draws each as far as the ball has gone.
   const tr = playTrace();
   let ball = '';
   if (tr){
     if (tr.key !== anim.key) anim = {key:tr.key, t0:performance.now(), raf:anim.raf};
     anim.calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const y = mid + 30;
+    const y = low;
     let at = 0;
     tr.legs.forEach(l => {
-      const x0 = X(l.a), x1 = X(l.b), dx = Math.abs(x1 - x0), yd = Math.abs(l.b - l.a), air = l.k !== 'run';
+      const x0 = LX(X(l.a)), x1 = LX(X(l.b)), dx = Math.abs(x1 - x0), yd = Math.abs(l.b - l.a), air = l.k !== 'run';
       const h = l.k === 'kick' ? clamp(dx * .28 + 36, 44, 104) : air ? clamp(dx * .3 + 14, 22, 74) : 0;
       const dur = l.k === 'kick' ? clamp(800 + yd * 16, 900, 1800) : air ? clamp(500 + yd * 22, 600, 1500) : clamp(350 + yd * 30, 450, 1500);
       const P = [x0, y, (x0 + x1) / 2, y - 2 * h, x1, y].map(v => v.toFixed(1));
@@ -2675,24 +2691,24 @@ function renderField(){
       at += dur;
     });
     const b = tr.legs[tr.legs.length - 1].b;
-    if (tr.flash && (b >= FL || b <= 0)) s += `<rect class="ez-flash" x="${b >= FL ? W - EZ : 0}" y="${top}" width="${EZ}" height="${bot - top}" style="fill:var(--ltg);opacity:0"/>`;
+    if (tr.flash && (b >= FL || b <= 0)) s += `<path class="ez-flash" d="${band(b >= FL ? W - EZ : 0, b >= FL ? W : EZ)}" style="fill:var(--ltg);opacity:0"/>`;
     if (!anim.calm && performance.now() - anim.t0 < at + PLAY_FADE)
       ball = `<g class="pl-ball"><ellipse rx="13" ry="7.5" style="fill:#7A3E1D;stroke:#4A2410;stroke-width:1.5"/>`
         + `<path d="M-5 0H5M-3 -2.6v5.2M0 -2.6v5.2M3 -2.6v5.2" style="stroke:#fff;stroke-width:1.3;fill:none"/></g>`;
   }
   if (!st.final){
     const side = st.poss, pos = st.phase === 'kick' ? st.kickFrom : st.spot, bx = X(abs(side, pos)), dir = side === 'A' ? 1 : -1, d = openDrive();
-    if (st.phase === 'play' && st.ltg < FL) s += `<line x1="${X(abs(side, st.ltg))}" y1="${top}" x2="${X(abs(side, st.ltg))}" y2="${bot}" style="stroke:var(--ltg);stroke-width:5"/>`;
+    if (st.phase === 'play' && st.ltg < FL) s += `<path d="M${P(X(abs(side, st.ltg)), 0)} L${P(X(abs(side, st.ltg)), 1)}" style="stroke:var(--ltg);stroke-width:5"/>`;
     if (st.phase === 'play' && d && d.team === side && Math.abs(d.start - pos) > .5){
-      const sx = X(abs(side, d.start)), ly = mid + 30;
-      s += `<line x1="${sx}" y1="${ly}" x2="${bx - dir * 14}" y2="${ly}" style="stroke:var(--drive);stroke-width:4"/>`;
-      s += `<path d="M${bx} ${ly} l${-dir * 16} -9 v18 z" style="fill:var(--drive)"/>`;
+      const sx = LX(X(abs(side, d.start))), ex = LX(bx);
+      s += `<line x1="${sx}" y1="${low}" x2="${ex - dir * 14}" y2="${low}" style="stroke:var(--drive);stroke-width:4"/>`;
+      s += `<path d="M${ex} ${low} l${-dir * 16} -9 v18 z" style="fill:var(--drive)"/>`;
     }
     // The pin over the ball, carrying the team's mark.
-    const cy = mid - 18, url = logoUrl(T[side]);
-    s += `<path d="M${bx} ${cy + 44} L${bx - 13.3} ${cy + 20} A24 24 0 1 1 ${bx + 13.3} ${cy + 20} Z" style="fill:var(--card);stroke:var(--drive);stroke-width:2"/>`;
-    s += url ? `<image href="${esc(url)}" x="${bx - 17}" y="${cy - 17}" width="34" height="34" preserveAspectRatio="xMidYMid meet"/>`
-      : `<circle cx="${bx}" cy="${cy}" r="17" style="fill:${esc(T[side].color)}"/><text x="${bx}" y="${cy}" text-anchor="middle" dominant-baseline="central" style="fill:#fff;font:800 13px ${cond}">${esc(String(T[side].abbr).slice(0, 4))}</text>`;
+    const cy = mid - 44, url = logoUrl(T[side]), pin = PX(bx, .5);
+    s += `<path d="M${pin} ${cy + 44} L${pin - 13.3} ${cy + 20} A24 24 0 1 1 ${pin + 13.3} ${cy + 20} Z" style="fill:var(--card);stroke:var(--drive);stroke-width:2"/>`;
+    s += url ? `<image href="${esc(url)}" x="${pin - 17}" y="${cy - 17}" width="34" height="34" preserveAspectRatio="xMidYMid meet"/>`
+      : `<circle cx="${pin}" cy="${cy}" r="17" style="fill:${esc(T[side].color)}"/><text x="${pin}" y="${cy}" text-anchor="middle" dominant-baseline="central" style="fill:#fff;font:800 13px ${cond}">${esc(String(T[side].abbr).slice(0, 4))}</text>`;
   }
   box.innerHTML = s + ball + '</svg>';
   if (tr){ if (anim.raf) cancelAnimationFrame(anim.raf); stepTrace(); }
