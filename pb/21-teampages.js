@@ -351,6 +351,23 @@ function playoffCard(name){
     <div class="tbl-x"><table class="tp-sched po-tbl"><tbody>${rows}</tbody></table></div>
     </section>`;
 }
+// Everyone but the county: the county's opponents, the AVCTL, and any school that turns up in a game someone has kept —
+// a school joins this list the moment its first game does.
+function otherTeams(){
+  const county = new Set(COUNTY.map(canonSchool)), named = new Map();
+  const add = n => { const k = n && canonSchool(n); if (!k || county.has(k) || named.has(k)) return; named.set(k, schoolName(n)); };
+  Object.keys(SCHOOL_INFO).forEach(add);
+  AVCTL.forEach(add);
+  ELEVEN_MAN.forEach(add);
+  (allGames.list || []).forEach(x => ['A', 'H'].forEach(sd => add(x.teams[sd] && x.teams[sd].name)));
+  return [...named.values()].sort((a, b) => a.localeCompare(b));
+}
+// Any team's page from any other's, without going back to the Teams page (Chuck, 2026-11-01).
+function teamPicker(name){
+  const list = (SITE_AV ? AV_NAMES.flatMap(d => AVCTL_DIV[d]) : [...COUNTY, ...otherTeams()]).slice().sort((a, b) => a.localeCompare(b));
+  const k = canonSchool(name), all = list.some(n => canonSchool(n) === k) ? list : [name, ...list];
+  return `<select class="c-sel tp-jump" id="tp-jump" aria-label="Team">${all.map(n => `<option value="${esc(n)}"${canonSchool(n) === k ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select>`;
+}
 function teamsIndexHtml(){
   document.title = `Teams · ${SITE_TITLE}`;
   // The AVCTL site: the league's schools, by division.
@@ -359,16 +376,7 @@ function teamsIndexHtml(){
       return `<a class="tp-card" href="?team=${encodeURIComponent(n)}">${markFor({name:n, abbr:shortName(n), color:'#4A4B4D'}, 56)}<b>${esc(n)}</b>${r.length ? `<span>${esc(r[0])}</span>` : ''}</a>`; }).join('')}</div></section>`).join('');
   // The teams the county plays, each with its whole schedule on the site (their own opponents aren't listed: the site
   // has only their games against these teams).
-  const county = new Set(COUNTY.map(canonSchool));
-  // Everyone else the site covers: the county's opponents, the AVCTL, and any school that turns up in a game
-  // someone has kept — a school joins this list the moment its first game does.
-  const named = new Map();
-  const add = n => { const k = n && canonSchool(n); if (!k || county.has(k) || named.has(k)) return; named.set(k, schoolName(n)); };
-  Object.keys(SCHOOL_INFO).forEach(add);
-  AVCTL.forEach(add);
-  ELEVEN_MAN.forEach(add);
-  (allGames.list || []).forEach(x => ['A', 'H'].forEach(sd => add(x.teams[sd] && x.teams[sd].name)));
-  const others = [...named.values()].sort((a, b) => a.localeCompare(b));
+  const others = otherTeams();
   const card = (n, size) => { const r = recParts(shownRecord(n));
     return `<a class="tp-card" href="?team=${encodeURIComponent(n)}">${markFor({name:n, abbr:shortName(n), color:'#4A4B4D'}, size)}<b>${esc(n)}</b>${r.length ? `<span>${esc(r[0])}</span>` : ''}</a>`; };
   return `<section class="bcard bhead"><div class="bhead-top"><h1>Teams</h1></div></section>
@@ -467,7 +475,7 @@ function teamPageHtml(nameIn){
   return `<section class="bcard tp-head">
       <div class="tp-id">${markFor(mark, 72)}<div><h1>${esc(name)}</h1>${(s => s ? `<p class="tp-sub">${esc(s)}</p>` : '')([listMascot(name).toUpperCase(), schoolLine(name)].filter(Boolean).join(' | '))}</div></div>
       <div class="tp-recwrap"><div class="tp-recs">${recBox('rec', 'Overall')}${recBox('home', 'Home')}${recBox('away', 'Away')}</div>${ppg}</div>
-      ${ui.admin && !tpage.edit ? `<button type="button" class="bhide" data-tp-add-game>Add a game</button>` : ''}
+      <div class="tp-tools">${teamPicker(name)}${ui.admin && !tpage.edit ? `<button type="button" class="bhide" data-tp-add-game>Add a game</button>` : ''}</div>
       ${form}
       ${inCounty || rows.some(r => r.stats) || roster || ui.admin ? (() => {
         // Butler County has its own stats pages; every other school's numbers live on State Stats. On the AVCTL site
@@ -518,6 +526,7 @@ function teamPageHtml(nameIn){
 
 // The Roster button takes you down to the card (scroll-margin-top keeps it clear of the bars).
 document.addEventListener('change', e => {
+  if (e.target.id === 'tp-jump'){ location.href = `?team=${encodeURIComponent(e.target.value)}`; return; }
   if (e.target.id !== 'tp-season') return;
   tpage.season = e.target.value; renderTeamPage();
 });
