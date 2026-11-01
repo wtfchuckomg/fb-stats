@@ -662,15 +662,15 @@ table.pl-log td.nm .cn-in,table.pl-log td.nm .pl-opp{min-width:0;overflow:hidden
 /* Each game, ESPN's four columns measured off its scoreboard: 320, 240, 220 and 120 on a 900 row. */
 .bgame{display:grid;grid-template-columns:minmax(0,290fr) minmax(0,240fr) minmax(0,220fr) 116px;padding:16px 0;border-bottom:1px dotted var(--line)}
 .bgame:last-child{border-bottom:0;padding-bottom:2px}
-/* ---------- home page (?home), laid out like ESPN's front page: links on the left, the story in the middle,
-   headlines on the right; two columns on a tablet, one on a phone with the headlines right under the hero ---------- */
-.hpage{display:grid;grid-template-columns:230px minmax(0,1fr) 320px;grid-template-areas:"left hero right" "left main right";gap:16px;align-items:start}
-.h-left{grid-area:left}
+/* ---------- home page (?home), laid out like ESPN's front page: the scoreboard and links on the left, the story in the
+   middle, headlines on the right; two columns on a tablet, one on a phone, the scoreboard always on top ---------- */
+.hpage{display:grid;grid-template-columns:300px minmax(0,1fr) 320px;grid-template-areas:"left hero right" "left main right";gap:16px;align-items:start}
+.h-left{grid-area:left;display:flex;flex-direction:column;gap:16px;min-width:0}
 .h-hero{grid-area:hero}
 .h-main{grid-area:main;display:flex;flex-direction:column;gap:16px;min-width:0}
 .h-right{grid-area:right;display:flex;flex-direction:column;gap:16px}
 .hcard{background:var(--card);border-radius:10px;box-shadow:0 1px 3px rgba(18,18,19,.1);padding:18px 20px}
-/* The week's games on the front page, two across, each with the clock, the down and the spot beside it. */
+/* The week's games on the front page, each with the clock, the down and the spot beside it. */
 .hcard.ms{container-type:inline-size;padding-bottom:6px}
 .ms-hd{margin:0;padding-bottom:10px;font:700 13px/1.2 var(--sans);text-transform:uppercase;color:var(--ink-2)}
 .ms-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px}
@@ -736,9 +736,14 @@ a.ms-all:hover{text-decoration:underline}
 .h-gets b{display:block;font:600 15px/1.3 var(--sans);color:var(--ink-2)}
 .h-gets span{display:block;margin-top:2px;font:400 13.5px/1.4 var(--sans);color:var(--muted)}
 #how{scroll-margin-top:12px}
-@media (max-width:1100px){.hpage{grid-template-columns:minmax(0,1fr) 300px;grid-template-areas:"hero right" "main right" "left right"}}
+@media (max-width:1180px){
+  .hpage{grid-template-columns:minmax(0,1fr) 300px;grid-template-areas:"board right" "hero right" "main right" "left right"}
+  .h-left{display:contents}
+  .h-left>.ms{grid-area:board;min-width:0}
+  .h-quick{grid-area:left}
+}
 @media (max-width:760px){
-  .hpage{grid-template-columns:minmax(0,1fr);grid-template-areas:"hero" "right" "main" "left"}
+  .hpage{grid-template-columns:minmax(0,1fr);grid-template-areas:"board" "hero" "right" "main" "left"}
   .h-hero h1{font-size:25px}
   .h-hero-art{padding:28px 18px}
   .hcard{padding:16px}

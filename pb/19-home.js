@@ -86,7 +86,7 @@ function homeLinks(){
     ['Media Rankings', 'https://kansasmediarankings.com/', I.ext], ['Pick ’Em', 'https://picks.kansasmediarankings.com', I.ext], ['Helmets', 'https://kansasmediarankings.com/helmets.html', I.ext]];
 }
 
-// The week's games on the front page (Chuck, 2026-11-01), for Friday nights: the live ones first, two across.
+// The week's games on the front page (Chuck, 2026-11-01), for Friday nights: top of the left column, the live ones first.
 const HOME_BOARD_GAMES = 8;
 function homeBoardGame(x){
   const m = summary(x), T = x.teams, lead = leadOf(m), sit = gameSit(x, m);
@@ -108,7 +108,7 @@ function renderHome(){
   if (!ui.home) return;
   const tracker = '?tracker', icon = homeIcon, I = homeIcons(), links = homeLinks();
   $('#board').innerHTML = `<div class="hpage">
-    <aside class="h-left"><section class="hcard"><h2 class="h-rail">${icon(I.link)}Quick Links</h2>
+    <aside class="h-left">${homeBoard()}<section class="hcard h-quick"><h2 class="h-rail">${icon(I.link)}Quick Links</h2>
       <nav class="h-links" aria-label="Quick links">${links.map(([t, h, d]) => `<a href="${esc(h)}">${icon(d)}${esc(t)}</a>`).join('')}</nav></section></aside>
 
     <section class="hcard h-hero">
@@ -120,7 +120,6 @@ function renderHome(){
     </section>
 
     <div class="h-main">
-      ${homeBoard()}
       <section class="hcard" id="how"><span class="h-eyebrow">How it works</span>
         <h2 class="h-sec">How to track a game</h2>
         <p class="h-p">Anyone can keep stats. All it takes is a phone or a laptop, a roster if you can get one, and a view of the field. You log what happened on each play; the site does the math.</p>
