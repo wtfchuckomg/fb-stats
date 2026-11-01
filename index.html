@@ -5824,7 +5824,7 @@ function gameStory(x, m, po){
   const pct = (w, l) => w / (w + l), games = wr && lr ? [ww - 1 + wl, lw + ll - 1] : [0, 0];
   const recUpset = games[0] >= 4 && games[1] >= 4 && pct(lw, ll - 1) - pct(ww - 1, wl) >= .4;
   const worse = games[0] && games[1] && pct(ww - 1, wl) < pct(lw, ll - 1);
-  const upset = dog >= 7 && worse ? `${won} came in as ${/^(8|11|18)(\.|$)/.test(dog) ? 'an' : 'a'} ${dog}-point underdog.` : sw && sl && sw - sl >= 4 ? `${won}, the No. ${sw} seed, knocked off No. ${sl}.`
+  const upset = dog >= 7 && worse ? `${won} came in as the underdog.` : sw && sl && sw - sl >= 4 ? `${won}, the No. ${sw} seed, knocked off No. ${sl}.`
     : recUpset ? `${won} came in ${ww - 1}-${wl} against a ${lw}-${ll - 1} team.` : '';
   const met = earlierMeeting(x), wasW = met && (W === 'A' ? met.A : met.H), wasL = met && (W === 'A' ? met.H : met.A);
   const revenge = met && wasL > wasW;
