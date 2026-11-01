@@ -5698,7 +5698,7 @@ async function startScoreboard(){
   document.title = `${SITE_AV ? '' : boardName() + ' '}Scoreboard · ${SITE_TITLE}`;
   const want = new URLSearchParams(location.search).get(boardParam()) || '';
   ui.week = /^\d{4}-\d\d-\d\d$/.test(want) ? weekKey(fromYmd(want).getTime()) : boardDefaultWeek();
-  loadLogos(); loadFiles(); loadStatsFile(); renderScoreboard();
+  loadLogos(); loadFiles(); loadStatsFile(); loadRatings(); renderScoreboard();
   // The admin's own devices (the Game Tracker marks them at sign-in) sign in here too, for the Hide buttons.
   let admin = false; try { admin = localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
   try {
@@ -5780,26 +5780,83 @@ function storyStar(x, S, s){
   });
   return top;
 }
+// Last season's state champions, from playoffs/years/2025.json. A new list each year.
+const STORY_CHAMPS = {'Manhattan':'6A', 'Salina Central':'5A', 'Kapaun Mt Carmel':'4A', 'Andale':'3A', 'Nemaha Central':'2A', 'Sterling':'1A',
+  'South Central':'8-Man I', 'Hanover':'8-Man II', 'Cunningham':'6-Man'};
+const storyChamp = n => { const k = canonSchool(n), hit = Object.keys(STORY_CHAMPS).find(c => canonSchool(c) === k); return hit ? STORY_CHAMPS[hit] : ''; };
+// What a score can't say: the two schools, then the line to run under their game.
+const STORY_NOTES = [['Herington', 'Northern Heights', 'The game was called in the fourth quarter because of weather.']];
+const storyPair = (a, b) => [a, b].map(canonSchool).sort().join('|');
+const storyNote = x => (STORY_NOTES.find(([a, b]) => storyPair(a, b) === storyPair(x.teams.A.name, x.teams.H.name)) || [])[2] || '';
+// The two schools' other games this season, by pair; made again once the games or the school list change.
+const storyMeets = {list:null, lib:undefined, map:null};
+function earlierMeeting(x){
+  const list = allGames.list; if (!list) return null;
+  if (storyMeets.list !== list || storyMeets.lib !== logoLib.list){
+    storyMeets.list = list; storyMeets.lib = logoLib.list; storyMeets.map = new Map();
+    list.forEach(y => { if (!y || !y.teams) return; const k = storyPair(y.teams.A.name, y.teams.H.name); (storyMeets.map.get(k) || storyMeets.map.set(k, []).get(k)).push(y); });
+  }
+  const day = gameDay(x).getTime(), xs = (storyMeets.map.get(storyPair(x.teams.A.name, x.teams.H.name)) || []).filter(y => y.id !== x.id && gameDay(y).getTime() < day);
+  xs.sort((p, q) => gameDay(q) - gameDay(p));
+  for (const y of xs){
+    const m = summary(y); if (!m.fin || m.ff) continue;
+    const same = canonSchool(y.teams.A.name) === canonSchool(x.teams.A.name);
+    const d = gameDay(y);
+    return {A:+m.score[same ? 'A' : 'H'], H:+m.score[same ? 'H' : 'A'], day:`${['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'][d.getMonth()]} ${d.getDate()}`};
+  }
+  return null;
+}
 function gameStory(x, m, po){
   const a = +m.score.A, b = +m.score.H, hi = Math.max(a, b), lo = Math.min(a, b);
-  if (!m.fin || m.ff || a === b || /forfeit/i.test(m.status || '') || (!lo && hi <= 2)) return null;
+  if (!m.fin || m.ff || /forfeit/i.test(m.status || '') || (!lo && hi <= 2)) return null;
+  if (a === b) return {head:`${schoolName(x.teams.A.name)} and ${schoolName(x.teams.H.name)} tie ${a}-${b}`, text:storyNote(x)};
   const W = a > b ? 'A' : 'H', L = W === 'A' ? 'H' : 'A', gap = hi - lo, won = schoolName(x.teams[W].name), lost = schoolName(x.teams[L].name);
   const ot = m.q > 4 || /OT/.test(m.status || '');
   const three = s => m.lines ? m.lines[s].slice(0, 3).reduce((n, v) => n + (+v || 0), 0) : 0;
   const hash = [...x.id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0) >>> 0, pick = l => l[hash % l.length];
-  const verb = ot ? 'outlasts' : three(L) > three(W) ? pick(['rallies past', 'comes back to beat']) : !lo ? pick(['shuts out', 'blanks'])
+  const rec = s => { const r = (recordText(x.teams[s], s, false, gameWeek(x), m.score) || '').split(',')[0]; return /^\d+-\d+/.test(r) ? r : ''; };
+  const wr = rec(W), lr = rec(L), [ww, wl] = wr.split('-').map(Number), [lw, ll] = lr.split('-').map(Number);
+  const [cls, round] = po ? po.label.split(' Playoffs · ') : [];
+  // The clock ran out on a blowout before the fourth quarter did: only a game scored by quarters can show that.
+  const mercy = !ot && m.q >= 1 && m.q < 4 && !m.quick && gap >= 35;
+  // An upset: the ratings still have the loser ahead after counting this game, or the seeds or records going in say so.
+  // Not one when the winner came in with the better record, whatever the ratings think.
+  const line = !m.pre && pre.rat ? ourLine(x.teams.A.name, x.teams.H.name) : null;
+  const dog = line && !line.thin ? (L === 'H' ? line.spread : -line.spread) : 0;
+  const sw = po && po.seed(x.teams[W].name), sl = po && po.seed(x.teams[L].name);
+  const pct = (w, l) => w / (w + l), games = wr && lr ? [ww - 1 + wl, lw + ll - 1] : [0, 0];
+  const recUpset = games[0] >= 4 && games[1] >= 4 && pct(lw, ll - 1) - pct(ww - 1, wl) >= .4;
+  const worse = games[0] && games[1] && pct(ww - 1, wl) < pct(lw, ll - 1);
+  const upset = dog >= 7 && worse ? `${won} came in as ${/^(8|11|18)(\.|$)/.test(dog) ? 'an' : 'a'} ${dog}-point underdog.` : sw && sl && sw - sl >= 4 ? `${won}, the No. ${sw} seed, knocked off No. ${sl}.`
+    : recUpset ? `${won} came in ${ww - 1}-${wl} against a ${lw}-${ll - 1} team.` : '';
+  const met = earlierMeeting(x), wasW = met && (W === 'A' ? met.A : met.H), wasL = met && (W === 'A' ? met.H : met.A);
+  const revenge = met && wasL > wasW;
+  const champL = storyChamp(x.teams[L].name), champW = storyChamp(x.teams[W].name);
+  const verb = ot ? 'outlasts' : upset ? pick(['stuns', 'upsets', 'shocks']) : revenge ? pick(['gets revenge on', 'evens the score with'])
+    : three(L) > three(W) ? pick(['rallies past', 'comes back to beat']) : !lo ? pick(['shuts out', 'blanks'])
     : gap >= 28 ? pick(['rolls past', 'routs', 'cruises past']) : gap >= 14 ? pick(['beats', 'pulls away from', 'handles'])
     : gap >= 7 ? pick(['beats', 'gets past', 'tops']) : pick(['edges', 'holds off', 'slips past']);
-  let where = ot ? ' in overtime' : '';
-  if (po){
-    const [cls, round] = po.label.split(' Playoffs · ');
-    where += round === 'State Championship' ? ` for the ${cls} title` : ` in ${cls} ${round === 'First Round' ? 'first round' : `${round.toLowerCase()} round`}`;
-  }
-  const rec = s => { const r = (recordText(x.teams[s], s, false, gameWeek(x), m.score) || '').split(',')[0]; return /^\d+-\d+/.test(r) ? r : ''; };
-  const up = pick(['improved', 'moved']), wr = rec(W), lr = rec(L), star = m.S && storyStar(x, m.S, W);
-  const text = star ? `${star.name} ${star.line}${wr ? ` as ${won} ${up} to ${wr}` : ''}.`
-    : wr ? `${won} ${up} to ${wr}${lr ? (po ? ` and ${lost}'s season ended at ${lr}` : ` while ${lost} fell to ${lr}`) : ''}.` : '';
-  return {head:`${won} ${verb} ${lost} ${hi}-${lo}${where}`, text};
+  let where = ot ? ' in overtime' : mercy ? ' by mercy rule' : W === 'A' && round !== 'State Championship' ? ' on the road' : '';
+  if (po) where += round === 'State Championship' ? ` for the ${cls} title` : ` in ${cls} ${round === 'First Round' ? 'first round' : `${round.toLowerCase()} round`}`;
+  const star = m.S && storyStar(x, m.S, W), up = pick(['improved', 'moved']), next = po && BK_ROUND_NAMES[BK_ROUND_NAMES.indexOf(round) + 1];
+  // The most telling things first; the card has room for two sentences, and a star's line is the first when there is one.
+  const facts = [
+    storyNote(x),
+    mercy ? 'The mercy rule ended it early.' : '',
+    champL ? (po ? `${won} ended the title defense of the ${champL} champions.` : `${lost} is the defending ${champL} champion.`) : '',
+    upset,
+    revenge ? `${won} avenged a ${wasL}-${wasW} loss on ${met.day}.` : met && wasW > wasL ? `${won} also won the first meeting, ${wasW}-${wasL}, on ${met.day}.` : met ? `The first meeting ended in a ${wasW}-${wasL} tie on ${met.day}.` : '',
+    lr && ll === 1 && lw >= 3 ? `${lost} had been unbeaten.` : '',
+    champW && wr ? `The defending ${champW} champion ${!wl && ww >= 5 ? `stays perfect at ${wr}` : `${up} to ${wr}`}.` : '',
+    !champW && wr && !wl && ww >= 5 ? `${won} stays perfect at ${wr}.` : '',
+    wr && ww === 1 && wl >= 3 ? `${won} got its first win of the season.` : '',
+    next ? `${won} moves on to the ${next === 'State Championship' ? 'state championship' : `${next.toLowerCase()} round`}.` : ''
+  ].filter(Boolean);
+  const said = [];
+  if (star) said.push(`${star.name} ${star.line}${facts.length || !wr ? '' : ` as ${won} ${up} to ${wr}`}.`);
+  said.push(...facts);
+  if (!said.length && wr) said.push(`${won} ${up} to ${wr}${lr ? (po ? ` and ${lost}'s season ended at ${lr}` : ` while ${lost} fell to ${lr}`) : ''}.`);
+  return {head:`${won} ${verb} ${lost} ${hi}-${lo}${where}`, text:said.slice(0, 2).join(' ')};
 }
 
 // Where a game stands, for a live card and the Scoreboard menu: "2nd & 7" and "SOU 29". Only a game scored play by play knows.
@@ -10456,7 +10513,7 @@ function loadRatings(){
   if (pre.rat !== null) return;
   pre.rat = false;
   fetch(DATA + '/ratings.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
-    .then(d => { if (d && d.teams){ pre.rat = d; renderPreview(); if (typeof renderRail === 'function') renderRail(); } }).catch(() => {});
+    .then(d => { if (d && d.teams){ pre.rat = d; renderPreview(); renderScoreboard(); if (typeof renderRail === 'function') renderRail(); } }).catch(() => {});
 }
 // The ratings are keyed the way KPreps writes a school ("towanda-circle"); match ours to them once each.
 const RAT_ALIAS = {'field-kindley':'coffeyville'};
