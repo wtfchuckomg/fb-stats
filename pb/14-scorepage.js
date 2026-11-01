@@ -167,7 +167,7 @@ function earlierMeeting(x){
 function gameStory(x, m, po){
   const a = +m.score.A, b = +m.score.H, hi = Math.max(a, b), lo = Math.min(a, b);
   if (!m.fin || m.ff || /forfeit/i.test(m.status || '') || (!lo && hi <= 2)) return null;
-  if (a === b) return {head:`${schoolName(x.teams.A.name)} and ${schoolName(x.teams.H.name)} tie ${a}-${b}`, text:storyNote(x)};
+  if (a === b) return {head:`${schoolName(x.teams.A.name)} and ${schoolName(x.teams.H.name)} play to a tie`, text:storyNote(x)};
   const W = a > b ? 'A' : 'H', L = W === 'A' ? 'H' : 'A', gap = hi - lo, won = schoolName(x.teams[W].name), lost = schoolName(x.teams[L].name);
   const ot = m.q > 4 || /OT/.test(m.status || '');
   const three = s => m.lines ? m.lines[s].slice(0, 3).reduce((n, v) => n + (+v || 0), 0) : 0;
@@ -214,7 +214,7 @@ function gameStory(x, m, po){
   if (star) said.push(`${star.name} ${star.line}${facts.length || !wr ? '' : ` as ${won} ${up} to ${wr}`}.`);
   said.push(...facts);
   if (!said.length && wr) said.push(`${won} ${up} to ${wr}${lr ? (po ? ` and ${lost}'s season ended at ${lr}` : ` while ${lost} fell to ${lr}`) : ''}.`);
-  return {head:`${won} ${verb} ${lost} ${hi}-${lo}${where}`, text:said.slice(0, 2).join(' ')};
+  return {head:`${won} ${verb} ${lost}${where}`, text:said.slice(0, 2).join(' ')};
 }
 
 // Where a game stands, for a live card and the Scoreboard menu: "2nd & 7" and "SOU 29". Only a game scored play by play knows.
