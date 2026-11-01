@@ -271,20 +271,17 @@ function boardGame(x){
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
   // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
   const acts = m.pre ? `<a class="bbtn" href="?preview=${id}">Preview</a>` : m.quick || !hasStats(x) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a><a class="bbtn box" href="?game=${id}&amp;tab=pbp">Play-By-Play</a>`;
-  // The admin can hide any game from the scoreboards, or bring a hidden one back.
-  const off = ui.admin && isHidden(x);
-  const hide = ui.admin ? `${off ? '<span class="b-hidtag">Hidden</span>' : ''}<button type="button" class="bhide" data-hide="${esc(x.id)}"${x.opp ? ' data-opp="1"' : ''}>${off ? 'Show' : 'Hide'}</button>` : '';
   const typeActs = typing ? `<label class="b-ot"><input type="checkbox" id="bs-ot"${board.edit.ot ? ' checked' : ''}> OT/F</label>
     <button type="button" class="bbtn" data-bsave>Save final</button>${['A', 'H'].map(s => `<button type="button" class="bhide" data-bff="${s}">${esc(x.teams[s].abbr || shortName(x.teams[s].name))} won by forfeit</button>`).join('')}<button type="button" class="bhide" data-bcancel>Cancel</button>` : '';
   // ESPN's four columns: the score, the story or the field, the leaders, the buttons. Either middle column takes
   // the other's room when it has nothing to show.
   const leaders = m.pre ? preLeaders(x) : m.S ? boardLeaders(x, m.S) : '';
   const mid = boardField(x, m) || (story ? `<div class="bs-h">${esc(story.head)}</div>${story.text ? `<p class="bs-t">— ${esc(story.text)}</p>` : ''}` : '');
-  return `<article class="bgame${m.live ? ' live' : ''}${off ? ' bhid' : ''}${typing ? ' btyping' : ''}${mid && leaders ? '' : ' one'}${mid ? '' : ' nomid'}">
+  return `<article class="bgame${m.live ? ' live' : ''}${typing ? ' btyping' : ''}${mid && leaders ? '' : ' one'}${mid ? '' : ' nomid'}">
     <div class="b-main"><div class="b-hd"><span class="b-st">${status}</span><div class="bt-q b-qh">${cells(i => i < 4 ? i + 1 : 'OT')}</div><span class="b-th">T</span><i></i></div>
       ${team('A')}${team('H')}${po ? `<div class="b-round">${esc(po.label)}</div>` : ''}</div>
     ${mid ? `<div class="b-mid">${mid}</div>` : ''}${leaders ? `<div class="b-lead">${leaders}</div>` : ''}
-    <div class="b-acts"><span class="b-st2">${status}</span>${typing ? typeActs : acts + hide}</div></article>`;
+    <div class="b-acts"><span class="b-st2">${status}</span>${typing ? typeActs : acts}</div></article>`;
 }
 
 /* ---------- beside the games: a league's standings and the quick links ---------- */
@@ -328,9 +325,9 @@ function renderScoreboard(){
   if (!keys.includes(key)){ keys.push(key); keys.sort(); }
   const tabs = keys.map(k => `<button type="button" class="bw${k === key ? ' on' : ''}" data-bweek="${k}"${k === key ? ' aria-current="true"' : ''}>
     <b>${esc(weekLabel(k).toUpperCase())}</b><span>${weekRange(k)}</span></button>`).join('');
-  // The State Scoreboard: games with stats kept on them, and games still to come. The admin also sees hidden games, faded.
+  // The State Scoreboard: games with stats kept on them, and games still to come.
   // The league board draws on the same pool as the State board, then keeps its own schools' games.
-  const games = weekGames(key, ui.admin, ui.state || ui.av).filter(x => (!ui.state && !ui.av) ? inBuco(x) : (onStateBoard(x) && (!ui.av || inAvctl(x)) && inBoardClass(x))), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
+  const games = weekGames(key, false, ui.state || ui.av).filter(x => (!ui.state && !ui.av) ? inBuco(x) : (onStateBoard(x) && (!ui.av || inAvctl(x)) && inBoardClass(x))), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (board.err) body = note(board.err);
   else if (scores.ready !== key && !allGames.list) body = note('Loading scores…');
@@ -361,11 +358,10 @@ function renderScoreboard(){
   }
   const old = box.querySelector('.bweeks'), keep = old ? old.scrollLeft : 0;
   const act = document.activeElement, focusId = act && box.contains(act) && act.id && act.id.startsWith('bs-') ? act.id : null;
-  const adminNote = ui.admin ? `<p class="badmin">Signed in as the admin: Hide takes a game off both scoreboards, the scores strip and BUCO Stats for everyone.${ui.state ? ' Games between other schools stay hidden (they still count toward records) until you Show one.' : ''}</p>` : '';
   // Live games redraw the page every few seconds: the side bar stays put unless it changed, or its list would snap shut.
   const rail = boardRail(), oldRail = box.querySelector('.b-rail');
   box.innerHTML = `<div class="bd-grid"><div class="bd-col"><section class="bcard bhead"><div class="bhead-top"><h1 class="b-title">${boardName()} Scoreboard</h1>${ui.state ? `<select class="c-sel bcls" id="bcls" aria-label="Class">
-      ${['', ...BOARD_CLASSES].map(c => `<option value="${esc(c)}"${c === board.cls ? ' selected' : ''}>${c ? esc(c) : 'All classes'}</option>`).join('')}</select>` : ''}</div>${adminNote}
+      ${['', ...BOARD_CLASSES].map(c => `<option value="${esc(c)}"${c === board.cls ? ' selected' : ''}>${c ? esc(c) : 'All classes'}</option>`).join('')}</select>` : ''}</div>
     <div class="bweeks-wrap"><button type="button" class="bw-arrow" data-bscroll="-1" aria-label="Earlier weeks">${chev('M9 1L1 9l8 8')}</button>
       <div class="bweeks">${tabs}</div>
       <button type="button" class="bw-arrow" data-bscroll="1" aria-label="Later weeks">${chev('M1 1l8 8-8 8')}</button></div></section>${body}</div><aside class="b-rail"></aside></div>`;
@@ -383,8 +379,6 @@ document.addEventListener('click', e => {
   if (!ui.board || !e.target.closest) return;
   const w = e.target.closest('[data-bweek]');
   if (w){ ui.week = w.dataset.bweek; history.pushState(null, '', boardUrl()); renderScores(); return renderScoreboard(); }
-  const h = e.target.closest('[data-hide]');
-  if (h) return toggleHide(h.dataset.hide, !!h.dataset.opp);
   const ty = e.target.closest('[data-bscore]');
   if (ty){
     const x = weekGames(ui.week, ui.admin, true).find(y => y.id === ty.dataset.bscore);
