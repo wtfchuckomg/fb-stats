@@ -112,7 +112,7 @@ function indexGames(){
   const have = [...byId.values()];
   [...have, ...schedMissing(have)].map(kpFill).forEach(x => {
     // Only a game the admin hid is left out; the other schools' games count even though they're off the scoreboards.
-    if (hideList.ids.has(x.id)) return;
+    if (isHidden(x)) return;
     const stats = x.stats != null ? !!x.stats : (x.kind !== 'score' && ((x.plays && x.plays.length) || !!x.box)), wk = x.wk || gameWeek(x);
     ['A', 'H'].forEach(side => {
       const opp = side === 'A' ? 'H' : 'A', k = canonSchool(x.teams[side].name), key = wk + '|' + canonSchool(x.teams[opp].name);

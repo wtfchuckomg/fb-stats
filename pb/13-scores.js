@@ -184,7 +184,7 @@ const hideList = {ids:new Set(), shown:new Set(), api:null, unsub:null};
 // Off the scoreboards: a game the admin hid, or a game between two other schools (an opponent's own game) that the
 // admin hasn't shown. Those still count toward records and team schedules; only a game the admin hid doesn't.
 // Only a game the admin hid with the Hide button is hidden; every other game shows, opponents' games included.
-const isHidden = x => !!x && hideList.ids.has(x.id);
+const isHidden = x => !!x && (hideList.ids.has(x.id) || bkStale(x));
 function watchHidden(api){
   hideList.api = api;
   if (hideList.unsub) return;

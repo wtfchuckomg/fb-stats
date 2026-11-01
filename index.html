@@ -5156,7 +5156,7 @@ const hideList = {ids:new Set(), shown:new Set(), api:null, unsub:null};
 // Off the scoreboards: a game the admin hid, or a game between two other schools (an opponent's own game) that the
 // admin hasn't shown. Those still count toward records and team schedules; only a game the admin hid doesn't.
 // Only a game the admin hid with the Hide button is hidden; every other game shows, opponents' games included.
-const isHidden = x => !!x && hideList.ids.has(x.id);
+const isHidden = x => !!x && (hideList.ids.has(x.id) || bkStale(x));
 function watchHidden(api){
   hideList.api = api;
   if (hideList.unsub) return;
@@ -8305,7 +8305,7 @@ function indexGames(){
   const have = [...byId.values()];
   [...have, ...schedMissing(have)].map(kpFill).forEach(x => {
     // Only a game the admin hid is left out; the other schools' games count even though they're off the scoreboards.
-    if (hideList.ids.has(x.id)) return;
+    if (isHidden(x)) return;
     const stats = x.stats != null ? !!x.stats : (x.kind !== 'score' && ((x.plays && x.plays.length) || !!x.box)), wk = x.wk || gameWeek(x);
     ['A', 'H'].forEach(side => {
       const opp = side === 'A' ? 'H' : 'A', k = canonSchool(x.teams[side].name), key = wk + '|' + canonSchool(x.teams[opp].name);
@@ -11153,15 +11153,22 @@ const schedPair = x => `${gameWeek(x)}|${[kpAlias(x.teams.A.name), kpAlias(x.tea
 // Our own bracket's playoff games (pb/35-bracket.js) come after the file's: a game the file has already, or the site,
 // is that game.
 function schedMissing(have, week){
-  const taken = new Set(), ids = new Set();
-  have.forEach(x => { if (x && x.teams && x.teams.A && x.teams.H){ taken.add(schedPair(x)); ids.add(x.id); } });
+  const taken = new Set(), ids = new Set(), busy = new Set(), today = ymd(new Date());
+  const seats = x => [x.teams.A.name, x.teams.H.name].map(n => `${gameWeek(x)}|${kpAlias(n)}`);
+  have.forEach(x => { if (x && x.teams && x.teams.A && x.teams.H){ taken.add(schedPair(x)); ids.add(x.id); seats(x).forEach(k => busy.add(k)); } });
   return (sched.rows ? schedStubs() : []).concat(bkSched.list).filter(x => {
     if ((week && gameWeek(x) !== week) || ids.has(x.id) || hideList.ids.has(x.id) || taken.has(schedPair(x))) return false;
-    taken.add(schedPair(x)); return true;
+    // Our bracket is a forecast, and a coin flip can change it (Chuck, 2026-11-01): it never gives a school a second game
+    // in a week, and a round whose day has gone by was played as it was played, not as we had it.
+    if (x.playoff && (x.date < today || seats(x).some(k => busy.has(k)))) return false;
+    taken.add(schedPair(x)); seats(x).forEach(k => busy.add(k)); return true;
   });
 }
 // Playoff games from our bracket, as schedule entries; filled in by bkSchedRefresh once the games are indexed.
 const bkSched = {list:[], sig:''};
+// A bracket game someone saved a score on, from a version of the bracket a coin flip has since changed: its two schools
+// don't meet in the bracket as it stands, so it never happened.
+const bkStale = x => /^bk26-/.test(x.id || '') && !!bkSched.info && !!x.teams && !bkSched.info.has([canonSchool(x.teams.A.name), canonSchool(x.teams.H.name)].sort().join('|'));
 // Take a schedule game off for good. It has no document of its own to delete, so it joins the admin's hidden
 // list, which every page already reads; showing it again on a scoreboard brings it back.
 async function schedRemove(id){
