@@ -87,7 +87,7 @@ function leaderName(x, s, n){
   return `${p.length > 1 ? `${p[0][0]}. ${p.slice(1).join(' ')}` : full}${num ? ` #${n}` : ''}`;
 }
 function boardLeaders(x, S){
-  // Each team's best in each group, side by side — the visitors first, the way the score reads.
+  // The game's best in each group, whichever side he's on, ESPN style; the school's logo stands where ESPN has a headshot.
   const best = (s, k) => { let top = null; Object.values(S.pl[s]).forEach(p => { if (p.n !== 'team' && p[k] > 0 && (!top || p[k] > top[k])) top = p; }); return top; };
   const td = (n, w) => n ? `, <b>${n}</b> ${w}` : '';
   return [
@@ -95,11 +95,12 @@ function boardLeaders(x, S){
     ['Rush', 'ry', p => `<b>${p.ru}</b> CAR, <b>${p.ry}</b> YDS${td(p.rtd, 'TD')}`],
     ['Rec', 'rey', p => `<b>${p.re}</b> REC, <b>${p.rey}</b> YDS${td(p.retd, 'TD')}`]
   ].map(([k, key, line]) => {
-    const sides = ['A', 'H'].map(s => ({s, p:best(s, key)})).filter(o => o.p);
-    if (!sides.length) return '';
-    return `<div class="bl"><span class="bl-k">${k}</span><div class="bl-body">${sides.map(o => `<div class="bl-side">
-      <div class="bl-who">${plLink(leaderFull(x, o.s, o.p.n), x.teams[o.s].name, esc(leaderName(x, o.s, o.p.n)))} <span>- ${esc(x.teams[o.s].abbr)}</span></div>
-      <div class="bl-line">${line(o.p)}</div></div>`).join('')}</div></div>`;
+    const o = ['A', 'H'].map(s => ({s, p:best(s, key)})).filter(o => o.p).sort((a, b) => b.p[key] - a.p[key])[0];
+    if (!o) return '';
+    const [nm, no] = leaderName(x, o.s, o.p.n).split(/ (?=#\d+$)/);
+    return `<div class="bp"><span class="bp-k">${k}</span>${markFor(x.teams[o.s], 30)}<div class="bp-body">
+      <div class="bp-who">${plLink(leaderFull(x, o.s, o.p.n), x.teams[o.s].name, esc(nm))} <span>${no ? `${esc(no)} - ` : ''}${esc(x.teams[o.s].abbr || shortName(x.teams[o.s].name))}</span></div>
+      <div class="bp-line">${line(o.p)}</div></div></div>`;
   }).join('');
 }
 // Before kickoff there's no box score to show, so the space beside the line score carries what each team
@@ -121,7 +122,7 @@ function preLeaders(x){
   }).join('');
   return rows ? `<div class="bl-hd">Season leaders</div>${rows}` : '';
 }
-/* ---------- a final in one sentence, the way a recap opens (Chuck, 2026-10-31, ESPN's scoreboard) ----------
+/* ---------- a final's headline and first line, the way a recap opens (Chuck, 2026-10-31, ESPN's scoreboard) ----------
    Written here from the game's own numbers, so it costs nothing and never says what the numbers don't. */
 const storyTd = n => n === 1 ? 'a touchdown' : `${['', '', 'two', 'three', 'four', 'five', 'six'][n] || n} touchdowns`;
 // The winner's best day with the ball: yards, and 20 for each touchdown. Under 50 of those isn't worth a mention.
@@ -139,43 +140,51 @@ function storyStar(x, S, s){
 }
 function gameStory(x, m, po){
   const a = +m.score.A, b = +m.score.H, hi = Math.max(a, b), lo = Math.min(a, b);
-  if (!m.fin || m.ff || a === b || /forfeit/i.test(m.status || '') || (!lo && hi <= 2)) return '';
+  if (!m.fin || m.ff || a === b || /forfeit/i.test(m.status || '') || (!lo && hi <= 2)) return null;
   const W = a > b ? 'A' : 'H', L = W === 'A' ? 'H' : 'A', gap = hi - lo, won = schoolName(x.teams[W].name), lost = schoolName(x.teams[L].name);
   const ot = m.q > 4 || /OT/.test(m.status || '');
   const three = s => m.lines ? m.lines[s].slice(0, 3).reduce((n, v) => n + (+v || 0), 0) : 0;
   const hash = [...x.id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0) >>> 0, pick = l => l[hash % l.length];
-  const verb = ot ? 'outlasted' : three(L) > three(W) ? pick(['rallied past', 'came back to beat']) : !lo ? pick(['shut out', 'blanked'])
-    : gap >= 28 ? pick(['rolled past', 'routed', 'cruised past']) : gap >= 14 ? pick(['beat', 'pulled away from', 'handled'])
-    : gap >= 7 ? pick(['beat', 'got past', 'topped']) : pick(['edged', 'held off', 'slipped past']);
+  const verb = ot ? 'outlasts' : three(L) > three(W) ? pick(['rallies past', 'comes back to beat']) : !lo ? pick(['shuts out', 'blanks'])
+    : gap >= 28 ? pick(['rolls past', 'routs', 'cruises past']) : gap >= 14 ? pick(['beats', 'pulls away from', 'handles'])
+    : gap >= 7 ? pick(['beats', 'gets past', 'tops']) : pick(['edges', 'holds off', 'slips past']);
   let where = ot ? ' in overtime' : '';
   if (po){
     const [cls, round] = po.label.split(' Playoffs · ');
-    where += round === 'State Championship' ? ` in the ${cls} state championship`
-      : ` in the ${round === 'First Round' ? 'first round' : `${round.toLowerCase()} round`} of the ${cls} playoffs`;
+    where += round === 'State Championship' ? ` for the ${cls} title` : ` in ${cls} ${round === 'First Round' ? 'first round' : `${round.toLowerCase()} round`}`;
   }
-  const game = `${won} ${verb} ${lost} ${hi}-${lo}${where}`, star = m.S && storyStar(x, m.S, W);
-  if (star) return `${star.name} ${star.line} as ${game}.`;
-  const rec = (recordText(x.teams[W], W, false, gameWeek(x), m.score) || '').split(',')[0];
-  return /^\d+-\d+/.test(rec) ? `${game} to ${pick(['improve', 'move'])} to ${rec}.` : `${game}.`;
+  const rec = s => { const r = (recordText(x.teams[s], s, false, gameWeek(x), m.score) || '').split(',')[0]; return /^\d+-\d+/.test(r) ? r : ''; };
+  const up = pick(['improved', 'moved']), wr = rec(W), lr = rec(L), star = m.S && storyStar(x, m.S, W);
+  const text = star ? `${star.name} ${star.line}${wr ? ` as ${won} ${up} to ${wr}` : ''}.`
+    : wr ? `${won} ${up} to ${wr}${lr ? (po ? ` and ${lost}'s season ended at ${lr}` : ` while ${lost} fell to ${lr}`) : ''}.` : '';
+  return {head:`${won} ${verb} ${lost} ${hi}-${lo}${where}`, text};
 }
 
-// A live game's field, small (Chuck, 2026-10-31): the ball under the team's mark, the drive so far, the line to gain,
-// the down and the last play. Only a game being scored play by play knows these.
-function boardField(x, m){
+// Where a game stands, for a live card and the Scoreboard menu: "2nd & 7" and "SOU 29". Only a game scored play by play knows.
+function gameSit(x, m){
   const r = m.rp, st = r && r.st;
-  if (!st || !m.live || x.box || !(x.plays || []).length || st.final) return '';
-  const FL = r.FL, s = st.poss, play = st.phase === 'play', pos = st.phase === 'kick' ? st.kickFrom : st.spot;
-  const X = v => (s === 'A' ? v : FL - v) / FL * 100, to = X(pos), d = r.drives[r.drives.length - 1];
-  let ticks = ''; for (let y = 10; y < FL; y += 10) ticks += `<i class="bf-tick" style="left:${y / FL * 100}%"></i>`;
-  const from = play && d && d.open && d.team === s ? X(d.start) : to, lo = Math.min(from, to);
+  if (!st || !m.live || x.box || !(x.plays || []).length || st.final) return null;
+  const FL = r.FL, pos = st.phase === 'kick' ? st.kickFrom : st.spot;
   const down = st.phase === 'kick' ? (st.kickKind === 'free' ? 'Free kick' : 'Kickoff') : st.phase === 'try' ? 'Try'
     : `${ord(st.down)} & ${st.ltg >= FL ? 'Goal' : fy(st.ltg - st.spot)}`;
+  return {down, at:r.yl(st.poss, pos), pos};
+}
+// A live game's field, measured off ESPN's (Chuck, 2026-11-01): the team's mark on a pin with the way it's going, the
+// drive so far on the bar, then the down and the last play.
+function boardField(x, m){
+  const sit = gameSit(x, m); if (!sit) return '';
+  const r = m.rp, st = r.st, FL = r.FL, s = st.poss, play = st.phase === 'play';
+  const X = v => (s === 'A' ? v : FL - v) / FL * 100, to = X(sit.pos), d = r.drives[r.drives.length - 1];
+  let ticks = ''; for (let y = 0; y <= FL; y += 10) ticks += `<i class="bf-tick" style="left:${y / FL * 100}%"></i>`;
+  const from = play && d && d.open && d.team === s ? X(d.start) : to, lo = Math.min(from, to);
   const last = [...r.log].reverse().find(e => e.text && !['set', 'note'].includes(e.t));
-  const end = t => `<b>${esc(x.teams[t].abbr || shortName(x.teams[t].name))}</b>`;
-  return `<div class="bf"><div class="bf-track">${ticks}${play && st.ltg < FL ? `<i class="bf-ltg" style="left:${X(st.ltg)}%"></i>` : ''}
-      <i class="bf-drive" style="left:${lo}%;width:${Math.abs(to - from)}%"></i><span class="bf-pin" style="left:${to}%">${markFor(x.teams[s], 20)}</span></div>
-    <div class="bf-lbl">${end('A')}${[20, FL / 2, FL - 20].map(y => `<span style="left:${y / FL * 100}%">${y <= FL / 2 ? y : FL - y}</span>`).join('')}${end('H')}</div>
-    <div class="bf-sit">${esc(down)} at ${esc(r.yl(s, pos))}</div>
+  const end = t => esc(x.teams[t].abbr || shortName(x.teams[t].name));
+  const marks = [[0, end('A')], ...[20, FL / 2, FL - 20].map(y => [y, y <= FL / 2 ? y : FL - y]), [FL, end('H')]];
+  return `<div class="bf"><div class="bf-chart"><i class="bf-bar"></i><div class="bf-yds">${ticks}
+      <i class="bf-drive" style="left:${lo}%;width:${Math.abs(to - from)}%"></i>
+      <span class="bf-pin" style="left:${to}%">${markFor(x.teams[s], 16)}</span><i class="bf-dir ${s === 'A' ? 'r' : 'l'}" style="left:${to}%"></i>
+      ${marks.map(([y, t]) => `<span class="bf-mk" style="left:${y / FL * 100}%">${t}</span>`).join('')}</div></div>
+    <div class="bf-sit">${esc(sit.down)} at ${esc(sit.at)}</div>
     ${last ? `<p class="bf-last"><b>Last Play:</b> ${esc(last.text)}</p>` : ''}</div>`;
 }
 
@@ -198,22 +207,26 @@ function boardGame(x){
     const cls = m.fin && lead ? (lead === s ? ' won' : ' lose') : '', sd = po && po.seed(T[s].name);
     // The record as entered, ESPN style "(1-2, 0-1 Away)"; until then the mascot and Away or Home.
     const rec = recordText(T[s], s, !m.fin, gameWeek(x), m.score), sub = rec ? `(${rec})` : [T[s].mascot || listMascot(T[s].name), s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
-    return `<div class="bt${cls}"><div class="bt-team">${markFor(T[s], 29)}<div class="bt-id">
+    return `<div class="bt${cls}"><div class="bt-team">${markFor(T[s], 32)}<div class="bt-id">
         <div class="bt-name"><span>${sd ? `<b class="bt-seed">${sd}</b>` : ''}<a class="tlink" href="?team=${encodeURIComponent(schoolName(T[s].name))}">${esc(schoolName(T[s].name))}</a></span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub${rec ? ' rec' : ''}">${esc(sub)}</div></div></div>
       <div class="bt-q">${cells((i, n) => m.lines[s][i] == null ? 'X' : m.typed ? m.lines[s][i] : (i < 4 && m.fin && i >= (m.qPlayed || 0)) ? 'X' : n < played ? m.lines[s][i] : '')}</div>${tCell(s)}<i class="sc-win"></i></div>`;
   };
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
   // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
-  const acts = m.pre ? `<a class="bbtn" href="?preview=${id}">Preview</a>` : m.quick || !hasStats(x) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a>`;
+  const acts = m.pre ? `<a class="bbtn" href="?preview=${id}">Preview</a>` : m.quick || !hasStats(x) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a><a class="bbtn box" href="?game=${id}&amp;tab=pbp">Play-By-Play</a>`;
   // The admin can hide any game from the scoreboards, or bring a hidden one back.
   const off = ui.admin && isHidden(x);
   const hide = ui.admin ? `${off ? '<span class="b-hidtag">Hidden</span>' : ''}<button type="button" class="bhide" data-hide="${esc(x.id)}"${x.opp ? ' data-opp="1"' : ''}>${off ? 'Show' : 'Hide'}</button>` : '';
   const typeActs = typing ? `<label class="b-ot"><input type="checkbox" id="bs-ot"${board.edit.ot ? ' checked' : ''}> OT/F</label>
     <button type="button" class="bbtn" data-bsave>Save final</button>${['A', 'H'].map(s => `<button type="button" class="bhide" data-bff="${s}">${esc(x.teams[s].abbr || shortName(x.teams[s].name))} won by forfeit</button>`).join('')}<button type="button" class="bhide" data-bcancel>Cancel</button>` : '';
-  return `<article class="bgame${m.live ? ' live' : ''}${off ? ' bhid' : ''}${typing ? ' btyping' : ''}">
+  // ESPN's four columns: the score, the story or the field, the leaders, the buttons. Either middle column takes
+  // the other's room when it has nothing to show.
+  const leaders = m.pre ? preLeaders(x) : m.S ? boardLeaders(x, m.S) : '';
+  const mid = boardField(x, m) || (story ? `<div class="bs-h">${esc(story.head)}</div>${story.text ? `<p class="bs-t">— ${esc(story.text)}</p>` : ''}` : '');
+  return `<article class="bgame${m.live ? ' live' : ''}${off ? ' bhid' : ''}${typing ? ' btyping' : ''}${mid && leaders ? '' : ' one'}${mid ? '' : ' nomid'}">
     <div class="b-main"><div class="b-hd"><span class="b-st">${status}</span><div class="bt-q b-qh">${cells(i => i < 4 ? i + 1 : 'OT')}</div><span class="b-th">T</span><i></i></div>
-      ${team('A')}${team('H')}${po ? `<div class="b-round">${esc(po.label)}</div>` : ''}${story ? `<p class="b-story">${esc(story)}</p>` : ''}${boardField(x, m)}</div>
-    <div class="b-lead">${m.pre ? preLeaders(x) : m.S ? boardLeaders(x, m.S) : ''}</div>
+      ${team('A')}${team('H')}${po ? `<div class="b-round">${esc(po.label)}</div>` : ''}</div>
+    ${mid ? `<div class="b-mid">${mid}</div>` : ''}${leaders ? `<div class="b-lead">${leaders}</div>` : ''}
     <div class="b-acts"><span class="b-st2">${status}</span>${typing ? typeActs : acts + hide}</div></article>`;
 }
 

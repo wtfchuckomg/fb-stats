@@ -140,13 +140,33 @@ a.abtn{display:inline-block;text-decoration:none}
 .navdrop[aria-expanded="true"] svg{transform:rotate(180deg)}
 .navmenu{position:absolute;top:100%;z-index:50;min-width:240px;padding:8px 0;background:#FFFFFF;border-radius:0 0 6px 6px;box-shadow:0 10px 28px rgba(0,0,0,.25)}
 .navmenu::before{content:"";position:absolute;top:-8px;left:var(--notch,40px);border:8px solid transparent;border-top:0;border-bottom-color:#FFFFFF}
-.navmenu a{display:block;padding:14px 28px;font:400 17px/1.2 var(--sans);color:var(--muted);text-decoration:none;white-space:nowrap}
+.navmenu a{display:block;padding:12px 24px;font:400 13px/1.2 var(--sans);color:var(--muted);text-decoration:none;white-space:nowrap}
 .navmenu a:hover{background:#F1F2F3;color:var(--ink-2)}
 .navmenu a.on{color:var(--ink-2);font-weight:600}
+/* The Scoreboard menu: the week's games two across, each with the clock, the down and the spot beside it. */
+.navmenu.ms{width:min(680px,calc(100vw - 16px));padding:14px 18px 6px;max-height:min(78vh,620px);overflow-y:auto}
+.navmenu.ms::before{display:none}
+.ms-hd{padding-bottom:10px;font:700 13px/1.2 var(--sans);text-transform:uppercase;color:var(--ink-2)}
+.ms-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px}
+.ms-none{grid-column:1/-1;margin:0;padding:14px 0;font-size:13px;color:var(--muted)}
+.navmenu a.ms-game,.ms-game{display:grid;grid-template-columns:minmax(0,1fr) 76px;align-items:center;padding:9px 0;border-top:1px dotted var(--line);white-space:normal;color:var(--ink-2);text-decoration:none}
+.navmenu a.ms-game:hover{background:none}
+.navmenu a.ms-game:hover .ms-name{text-decoration:underline}
+.ms-teams{min-width:0;display:grid;gap:5px;padding-right:12px}
+.ms-row{display:flex;align-items:center;gap:8px;min-width:0;font:500 13px/20px var(--sans);color:var(--ink-2)}
+.ms-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-row b{margin-left:auto;font:700 14px/20px var(--sans);font-variant-numeric:tabular-nums}
+.ms-row.lose b{color:var(--muted)}
+.ms-st{min-width:0;border-left:1px solid var(--line);padding-left:10px;display:grid;gap:3px;font:400 11px/13px var(--sans);color:var(--muted)}
+.ms-st b{font-weight:600;color:var(--ink-2)}
+.ms-game.live .ms-st b{color:#DD0000}
+.navmenu a.ms-all{padding:12px 0;border-top:1px dotted var(--line);font-size:13px;color:var(--blue)}
+.navmenu a.ms-all:hover{background:none;color:var(--blue);text-decoration:underline}
+@media (max-width:640px){.ms-grid{grid-template-columns:minmax(0,1fr)}}
 /* State › Leagues: a second list inside the State menu, swapped in by Leagues and out by the back link. */
 .navmenu .nm-go{float:right;margin-left:18px;font-weight:600}
 .navmenu .nm-list{max-height:min(66vh,560px);overflow-y:auto;overscroll-behavior:contain}
-.navmenu .nm-back{font-size:15px;font-weight:600;color:var(--ink-2);border-bottom:1px solid var(--line);margin-bottom:4px}
+.navmenu .nm-back{font-size:13px;font-weight:600;color:var(--ink-2);border-bottom:1px solid var(--line);margin-bottom:4px}
 /* A league's page: its name over three tabs, Standings, Player Stats and Team Stats. */
 .lg-head .c-tabs{margin-bottom:0}
 .lg-divs{margin:2px 0 6px}
@@ -651,7 +671,8 @@ table.pl-log td.nm .cn-in,table.pl-log td.nm .pl-opp{min-width:0;overflow:hidden
   .c-pl small{font-size:11.5px;flex:none}.pl-yr{display:none}
   .pl-full{display:none}.pl-short{display:inline}}
 .bday{margin:0;padding-bottom:16px;border-bottom:1px dotted var(--line);font:600 16.8px/1.2 var(--sans);color:var(--ink-2)}
-.bgame{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) 190px;gap:0 22px;padding:18px 0;border-bottom:1px dotted var(--line)}
+/* Each game, ESPN's four columns measured off its scoreboard: 320, 240, 220 and 120 on a 900 row. */
+.bgame{display:grid;grid-template-columns:minmax(0,290fr) minmax(0,240fr) minmax(0,220fr) 116px;padding:16px 0;border-bottom:1px dotted var(--line)}
 .bgame:last-child{border-bottom:0;padding-bottom:2px}
 /* ---------- home page (?home), laid out like ESPN's front page: links on the left, the story in the middle,
    headlines on the right; two columns on a tablet, one on a phone with the headlines right under the hero ---------- */
@@ -752,24 +773,27 @@ button.h-btn{cursor:pointer}
 .tp-id p.tp-sub{font:600 13px/1.3 var(--sans);letter-spacing:.06em}
 .tp-manual{flex-basis:100%;margin:0}
 .tp-recs{display:flex;gap:26px}
-.bt-seed{font:500 .78em/1 var(--sans);color:var(--muted);margin-right:6px;font-variant-numeric:tabular-nums}
-.b-round{margin-top:14px;font:400 13.5px/1.3 var(--sans);color:var(--muted)}
-.b-story{margin:10px 0 0;font:400 13.5px/1.4 var(--sans);color:var(--ink-2)}
+.bt-seed{font:500 11px/1 var(--sans);color:var(--muted);margin-right:6px;font-variant-numeric:tabular-nums}
+.b-round{margin-top:10px;font:400 11px/13px var(--sans);color:var(--muted)}
+.b-mid{min-width:0;border-left:1px dotted var(--line);padding:0 8px;margin-left:12px}
+.bs-h{font:600 13px/16px var(--sans);color:var(--ink-2)}
+.bs-t{margin:6px 0 0;font:400 11px/13px var(--sans);color:var(--muted);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
 /* a live game's field */
-.bf{margin-top:12px}
-.bf-track{position:relative;height:8px;margin-top:36px;background:var(--line);border-radius:2px}
-.bf-tick{position:absolute;top:0;bottom:0;width:1px;background:var(--card)}
-.bf-ltg{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--red)}
-.bf-drive{position:absolute;top:0;bottom:0;background:var(--ink-2)}
-.bf-pin{position:absolute;bottom:13px;width:30px;height:30px;margin-left:-15px;display:flex;align-items:center;justify-content:center;background:var(--card);border-radius:50%;box-shadow:0 1px 4px rgba(18,18,19,.3)}
-.bf-pin::after{content:"";position:absolute;left:50%;bottom:-7px;margin-left:-5px;border:5px solid transparent;border-bottom:0;border-top:8px solid var(--card)}
-.bf-lbl{position:relative;display:flex;justify-content:space-between;margin-top:6px;height:12px;font:400 11.5px/1 var(--sans);color:var(--muted)}
-.bf-lbl b{font-weight:600}
-.bf-lbl span{position:absolute;top:0;transform:translateX(-50%)}
-.bf-sit{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);text-align:center;font:600 14px/1.2 var(--sans);color:var(--ink-2)}
-.bf-last{margin:8px 0 0;font:400 13px/1.35 var(--sans);color:var(--muted)}
-.bf-last b{font-weight:600;color:var(--ink-2)}
-/* the scoreboards' right side, on a wide window only */
+.bf-chart{position:relative;height:58px}
+.bf-bar{position:absolute;left:0;right:0;top:30px;height:6px;border-radius:3px;background:#CBCCCE}
+.bf-yds{position:absolute;left:4.5%;right:4.5%;top:0;bottom:0}
+.bf-tick{position:absolute;top:25px;width:1px;height:15px;background:#CBCCCE}
+.bf-drive{position:absolute;top:29px;height:8px;background:#48494A}
+.bf-pin{position:absolute;top:1px;width:22px;height:22px;margin-left:-11px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#FFFFFF;box-shadow:0 0 0 2px #CBCCCE inset}
+.bf-pin::after{content:"";position:absolute;left:50%;top:21px;margin-left:-5px;border:5px solid transparent;border-bottom:0;border-top:6px solid #CBCCCE}
+.bf-dir{position:absolute;top:7px;border:5px solid transparent;border-left:0;border-right:0}
+.bf-dir.r{margin-left:14px;border-left:7px solid #48494A}
+.bf-dir.l{margin-left:-21px;border-right:7px solid #48494A}
+.bf-mk{position:absolute;top:42px;transform:translateX(-50%);font:400 9px/10px var(--sans);color:var(--muted)}
+.bf-sit{height:23px;border-top:1px solid #CBCCCE;border-bottom:1px solid #CBCCCE;text-align:center;font:700 11px/21px var(--sans);color:#48494A}
+.bf-last{margin:8px 0 0;font:400 11px/12.65px var(--sans);color:var(--muted);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.bf-last b{font-weight:700}
+/* beside the games */
 .bd-grid{display:block}
 .bd-col{display:flex;flex-direction:column;gap:14px;min-width:0}
 .b-rail{display:none}
@@ -878,33 +902,49 @@ button.h-btn{cursor:pointer}
 .badmin{margin:0 0 12px;font:500 13.5px/1.4 var(--sans);color:var(--muted)}
 .bhide{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:22px;padding:6.4px 11.2px;font:600 10.4px/1 var(--sans);cursor:pointer}
 .bhide:hover{color:var(--red);border-color:var(--red)}
-.bgame.bhid .b-main,.bgame.bhid .b-lead{opacity:.4}
+.bgame.bhid .b-main,.bgame.bhid .b-mid,.bgame.bhid .b-lead{opacity:.4}
 .b-hidtag{font:700 11.5px/1 var(--sans);text-transform:uppercase;letter-spacing:.05em;color:var(--red)}
 .b-main{min-width:0}
-.b-hd,.bt{display:grid;grid-template-columns:minmax(0,1fr) auto 54px 12px;align-items:center;column-gap:10px}
-.b-st,.b-st2{font:700 11.2px/1 var(--sans);text-transform:uppercase;color:var(--ink-2);white-space:nowrap}
-.bgame.live .b-st,.bgame.live .b-st2{color:var(--red)}
+.b-hd,.bt{display:grid;grid-template-columns:minmax(0,1fr) auto 50px 12px;align-items:center}
+.b-st,.b-st2{font:600 11px/13px var(--sans);text-transform:uppercase;color:var(--ink-2);white-space:nowrap}
+.bgame.live .b-st,.bgame.live .b-st2{color:#DD0000;text-transform:none}
 .bt-q{display:flex}
-.bt-q span{width:29px;text-align:center;font:400 11.5px/1 var(--sans);font-variant-numeric:tabular-nums;color:var(--muted)}
-.b-qh span,.b-th{font:700 11.2px/1 var(--sans);color:var(--ink-2);text-align:center}
+.bt-q span{width:20px;text-align:center;font:400 11px/13px var(--sans);font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.bt.lose .bt-q span{color:var(--muted)}
+.b-qh span,.b-th{font:600 11px/13px var(--sans);color:var(--ink-2);text-align:center}
 .bt{padding-top:12px}
 /* T over the last digit of the totals, which sit flush right */
 .b-th{text-align:right;padding-right:3px}
-.bt-team{display:flex;align-items:center;gap:14px;min-width:0}
+.bt-team{display:flex;align-items:center;gap:10px;min-width:0}
 .bt-id{min-width:0}
-.bt-name{display:flex;align-items:center;gap:8px;font:500 14px/1.2 var(--sans);color:var(--ink-2)}
-.bt-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bt-sub{font:400 11px/1.3 var(--sans);color:var(--muted)}
-.bt-t{text-align:right;font:700 23.6px/1 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.bt-name{display:flex;align-items:center;gap:8px;font:600 14px/16px var(--sans);color:var(--ink-2)}
+/* one line, cut off short of the quarters, like ESPN's "Oklahoma St..." */
+.bt-name{min-width:0}
+.bt-name span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bt-sub{font:400 11px/13px var(--sans);color:var(--muted)}
+.bt-t{text-align:right;font:800 17px/22px var(--sans);font-variant-numeric:tabular-nums;color:var(--ink-2)}
 .bt.lose .bt-t{color:var(--muted)}
 .b-type{background:none;border:0;border-radius:8px;cursor:text;min-width:48px;min-height:34px;padding:0 4px;margin:-4px -4px -4px 0}
 .b-type:hover,.b-type:focus-visible{background:var(--line);outline:none}
 .b-type:empty{border:1.5px dashed var(--line);min-width:44px;min-height:30px;margin:-3px 0}
 .bt-t .b-in{width:64px;min-width:0;max-width:64px;flex:none;height:36px;padding:0 8px;text-align:right;font:700 20px/1 var(--sans);font-variant-numeric:tabular-nums}
 .b-ot{display:flex;align-items:center;gap:6px;font:600 12px/1 var(--sans);color:var(--muted)}
-.bt .sc-win{visibility:hidden}
+.bt .sc-win{visibility:hidden;justify-self:end}
 .bt.won .sc-win{visibility:visible}
-.b-lead{min-width:0;border-left:1px dotted var(--line);padding-left:20px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.b-lead{min-width:0;border-left:1px dotted var(--line);padding-left:8px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.bgame.one .b-mid,.bgame.one .b-lead{grid-column:2/4}
+.bgame.nomid .b-lead{margin-left:12px}
+.bgame.btyping{grid-template-columns:minmax(0,1fr) 190px}
+.bgame.btyping .b-mid,.bgame.btyping .b-lead{display:none}
+.bgame.btyping .b-acts{grid-column:2}
+/* the game's passer, rusher and receiver */
+.bp{display:grid;grid-template-columns:30px 30px minmax(0,1fr);align-items:center;column-gap:6px}
+.bp-k{font:400 10px/12px var(--sans);text-transform:uppercase;color:var(--muted)}
+.bp-body{min-width:0}
+.bp-who{font:400 11px/13px var(--sans);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bp-who span{font-size:10px;text-transform:uppercase;color:var(--muted)}
+.bp-line{margin-top:1px;font:400 10px/12px var(--sans);color:var(--muted)}
+.bp-line b{font-weight:600;color:var(--ink-2)}
 .bl-hd{font:600 11.2px/1 var(--sans);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .bl{display:grid;grid-template-columns:52px minmax(0,1fr);align-items:center;gap:10px}
 .bl-k{font:400 11.2px/1 var(--sans);text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
@@ -915,11 +955,19 @@ button.h-btn{cursor:pointer}
 .bl-who span{font-weight:400;color:var(--muted)}
 .bl-line{font:400 11px/1.3 var(--sans);color:var(--muted)}
 .bl-line b{font-weight:700;color:var(--ink-2)}
-.b-acts{display:flex;flex-direction:column;justify-content:center;gap:12px}
+.b-acts{grid-column:4;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:12px}
+.b-acts .bbtn{width:100px}
+.b-acts .bhide{width:100px}
+.bgame.btyping .b-acts{align-items:stretch}
+.bgame.btyping .b-acts .bbtn,.bgame.btyping .b-acts .bhide{width:auto}
 .b-st2{display:none}
-.bbtn{display:block;text-align:center;padding:8.5px 12px;border:1.5px solid var(--blue);border-radius:26px;color:var(--blue);font:600 11px/1 var(--sans);text-decoration:none}
+.bbtn{display:block;text-align:center;padding:7.5px 8px;border:1px solid var(--blue);border-radius:50px;color:var(--blue);font:600 11px/1 var(--sans);text-decoration:none}
 .bbtn:hover{background:#F1F5FD}
-@media (max-width:1000px){.bgame{grid-template-columns:minmax(0,1fr) 170px}.b-lead{display:none}}
+@media (max-width:1000px){.bgame{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) 116px}.b-lead{display:none}
+  .bgame.one .b-mid{grid-column:2}.b-acts{grid-column:3}
+  .bgame.nomid{grid-template-columns:minmax(0,1fr) 116px}.bgame.nomid .b-acts{grid-column:2}}
+@media (max-width:760px){.bgame,.bgame.btyping{grid-template-columns:minmax(0,1fr) 116px}.b-acts{grid-column:2;grid-row:1}
+  .b-mid,.bgame.one .b-mid{grid-column:1/-1;grid-row:2;border-left:0;margin:10px 0 0;padding:0}}
 @media (max-width:640px){
   .board{padding:10px 10px 30px;gap:10px}
   .bcard{padding:14px 14px;border-radius:12px}
@@ -929,19 +977,20 @@ button.h-btn{cursor:pointer}
   .bw b{font-size:12px}
   .bw span{font-size:10px}
   .bday{font-size:15px;padding-bottom:10px}
-  .bgame{grid-template-columns:minmax(0,1fr) auto;gap:0 12px;padding:12px 0}
+  .bgame{padding:12px 0}
   .b-hd,.bt-q,.bt-sub:not(.rec){display:none}
   .bt-sub.rec{font-size:11px}
   .bt{grid-template-columns:minmax(0,1fr) auto 12px;padding:3px 0}
   .bt-team{gap:10px}
   .bt-team .tlogo,.bt-team .tmono{width:22px!important;height:22px!important;font-size:8px!important}
   .bt-name{font-size:14px}
-  /* long Kansas school names wrap to a second line rather than getting cut off */
+  /* no quarters on a phone: long Kansas school names wrap to a second line rather than getting cut off */
   .bt-name span{white-space:normal;overflow:visible;line-height:1.15}
   .bt-t{font-size:18px}
   /* a fixed right column, so every game's divider lines up, with room left for the names */
-  .bgame{grid-template-columns:minmax(0,1fr) 106px}
-  .b-acts{border-left:1px solid var(--line);padding-left:12px;gap:8px;min-width:0;justify-content:center}
+  .bgame,.bgame.nomid,.bgame.btyping{grid-template-columns:minmax(0,1fr) 106px}
+  .b-acts{border-left:1px solid var(--line);padding-left:12px;gap:8px;min-width:0;align-items:stretch;justify-content:center}
+  .b-acts .bbtn,.b-acts .bhide{width:auto}
   .b-st2{display:block;font-size:12px;text-transform:none}
   .bbtn{padding:8px 8px;font-size:11px}
   .bbtn.box{display:none}
@@ -1507,12 +1556,14 @@ try { if (new URLSearchParams(location.search).has('embed')) document.documentEl
   <div class="navbar-in">
     <div class="navlinks">
       <a class="navlink" data-nav="home" href="?home">Home</a>
+      <button type="button" class="navlink navdrop" data-nav="board" id="nav-board" aria-haspopup="true" aria-expanded="false" aria-controls="nav-board-menu">Scoreboard<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <button type="button" class="navlink navdrop" data-nav="buco" id="nav-buco" aria-haspopup="true" aria-expanded="false" aria-controls="nav-buco-menu">Butler County<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
       <button type="button" class="navlink navdrop" data-nav="state" id="nav-state" aria-haspopup="true" aria-expanded="false" aria-controls="nav-state-menu">State<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
       <a class="navlink" data-nav="po26" id="nav-po26" href="?bracket=6A">2026 Playoffs</a>
       <a class="navlink" data-nav="phist" id="nav-phist" href="?brackets">Playoff History</a>
       <a class="navlink" data-nav="tracker" id="nav-tracker" href="?tracker">Game Tracker</a>
     </div>
+    <div class="navmenu ms" id="nav-board-menu" role="menu" aria-label="Scoreboard" hidden></div>
     <div class="navmenu" id="nav-buco-menu" role="menu" aria-label="Butler County" hidden>
       <a role="menuitem" data-menu="scores" href="?scores">Scoreboard</a>
       <a role="menuitem" data-menu="stats" href="?stats">Player Stats</a>
@@ -5400,6 +5451,7 @@ function menuHere(){
     const cur = menuHere(), lg = LG ? `?league=${LG.slug}` : ui.stand || AV_STATS ? '?standings' : '';
     menu.querySelectorAll('[data-menu]').forEach(x => x.classList.toggle('on', x.dataset.menu === cur));
     menu.querySelectorAll('[data-league]').forEach(x => x.classList.toggle('on', x.getAttribute('href') === lg));
+    if (menu.id === 'nav-board-menu') renderNavBoard();
     menu.hidden = false; btn.setAttribute('aria-expanded', 'true');
     if (menu.querySelector('.nm-panel')) panel('main'); else place();
   };
@@ -5411,6 +5463,25 @@ function menuHere(){
   addEventListener('resize', close);
   });
 })();
+
+// The Scoreboard menu (Chuck, 2026-11-01): the week's games at a glance, the live ones first. Drawn when it opens and
+// again as scores come in while it's open.
+const NAV_BOARD_GAMES = 8;
+function navBoardGame(x){
+  const m = summary(x), T = x.teams, lead = leadOf(m), sit = gameSit(x, m);
+  const row = s => `<div class="ms-row${m.fin && lead && lead !== s ? ' lose' : ''}">${markFor(T[s], 20)}<span class="ms-name">${esc(schoolName(T[s].name))}</span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}<b>${m.pre ? '' : m.score[s]}</b></div>`;
+  const side = `<div class="ms-st"><b>${esc(m.status)}</b>${sit ? `<span>${esc(sit.down)}</span><span>${esc(sit.at)}</span>` : ''}</div>`;
+  const id = encodeURIComponent(x.id), href = hasStats(x) ? `?game=${id}` : m.pre ? `?preview=${id}` : '', cls = `ms-game${m.live ? ' live' : ''}`, inner = `<div class="ms-teams">${row('A')}${row('H')}</div>${side}`;
+  return href ? `<a class="${cls}" role="menuitem" href="${href}">${inner}</a>` : `<div class="${cls}">${inner}</div>`;
+}
+function renderNavBoard(){
+  const box = $('#nav-board-menu'); if (!box) return;
+  const key = shownWeek(), rank = x => { const m = summary(x); return m.live ? (x.plays && x.plays.length ? 0 : 1) : m.fin ? 2 : 3; };
+  const games = weekGames(key, false, true).map(x => [rank(x), x]).sort((a, b) => a[0] - b[0] || (a[0] === 2 ? (b[1].updated || 0) - (a[1].updated || 0) : 0)).slice(0, NAV_BOARD_GAMES).map(o => o[1]);
+  box.innerHTML = `<div class="ms-hd">${esc(weekLabel(key))} Scoreboard</div>
+    <div class="ms-grid">${games.length ? games.map(navBoardGame).join('') : `<p class="ms-none">No games for ${esc(weekLabel(key))} yet.</p>`}</div>
+    <a class="ms-all" role="menuitem" href="?state=${key}">Complete scoreboard</a>`;
+}
 
 // The phone tab bar: mark the section you're in, and point Gamecast at a game worth watching.
 function lgTabs(){
@@ -5427,6 +5498,7 @@ function lgTabs(){
 }
 function renderScores(){
   lgTabs();
+  if ($('#nav-board-menu') && !$('#nav-board-menu').hidden) renderNavBoard();
   const box = $('#scores'); if (!box) return;
   const key = shownWeek(); watchWeek(key);
   // On the AVCTL's pages the strip is the league's games, on a league's (State › Leagues) that league's, and on
@@ -5683,7 +5755,7 @@ function leaderName(x, s, n){
   return `${p.length > 1 ? `${p[0][0]}. ${p.slice(1).join(' ')}` : full}${num ? ` #${n}` : ''}`;
 }
 function boardLeaders(x, S){
-  // Each team's best in each group, side by side — the visitors first, the way the score reads.
+  // The game's best in each group, whichever side he's on, ESPN style; the school's logo stands where ESPN has a headshot.
   const best = (s, k) => { let top = null; Object.values(S.pl[s]).forEach(p => { if (p.n !== 'team' && p[k] > 0 && (!top || p[k] > top[k])) top = p; }); return top; };
   const td = (n, w) => n ? `, <b>${n}</b> ${w}` : '';
   return [
@@ -5691,11 +5763,12 @@ function boardLeaders(x, S){
     ['Rush', 'ry', p => `<b>${p.ru}</b> CAR, <b>${p.ry}</b> YDS${td(p.rtd, 'TD')}`],
     ['Rec', 'rey', p => `<b>${p.re}</b> REC, <b>${p.rey}</b> YDS${td(p.retd, 'TD')}`]
   ].map(([k, key, line]) => {
-    const sides = ['A', 'H'].map(s => ({s, p:best(s, key)})).filter(o => o.p);
-    if (!sides.length) return '';
-    return `<div class="bl"><span class="bl-k">${k}</span><div class="bl-body">${sides.map(o => `<div class="bl-side">
-      <div class="bl-who">${plLink(leaderFull(x, o.s, o.p.n), x.teams[o.s].name, esc(leaderName(x, o.s, o.p.n)))} <span>- ${esc(x.teams[o.s].abbr)}</span></div>
-      <div class="bl-line">${line(o.p)}</div></div>`).join('')}</div></div>`;
+    const o = ['A', 'H'].map(s => ({s, p:best(s, key)})).filter(o => o.p).sort((a, b) => b.p[key] - a.p[key])[0];
+    if (!o) return '';
+    const [nm, no] = leaderName(x, o.s, o.p.n).split(/ (?=#\d+$)/);
+    return `<div class="bp"><span class="bp-k">${k}</span>${markFor(x.teams[o.s], 30)}<div class="bp-body">
+      <div class="bp-who">${plLink(leaderFull(x, o.s, o.p.n), x.teams[o.s].name, esc(nm))} <span>${no ? `${esc(no)} - ` : ''}${esc(x.teams[o.s].abbr || shortName(x.teams[o.s].name))}</span></div>
+      <div class="bp-line">${line(o.p)}</div></div></div>`;
   }).join('');
 }
 // Before kickoff there's no box score to show, so the space beside the line score carries what each team
@@ -5717,7 +5790,7 @@ function preLeaders(x){
   }).join('');
   return rows ? `<div class="bl-hd">Season leaders</div>${rows}` : '';
 }
-/* ---------- a final in one sentence, the way a recap opens (Chuck, 2026-10-31, ESPN's scoreboard) ----------
+/* ---------- a final's headline and first line, the way a recap opens (Chuck, 2026-10-31, ESPN's scoreboard) ----------
    Written here from the game's own numbers, so it costs nothing and never says what the numbers don't. */
 const storyTd = n => n === 1 ? 'a touchdown' : `${['', '', 'two', 'three', 'four', 'five', 'six'][n] || n} touchdowns`;
 // The winner's best day with the ball: yards, and 20 for each touchdown. Under 50 of those isn't worth a mention.
@@ -5735,43 +5808,51 @@ function storyStar(x, S, s){
 }
 function gameStory(x, m, po){
   const a = +m.score.A, b = +m.score.H, hi = Math.max(a, b), lo = Math.min(a, b);
-  if (!m.fin || m.ff || a === b || /forfeit/i.test(m.status || '') || (!lo && hi <= 2)) return '';
+  if (!m.fin || m.ff || a === b || /forfeit/i.test(m.status || '') || (!lo && hi <= 2)) return null;
   const W = a > b ? 'A' : 'H', L = W === 'A' ? 'H' : 'A', gap = hi - lo, won = schoolName(x.teams[W].name), lost = schoolName(x.teams[L].name);
   const ot = m.q > 4 || /OT/.test(m.status || '');
   const three = s => m.lines ? m.lines[s].slice(0, 3).reduce((n, v) => n + (+v || 0), 0) : 0;
   const hash = [...x.id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0) >>> 0, pick = l => l[hash % l.length];
-  const verb = ot ? 'outlasted' : three(L) > three(W) ? pick(['rallied past', 'came back to beat']) : !lo ? pick(['shut out', 'blanked'])
-    : gap >= 28 ? pick(['rolled past', 'routed', 'cruised past']) : gap >= 14 ? pick(['beat', 'pulled away from', 'handled'])
-    : gap >= 7 ? pick(['beat', 'got past', 'topped']) : pick(['edged', 'held off', 'slipped past']);
+  const verb = ot ? 'outlasts' : three(L) > three(W) ? pick(['rallies past', 'comes back to beat']) : !lo ? pick(['shuts out', 'blanks'])
+    : gap >= 28 ? pick(['rolls past', 'routs', 'cruises past']) : gap >= 14 ? pick(['beats', 'pulls away from', 'handles'])
+    : gap >= 7 ? pick(['beats', 'gets past', 'tops']) : pick(['edges', 'holds off', 'slips past']);
   let where = ot ? ' in overtime' : '';
   if (po){
     const [cls, round] = po.label.split(' Playoffs · ');
-    where += round === 'State Championship' ? ` in the ${cls} state championship`
-      : ` in the ${round === 'First Round' ? 'first round' : `${round.toLowerCase()} round`} of the ${cls} playoffs`;
+    where += round === 'State Championship' ? ` for the ${cls} title` : ` in ${cls} ${round === 'First Round' ? 'first round' : `${round.toLowerCase()} round`}`;
   }
-  const game = `${won} ${verb} ${lost} ${hi}-${lo}${where}`, star = m.S && storyStar(x, m.S, W);
-  if (star) return `${star.name} ${star.line} as ${game}.`;
-  const rec = (recordText(x.teams[W], W, false, gameWeek(x), m.score) || '').split(',')[0];
-  return /^\d+-\d+/.test(rec) ? `${game} to ${pick(['improve', 'move'])} to ${rec}.` : `${game}.`;
+  const rec = s => { const r = (recordText(x.teams[s], s, false, gameWeek(x), m.score) || '').split(',')[0]; return /^\d+-\d+/.test(r) ? r : ''; };
+  const up = pick(['improved', 'moved']), wr = rec(W), lr = rec(L), star = m.S && storyStar(x, m.S, W);
+  const text = star ? `${star.name} ${star.line}${wr ? ` as ${won} ${up} to ${wr}` : ''}.`
+    : wr ? `${won} ${up} to ${wr}${lr ? (po ? ` and ${lost}'s season ended at ${lr}` : ` while ${lost} fell to ${lr}`) : ''}.` : '';
+  return {head:`${won} ${verb} ${lost} ${hi}-${lo}${where}`, text};
 }
 
-// A live game's field, small (Chuck, 2026-10-31): the ball under the team's mark, the drive so far, the line to gain,
-// the down and the last play. Only a game being scored play by play knows these.
-function boardField(x, m){
+// Where a game stands, for a live card and the Scoreboard menu: "2nd & 7" and "SOU 29". Only a game scored play by play knows.
+function gameSit(x, m){
   const r = m.rp, st = r && r.st;
-  if (!st || !m.live || x.box || !(x.plays || []).length || st.final) return '';
-  const FL = r.FL, s = st.poss, play = st.phase === 'play', pos = st.phase === 'kick' ? st.kickFrom : st.spot;
-  const X = v => (s === 'A' ? v : FL - v) / FL * 100, to = X(pos), d = r.drives[r.drives.length - 1];
-  let ticks = ''; for (let y = 10; y < FL; y += 10) ticks += `<i class="bf-tick" style="left:${y / FL * 100}%"></i>`;
-  const from = play && d && d.open && d.team === s ? X(d.start) : to, lo = Math.min(from, to);
+  if (!st || !m.live || x.box || !(x.plays || []).length || st.final) return null;
+  const FL = r.FL, pos = st.phase === 'kick' ? st.kickFrom : st.spot;
   const down = st.phase === 'kick' ? (st.kickKind === 'free' ? 'Free kick' : 'Kickoff') : st.phase === 'try' ? 'Try'
     : `${ord(st.down)} & ${st.ltg >= FL ? 'Goal' : fy(st.ltg - st.spot)}`;
+  return {down, at:r.yl(st.poss, pos), pos};
+}
+// A live game's field, measured off ESPN's (Chuck, 2026-11-01): the team's mark on a pin with the way it's going, the
+// drive so far on the bar, then the down and the last play.
+function boardField(x, m){
+  const sit = gameSit(x, m); if (!sit) return '';
+  const r = m.rp, st = r.st, FL = r.FL, s = st.poss, play = st.phase === 'play';
+  const X = v => (s === 'A' ? v : FL - v) / FL * 100, to = X(sit.pos), d = r.drives[r.drives.length - 1];
+  let ticks = ''; for (let y = 0; y <= FL; y += 10) ticks += `<i class="bf-tick" style="left:${y / FL * 100}%"></i>`;
+  const from = play && d && d.open && d.team === s ? X(d.start) : to, lo = Math.min(from, to);
   const last = [...r.log].reverse().find(e => e.text && !['set', 'note'].includes(e.t));
-  const end = t => `<b>${esc(x.teams[t].abbr || shortName(x.teams[t].name))}</b>`;
-  return `<div class="bf"><div class="bf-track">${ticks}${play && st.ltg < FL ? `<i class="bf-ltg" style="left:${X(st.ltg)}%"></i>` : ''}
-      <i class="bf-drive" style="left:${lo}%;width:${Math.abs(to - from)}%"></i><span class="bf-pin" style="left:${to}%">${markFor(x.teams[s], 20)}</span></div>
-    <div class="bf-lbl">${end('A')}${[20, FL / 2, FL - 20].map(y => `<span style="left:${y / FL * 100}%">${y <= FL / 2 ? y : FL - y}</span>`).join('')}${end('H')}</div>
-    <div class="bf-sit">${esc(down)} at ${esc(r.yl(s, pos))}</div>
+  const end = t => esc(x.teams[t].abbr || shortName(x.teams[t].name));
+  const marks = [[0, end('A')], ...[20, FL / 2, FL - 20].map(y => [y, y <= FL / 2 ? y : FL - y]), [FL, end('H')]];
+  return `<div class="bf"><div class="bf-chart"><i class="bf-bar"></i><div class="bf-yds">${ticks}
+      <i class="bf-drive" style="left:${lo}%;width:${Math.abs(to - from)}%"></i>
+      <span class="bf-pin" style="left:${to}%">${markFor(x.teams[s], 16)}</span><i class="bf-dir ${s === 'A' ? 'r' : 'l'}" style="left:${to}%"></i>
+      ${marks.map(([y, t]) => `<span class="bf-mk" style="left:${y / FL * 100}%">${t}</span>`).join('')}</div></div>
+    <div class="bf-sit">${esc(sit.down)} at ${esc(sit.at)}</div>
     ${last ? `<p class="bf-last"><b>Last Play:</b> ${esc(last.text)}</p>` : ''}</div>`;
 }
 
@@ -5794,22 +5875,26 @@ function boardGame(x){
     const cls = m.fin && lead ? (lead === s ? ' won' : ' lose') : '', sd = po && po.seed(T[s].name);
     // The record as entered, ESPN style "(1-2, 0-1 Away)"; until then the mascot and Away or Home.
     const rec = recordText(T[s], s, !m.fin, gameWeek(x), m.score), sub = rec ? `(${rec})` : [T[s].mascot || listMascot(T[s].name), s === 'A' ? 'Away' : 'Home'].filter(Boolean).join(' · ');
-    return `<div class="bt${cls}"><div class="bt-team">${markFor(T[s], 29)}<div class="bt-id">
+    return `<div class="bt${cls}"><div class="bt-team">${markFor(T[s], 32)}<div class="bt-id">
         <div class="bt-name"><span>${sd ? `<b class="bt-seed">${sd}</b>` : ''}<a class="tlink" href="?team=${encodeURIComponent(schoolName(T[s].name))}">${esc(schoolName(T[s].name))}</a></span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}</div><div class="bt-sub${rec ? ' rec' : ''}">${esc(sub)}</div></div></div>
       <div class="bt-q">${cells((i, n) => m.lines[s][i] == null ? 'X' : m.typed ? m.lines[s][i] : (i < 4 && m.fin && i >= (m.qPlayed || 0)) ? 'X' : n < played ? m.lines[s][i] : '')}</div>${tCell(s)}<i class="sc-win"></i></div>`;
   };
   const status = `${esc(m.status)}${m.men === 8 ? ' <span class="sc-8">8-man</span>' : ''}`;
   // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
-  const acts = m.pre ? `<a class="bbtn" href="?preview=${id}">Preview</a>` : m.quick || !hasStats(x) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a>`;
+  const acts = m.pre ? `<a class="bbtn" href="?preview=${id}">Preview</a>` : m.quick || !hasStats(x) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a><a class="bbtn box" href="?game=${id}&amp;tab=pbp">Play-By-Play</a>`;
   // The admin can hide any game from the scoreboards, or bring a hidden one back.
   const off = ui.admin && isHidden(x);
   const hide = ui.admin ? `${off ? '<span class="b-hidtag">Hidden</span>' : ''}<button type="button" class="bhide" data-hide="${esc(x.id)}"${x.opp ? ' data-opp="1"' : ''}>${off ? 'Show' : 'Hide'}</button>` : '';
   const typeActs = typing ? `<label class="b-ot"><input type="checkbox" id="bs-ot"${board.edit.ot ? ' checked' : ''}> OT/F</label>
     <button type="button" class="bbtn" data-bsave>Save final</button>${['A', 'H'].map(s => `<button type="button" class="bhide" data-bff="${s}">${esc(x.teams[s].abbr || shortName(x.teams[s].name))} won by forfeit</button>`).join('')}<button type="button" class="bhide" data-bcancel>Cancel</button>` : '';
-  return `<article class="bgame${m.live ? ' live' : ''}${off ? ' bhid' : ''}${typing ? ' btyping' : ''}">
+  // ESPN's four columns: the score, the story or the field, the leaders, the buttons. Either middle column takes
+  // the other's room when it has nothing to show.
+  const leaders = m.pre ? preLeaders(x) : m.S ? boardLeaders(x, m.S) : '';
+  const mid = boardField(x, m) || (story ? `<div class="bs-h">${esc(story.head)}</div>${story.text ? `<p class="bs-t">— ${esc(story.text)}</p>` : ''}` : '');
+  return `<article class="bgame${m.live ? ' live' : ''}${off ? ' bhid' : ''}${typing ? ' btyping' : ''}${mid && leaders ? '' : ' one'}${mid ? '' : ' nomid'}">
     <div class="b-main"><div class="b-hd"><span class="b-st">${status}</span><div class="bt-q b-qh">${cells(i => i < 4 ? i + 1 : 'OT')}</div><span class="b-th">T</span><i></i></div>
-      ${team('A')}${team('H')}${po ? `<div class="b-round">${esc(po.label)}</div>` : ''}${story ? `<p class="b-story">${esc(story)}</p>` : ''}${boardField(x, m)}</div>
-    <div class="b-lead">${m.pre ? preLeaders(x) : m.S ? boardLeaders(x, m.S) : ''}</div>
+      ${team('A')}${team('H')}${po ? `<div class="b-round">${esc(po.label)}</div>` : ''}</div>
+    ${mid ? `<div class="b-mid">${mid}</div>` : ''}${leaders ? `<div class="b-lead">${leaders}</div>` : ''}
     <div class="b-acts"><span class="b-st2">${status}</span>${typing ? typeActs : acts + hide}</div></article>`;
 }
 
