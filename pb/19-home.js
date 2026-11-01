@@ -71,18 +71,24 @@ const HOME_CODES = [
   ['to A · eoq · undo', 'Augusta timeout / end of the quarter / take back the last play'],
   ['3-10 8:40 @54', 'Extras on any line: the clock time, and the tackler after @']];
 
-function renderHome(){
-  if (!ui.home) return;
-  const tracker = '?tracker';
-  const icon = d => `<svg viewBox="0 0 20 20" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  const I = {board:'M3 4h14v12H3zM3 8h14M8 8v8', stats:'M4 16V9M10 16V4M16 16v-5', team:'M10 3l6 3v4c0 4-3 6-6 7-3-1-6-3-6-7V6z',
+function homeIcon(d){ return `<svg viewBox="0 0 20 20" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`; }
+function homeIcons(){
+  return {board:'M3 4h14v12H3zM3 8h14M8 8v8', stats:'M4 16V9M10 16V4M16 16v-5', team:'M10 3l6 3v4c0 4-3 6-6 7-3-1-6-3-6-7V6z',
     state:'M3 6l5-2 4 2 5-2v10l-5 2-4-2-5 2zM8 4v10M12 6v10', track:'M3 10h3l2-5 4 10 2-5h3', ext:'M8 4H4v12h12v-4M11 3h6v6M17 3l-8 8',
     list:'M4 5h12M4 10h12M4 15h8', link:'M8 12l4-4M7 9l-2 2a3 3 0 004 4l2-2M13 11l2-2a3 3 0 00-4-4L9 7', shield:'M10 3l6 3v4c0 4-3 6-6 7-3-1-6-3-6-7V6z'};
-  // With two leagues' pages here, each stats link says whose it is.
-  const links = [['BUCO Scoreboard', '?scores', I.board], ['BUCO Player Stats', '?stats', I.stats], ['BUCO Team Stats', '?stats=team', I.team],
+}
+// The quick links, on the front page and beside the scoreboards. With two leagues' pages here, each stats link says whose it is.
+function homeLinks(){
+  const I = homeIcons(), tracker = '?tracker';
+  return [['BUCO Scoreboard', '?scores', I.board], ['BUCO Player Stats', '?stats', I.stats], ['BUCO Team Stats', '?stats=team', I.team],
     ['AVCTL Scoreboard', `${AV_SITE}?avctl`, I.board], ['AVCTL Standings', `${AV_SITE}?standings`, I.list], ['AVCTL Player Stats', `${AV_SITE}?avstats`, I.stats], ['AVCTL Team Stats', `${AV_SITE}?avstats=team`, I.team],
     ['State Scoreboard', '?state', I.state], ['Game Tracker', tracker, I.track],
     ['Media Rankings', 'https://kansasmediarankings.com/', I.ext], ['Pick ’Em', 'https://picks.kansasmediarankings.com', I.ext], ['Helmets', 'https://kansasmediarankings.com/helmets.html', I.ext]];
+}
+
+function renderHome(){
+  if (!ui.home) return;
+  const tracker = '?tracker', icon = homeIcon, I = homeIcons(), links = homeLinks();
   $('#board').innerHTML = `<div class="hpage">
     <aside class="h-left"><section class="hcard"><h2 class="h-rail">${icon(I.link)}Quick Links</h2>
       <nav class="h-links" aria-label="Quick links">${links.map(([t, h, d]) => `<a href="${esc(h)}">${icon(d)}${esc(t)}</a>`).join('')}</nav></section></aside>

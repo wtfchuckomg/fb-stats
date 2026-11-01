@@ -357,7 +357,7 @@ function summary(x){
     else status = `${c && clockUsed(x) ? mmss(c.run ? c.s - (Date.now() - c.at) / 1000 : c.s) + ' - ' : ''}${ord(st.q)}`;
   }
   return {quick:false, fin:st.final, pre:!x.plays.length && !x.box, live, q:st.q, status, score:st.score, poss:live && st.phase !== 'kick' ? st.poss : null,
-    lines:st.lines, qPlayed:st.qPlayed, typed:st.typed, S:r.S, men:rulesOf(x).men};
+    lines:st.lines, qPlayed:st.qPlayed, typed:st.typed, S:r.S, men:rulesOf(x).men, rp:r};
 }
 const leadOf = m => m.score.A === m.score.H ? null : m.score.A > m.score.H ? 'A' : 'H';
 // Is anyone keeping stats on this game? A snapshot game says so itself; a live copy carries the plays.

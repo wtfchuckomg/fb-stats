@@ -121,6 +121,64 @@ function preLeaders(x){
   }).join('');
   return rows ? `<div class="bl-hd">Season leaders</div>${rows}` : '';
 }
+/* ---------- a final in one sentence, the way a recap opens (Chuck, 2026-10-31, ESPN's scoreboard) ----------
+   Written here from the game's own numbers, so it costs nothing and never says what the numbers don't. */
+const storyTd = n => n === 1 ? 'a touchdown' : `${['', '', 'two', 'three', 'four', 'five', 'six'][n] || n} touchdowns`;
+// The winner's best day with the ball: yards, and 20 for each touchdown. Under 50 of those isn't worth a mention.
+function storyStar(x, S, s){
+  let top = null;
+  Object.values(S.pl[s]).forEach(p => {
+    const name = p.n === 'team' ? '' : leaderFull(x, s, p.n);
+    if (!name || name.startsWith('#')) return;
+    [['threw for', p.py, p.ptd], ['ran for', p.ry, p.rtd], [`caught ${p.re === 1 ? 'a pass' : `${p.re} passes`} for`, p.rey, p.retd]].forEach(([did, y, t]) => {
+      const v = (y || 0) + (t || 0) * 20;
+      if (v >= 50 && (!top || v > top.v)) top = {v, name, line:`${did} ${plural2(y || 0, 'yard')}${t ? ` and ${storyTd(t)}` : ''}`};
+    });
+  });
+  return top;
+}
+function gameStory(x, m, po){
+  const a = +m.score.A, b = +m.score.H, hi = Math.max(a, b), lo = Math.min(a, b);
+  if (!m.fin || m.ff || a === b || /forfeit/i.test(m.status || '') || (!lo && hi <= 2)) return '';
+  const W = a > b ? 'A' : 'H', L = W === 'A' ? 'H' : 'A', gap = hi - lo, won = schoolName(x.teams[W].name), lost = schoolName(x.teams[L].name);
+  const ot = m.q > 4 || /OT/.test(m.status || '');
+  const three = s => m.lines ? m.lines[s].slice(0, 3).reduce((n, v) => n + (+v || 0), 0) : 0;
+  const hash = [...x.id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0) >>> 0, pick = l => l[hash % l.length];
+  const verb = ot ? 'outlasted' : three(L) > three(W) ? pick(['rallied past', 'came back to beat']) : !lo ? pick(['shut out', 'blanked'])
+    : gap >= 28 ? pick(['rolled past', 'routed', 'cruised past']) : gap >= 14 ? pick(['beat', 'pulled away from', 'handled'])
+    : gap >= 7 ? pick(['beat', 'got past', 'topped']) : pick(['edged', 'held off', 'slipped past']);
+  let where = ot ? ' in overtime' : '';
+  if (po){
+    const [cls, round] = po.label.split(' Playoffs · ');
+    where += round === 'State Championship' ? ` in the ${cls} state championship`
+      : ` in the ${round === 'First Round' ? 'first round' : `${round.toLowerCase()} round`} of the ${cls} playoffs`;
+  }
+  const game = `${won} ${verb} ${lost} ${hi}-${lo}${where}`, star = m.S && storyStar(x, m.S, W);
+  if (star) return `${star.name} ${star.line} as ${game}.`;
+  const rec = (recordText(x.teams[W], W, false, gameWeek(x), m.score) || '').split(',')[0];
+  return /^\d+-\d+/.test(rec) ? `${game} to ${pick(['improve', 'move'])} to ${rec}.` : `${game}.`;
+}
+
+// A live game's field, small (Chuck, 2026-10-31): the ball under the team's mark, the drive so far, the line to gain,
+// the down and the last play. Only a game being scored play by play knows these.
+function boardField(x, m){
+  const r = m.rp, st = r && r.st;
+  if (!st || !m.live || x.box || !(x.plays || []).length || st.final) return '';
+  const FL = r.FL, s = st.poss, play = st.phase === 'play', pos = st.phase === 'kick' ? st.kickFrom : st.spot;
+  const X = v => (s === 'A' ? v : FL - v) / FL * 100, to = X(pos), d = r.drives[r.drives.length - 1];
+  let ticks = ''; for (let y = 10; y < FL; y += 10) ticks += `<i class="bf-tick" style="left:${y / FL * 100}%"></i>`;
+  const from = play && d && d.open && d.team === s ? X(d.start) : to, lo = Math.min(from, to);
+  const down = st.phase === 'kick' ? (st.kickKind === 'free' ? 'Free kick' : 'Kickoff') : st.phase === 'try' ? 'Try'
+    : `${ord(st.down)} & ${st.ltg >= FL ? 'Goal' : fy(st.ltg - st.spot)}`;
+  const last = [...r.log].reverse().find(e => e.text && !['set', 'note'].includes(e.t));
+  const end = t => `<b>${esc(x.teams[t].abbr || shortName(x.teams[t].name))}</b>`;
+  return `<div class="bf"><div class="bf-track">${ticks}${play && st.ltg < FL ? `<i class="bf-ltg" style="left:${X(st.ltg)}%"></i>` : ''}
+      <i class="bf-drive" style="left:${lo}%;width:${Math.abs(to - from)}%"></i><span class="bf-pin" style="left:${to}%">${markFor(x.teams[s], 20)}</span></div>
+    <div class="bf-lbl">${end('A')}${[20, FL / 2, FL - 20].map(y => `<span style="left:${y / FL * 100}%">${y <= FL / 2 ? y : FL - y}</span>`).join('')}${end('H')}</div>
+    <div class="bf-sit">${esc(down)} at ${esc(r.yl(s, pos))}</div>
+    ${last ? `<p class="bf-last"><b>Last Play:</b> ${esc(last.text)}</p>` : ''}</div>`;
+}
+
 function boardGame(x){
   const m = summary(x), T = x.teams, lead = leadOf(m), id = encodeURIComponent(x.id);
   // The admin types a final straight into the T column of a game nobody is keeping stats on.
@@ -135,6 +193,7 @@ function boardGame(x){
   const nq = idx.length, played = m.fin ? nq : Math.min(m.q, nq);
   const cells = f => idx.map((i, n) => `<span>${f(i, n)}</span>`).join('');
   const po = bkGameInfo(x);   // a playoff game: seeds before the names, the round under the teams
+  const story = gameStory(x, m, po);
   const team = s => {
     const cls = m.fin && lead ? (lead === s ? ' won' : ' lose') : '', sd = po && po.seed(T[s].name);
     // The record as entered, ESPN style "(1-2, 0-1 Away)"; until then the mascot and Away or Home.
@@ -153,9 +212,33 @@ function boardGame(x){
     <button type="button" class="bbtn" data-bsave>Save final</button>${['A', 'H'].map(s => `<button type="button" class="bhide" data-bff="${s}">${esc(x.teams[s].abbr || shortName(x.teams[s].name))} won by forfeit</button>`).join('')}<button type="button" class="bhide" data-bcancel>Cancel</button>` : '';
   return `<article class="bgame${m.live ? ' live' : ''}${off ? ' bhid' : ''}${typing ? ' btyping' : ''}">
     <div class="b-main"><div class="b-hd"><span class="b-st">${status}</span><div class="bt-q b-qh">${cells(i => i < 4 ? i + 1 : 'OT')}</div><span class="b-th">T</span><i></i></div>
-      ${team('A')}${team('H')}${po ? `<div class="b-round">${esc(po.label)}</div>` : ''}</div>
+      ${team('A')}${team('H')}${po ? `<div class="b-round">${esc(po.label)}</div>` : ''}${story ? `<p class="b-story">${esc(story)}</p>` : ''}${boardField(x, m)}</div>
     <div class="b-lead">${m.pre ? preLeaders(x) : m.S ? boardLeaders(x, m.S) : ''}</div>
     <div class="b-acts"><span class="b-st2">${status}</span>${typing ? typeActs : acts + hide}</div></article>`;
+}
+
+/* ---------- beside the games: a league's standings and the quick links ---------- */
+const RAIL_KEY = 'pressbox.railLeague';
+function railLeagues(){
+  const av = AV_NAMES.map(d => ({id:`av-${d}`, name:`AVCTL Division ${d}`, href:`${SITE_AV ? '' : AV_SITE}?standings`, rows:() => standingsRows(d)}));
+  return SITE_AV ? av : av.concat(LEAGUES.map(l => ({id:l.slug, name:l.name, href:`?league=${l.slug}`, rows:() => {
+    const mine = new Set(l.teams.map(canonSchool));
+    return standSort(l.teams.map(name => ({name, r:avRecord(name, o => mine.has(canonSchool(o))), rec:shownRecord(name)})));
+  }})));
+}
+function boardRail(){
+  if (!matchMedia('(min-width:1200px)').matches) return '';   // no room for it: drawn only when it shows
+  if (board.rail == null) try { board.rail = localStorage.getItem(RAIL_KEY) || ''; } catch (e) { board.rail = ''; }
+  const all = railLeagues(), on = all.find(l => l.id === board.rail) || all[0], I = homeIcons();
+  const rows = allGames.list ? on.rows().map(o => `<tr><td class="rk">${cMark(o.name)}</td><td class="nm"><a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
+      <td class="num">${avRec(o.r.dw, o.r.dl, o.r.dt)}</td><td class="num">${esc((o.rec && o.rec.rec) || avRec(o.r.w, o.r.l, o.r.t))}</td></tr>`).join('') : '';
+  const links = SITE_AV ? [['Standings', '?standings', I.list], ['Player Stats', '?avstats', I.stats], ['Team Stats', '?avstats=team', I.team], ['Teams', '?teams', I.team]] : homeLinks();
+  return `<section class="hcard"><h2 class="h-rail">${homeIcon(I.list)}Standings</h2>
+      <select class="c-sel rs-sel" id="railleague" aria-label="League">${all.map(l => `<option value="${esc(l.id)}"${l === on ? ' selected' : ''}>${esc(l.name)}</option>`).join('')}</select>
+      ${rows ? `<table class="rs-tbl"><thead><tr><th colspan="2"></th><th class="num">League</th><th class="num">Overall</th></tr></thead><tbody>${rows}</tbody></table>` : ''}
+      <a class="rs-more" href="${esc(on.href)}">Full standings</a></section>
+    <section class="hcard"><h2 class="h-rail">${homeIcon(I.link)}Quick Links</h2>
+      <nav class="h-links" aria-label="Quick links">${links.map(([t, h, d]) => `<a href="${esc(h)}">${homeIcon(d)}${esc(t)}</a>`).join('')}</nav></section>`;
 }
 
 /* ---------- the page ---------- */
@@ -202,11 +285,15 @@ function renderScoreboard(){
   const old = box.querySelector('.bweeks'), keep = old ? old.scrollLeft : 0;
   const act = document.activeElement, focusId = act && box.contains(act) && act.id && act.id.startsWith('bs-') ? act.id : null;
   const adminNote = ui.admin ? `<p class="badmin">Signed in as the admin: Hide takes a game off both scoreboards, the scores strip and BUCO Stats for everyone.${ui.state ? ' Games between other schools stay hidden (they still count toward records) until you Show one.' : ''}</p>` : '';
-  box.innerHTML = `<section class="bcard bhead"><div class="bhead-top"><h1 class="b-title">${boardName()} Scoreboard</h1>${ui.state ? `<select class="c-sel bcls" id="bcls" aria-label="Class">
+  // Live games redraw the page every few seconds: the side bar stays put unless it changed, or its list would snap shut.
+  const rail = boardRail(), oldRail = box.querySelector('.b-rail');
+  box.innerHTML = `<div class="bd-grid"><div class="bd-col"><section class="bcard bhead"><div class="bhead-top"><h1 class="b-title">${boardName()} Scoreboard</h1>${ui.state ? `<select class="c-sel bcls" id="bcls" aria-label="Class">
       ${['', ...BOARD_CLASSES].map(c => `<option value="${esc(c)}"${c === board.cls ? ' selected' : ''}>${c ? esc(c) : 'All classes'}</option>`).join('')}</select>` : ''}</div>${adminNote}
     <div class="bweeks-wrap"><button type="button" class="bw-arrow" data-bscroll="-1" aria-label="Earlier weeks">${chev('M9 1L1 9l8 8')}</button>
       <div class="bweeks">${tabs}</div>
-      <button type="button" class="bw-arrow" data-bscroll="1" aria-label="Later weeks">${chev('M1 1l8 8-8 8')}</button></div></section>${body}`;
+      <button type="button" class="bw-arrow" data-bscroll="1" aria-label="Later weeks">${chev('M1 1l8 8-8 8')}</button></div></section>${body}</div><aside class="b-rail"></aside></div>`;
+  if (oldRail && board.railHtml === rail) box.querySelector('.b-rail').replaceWith(oldRail);
+  else { box.querySelector('.b-rail').innerHTML = rail; board.railHtml = rail; }
   lazyWatch(box);
   if (focusId){ const f = $('#' + focusId); if (f){ f.focus(); if (f.setSelectionRange && f.type !== 'checkbox') f.setSelectionRange(f.value.length, f.value.length); } }
   // A redraw keeps the week tabs where they were; a new week brings its tab into view.
@@ -240,6 +327,10 @@ document.addEventListener('click', e => {
   if (a){ const wk = $('#board .bweeks'); wk.scrollBy({left:+a.dataset.bscroll * wk.clientWidth * .7, behavior:'smooth'}); }
 });
 document.addEventListener('change', e => {
+  if (ui.board && e.target.id === 'railleague'){
+    board.rail = e.target.value; try { localStorage.setItem(RAIL_KEY, board.rail); } catch (err) {}
+    return renderScoreboard();
+  }
   if (!ui.board || e.target.id !== 'bcls') return;
   board.cls = e.target.value; history.pushState(null, '', boardUrl()); renderScoreboard();
 });
