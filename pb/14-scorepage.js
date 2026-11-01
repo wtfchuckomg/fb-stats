@@ -228,8 +228,15 @@ function railLeagues(){
 }
 function boardRail(){
   if (!matchMedia('(min-width:1200px)').matches) return '';   // no room for it: drawn only when it shows
-  if (board.rail == null) try { board.rail = localStorage.getItem(RAIL_KEY) || ''; } catch (e) { board.rail = ''; }
-  const all = railLeagues(), on = all.find(l => l.id === board.rail) || all[0], I = homeIcons();
+  const all = railLeagues(), I = homeIcons();
+  // A different league each visit (Chuck, 2026-10-31), never the one shown last; it holds through this visit's redraws.
+  if (board.rail == null){
+    let last = ''; try { last = localStorage.getItem(RAIL_KEY) || ''; } catch (e) {}
+    const rest = all.filter(l => l.id !== last);
+    board.rail = rest[Math.floor(Math.random() * rest.length)].id;
+    try { localStorage.setItem(RAIL_KEY, board.rail); } catch (e) {}
+  }
+  const on = all.find(l => l.id === board.rail) || all[0];
   const rows = allGames.list ? on.rows().map(o => `<tr><td class="rk">${cMark(o.name)}</td><td class="nm"><a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
       <td class="num">${avRec(o.r.dw, o.r.dl, o.r.dt)}</td><td class="num">${esc((o.rec && o.rec.rec) || avRec(o.r.w, o.r.l, o.r.t))}</td></tr>`).join('') : '';
   const links = SITE_AV ? [['Standings', '?standings', I.list], ['Player Stats', '?avstats', I.stats], ['Team Stats', '?avstats=team', I.team], ['Teams', '?teams', I.team]] : homeLinks();
@@ -328,7 +335,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('change', e => {
   if (ui.board && e.target.id === 'railleague'){
-    board.rail = e.target.value; try { localStorage.setItem(RAIL_KEY, board.rail); } catch (err) {}
+    board.rail = e.target.value;
     return renderScoreboard();
   }
   if (!ui.board || e.target.id !== 'bcls') return;

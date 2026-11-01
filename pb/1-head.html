@@ -796,7 +796,8 @@ button.h-btn{cursor:pointer}
 .b-rail{display:none}
 @media (min-width:1200px){
   .bd-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
-  .b-rail{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .b-rail{display:flex;flex-direction:column;gap:14px;min-width:0;position:sticky;top:68px;max-height:calc(100vh - 82px);overflow-y:auto;scrollbar-width:thin}
+  .b-rail::-webkit-scrollbar{width:0}
 }
 .is-embed .bd-grid{display:block}.is-embed .b-rail{display:none}
 .rs-sel{width:100%;margin:12px 0 8px}

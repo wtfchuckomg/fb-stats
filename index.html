@@ -775,7 +775,8 @@ button.h-btn{cursor:pointer}
 .b-rail{display:none}
 @media (min-width:1200px){
   .bd-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
-  .b-rail{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .b-rail{display:flex;flex-direction:column;gap:14px;min-width:0;position:sticky;top:68px;max-height:calc(100vh - 82px);overflow-y:auto;scrollbar-width:thin}
+  .b-rail::-webkit-scrollbar{width:0}
 }
 .is-embed .bd-grid{display:block}.is-embed .b-rail{display:none}
 .rs-sel{width:100%;margin:12px 0 8px}
@@ -1631,6 +1632,7 @@ html[data-skin="liquid"] .navbar,html[data-skin="liquid"] .scores,html[data-skin
   background:var(--lg-glass);border:0;-webkit-backdrop-filter:blur(16px) saturate(190%) brightness(1.06);backdrop-filter:blur(16px) saturate(190%) brightness(1.06);
   box-shadow:inset 0 1px 0 var(--lg-rim-hi),inset 0 -1px 0 var(--lg-rim-lo),inset 0 0 0 .5px var(--lg-rim-lo),var(--lg-float)}
 html[data-skin="liquid"] .navbar{position:relative;margin:10px auto 0;width:min(1180px,calc(100% - 24px));border-radius:999px}
+html[data-skin="liquid"] .b-rail{top:14px;max-height:calc(100vh - 28px)}   /* this skin's bar scrolls away; the others' stays on top */
 html[data-skin="liquid"] .navmenu{border-radius:18px;background:var(--lg-menu)}   /* read, not looked through: more solid than the bar */
 /* State › Leagues is a long list over busy tables: glass inside the glass bar shows the page through it, so its
    panels take the cards' solid ground. */
@@ -6010,8 +6012,15 @@ function railLeagues(){
 }
 function boardRail(){
   if (!matchMedia('(min-width:1200px)').matches) return '';   // no room for it: drawn only when it shows
-  if (board.rail == null) try { board.rail = localStorage.getItem(RAIL_KEY) || ''; } catch (e) { board.rail = ''; }
-  const all = railLeagues(), on = all.find(l => l.id === board.rail) || all[0], I = homeIcons();
+  const all = railLeagues(), I = homeIcons();
+  // A different league each visit (Chuck, 2026-10-31), never the one shown last; it holds through this visit's redraws.
+  if (board.rail == null){
+    let last = ''; try { last = localStorage.getItem(RAIL_KEY) || ''; } catch (e) {}
+    const rest = all.filter(l => l.id !== last);
+    board.rail = rest[Math.floor(Math.random() * rest.length)].id;
+    try { localStorage.setItem(RAIL_KEY, board.rail); } catch (e) {}
+  }
+  const on = all.find(l => l.id === board.rail) || all[0];
   const rows = allGames.list ? on.rows().map(o => `<tr><td class="rk">${cMark(o.name)}</td><td class="nm"><a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
       <td class="num">${avRec(o.r.dw, o.r.dl, o.r.dt)}</td><td class="num">${esc((o.rec && o.rec.rec) || avRec(o.r.w, o.r.l, o.r.t))}</td></tr>`).join('') : '';
   const links = SITE_AV ? [['Standings', '?standings', I.list], ['Player Stats', '?avstats', I.stats], ['Team Stats', '?avstats=team', I.team], ['Teams', '?teams', I.team]] : homeLinks();
@@ -6110,7 +6119,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('change', e => {
   if (ui.board && e.target.id === 'railleague'){
-    board.rail = e.target.value; try { localStorage.setItem(RAIL_KEY, board.rail); } catch (err) {}
+    board.rail = e.target.value;
     return renderScoreboard();
   }
   if (!ui.board || e.target.id !== 'bcls') return;
