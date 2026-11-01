@@ -94,12 +94,14 @@ def short(name):
 def removed_games():
     """The games removed with Remove on a team page (the site's `hidden-games` document, which anyone can read)."""
     url = 'https://firestore.googleapis.com/v1/projects/fb-stats-dc058/databases/(default)/documents/pressbox/hidden-games?key=AIzaSyBnIdA4E1hhAOCIR51bjXHJKoAQ4kBIr3Q'
-    try:
-        with urllib.request.urlopen(url, timeout=20) as r:
-            return set(json.loads(json.load(r)['fields']['json']['stringValue']).get('ids', []))
-    except Exception as e:
-        print('removed games not read:', e)   # the site's pages leave them out either way
-        return set()
+    for wait in (0, 20, 60):   # the database turns away a busy caller for a moment: a 429
+        time.sleep(wait)
+        try:
+            with urllib.request.urlopen(url, timeout=20) as r:
+                return set(json.loads(json.load(r)['fields']['json']['stringValue']).get('ids', []))
+        except Exception as e:
+            print('removed games not read:', e)
+    return set()   # the site's pages leave them out either way
 
 
 def main():
