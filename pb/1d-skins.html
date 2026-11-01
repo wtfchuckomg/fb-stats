@@ -1,86 +1,23 @@
 <script>
-/* The site's look: Liquid Glass. One look, the same on every device — it does not follow the device's dark
-   setting, because the site is meant to read like the light one. Applied here, before the page paints, so
-   there's no flash of the plain page underneath. An embedded page stays plain: it lives inside someone else's. */
+/* The site's look: ESPN's, flat white cards on gray. One look, the same on every device, applied before the
+   page paints. An embedded page stays plain: it lives inside someone else's. */
 (function(){
   if (new URLSearchParams(location.search).has('embed')) return;
   var ua = navigator.userAgent || '';
   window.KMS_DEVICE = /iPhone|iPod/.test(ua) ? 'iphone' : /Android.*Mobile/i.test(ua) ? 'android' : 'other';
-  window.KMS_SKIN = 'liquid';
-  document.documentElement.setAttribute('data-skin', 'liquid');
+  window.KMS_SKIN = 'espn';
+  document.documentElement.setAttribute('data-skin', 'espn');
 })();
 </script>
 <style>
-/* ======================================================================================
-   LIQUID GLASS — content sits on solid white cards over a soft ground; the glass is kept
-   for the things you touch: the menu bar floats as a glass pill, the score strip is a glass
-   shelf, menus are glass. Solid cards also scroll faster on phones than glass ones.
-   ====================================================================================== */
-html[data-skin="liquid"]{
-  --page:#EEF1F6; --card:#FFFFFF; --ground:#FFFFFF; --surface:#F4F6F9; --surface-2:#E9EDF3;
-  --ink:#1D1D1F; --ink-2:#1D1D1F; --muted:#6E6E73; --line:rgba(60,60,67,.14); --line-2:rgba(60,60,67,.08);
-  --pill:rgba(118,118,128,.12); --seg:rgba(118,118,128,.2); --blue:#007AFF; --accent:#007AFF; --red:#FF3B30;
-  --good:#248A3D; --bad:#D70015;
-  --lg-glass:rgba(255,255,255,.52); --lg-menu:rgba(255,255,255,.82); --lg-rim-hi:rgba(255,255,255,.95); --lg-rim-lo:rgba(255,255,255,.3);
-  --lg-float:0 12px 34px rgba(24,36,70,.14),0 2px 8px rgba(24,36,70,.07);
-  --lg-card-shadow:0 1px 2px rgba(24,36,70,.06),0 8px 24px rgba(24,36,70,.07);
-  --lg-wall-a:#C9D6FF; --lg-wall-b:#F6D5E3; --lg-wall-c:#D8F1EA; --lg-cur:rgba(255,255,255,.7); --lg-zebra:rgba(118,118,128,.04);
-  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,sans-serif;
-}
-html[data-skin="liquid"] body{background:var(--page);letter-spacing:-.01em}
-html[data-skin="liquid"] body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
-  background:radial-gradient(55% 45% at 0% 0%,var(--lg-wall-a) 0,transparent 70%),radial-gradient(50% 40% at 100% 10%,var(--lg-wall-b) 0,transparent 70%),
-    radial-gradient(60% 50% at 50% 100%,var(--lg-wall-c) 0,transparent 72%),var(--page)}
-/* content: solid, rounded, lifted */
-html[data-skin="liquid"] .bcard,html[data-skin="liquid"] .hcard,html[data-skin="liquid"] .card{
-  background:var(--card);color:var(--ink);border:0;border-radius:22px;-webkit-backdrop-filter:none;backdrop-filter:none;
-  box-shadow:var(--lg-card-shadow)}
-/* controls: glass */
-html[data-skin="liquid"] .navbar,html[data-skin="liquid"] .scores,html[data-skin="liquid"] .navmenu,html[data-skin="liquid"] .gtabs{
-  background:var(--lg-glass);border:0;-webkit-backdrop-filter:blur(16px) saturate(190%) brightness(1.06);backdrop-filter:blur(16px) saturate(190%) brightness(1.06);
-  box-shadow:inset 0 1px 0 var(--lg-rim-hi),inset 0 -1px 0 var(--lg-rim-lo),inset 0 0 0 .5px var(--lg-rim-lo),var(--lg-float)}
-html[data-skin="liquid"] .navbar{position:relative;margin:10px auto 0;width:min(1180px,calc(100% - 24px));border-radius:999px}
-html[data-skin="liquid"] .b-rail{top:14px;max-height:calc(100vh - 28px)}   /* this skin's bar scrolls away; the others' stays on top */
-html[data-skin="liquid"] .navmenu{border-radius:18px;background:var(--lg-menu)}   /* read, not looked through: more solid than the bar */
-/* State › Leagues is a long list over busy tables: glass inside the glass bar shows the page through it, so its
-   panels take the cards' solid ground. */
-html[data-skin="liquid"] .navmenu .nm-panel{background:var(--card);border-radius:inherit}
-html[data-skin="liquid"] .scores{margin:10px auto 0;width:min(1180px,calc(100% - 24px));border-radius:22px;overflow:hidden}
-html[data-skin="liquid"] .gtabs{border-radius:999px;margin-inline:auto}
-html[data-skin="liquid"] .navlink{color:var(--ink);font-weight:500;opacity:.8}
-html[data-skin="liquid"] .navlink.on{opacity:1;font-weight:600;color:var(--accent)}
-html[data-skin="liquid"] .sc-game,html[data-skin="liquid"] .sc-wk{border-right-color:rgba(60,60,67,.1)}
-html[data-skin="liquid"] .sc-game.cur{background:var(--lg-cur)}
-/* buttons: filled accent capsules and quiet gray ones */
-html[data-skin="liquid"] .bbtn,html[data-skin="liquid"] .btn.primary{background:var(--accent);color:#FFFFFF;border:0;border-radius:999px;box-shadow:0 4px 14px rgba(0,122,255,.3)}
-html[data-skin="liquid"] .btn,html[data-skin="liquid"] .abtn{border-radius:999px}
-html[data-skin="liquid"] .inp,html[data-skin="liquid"] select{border-radius:12px}
-/* tables: hairlines only */
-html[data-skin="liquid"] .ctbl th{background:transparent;border-bottom:1px solid var(--line)}
-html[data-skin="liquid"] .ctbl td{background:transparent;border-bottom:1px solid var(--line-2)}
-html[data-skin="liquid"] .ctbl tbody tr:nth-child(even) td{background:var(--lg-zebra)}
-
-/* ---------- Liquid Glass on a phone: the menu as a floating glass tab bar at the bottom, big page titles ---------- */
+/* On a phone: the menu as a flat tab bar along the bottom of the screen. */
 .lgtabs{display:none}
 @media (max-width:700px){
-  html[data-skin="liquid"] .lgtabs{position:fixed;z-index:50;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));
-    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:6px;border-radius:999px;
-    background:var(--lg-glass);-webkit-backdrop-filter:blur(16px) saturate(190%) brightness(1.06);backdrop-filter:blur(16px) saturate(190%) brightness(1.06);
-    box-shadow:inset 0 1px 0 var(--lg-rim-hi),inset 0 -1px 0 var(--lg-rim-lo),inset 0 0 0 .5px var(--lg-rim-lo),var(--lg-float)}
-  html[data-skin="liquid"] .lgtabs a{display:grid;justify-items:center;gap:3px;padding:7px 2px 6px;border-radius:999px;color:var(--ink);text-decoration:none;
-    font:500 10.5px/1 var(--sans)}
-  html[data-skin="liquid"] .lgtabs svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-  html[data-skin="liquid"] .lgtabs a[aria-current="page"]{color:var(--accent);background:var(--lg-cur);box-shadow:inset 0 1px 0 var(--lg-rim-hi)}
-  html[data-skin="liquid"] body{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
-  html[data-skin="liquid"] h1{font-size:32px!important;font-weight:700!important;letter-spacing:-.03em!important;line-height:1.1!important}
+  html[data-skin="espn"] .lgtabs{position:fixed;z-index:50;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+    padding-bottom:env(safe-area-inset-bottom,0px);background:#FFFFFF;border-top:1px solid var(--line)}
+  html[data-skin="espn"] .lgtabs a{display:grid;justify-items:center;gap:3px;padding:8px 2px 7px;color:var(--muted);text-decoration:none;font:500 10.5px/1 var(--sans)}
+  html[data-skin="espn"] .lgtabs svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  html[data-skin="espn"] .lgtabs a[aria-current="page"]{color:var(--ink-2);box-shadow:inset 0 2px 0 var(--red)}
+  html[data-skin="espn"] body{padding-bottom:calc(56px + env(safe-area-inset-bottom,0px))}
 }
-/* ---------- Liquid Glass on the Game Tracker, wider screens: the game header floats under the menu and the
-   play entry floats at the bottom of the window. Phones keep entry in place, since a bar pinned to the bottom
-   of a phone slides under the keyboard. ---------- */
-@media (min-width:761px){
-  html[data-skin="liquid"] body:not(.viewer) #sb{position:relative;z-index:30;margin:10px auto;width:min(1180px,calc(100% - 24px));border-radius:26px;overflow:hidden;
-    background:var(--lg-glass);-webkit-backdrop-filter:blur(16px) saturate(190%) brightness(1.06);backdrop-filter:blur(16px) saturate(190%) brightness(1.06);
-    box-shadow:inset 0 1px 0 var(--lg-rim-hi),inset 0 -1px 0 var(--lg-rim-lo),var(--lg-float)}
-}
-
 </style>

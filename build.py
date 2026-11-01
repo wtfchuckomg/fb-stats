@@ -37,9 +37,9 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PB = HERE / 'pb'
 
-# The page shell: head and styles, the glass layer, the body markup (which ends
+# The page shell: head and styles, the phone site menu, the body markup (which ends
 # with the opening <script> tag).
-PARTS_HTML = ['1-head.html', '1b-glass.html', '1c-embed.html', '1d-skins.html', '2-body.html']
+PARTS_HTML = ['1-head.html', '1b-sitemenu.html', '1c-embed.html', '1d-skins.html', '2-body.html']
 
 # The script, in the order it has to run.
 PARTS_JS = [

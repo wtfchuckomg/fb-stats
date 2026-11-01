@@ -483,7 +483,7 @@ function menuHere(){
   });
 })();
 
-// Liquid Glass's phone tab bar: mark the section you're in, and point Gamecast at a game worth watching.
+// The phone tab bar: mark the section you're in, and point Gamecast at a game worth watching.
 function lgTabs(){
   const bar = $('#lgtabs'); if (!bar) return;
   const q = new URLSearchParams(location.search);
