@@ -86,6 +86,23 @@ function homeLinks(){
     ['Media Rankings', 'https://kansasmediarankings.com/', I.ext], ['Pick ’Em', 'https://picks.kansasmediarankings.com', I.ext], ['Helmets', 'https://kansasmediarankings.com/helmets.html', I.ext]];
 }
 
+// The week's games on the front page (Chuck, 2026-11-01), for Friday nights: the live ones first, two across.
+const HOME_BOARD_GAMES = 8;
+function homeBoardGame(x){
+  const m = summary(x), T = x.teams, lead = leadOf(m), sit = gameSit(x, m);
+  const row = s => `<div class="ms-row${m.fin && lead && lead !== s ? ' lose' : ''}">${markFor(T[s], 20)}<span class="ms-name">${esc(schoolName(T[s].name))}</span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}<b>${m.pre ? '' : m.score[s]}</b></div>`;
+  const side = `<div class="ms-st"><b>${esc(m.status)}</b>${sit ? `<span>${esc(sit.down)}</span><span>${esc(sit.at)}</span>` : ''}</div>`;
+  const id = encodeURIComponent(x.id), href = hasStats(x) ? `?game=${id}` : m.pre ? `?preview=${id}` : '', cls = `ms-game${m.live ? ' live' : ''}`, inner = `<div class="ms-teams">${row('A')}${row('H')}</div>${side}`;
+  return href ? `<a class="${cls}" href="${href}">${inner}</a>` : `<div class="${cls}">${inner}</div>`;
+}
+function homeBoard(){
+  const key = shownWeek(), rank = x => { const m = summary(x); return m.live ? (x.plays && x.plays.length ? 0 : 1) : m.fin ? 2 : 3; };
+  const games = weekGames(key, false, true).map(x => [rank(x), x]).sort((a, b) => a[0] - b[0] || (a[0] === 2 ? (b[1].updated || 0) - (a[1].updated || 0) : 0)).slice(0, HOME_BOARD_GAMES).map(o => o[1]);
+  if (!games.length) return '';
+  return `<section class="hcard ms"><h2 class="ms-hd">${esc(weekLabel(key))} Scoreboard</h2>
+      <div class="ms-grid">${games.map(homeBoardGame).join('')}</div>
+      <a class="ms-all" href="?state=${key}">Complete scoreboard</a></section>`;
+}
 function renderHome(){
   if (!ui.home) return;
   const tracker = '?tracker', icon = homeIcon, I = homeIcons(), links = homeLinks();
@@ -102,6 +119,7 @@ function renderHome(){
     </section>
 
     <div class="h-main">
+      ${homeBoard()}
       <section class="hcard" id="how"><span class="h-eyebrow">How it works</span>
         <h2 class="h-sec">How to track a game</h2>
         <p class="h-p">Anyone can keep stats. All it takes is a phone or a laptop, a roster if you can get one, and a view of the field. You log what happened on each play; the site does the math.</p>

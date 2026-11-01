@@ -164,26 +164,6 @@ a.abtn{display:inline-block;text-decoration:none}
 .navmenu a{display:block;padding:12px 24px;font:400 13px/1.2 var(--sans);color:var(--muted);text-decoration:none;white-space:nowrap}
 .navmenu a:hover{background:#F1F2F3;color:var(--ink-2)}
 .navmenu a.on{color:var(--ink-2);font-weight:600}
-/* The Scoreboard menu: the week's games two across, each with the clock, the down and the spot beside it. */
-.navmenu.ms{width:min(680px,calc(100vw - 16px));padding:14px 18px 6px;max-height:min(78vh,620px);overflow-y:auto}
-.navmenu.ms::before{display:none}
-.ms-hd{padding-bottom:10px;font:700 13px/1.2 var(--sans);text-transform:uppercase;color:var(--ink-2)}
-.ms-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px}
-.ms-none{grid-column:1/-1;margin:0;padding:14px 0;font-size:13px;color:var(--muted)}
-.navmenu a.ms-game,.ms-game{display:grid;grid-template-columns:minmax(0,1fr) 76px;align-items:center;padding:9px 0;border-top:1px dotted var(--line);white-space:normal;color:var(--ink-2);text-decoration:none}
-.navmenu a.ms-game:hover{background:none}
-.navmenu a.ms-game:hover .ms-name{text-decoration:underline}
-.ms-teams{min-width:0;display:grid;gap:5px;padding-right:12px}
-.ms-row{display:flex;align-items:center;gap:8px;min-width:0;font:500 13px/20px var(--sans);color:var(--ink-2)}
-.ms-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ms-row b{margin-left:auto;font:700 14px/20px var(--sans);font-variant-numeric:tabular-nums}
-.ms-row.lose b{color:var(--muted)}
-.ms-st{min-width:0;border-left:1px solid var(--line);padding-left:10px;display:grid;gap:3px;font:400 11px/13px var(--sans);color:var(--muted)}
-.ms-st b{font-weight:600;color:var(--ink-2)}
-.ms-game.live .ms-st b{color:#DD0000}
-.navmenu a.ms-all{padding:12px 0;border-top:1px dotted var(--line);font-size:13px;color:var(--blue)}
-.navmenu a.ms-all:hover{background:none;color:var(--blue);text-decoration:underline}
-@media (max-width:640px){.ms-grid{grid-template-columns:minmax(0,1fr)}}
 /* State › Leagues: a second list inside the State menu, swapped in by Leagues and out by the back link. */
 .navmenu .nm-go{float:right;margin-left:18px;font-weight:600}
 .navmenu .nm-list{max-height:min(66vh,560px);overflow-y:auto;overscroll-behavior:contain}
@@ -703,6 +683,23 @@ table.pl-log td.nm .cn-in,table.pl-log td.nm .pl-opp{min-width:0;overflow:hidden
 .h-main{grid-area:main;display:flex;flex-direction:column;gap:16px;min-width:0}
 .h-right{grid-area:right;display:flex;flex-direction:column;gap:16px}
 .hcard{background:var(--card);border-radius:10px;box-shadow:0 1px 3px rgba(18,18,19,.1);padding:18px 20px}
+/* The week's games on the front page, two across, each with the clock, the down and the spot beside it. */
+.hcard.ms{container-type:inline-size;padding-bottom:6px}
+.ms-hd{margin:0;padding-bottom:10px;font:700 13px/1.2 var(--sans);text-transform:uppercase;color:var(--ink-2)}
+.ms-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px}
+@container (max-width:520px){.ms-grid{grid-template-columns:minmax(0,1fr)}}
+.ms-game{display:grid;grid-template-columns:minmax(0,1fr) 76px;align-items:center;padding:9px 0;border-top:1px dotted var(--line);color:var(--ink-2);text-decoration:none}
+a.ms-game:hover .ms-name{text-decoration:underline}
+.ms-teams{min-width:0;display:grid;gap:5px;padding-right:12px}
+.ms-row{display:flex;align-items:center;gap:8px;min-width:0;font:500 13px/20px var(--sans);color:var(--ink-2)}
+.ms-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-row b{margin-left:auto;font:700 14px/20px var(--sans);font-variant-numeric:tabular-nums}
+.ms-row.lose b{color:var(--muted)}
+.ms-st{min-width:0;border-left:1px solid var(--line);padding-left:10px;display:grid;gap:3px;font:400 11px/13px var(--sans);color:var(--muted)}
+.ms-st b{font-weight:600;color:var(--ink-2)}
+.ms-game.live .ms-st b{color:#DD0000}
+a.ms-all{display:block;padding:12px 0;border-top:1px dotted var(--line);font:400 13px/1.2 var(--sans);color:var(--blue);text-decoration:none}
+a.ms-all:hover{text-decoration:underline}
 .h-hero{padding:0;overflow:hidden}
 .h-hero-art{position:relative;display:grid;place-items:center;padding:38px 24px;background:#121213;overflow:hidden}
 .h-hero-art::before{content:"";position:absolute;top:0;bottom:0;left:-12%;width:44%;background:#D6001C;transform:skewX(-18deg);opacity:.92}

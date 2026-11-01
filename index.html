@@ -143,26 +143,6 @@ a.abtn{display:inline-block;text-decoration:none}
 .navmenu a{display:block;padding:12px 24px;font:400 13px/1.2 var(--sans);color:var(--muted);text-decoration:none;white-space:nowrap}
 .navmenu a:hover{background:#F1F2F3;color:var(--ink-2)}
 .navmenu a.on{color:var(--ink-2);font-weight:600}
-/* The Scoreboard menu: the week's games two across, each with the clock, the down and the spot beside it. */
-.navmenu.ms{width:min(680px,calc(100vw - 16px));padding:14px 18px 6px;max-height:min(78vh,620px);overflow-y:auto}
-.navmenu.ms::before{display:none}
-.ms-hd{padding-bottom:10px;font:700 13px/1.2 var(--sans);text-transform:uppercase;color:var(--ink-2)}
-.ms-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px}
-.ms-none{grid-column:1/-1;margin:0;padding:14px 0;font-size:13px;color:var(--muted)}
-.navmenu a.ms-game,.ms-game{display:grid;grid-template-columns:minmax(0,1fr) 76px;align-items:center;padding:9px 0;border-top:1px dotted var(--line);white-space:normal;color:var(--ink-2);text-decoration:none}
-.navmenu a.ms-game:hover{background:none}
-.navmenu a.ms-game:hover .ms-name{text-decoration:underline}
-.ms-teams{min-width:0;display:grid;gap:5px;padding-right:12px}
-.ms-row{display:flex;align-items:center;gap:8px;min-width:0;font:500 13px/20px var(--sans);color:var(--ink-2)}
-.ms-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ms-row b{margin-left:auto;font:700 14px/20px var(--sans);font-variant-numeric:tabular-nums}
-.ms-row.lose b{color:var(--muted)}
-.ms-st{min-width:0;border-left:1px solid var(--line);padding-left:10px;display:grid;gap:3px;font:400 11px/13px var(--sans);color:var(--muted)}
-.ms-st b{font-weight:600;color:var(--ink-2)}
-.ms-game.live .ms-st b{color:#DD0000}
-.navmenu a.ms-all{padding:12px 0;border-top:1px dotted var(--line);font-size:13px;color:var(--blue)}
-.navmenu a.ms-all:hover{background:none;color:var(--blue);text-decoration:underline}
-@media (max-width:640px){.ms-grid{grid-template-columns:minmax(0,1fr)}}
 /* State › Leagues: a second list inside the State menu, swapped in by Leagues and out by the back link. */
 .navmenu .nm-go{float:right;margin-left:18px;font-weight:600}
 .navmenu .nm-list{max-height:min(66vh,560px);overflow-y:auto;overscroll-behavior:contain}
@@ -682,6 +662,23 @@ table.pl-log td.nm .cn-in,table.pl-log td.nm .pl-opp{min-width:0;overflow:hidden
 .h-main{grid-area:main;display:flex;flex-direction:column;gap:16px;min-width:0}
 .h-right{grid-area:right;display:flex;flex-direction:column;gap:16px}
 .hcard{background:var(--card);border-radius:10px;box-shadow:0 1px 3px rgba(18,18,19,.1);padding:18px 20px}
+/* The week's games on the front page, two across, each with the clock, the down and the spot beside it. */
+.hcard.ms{container-type:inline-size;padding-bottom:6px}
+.ms-hd{margin:0;padding-bottom:10px;font:700 13px/1.2 var(--sans);text-transform:uppercase;color:var(--ink-2)}
+.ms-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px}
+@container (max-width:520px){.ms-grid{grid-template-columns:minmax(0,1fr)}}
+.ms-game{display:grid;grid-template-columns:minmax(0,1fr) 76px;align-items:center;padding:9px 0;border-top:1px dotted var(--line);color:var(--ink-2);text-decoration:none}
+a.ms-game:hover .ms-name{text-decoration:underline}
+.ms-teams{min-width:0;display:grid;gap:5px;padding-right:12px}
+.ms-row{display:flex;align-items:center;gap:8px;min-width:0;font:500 13px/20px var(--sans);color:var(--ink-2)}
+.ms-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-row b{margin-left:auto;font:700 14px/20px var(--sans);font-variant-numeric:tabular-nums}
+.ms-row.lose b{color:var(--muted)}
+.ms-st{min-width:0;border-left:1px solid var(--line);padding-left:10px;display:grid;gap:3px;font:400 11px/13px var(--sans);color:var(--muted)}
+.ms-st b{font-weight:600;color:var(--ink-2)}
+.ms-game.live .ms-st b{color:#DD0000}
+a.ms-all{display:block;padding:12px 0;border-top:1px dotted var(--line);font:400 13px/1.2 var(--sans);color:var(--blue);text-decoration:none}
+a.ms-all:hover{text-decoration:underline}
 .h-hero{padding:0;overflow:hidden}
 .h-hero-art{position:relative;display:grid;place-items:center;padding:38px 24px;background:#121213;overflow:hidden}
 .h-hero-art::before{content:"";position:absolute;top:0;bottom:0;left:-12%;width:44%;background:#D6001C;transform:skewX(-18deg);opacity:.92}
@@ -1556,14 +1553,12 @@ try { if (new URLSearchParams(location.search).has('embed')) document.documentEl
   <div class="navbar-in">
     <div class="navlinks">
       <a class="navlink" data-nav="home" href="?home">Home</a>
-      <button type="button" class="navlink navdrop" data-nav="board" id="nav-board" aria-haspopup="true" aria-expanded="false" aria-controls="nav-board-menu">Scoreboard<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <button type="button" class="navlink navdrop" data-nav="buco" id="nav-buco" aria-haspopup="true" aria-expanded="false" aria-controls="nav-buco-menu">Butler County<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
       <button type="button" class="navlink navdrop" data-nav="state" id="nav-state" aria-haspopup="true" aria-expanded="false" aria-controls="nav-state-menu">State<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
       <a class="navlink" data-nav="po26" id="nav-po26" href="?bracket=6A">2026 Playoffs</a>
       <a class="navlink" data-nav="phist" id="nav-phist" href="?brackets">Playoff History</a>
       <a class="navlink" data-nav="tracker" id="nav-tracker" href="?tracker">Game Tracker</a>
     </div>
-    <div class="navmenu ms" id="nav-board-menu" role="menu" aria-label="Scoreboard" hidden></div>
     <div class="navmenu" id="nav-buco-menu" role="menu" aria-label="Butler County" hidden>
       <a role="menuitem" data-menu="scores" href="?scores">Scoreboard</a>
       <a role="menuitem" data-menu="stats" href="?stats">Player Stats</a>
@@ -5451,7 +5446,6 @@ function menuHere(){
     const cur = menuHere(), lg = LG ? `?league=${LG.slug}` : ui.stand || AV_STATS ? '?standings' : '';
     menu.querySelectorAll('[data-menu]').forEach(x => x.classList.toggle('on', x.dataset.menu === cur));
     menu.querySelectorAll('[data-league]').forEach(x => x.classList.toggle('on', x.getAttribute('href') === lg));
-    if (menu.id === 'nav-board-menu') renderNavBoard();
     menu.hidden = false; btn.setAttribute('aria-expanded', 'true');
     if (menu.querySelector('.nm-panel')) panel('main'); else place();
   };
@@ -5463,25 +5457,6 @@ function menuHere(){
   addEventListener('resize', close);
   });
 })();
-
-// The Scoreboard menu (Chuck, 2026-11-01): the week's games at a glance, the live ones first. Drawn when it opens and
-// again as scores come in while it's open.
-const NAV_BOARD_GAMES = 8;
-function navBoardGame(x){
-  const m = summary(x), T = x.teams, lead = leadOf(m), sit = gameSit(x, m);
-  const row = s => `<div class="ms-row${m.fin && lead && lead !== s ? ' lose' : ''}">${markFor(T[s], 20)}<span class="ms-name">${esc(schoolName(T[s].name))}</span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}<b>${m.pre ? '' : m.score[s]}</b></div>`;
-  const side = `<div class="ms-st"><b>${esc(m.status)}</b>${sit ? `<span>${esc(sit.down)}</span><span>${esc(sit.at)}</span>` : ''}</div>`;
-  const id = encodeURIComponent(x.id), href = hasStats(x) ? `?game=${id}` : m.pre ? `?preview=${id}` : '', cls = `ms-game${m.live ? ' live' : ''}`, inner = `<div class="ms-teams">${row('A')}${row('H')}</div>${side}`;
-  return href ? `<a class="${cls}" role="menuitem" href="${href}">${inner}</a>` : `<div class="${cls}">${inner}</div>`;
-}
-function renderNavBoard(){
-  const box = $('#nav-board-menu'); if (!box) return;
-  const key = shownWeek(), rank = x => { const m = summary(x); return m.live ? (x.plays && x.plays.length ? 0 : 1) : m.fin ? 2 : 3; };
-  const games = weekGames(key, false, true).map(x => [rank(x), x]).sort((a, b) => a[0] - b[0] || (a[0] === 2 ? (b[1].updated || 0) - (a[1].updated || 0) : 0)).slice(0, NAV_BOARD_GAMES).map(o => o[1]);
-  box.innerHTML = `<div class="ms-hd">${esc(weekLabel(key))} Scoreboard</div>
-    <div class="ms-grid">${games.length ? games.map(navBoardGame).join('') : `<p class="ms-none">No games for ${esc(weekLabel(key))} yet.</p>`}</div>
-    <a class="ms-all" role="menuitem" href="?state=${key}">Complete scoreboard</a>`;
-}
 
 // The phone tab bar: mark the section you're in, and point Gamecast at a game worth watching.
 function lgTabs(){
@@ -5498,7 +5473,6 @@ function lgTabs(){
 }
 function renderScores(){
   lgTabs();
-  if ($('#nav-board-menu') && !$('#nav-board-menu').hidden) renderNavBoard();
   const box = $('#scores'); if (!box) return;
   const key = shownWeek(); watchWeek(key);
   // On the AVCTL's pages the strip is the league's games, on a league's (State › Leagues) that league's, and on
@@ -5640,7 +5614,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('change', e => {
   if (e.target.id !== 'scweek') return;
-  ui.week = e.target.value; renderScores();
+  ui.week = e.target.value; renderScores(); renderHome();
   // On the scoreboard page the page below follows the strip to that week.
   if (ui.board){ history.pushState(null, '', boardUrl()); renderScoreboard(); }
 });
@@ -8004,6 +7978,23 @@ function homeLinks(){
     ['Media Rankings', 'https://kansasmediarankings.com/', I.ext], ['Pick ’Em', 'https://picks.kansasmediarankings.com', I.ext], ['Helmets', 'https://kansasmediarankings.com/helmets.html', I.ext]];
 }
 
+// The week's games on the front page (Chuck, 2026-11-01), for Friday nights: the live ones first, two across.
+const HOME_BOARD_GAMES = 8;
+function homeBoardGame(x){
+  const m = summary(x), T = x.teams, lead = leadOf(m), sit = gameSit(x, m);
+  const row = s => `<div class="ms-row${m.fin && lead && lead !== s ? ' lose' : ''}">${markFor(T[s], 20)}<span class="ms-name">${esc(schoolName(T[s].name))}</span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}<b>${m.pre ? '' : m.score[s]}</b></div>`;
+  const side = `<div class="ms-st"><b>${esc(m.status)}</b>${sit ? `<span>${esc(sit.down)}</span><span>${esc(sit.at)}</span>` : ''}</div>`;
+  const id = encodeURIComponent(x.id), href = hasStats(x) ? `?game=${id}` : m.pre ? `?preview=${id}` : '', cls = `ms-game${m.live ? ' live' : ''}`, inner = `<div class="ms-teams">${row('A')}${row('H')}</div>${side}`;
+  return href ? `<a class="${cls}" href="${href}">${inner}</a>` : `<div class="${cls}">${inner}</div>`;
+}
+function homeBoard(){
+  const key = shownWeek(), rank = x => { const m = summary(x); return m.live ? (x.plays && x.plays.length ? 0 : 1) : m.fin ? 2 : 3; };
+  const games = weekGames(key, false, true).map(x => [rank(x), x]).sort((a, b) => a[0] - b[0] || (a[0] === 2 ? (b[1].updated || 0) - (a[1].updated || 0) : 0)).slice(0, HOME_BOARD_GAMES).map(o => o[1]);
+  if (!games.length) return '';
+  return `<section class="hcard ms"><h2 class="ms-hd">${esc(weekLabel(key))} Scoreboard</h2>
+      <div class="ms-grid">${games.map(homeBoardGame).join('')}</div>
+      <a class="ms-all" href="?state=${key}">Complete scoreboard</a></section>`;
+}
 function renderHome(){
   if (!ui.home) return;
   const tracker = '?tracker', icon = homeIcon, I = homeIcons(), links = homeLinks();
@@ -8020,6 +8011,7 @@ function renderHome(){
     </section>
 
     <div class="h-main">
+      ${homeBoard()}
       <section class="hcard" id="how"><span class="h-eyebrow">How it works</span>
         <h2 class="h-sec">How to track a game</h2>
         <p class="h-p">Anyone can keep stats. All it takes is a phone or a laptop, a roster if you can get one, and a view of the field. You log what happened on each play; the site does the math.</p>

@@ -471,7 +471,6 @@ function menuHere(){
     const cur = menuHere(), lg = LG ? `?league=${LG.slug}` : ui.stand || AV_STATS ? '?standings' : '';
     menu.querySelectorAll('[data-menu]').forEach(x => x.classList.toggle('on', x.dataset.menu === cur));
     menu.querySelectorAll('[data-league]').forEach(x => x.classList.toggle('on', x.getAttribute('href') === lg));
-    if (menu.id === 'nav-board-menu') renderNavBoard();
     menu.hidden = false; btn.setAttribute('aria-expanded', 'true');
     if (menu.querySelector('.nm-panel')) panel('main'); else place();
   };
@@ -483,25 +482,6 @@ function menuHere(){
   addEventListener('resize', close);
   });
 })();
-
-// The Scoreboard menu (Chuck, 2026-11-01): the week's games at a glance, the live ones first. Drawn when it opens and
-// again as scores come in while it's open.
-const NAV_BOARD_GAMES = 8;
-function navBoardGame(x){
-  const m = summary(x), T = x.teams, lead = leadOf(m), sit = gameSit(x, m);
-  const row = s => `<div class="ms-row${m.fin && lead && lead !== s ? ' lose' : ''}">${markFor(T[s], 20)}<span class="ms-name">${esc(schoolName(T[s].name))}</span>${m.poss === s ? '<i class="sc-ball" title="Has the ball"></i>' : ''}<b>${m.pre ? '' : m.score[s]}</b></div>`;
-  const side = `<div class="ms-st"><b>${esc(m.status)}</b>${sit ? `<span>${esc(sit.down)}</span><span>${esc(sit.at)}</span>` : ''}</div>`;
-  const id = encodeURIComponent(x.id), href = hasStats(x) ? `?game=${id}` : m.pre ? `?preview=${id}` : '', cls = `ms-game${m.live ? ' live' : ''}`, inner = `<div class="ms-teams">${row('A')}${row('H')}</div>${side}`;
-  return href ? `<a class="${cls}" role="menuitem" href="${href}">${inner}</a>` : `<div class="${cls}">${inner}</div>`;
-}
-function renderNavBoard(){
-  const box = $('#nav-board-menu'); if (!box) return;
-  const key = shownWeek(), rank = x => { const m = summary(x); return m.live ? (x.plays && x.plays.length ? 0 : 1) : m.fin ? 2 : 3; };
-  const games = weekGames(key, false, true).map(x => [rank(x), x]).sort((a, b) => a[0] - b[0] || (a[0] === 2 ? (b[1].updated || 0) - (a[1].updated || 0) : 0)).slice(0, NAV_BOARD_GAMES).map(o => o[1]);
-  box.innerHTML = `<div class="ms-hd">${esc(weekLabel(key))} Scoreboard</div>
-    <div class="ms-grid">${games.length ? games.map(navBoardGame).join('') : `<p class="ms-none">No games for ${esc(weekLabel(key))} yet.</p>`}</div>
-    <a class="ms-all" role="menuitem" href="?state=${key}">Complete scoreboard</a>`;
-}
 
 // The phone tab bar: mark the section you're in, and point Gamecast at a game worth watching.
 function lgTabs(){
@@ -518,7 +498,6 @@ function lgTabs(){
 }
 function renderScores(){
   lgTabs();
-  if ($('#nav-board-menu') && !$('#nav-board-menu').hidden) renderNavBoard();
   const box = $('#scores'); if (!box) return;
   const key = shownWeek(); watchWeek(key);
   // On the AVCTL's pages the strip is the league's games, on a league's (State › Leagues) that league's, and on
@@ -660,7 +639,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('change', e => {
   if (e.target.id !== 'scweek') return;
-  ui.week = e.target.value; renderScores();
+  ui.week = e.target.value; renderScores(); renderHome();
   // On the scoreboard page the page below follows the strip to that week.
   if (ui.board){ history.pushState(null, '', boardUrl()); renderScoreboard(); }
 });
