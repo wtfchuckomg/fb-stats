@@ -21,8 +21,7 @@ concurrency:
 jobs:
   rebuild:
     runs-on: ubuntu-latest
-    # 2026-10-02 the KPreps read hung for six hours, GitHub killed the job, and the rebuild it had already done was
-    # never saved. Each KPreps step now has its own cap and can fail without stopping the save.
+    # No KPreps read here (Chuck, 2026-11-01): that runs only when he says, by Run workflow on friday.yml.
     timeout-minutes: 120
     steps:
       # GitHub starts scheduled runs late, sometimes by seven hours. Waiting for exactly 3 a.m. skipped every run
@@ -46,33 +45,6 @@ jobs:
       - name: Rebuild from the live site
         if: steps.when.outputs.go == '1'
         run: python3 .github/nightly.py
-      - name: Read this season's results from KPreps
-        if: steps.when.outputs.go == '1'
-        timeout-minutes: 20
-        continue-on-error: true
-        env:
-          KP_YEARS: '2026'
-        run: python3 .github/kp/crawl.py
-      - name: Write the finals the site reads
-        if: steps.when.outputs.go == '1'
-        timeout-minutes: 20
-        continue-on-error: true
-        run: python3 .github/kp/scores.py
-      - name: Write every logo school's schedule
-        if: steps.when.outputs.go == '1'
-        timeout-minutes: 20
-        continue-on-error: true
-        run: python3 .github/kp/schedule.py
-      - name: Fit the ratings
-        if: steps.when.outputs.go == '1'
-        timeout-minutes: 20
-        continue-on-error: true
-        run: python3 .github/kp/ratings.py
-      - name: Write each school's seasons for the site
-        if: steps.when.outputs.go == '1'
-        timeout-minutes: 20
-        continue-on-error: true
-        run: python3 .github/kp/history.py
       - name: Small copies of the logos
         if: steps.when.outputs.go == '1'
         continue-on-error: true

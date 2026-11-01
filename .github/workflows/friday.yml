@@ -1,13 +1,11 @@
-# Friday night in Kansas, from midnight on: read this season's results from KPreps and write kpscores.json, so a game
-# nobody kept stats on still shows its final on the scoreboard. See .github/kp/scores.py.
+# Read this season's results and schedules from KPreps and write kpscores.json, schedule.json, the ratings and the
+# school histories. See .github/kp/scores.py.
+#
+# The clock is off (Chuck, 2026-11-01): "we'll only pull from kpreps going forward if I say." It runs only when
+# someone presses Run workflow.
 name: Friday night scores
 
 on:
-  schedule:
-    # Midnight in Kansas is 05:00 UTC in summer (CDT) and 06:00 in winter (CST). Both are listed; the first
-    # step lets through only the one that is midnight in Kansas that night.
-    - cron: '0 5 * * 6'
-    - cron: '0 6 * * 6'
   workflow_dispatch:
 
 permissions:
