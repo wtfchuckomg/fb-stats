@@ -11175,8 +11175,8 @@ const bkSched = {list:[], sig:''};
 // A bracket game someone saved a score on, from a version of the bracket a coin flip has since changed: its two schools
 // don't meet in the bracket as it stands, so it never happened.
 const bkStale = x => /^bk26-/.test(x.id || '') && !!bkSched.info && !!x.teams && !bkSched.info.has([canonSchool(x.teams.A.name), canonSchool(x.teams.H.name)].sort().join('|'));
-// Take a schedule game off for good. It has no document of its own to delete, so it joins the admin's hidden
-// list, which every page already reads; showing it again on a scoreboard brings it back.
+// Take a schedule game off for good. It has no document of its own to delete, and KPreps may go on listing it, so it
+// joins the list every page reads and .github/kp/schedule.py drops it from schedule.json on each crawl.
 async function schedRemove(id){
   if (!ui.admin || !hideList.api) return false;
   const ids = new Set(hideList.ids), shown = new Set(hideList.shown);

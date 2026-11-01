@@ -11,6 +11,7 @@ between two schools without logos is left out.
 Names are the site's own (logos/teams.json) wherever a school matches one, so pages and records line up.
 """
 import json, re, time
+import urllib.request
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -90,6 +91,17 @@ def short(name):
     return re.sub(r'\s+\S+$', '', n) if len(n.split()) > 1 else n
 
 
+def removed_games():
+    """The games removed with Remove on a team page (the site's `hidden-games` document, which anyone can read)."""
+    url = 'https://firestore.googleapis.com/v1/projects/fb-stats-dc058/databases/(default)/documents/pressbox/hidden-games?key=AIzaSyBnIdA4E1hhAOCIR51bjXHJKoAQ4kBIr3Q'
+    try:
+        with urllib.request.urlopen(url, timeout=20) as r:
+            return set(json.loads(json.load(r)['fields']['json']['stringValue']).get('ids', []))
+    except Exception as e:
+        print('removed games not read:', e)   # the site's pages leave them out either way
+        return set()
+
+
 def main():
     idx = logo_index()
     kpname = {}
@@ -132,7 +144,9 @@ def main():
             hp, ap = (g['us'], g['them']) if home == me else (g['them'], g['us'])
             row.update({'hp': hp, 'ap': ap, **({'ot': 1} if g.get('ot') else {})})
         games[key] = row
-    rows = sorted(games.values(), key=lambda r: (r['d'], r['hn']))
+    # A game the admin removed on the site stays deleted: KPreps may go on listing it, so every crawl drops it again.
+    gone = removed_games()
+    rows = sorted((r for r in games.values() if r['id'] not in gone), key=lambda r: (r['d'], r['hn']))
     (ROOT / 'schedule.json').write_text(json.dumps({'built': int(time.time() * 1000), 'season': YEAR, 'games': rows}, separators=(',', ':')))
     crawled = [f.stem for f in files]
     print(f'{len(rows)} games for {len(crawled)} KPreps schools -> schedule.json')
