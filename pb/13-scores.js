@@ -280,6 +280,10 @@ function weekGames(key, withHidden, withOpp){
     // Thursday final typed in fresh): the final stands for the game, and the unplayed copy goes.
     const left = xs.filter(x => out[x.id]);
     if (left.length > 1 && left.some(x => summary(x).fin)) left.forEach(x => { if (!summary(x).fin && !summary(x).live) delete out[x.id]; });
+    // The same final typed in twice: one game, the newer copy.
+    const finals = left.filter(x => out[x.id]).sort((a, b) => (b.updated || 0) - (a.updated || 0));
+    const said = x => { const m = summary(x); return ['A', 'H'].map(s => `${canonSchool(x.teams[s].name)}:${m.score[s]}`).sort().join(); };
+    finals.slice(1).forEach(x => { if (summary(x).fin && said(x) === said(finals[0])) delete out[x.id]; });
   });
   if (!withHidden) Object.values(out).forEach(x => { if (isHidden(x)) delete out[x.id]; });
   return Object.values(out).sort((a, b) => gameDay(a) - gameDay(b) || (a.created || 0) - (b.created || 0));

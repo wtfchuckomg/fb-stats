@@ -65,7 +65,7 @@ const inLeague = x => !!x && !!x.teams && (!!lgOf(x.teams.A.name) || !!lgOf(x.te
 
 // The three pages of a league, as tabs over each of them: Standings, Player Stats, Team Stats.
 function leagueNav(on){
-  if (SITE_AV) return '';   // the AVCTL site's header card has these pages as its buttons
+  if (SITE_AV) return '';   // the AVCTL site has these pages in its menu bar
   const av = !LG, base = av ? '' : `league=${LG.slug}`;
   const tabs = av
     ? [['standings', 'Standings', '?standings'], ['players', 'Player Stats', '?avstats'], ['team', 'Team Stats', '?avstats=team']]

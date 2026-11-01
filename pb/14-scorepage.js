@@ -302,6 +302,13 @@ function railLeagues(){
 function boardRail(){
   if (!matchMedia('(min-width:1200px)').matches) return '';   // no room for it: drawn only when it shows
   const all = railLeagues(), I = homeIcons();
+  const table = l => allGames.list ? `<table class="rs-tbl"><thead><tr><th colspan="2"></th><th class="num">League</th><th class="num">Overall</th></tr></thead><tbody>${l.rows().map(o => `<tr><td class="rk">${cMark(o.name)}</td><td class="nm"><a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
+      <td class="num">${avRec(o.r.dw, o.r.dl, o.r.dt)}</td><td class="num">${esc((o.rec && o.rec.rec) || avRec(o.r.w, o.r.l, o.r.t))}</td></tr>`).join('')}</tbody></table>` : '';
+  const quick = l => `<section class="hcard"><h2 class="h-rail">${homeIcon(I.link)}Quick Links</h2>
+      <nav class="h-links" aria-label="Quick links">${l.map(([t, h, d]) => `<a href="${esc(h)}">${homeIcon(d)}${esc(t)}</a>`).join('')}</nav></section>`;
+  // The AVCTL site has four divisions and no more: all of them, each time (Chuck, 2026-11-01).
+  if (SITE_AV) return `${all.map(l => `<section class="hcard"><h2 class="h-rail">${homeIcon(I.list)}${esc(l.name.replace('AVCTL ', ''))}</h2>${table(l)}<a class="rs-more" href="${esc(l.href)}">Full standings</a></section>`).join('')}
+    ${quick([['Standings', '?standings', I.list], ['Player Stats', '?avstats', I.stats], ['Team Stats', '?avstats=team', I.team], ['Teams', '?teams', I.team]])}`;
   // A different league each visit (Chuck, 2026-10-31), never the one shown last; it holds through this visit's redraws.
   if (board.rail == null){
     let last = ''; try { last = localStorage.getItem(RAIL_KEY) || ''; } catch (e) {}
@@ -310,15 +317,10 @@ function boardRail(){
     try { localStorage.setItem(RAIL_KEY, board.rail); } catch (e) {}
   }
   const on = all.find(l => l.id === board.rail) || all[0];
-  const rows = allGames.list ? on.rows().map(o => `<tr><td class="rk">${cMark(o.name)}</td><td class="nm"><a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
-      <td class="num">${avRec(o.r.dw, o.r.dl, o.r.dt)}</td><td class="num">${esc((o.rec && o.rec.rec) || avRec(o.r.w, o.r.l, o.r.t))}</td></tr>`).join('') : '';
-  const links = SITE_AV ? [['Standings', '?standings', I.list], ['Player Stats', '?avstats', I.stats], ['Team Stats', '?avstats=team', I.team], ['Teams', '?teams', I.team]] : homeLinks();
   return `<section class="hcard"><h2 class="h-rail">${homeIcon(I.list)}Standings</h2>
       <select class="c-sel rs-sel" id="railleague" aria-label="League">${all.map(l => `<option value="${esc(l.id)}"${l === on ? ' selected' : ''}>${esc(l.name)}</option>`).join('')}</select>
-      ${rows ? `<table class="rs-tbl"><thead><tr><th colspan="2"></th><th class="num">League</th><th class="num">Overall</th></tr></thead><tbody>${rows}</tbody></table>` : ''}
-      <a class="rs-more" href="${esc(on.href)}">Full standings</a></section>
-    <section class="hcard"><h2 class="h-rail">${homeIcon(I.link)}Quick Links</h2>
-      <nav class="h-links" aria-label="Quick links">${links.map(([t, h, d]) => `<a href="${esc(h)}">${homeIcon(d)}${esc(t)}</a>`).join('')}</nav></section>`;
+      ${table(on)}<a class="rs-more" href="${esc(on.href)}">Full standings</a></section>
+    ${quick(homeLinks())}`;
 }
 
 /* ---------- the page ---------- */

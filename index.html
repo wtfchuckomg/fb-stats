@@ -69,20 +69,8 @@ button{cursor:pointer}
 /* the logo, at the left of the site bar (its letters are outlined in white, so it reads on black) */
 .mark{flex:none}
 .mark img{display:block;height:40px;width:auto}
-/* AVCTLstats.com: the seal, the season and the league's name over the site's buttons, on every page; the button of
-   the page you're on is filled. Then the home page (37-avhome.js): leaders and divisions in a grid of cards. */
-.av-topwrap{box-sizing:border-box;width:100%;max-width:1280px;margin:0 auto;padding:16px 16px 0}
-.avh-hero{display:flex;gap:22px;align-items:center}
-.avh-hero img{flex:none;width:96px;height:96px;border-radius:50%;object-fit:contain;background:#FFFFFF}
-.av-seal{flex:none;display:block;line-height:0}
-.av-name{display:block;margin:4px 0 14px;font:800 30px/1.1 var(--sans);color:var(--ink);text-decoration:none}
-/* Phones: the seal beside the season and the name, and the buttons in one row beneath that scrolls sideways. */
-@media (max-width:640px){.av-topwrap{padding:12px 12px 0}
-  .av-top{display:grid;grid-template-columns:52px 1fr;column-gap:12px;align-items:center;padding:16px 16px 14px}.av-top>div{display:contents}
-  .av-top .av-seal{grid-row:1/3}.av-top img{width:52px;height:52px}.av-top .h-eyebrow{grid-column:2;align-self:end}
-  .av-top .av-name{grid-column:2;align-self:start;font-size:20px;margin:3px 0 0}
-  .av-top .av-btns{grid-column:1/-1;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:14px -16px 0;padding:0 16px}
-  .av-top .av-btns::-webkit-scrollbar{display:none}.av-top .av-btns .h-btn{flex:none;padding:9px 14px}}
+/* AVCTLstats.com's home page (37-avhome.js): leaders and divisions in a grid of cards. */
+.avh-wrap{box-sizing:border-box;width:100%;max-width:1280px;margin:0 auto}
 .avh-sec{box-sizing:border-box;width:100%;max-width:1280px;margin:22px auto 10px;padding:0 20px;font:800 20px/1 var(--sans);color:var(--ink)}
 .avh-grid{box-sizing:border-box;width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;max-width:1280px;margin:0 auto}
 .avh-grid .bcard{margin:0}
@@ -4452,7 +4440,7 @@ const inLeague = x => !!x && !!x.teams && (!!lgOf(x.teams.A.name) || !!lgOf(x.te
 
 // The three pages of a league, as tabs over each of them: Standings, Player Stats, Team Stats.
 function leagueNav(on){
-  if (SITE_AV) return '';   // the AVCTL site's header card has these pages as its buttons
+  if (SITE_AV) return '';   // the AVCTL site has these pages in its menu bar
   const av = !LG, base = av ? '' : `league=${LG.slug}`;
   const tabs = av
     ? [['standings', 'Standings', '?standings'], ['players', 'Player Stats', '?avstats'], ['team', 'Team Stats', '?avstats=team']]
@@ -5254,6 +5242,10 @@ function weekGames(key, withHidden, withOpp){
     // Thursday final typed in fresh): the final stands for the game, and the unplayed copy goes.
     const left = xs.filter(x => out[x.id]);
     if (left.length > 1 && left.some(x => summary(x).fin)) left.forEach(x => { if (!summary(x).fin && !summary(x).live) delete out[x.id]; });
+    // The same final typed in twice: one game, the newer copy.
+    const finals = left.filter(x => out[x.id]).sort((a, b) => (b.updated || 0) - (a.updated || 0));
+    const said = x => { const m = summary(x); return ['A', 'H'].map(s => `${canonSchool(x.teams[s].name)}:${m.score[s]}`).sort().join(); };
+    finals.slice(1).forEach(x => { if (summary(x).fin && said(x) === said(finals[0])) delete out[x.id]; });
   });
   if (!withHidden) Object.values(out).forEach(x => { if (isHidden(x)) delete out[x.id]; });
   return Object.values(out).sort((a, b) => gameDay(a) - gameDay(b) || (a.created || 0) - (b.created || 0));
@@ -5943,6 +5935,13 @@ function railLeagues(){
 function boardRail(){
   if (!matchMedia('(min-width:1200px)').matches) return '';   // no room for it: drawn only when it shows
   const all = railLeagues(), I = homeIcons();
+  const table = l => allGames.list ? `<table class="rs-tbl"><thead><tr><th colspan="2"></th><th class="num">League</th><th class="num">Overall</th></tr></thead><tbody>${l.rows().map(o => `<tr><td class="rk">${cMark(o.name)}</td><td class="nm"><a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
+      <td class="num">${avRec(o.r.dw, o.r.dl, o.r.dt)}</td><td class="num">${esc((o.rec && o.rec.rec) || avRec(o.r.w, o.r.l, o.r.t))}</td></tr>`).join('')}</tbody></table>` : '';
+  const quick = l => `<section class="hcard"><h2 class="h-rail">${homeIcon(I.link)}Quick Links</h2>
+      <nav class="h-links" aria-label="Quick links">${l.map(([t, h, d]) => `<a href="${esc(h)}">${homeIcon(d)}${esc(t)}</a>`).join('')}</nav></section>`;
+  // The AVCTL site has four divisions and no more: all of them, each time (Chuck, 2026-11-01).
+  if (SITE_AV) return `${all.map(l => `<section class="hcard"><h2 class="h-rail">${homeIcon(I.list)}${esc(l.name.replace('AVCTL ', ''))}</h2>${table(l)}<a class="rs-more" href="${esc(l.href)}">Full standings</a></section>`).join('')}
+    ${quick([['Standings', '?standings', I.list], ['Player Stats', '?avstats', I.stats], ['Team Stats', '?avstats=team', I.team], ['Teams', '?teams', I.team]])}`;
   // A different league each visit (Chuck, 2026-10-31), never the one shown last; it holds through this visit's redraws.
   if (board.rail == null){
     let last = ''; try { last = localStorage.getItem(RAIL_KEY) || ''; } catch (e) {}
@@ -5951,15 +5950,10 @@ function boardRail(){
     try { localStorage.setItem(RAIL_KEY, board.rail); } catch (e) {}
   }
   const on = all.find(l => l.id === board.rail) || all[0];
-  const rows = allGames.list ? on.rows().map(o => `<tr><td class="rk">${cMark(o.name)}</td><td class="nm"><a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
-      <td class="num">${avRec(o.r.dw, o.r.dl, o.r.dt)}</td><td class="num">${esc((o.rec && o.rec.rec) || avRec(o.r.w, o.r.l, o.r.t))}</td></tr>`).join('') : '';
-  const links = SITE_AV ? [['Standings', '?standings', I.list], ['Player Stats', '?avstats', I.stats], ['Team Stats', '?avstats=team', I.team], ['Teams', '?teams', I.team]] : homeLinks();
   return `<section class="hcard"><h2 class="h-rail">${homeIcon(I.list)}Standings</h2>
       <select class="c-sel rs-sel" id="railleague" aria-label="League">${all.map(l => `<option value="${esc(l.id)}"${l === on ? ' selected' : ''}>${esc(l.name)}</option>`).join('')}</select>
-      ${rows ? `<table class="rs-tbl"><thead><tr><th colspan="2"></th><th class="num">League</th><th class="num">Overall</th></tr></thead><tbody>${rows}</tbody></table>` : ''}
-      <a class="rs-more" href="${esc(on.href)}">Full standings</a></section>
-    <section class="hcard"><h2 class="h-rail">${homeIcon(I.link)}Quick Links</h2>
-      <nav class="h-links" aria-label="Quick links">${links.map(([t, h, d]) => `<a href="${esc(h)}">${homeIcon(d)}${esc(t)}</a>`).join('')}</nav></section>`;
+      ${table(on)}<a class="rs-more" href="${esc(on.href)}">Full standings</a></section>
+    ${quick(homeLinks())}`;
 }
 
 /* ---------- the page ---------- */
@@ -8043,15 +8037,16 @@ function homeBoardGame(x){
   const id = encodeURIComponent(x.id), href = hasStats(x) ? `?game=${id}` : m.pre ? `?preview=${id}` : '', cls = `ms-game${m.live ? ' live' : ''}`, inner = `<div class="ms-teams">${row('A')}${row('H')}</div>${side}`;
   return href ? `<a class="${cls}" href="${href}">${inner}</a>` : `<div class="${cls}">${inner}</div>`;
 }
-function homeBoard(){
+function homeBoard(only){
   const key = shownWeek(), rank = x => { const m = summary(x); return m.live ? (x.plays && x.plays.length ? 0 : 1) : m.fin ? 2 : 3; };
-  const games = weekGames(key, false, true).map(x => [rank(x), x]).sort((a, b) => a[0] - b[0] || (a[0] === 2 ? (b[1].updated || 0) - (a[1].updated || 0) : 0)).slice(0, HOME_BOARD_GAMES).map(o => o[1]);
+  const games = weekGames(key, false, true).filter(only || Boolean).map(x => [rank(x), x]).sort((a, b) => a[0] - b[0] || (a[0] === 2 ? (b[1].updated || 0) - (a[1].updated || 0) : 0)).slice(0, HOME_BOARD_GAMES).map(o => o[1]);
   if (!games.length) return '';
   return `<section class="hcard ms"><h2 class="ms-hd">${esc(weekLabel(key))} Scoreboard</h2>
       <div class="ms-grid">${games.map(homeBoardGame).join('')}</div>
-      <a class="ms-all" href="?state=${key}">Complete scoreboard</a></section>`;
+      <a class="ms-all" href="?${SITE_AV ? 'avctl' : 'state'}=${key}">Complete scoreboard</a></section>`;
 }
 function renderHome(){
+  if (ui.avhome) return renderAvHome();
   if (!ui.home) return;
   const tracker = '?tracker', icon = homeIcon, I = homeIcons(), links = homeLinks();
   $('#board').innerHTML = `<div class="hpage">
@@ -12130,9 +12125,8 @@ function renderDistricts(box, head){
     + `<section class="bcard ccard"><div class="ccard-hd"><h2>District standings</h2></div>${bkLegend(true, bkCut(bk.cls) < 7)}${D.map((d, i) => bkDistrictHtml(i + 1, d)).join('')}</section>`;
 }
 /* ================================================================
-   AVCTLstats.com's front page: this season's leaders and the four
-   divisions at a glance (the header card above every page has the
-   league's name and the way to each page), each a door into its
+   AVCTLstats.com's front page: the week's games, this season's
+   leaders and the four divisions at a glance, each a door into its
    full page. Built on the pages it summarizes — the stats page's
    season numbers and the standings' records — so the three always
    agree. stats/KMR never opens it (its home is the tracker's guide).
@@ -12188,17 +12182,9 @@ function renderAvHome(){
         return `<tr><td>${cMark(o.name)}<a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
           <td>${avRec(r.dw, r.dl, r.dt)}</td><td>${esc(rec.rec || avRec(r.w, r.l, r.t))}</td></tr>`; }).join('')}</tbody></table></section>`).join('')}</div>`;
 
-  $('#board').innerHTML = `<h2 class="avh-sec">Leaders</h2>` + leaders + `<h2 class="avh-sec">Standings</h2>` + divs;
+  const games = homeBoard(inAvctl);
+  $('#board').innerHTML = (games ? `<div class="avh-wrap">${games}</div>` : '') + `<h2 class="avh-sec">Leaders</h2>` + leaders + `<h2 class="avh-sec">Standings</h2>` + divs;
 }
-
-// The header card on every AVCTL page: this season, and the page you're on filled in.
-if (SITE_AV) (function(){
-  const q = new URLSearchParams(location.search), yr = $('#av-season');
-  if (yr) yr.textContent = `${new Date().getFullYear()} season`;
-  const here = q.has('avctl') ? 'avctl' : q.has('standings') ? 'standings' : q.has('avstats') ? (q.get('avstats') === 'team' ? 'avteam' : 'avstats')
-    : q.has('teams') || q.has('team') ? 'teams' : '';
-  document.querySelectorAll('.av-btns [data-av]').forEach(a => { const on = a.dataset.av === here; a.classList.toggle('primary', on); if (on) a.setAttribute('aria-current', 'page'); });
-})();
 /* ================================================================
    State › Playoff History: every Kansas playoff bracket, one year
    and one class at a time, drawn the way a bracket is drawn. The

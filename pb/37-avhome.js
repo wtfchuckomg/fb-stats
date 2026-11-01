@@ -1,7 +1,6 @@
 /* ================================================================
-   AVCTLstats.com's front page: this season's leaders and the four
-   divisions at a glance (the header card above every page has the
-   league's name and the way to each page), each a door into its
+   AVCTLstats.com's front page: the week's games, this season's
+   leaders and the four divisions at a glance, each a door into its
    full page. Built on the pages it summarizes — the stats page's
    season numbers and the standings' records — so the three always
    agree. stats/KMR never opens it (its home is the tracker's guide).
@@ -57,14 +56,6 @@ function renderAvHome(){
         return `<tr><td>${cMark(o.name)}<a class="tlink" href="?team=${encodeURIComponent(o.name)}">${esc(o.name)}</a></td>
           <td>${avRec(r.dw, r.dl, r.dt)}</td><td>${esc(rec.rec || avRec(r.w, r.l, r.t))}</td></tr>`; }).join('')}</tbody></table></section>`).join('')}</div>`;
 
-  $('#board').innerHTML = `<h2 class="avh-sec">Leaders</h2>` + leaders + `<h2 class="avh-sec">Standings</h2>` + divs;
+  const games = homeBoard(inAvctl);
+  $('#board').innerHTML = (games ? `<div class="avh-wrap">${games}</div>` : '') + `<h2 class="avh-sec">Leaders</h2>` + leaders + `<h2 class="avh-sec">Standings</h2>` + divs;
 }
-
-// The header card on every AVCTL page: this season, and the page you're on filled in.
-if (SITE_AV) (function(){
-  const q = new URLSearchParams(location.search), yr = $('#av-season');
-  if (yr) yr.textContent = `${new Date().getFullYear()} season`;
-  const here = q.has('avctl') ? 'avctl' : q.has('standings') ? 'standings' : q.has('avstats') ? (q.get('avstats') === 'team' ? 'avteam' : 'avstats')
-    : q.has('teams') || q.has('team') ? 'teams' : '';
-  document.querySelectorAll('.av-btns [data-av]').forEach(a => { const on = a.dataset.av === here; a.classList.toggle('primary', on); if (on) a.setAttribute('aria-current', 'page'); });
-})();
