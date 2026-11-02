@@ -691,12 +691,16 @@ const zeros = keys => Object.fromEntries(keys.map(k => [k, 0]));
 // fifth foul of each quarter. Halves (two 16s or 18s) keep the older one-and-one at 7 and two shots at 10.
 const FORMATS = {
   q: {n:4, per:8, ot:4, bonus:5, bonus2:null, tos:{f:3, s:2}},
-  h: {n:2, per:16, ot:4, bonus:7, bonus2:10, tos:{f:3, s:2}}
+  h: {n:2, per:16, ot:4, bonus:7, bonus2:10, tos:{f:3, s:2}},
+  // Women's college (NCAA, and the junior colleges that play its rules): four 10-minute quarters, 5-minute
+  // overtimes, two shots from the 5th team foul of each quarter with fouls carrying into overtime; three 30-second
+  // and two full timeouts in a game without TV timeouts, and one more 30 in each overtime.
+  wc: {n:4, per:10, ot:5, bonus:5, bonus2:null, tos:{f:2, s:3}, otTo:'s', carry:true, college:true}
 };
 function rulesOf(game){
-  const s = (game && game.set) || {}, fmt = s.fmt === 'h' ? 'h' : 'q', f = FORMATS[fmt];
+  const s = (game && game.set) || {}, fmt = ['h', 'wc'].includes(s.fmt) ? s.fmt : 'q', f = FORMATS[fmt];
   const num = (v, d) => +v > 0 ? +v : d;
-  return {fmt, n:f.n, per:num(s.per, f.per), ot:num(s.ot, f.ot), bonus:f.bonus, bonus2:f.bonus2, tos:f.tos};
+  return {fmt, n:f.n, per:num(s.per, f.per), ot:num(s.ot, f.ot), bonus:f.bonus, bonus2:f.bonus2, tos:f.tos, otTo:f.otTo || 'f', carry:!!f.carry, college:!!f.college};
 }
 const perName = (q, ru) => {
   const n = ru.n;
@@ -873,9 +877,10 @@ function replay(g, upto = g.plays.length){
         if (st.per >= ru.n && !tied){ st.final = true; e.text = st.per > ru.n ? 'End of overtime, final' : 'End of regulation, final'; }
         else {
           const ot = st.per >= ru.n;
-          if (ot){ e.text += ', tied: overtime'; st.tos.A.f++; st.tos.H.f++; }
+          if (ot){ e.text += ', tied: overtime'; st.tos.A[ru.otTo]++; st.tos.H[ru.otTo]++; }
           st.per++; st.lines.A[st.per - 1] = 0; st.lines.H[st.per - 1] = 0;
-          st.fouls = {A:0, H:0}; st.pot = null; st.scp = null; st.lastMiss = null; st.run = {s:null, pts:0};
+          if (!(ot && ru.carry)) st.fouls = {A:0, H:0};   // college: overtime is part of the 4th quarter for team fouls
+          st.pot = null; st.scp = null; st.lastMiss = null; st.run = {s:null, pts:0};
           // overtime starts with a jump ball; any other period goes to the possession arrow
           if (ot){ st.poss = null; st.arrow = null; }
           else if (st.arrow){ st.poss = st.arrow; st.arrow = other(st.arrow); e.text += `. ${T[st.poss].abbr} ball to start the ${perLong(st.per, ru)}${arrowTxt()}`; }
@@ -1323,8 +1328,8 @@ setInterval(() => {
 function renderBoard(){
   const st = R.st, T = g.teams, ru = R.ru;
   // timeouts left: big dots for 60s, small for 30s
-  const dots = s => { const t = st.tos[s]; return Array.from({length:Math.max(0, 3 - t.f)}, () => '<i class="full"></i>').join('') + Array.from({length:Math.max(0, t.f)}, () => '<i class="on full"></i>').join('')
-    + Array.from({length:Math.max(0, 2 - t.s)}, () => '<i></i>').join('') + Array.from({length:Math.max(0, t.s)}, () => '<i class="on"></i>').join(''); };
+  const dots = s => { const t = st.tos[s]; return Array.from({length:Math.max(0, ru.tos.f - t.f)}, () => '<i class="full"></i>').join('') + Array.from({length:Math.max(0, t.f)}, () => '<i class="on full"></i>').join('')
+    + Array.from({length:Math.max(0, ru.tos.s - t.s)}, () => '<i></i>').join('') + Array.from({length:Math.max(0, t.s)}, () => '<i class="on"></i>').join(''); };
   const won = st.final && st.score.A !== st.score.H ? (st.score.A > st.score.H ? 'A' : 'H') : null;
   const fullName = t => t.mascot && !String(t.name).toLowerCase().endsWith(t.mascot.toLowerCase()) ? `${t.name} ${t.mascot}` : t.name;
   const side = s => {
@@ -1555,7 +1560,7 @@ function dlgSetup(isNew){
       <textarea class="inp" id="s-${s}-roster" rows="4" placeholder="3 Cole Brandt&#10;12 Mason Ortiz">${esc(rosterToText(src.teams[s].roster))}</textarea><div class="hint" id="s-${s}-lib"></div></div></div>`;
   return `${dlgHead(isNew ? 'New game' : 'Game setup')}<div class="dlg-bd">${teamRow('A', 'Visitors')}${teamRow('H', 'Home')}
     <div class="grp"><h3>Game</h3>
-      <div class="fld"><span class="eyebrow">Periods</span><div class="seg" id="s-fmt">${[['q', 'Four quarters'], ['h', 'Two halves']].map(([m, l]) => `<button type="button" data-fmt="${m}" aria-pressed="${ru.fmt === m}">${l}</button>`).join('')}</div></div>
+      <div class="fld"><span class="eyebrow">Periods</span><div class="seg" id="s-fmt">${[['q', 'Four quarters'], ['h', 'Two halves'], ['wc', 'Women’s college']].map(([m, l]) => `<button type="button" data-fmt="${m}" aria-pressed="${ru.fmt === m}">${l}</button>`).join('')}</div></div>
       <div class="row">
       <div class="fld"><label class="eyebrow" for="s-per">Minutes per period</label><input class="inp" id="s-per" inputmode="numeric" value="${ru.per}"></div>
       <div class="fld"><label class="eyebrow" for="s-ot">Overtime, minutes</label><input class="inp" id="s-ot" inputmode="numeric" value="${ru.ot}"></div>
@@ -1564,7 +1569,9 @@ function dlgSetup(isNew){
     <datalist id="teamlib">${savedTeams().map(t => `<option value="${esc(t.name)}"></option>`).join('')}</datalist>
     <div class="dlg-ft"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" data-save-setup="${isNew ? 1 : 0}">${isNew ? 'Start game' : 'Save'}</button></div>`;
 }
-const ruleHint = fmt => fmt === 'h'
+const ruleHint = fmt => fmt === 'wc'
+  ? 'Women’s college (NCAA and junior college): 10-minute quarters, 5-minute overtimes. Two shots from a team’s 5th foul of each quarter; fouls carry into overtime. Three 30-second and two full timeouts, one more 30 in each overtime. College games stay off the high school scoreboards, teams and standings.'
+  : fmt === 'h'
   ? 'Halves: the bonus (one-and-one) at the 7th team foul of the half, two shots from the 10th. Five timeouts, one more in each overtime.'
   : 'Kansas high school: 8-minute quarters, 4-minute overtimes. The bonus (two shots) at a team’s 5th foul of each quarter; fouls reset every quarter. Five timeouts, one more in each overtime.';
 function saveSetup(isNew){
@@ -1611,7 +1618,7 @@ function dlgBox(x){
     <p class="hint">A line is the number, the name, then the stats: <code>FG-FGA 3P-3PA FT-FTA REB AST STL BLK TO PF PTS</code>. Fewer numbers are fine, the last one is always points, and the newspaper form <code>Ortiz 3 0-0 8</code> (field goals, free throws, points) works too. A <code>3-point goals: Brandt 2, Ortiz 1</code> line adds the threes. A line starting with <code>Team</code> gives team totals.</p>
     ${teamRow('A', 'Visitors')}${teamRow('H', 'Home')}
     <div class="grp"><h3>Game</h3><div class="row">
-      <div class="fld"><span class="eyebrow">Periods</span><div class="seg" id="s-fmt">${[['q', 'Four quarters'], ['h', 'Two halves']].map(([m, l]) => `<button type="button" data-fmt="${m}" data-nohint="1" aria-pressed="${ru.fmt === m}">${l}</button>`).join('')}</div></div>
+      <div class="fld"><span class="eyebrow">Periods</span><div class="seg" id="s-fmt">${[['q', 'Four quarters'], ['h', 'Two halves'], ['wc', 'Women’s college']].map(([m, l]) => `<button type="button" data-fmt="${m}" data-nohint="1" aria-pressed="${ru.fmt === m}">${l}</button>`).join('')}</div></div>
       <div class="fld"><label class="eyebrow" for="s-date">Game date</label><input class="inp" type="date" id="s-date" value="${esc(src.date || ymd(new Date()))}"></div></div></div></div>
     <datalist id="teamlib">${savedTeams().map(t => `<option value="${esc(t.name)}"></option>`).join('')}</datalist>
     <div class="dlg-ft"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" data-save-box="${x ? x.id : ''}">Save box score</button></div>`;
@@ -1674,8 +1681,8 @@ function saveBox(id){
   const date = /^\d{4}-\d\d-\d\d$/.test(v('s-date')) ? v('s-date') : ymd(new Date());
   const keptA = rememberTeam({...teams.A, roster:{}}), keptH = rememberTeam({...teams.H, roster:{}});
   if (keptA || keptH) syncTeams();
-  if (id && db.games[id]){ g = db.games[id]; Object.assign(g, {teams, date, set:{fmt, per:FORMATS[fmt].per, ot:4}, box}); }
-  else { g = {id:'g' + Date.now().toString(36), created:Date.now(), date, teams, set:{fmt, per:FORMATS[fmt].per, ot:4}, plays:[], box, clk:{s:0, run:false, at:0}}; }
+  if (id && db.games[id]){ g = db.games[id]; Object.assign(g, {teams, date, set:{fmt, per:FORMATS[fmt].per, ot:FORMATS[fmt].ot}, box}); }
+  else { g = {id:'g' + Date.now().toString(36), created:Date.now(), date, teams, set:{fmt, per:FORMATS[fmt].per, ot:FORMATS[fmt].ot}, plays:[], box, clk:{s:0, run:false, at:0}}; }
   resetUi(); save(); closeDialog(); refresh(); toast(id ? 'Box score saved' : 'Game entered from the box score');
 }
 function dlgShare(){
@@ -1838,7 +1845,7 @@ document.addEventListener('click', e => {
   if ('saveSetup' in d) return saveSetup(d.saveSetup === '1');
   if ('saveBox' in d) return saveBox(d.saveBox);
   if (d.line) return recordLine(d.line);
-  if (d.fmt){ $('#s-fmt').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); if (!d.nohint){ $('#s-per').value = FORMATS[d.fmt].per; $('#s-rulehint').textContent = ruleHint(d.fmt); } return; }
+  if (d.fmt){ $('#s-fmt').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); if (!d.nohint){ $('#s-per').value = FORMATS[d.fmt].per; $('#s-ot').value = FORMATS[d.fmt].ot; $('#s-rulehint').textContent = ruleHint(d.fmt); } return; }
   if (d.openGame){ g = db.games[d.openGame]; resetUi(); setCurrent(); closeDialog(); refresh(); return toast('Game opened'); }
   if (d.delGame){
     const id = d.delGame;
@@ -2260,7 +2267,7 @@ function renderStart(){
   el.hidden = false;
   const games = Object.values(db.games).filter(x => !x.sample).sort((a, b) => (b.updated || 0) - (a.updated || 0)).slice(0, 8);
   const item = x => { const r = replay(x);
-    return `<li><div class="s-teams"><b><span class="s-t">${markFor(x.teams.A, 22)}${esc(x.teams.A.name)}</span><em>at</em><span class="s-t">${markFor(x.teams.H, 22)}${esc(x.teams.H.name)}</span></b>
+    return `<li><div class="s-teams"><b><span class="s-t">${markFor(collegeMark(x, x.teams.A), 22)}${esc(x.teams.A.name)}</span><em>at</em><span class="s-t">${markFor(collegeMark(x, x.teams.H), 22)}${esc(x.teams.H.name)}</span></b>
       <span>${gameDay(x).toLocaleDateString()} · ${r.st.final ? `Final, ${x.teams.A.abbr} ${r.st.score.A}-${r.st.score.H}` : `${perName(r.st.per, r.ru)}, ${r.st.score.A}-${r.st.score.H}`}</span></div>
       <button class="s-go ${r.st.final ? '' : 'primary'}" data-resume="${esc(x.id)}">${r.st.final ? 'Open' : 'Resume'}</button></li>`; };
   el.innerHTML = `<div class="s-main"><section class="hcard s-hero"><div class="h-eyebrow">Kansas Media Stats</div><h1>Basketball Game Tracker</h1>
@@ -2762,7 +2769,8 @@ function logoMiss(img){
   if (rest.length){ img.dataset.alts = rest.slice(1).join('|'); img.src = rest[0]; }
   else { img.nextElementSibling.hidden = false; img.remove(); }
 }
-function teamMark(s, size){ return markFor(g.teams[s], size); }
+function teamMark(s, size){ return markFor(collegeMark(g, g.teams[s]), size); }
+const collegeMark = (x, t) => x && rulesOf(x).college ? {...t, logo:'-'} : t;
 function markFor(t, size){
   const [url, ...alts] = logoUrls(t);
   const txt = String(t.abbr || t.name || '?').slice(0, size >= 40 ? 4 : 3);
@@ -3267,7 +3275,7 @@ const seasonLabel = y => `${y}-${String((y + 1) % 100).padStart(2, '0')}`;
 function fanGames(){
   const all = {...fan.remote};
   try { Object.values(db.games || {}).forEach(x => { if (!x || x.sample || !x.teams) return; const r = all[x.id]; if (!r || (x.updated || 0) > (r.updated || 0)) all[x.id] = x; }); } catch (e) {}
-  return Object.values(all).filter(x => x && x.teams && x.teams.A && x.teams.H && seasonOf(gameDay(x)) === SEASON).map(x => {
+  return Object.values(all).filter(x => x && x.teams && x.teams.A && x.teams.H && !rulesOf(x).college && seasonOf(gameDay(x)) === SEASON).map(x => {
     let r; try { r = replay(x); } catch (e) { return null; }
     const st = r.st, started = !!(x.box || (x.plays && x.plays.length));
     const sch = {A:schoolOf(x.teams.A.name), H:schoolOf(x.teams.H.name)};
