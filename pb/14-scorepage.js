@@ -315,9 +315,14 @@ function boardRail(){
       <td class="num">${avRec(o.r.dw, o.r.dl, o.r.dt)}</td><td class="num">${esc((o.rec && o.rec.rec) || avRec(o.r.w, o.r.l, o.r.t))}</td></tr>`).join('')}</tbody></table>` : '';
   const quick = l => `<section class="hcard"><h2 class="h-rail">${homeIcon(I.link)}Quick Links</h2>
       <nav class="h-links" aria-label="Quick links">${l.map(([t, h, d]) => `<a href="${esc(h)}">${homeIcon(d)}${esc(t)}</a>`).join('')}</nav></section>`;
+  const cards = l => l.map(o => `<section class="hcard"><h2 class="h-rail">${homeIcon(I.list)}${esc(o.name.replace('AVCTL ', ''))}</h2>${table(o)}<a class="rs-more" href="${esc(o.href)}">Full standings</a></section>`).join('');
   // The AVCTL site has four divisions and no more: all of them, each time (Chuck, 2026-11-01).
-  if (SITE_AV) return `${all.map(l => `<section class="hcard"><h2 class="h-rail">${homeIcon(I.list)}${esc(l.name.replace('AVCTL ', ''))}</h2>${table(l)}<a class="rs-more" href="${esc(l.href)}">Full standings</a></section>`).join('')}
+  if (SITE_AV) return `${cards(all)}
     ${quick([['Standings', '?standings', I.list], ['Player Stats', '?avstats', I.stats], ['Team Stats', '?avstats=team', I.team], ['Teams', '?teams', I.team]])}`;
+  // A league picked above the games stays here until it's cleared (Chuck, 2026-11-01): every division of it.
+  const picked = ui.state && boardLeague();
+  if (picked) return `${cards(all.filter(l => picked.slug === 'avctl' ? l.id.startsWith('av-') : lgPlain(l.name) === picked.name))}
+    ${quick(homeLinks())}`;
   // A different league each visit (Chuck, 2026-10-31), never the one shown last; it holds through this visit's redraws.
   if (board.rail == null){
     let last = ''; try { last = localStorage.getItem(RAIL_KEY) || ''; } catch (e) {}
