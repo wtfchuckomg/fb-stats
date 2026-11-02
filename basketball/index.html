@@ -2235,10 +2235,10 @@ function boxTable(s){
   // everyone on the roster shows, with zeros until they do something
   const all = {...Object.fromEntries(Object.keys(T[s].roster || {}).map(n => [n, Object.assign(zeros(PL_KEYS), {n})])), ...R.S.pl[s]};
   const rows = Object.values(all).sort((a, b) => b.pts - a.pts || b.reb - a.reb || b.ast - a.ast || (+a.n) - (+b.n));
-  // starters set in Setup get their own section (in number order, even with no stats); otherwise one list
+  // starters set in Setup get their own section, then reserves, both in number order; otherwise one list
   const five = T[s].starters || [];
   const starters = five.map(n => all[n] || Object.assign(zeros(PL_KEYS), {n})).sort((a, b) => a.n - b.n);
-  const reserves = rows.filter(p => !five.includes(p.n));
+  const reserves = rows.filter(p => !five.includes(p.n)).sort((a, b) => (+a.n) - (+b.n));
   const sec = l => `<tr class="bx-sec"><td>${l}</td><td colspan="${BOX_COLS.length}"></td></tr>`;
   const prow = p => `<tr class="${p.dq ? 'dq' : ''}"><td>${/^\d+$/.test(p.n) ? `<span class="pn">${esc(p.n)}</span>${esc(rosterName(s, p.n) || '')}` : esc(p.n)}${p.dq ? `<span class="dqtag" title="${esc(p.dq)}">${p.dq === 'ejected' ? 'EJ' : 'FO'}</span>` : ''}</td>${boxRow(p).map((v, i) => `<td${i === 11 && p.pf >= 5 ? ' class="pf5"' : ''}>${v}</td>`).join('')}</tr>`;
   const body = five.length ? sec('Starters') + starters.map(prow).join('') + (reserves.length ? sec('Reserves') + reserves.map(prow).join('') : '') : rows.map(prow).join('');
