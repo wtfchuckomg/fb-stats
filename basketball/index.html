@@ -1730,7 +1730,7 @@ function saveBox(id){
   const date = /^\d{4}-\d\d-\d\d$/.test(v('s-date')) ? v('s-date') : ymd(new Date());
   const keptA = rememberTeam({...teams.A, roster:{}}), keptH = rememberTeam({...teams.H, roster:{}});
   if (keptA || keptH) syncTeams();
-  if (id && db.games[id]){ g = db.games[id]; Object.assign(g, {teams, date, set:{fmt, per:FORMATS[fmt].per, ot:FORMATS[fmt].ot}, box}); }
+  if (id && db.games[id]){ g = db.games[id]; ['A', 'H'].forEach(k => { if (g.teams[k].starters) teams[k].starters = g.teams[k].starters; }); Object.assign(g, {teams, date, set:{fmt, per:FORMATS[fmt].per, ot:FORMATS[fmt].ot}, box}); }
   else { g = {id:'g' + Date.now().toString(36), created:Date.now(), date, teams, set:{fmt, per:FORMATS[fmt].per, ot:FORMATS[fmt].ot}, plays:[], box, clk:{s:0, run:false, at:0}}; }
   resetUi(); save(); closeDialog(); refresh(); toast(id ? 'Box score saved' : 'Game entered from the box score');
 }
