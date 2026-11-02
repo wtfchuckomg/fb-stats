@@ -233,7 +233,7 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .board{box-sizing:border-box;width:100%;max-width:1280px;margin:0 auto;padding:16px 16px 40px;display:flex;flex-direction:column;gap:14px}
 .bcard{box-sizing:border-box;min-width:0;max-width:100%;background:var(--card);border-radius:14px;box-shadow:0 1px 2px rgba(18,18,19,.06);padding:20px 26px}
 .bhead{padding-bottom:10px}
-.bhead h1{margin:0 0 14px;font:800 28px/1.1 var(--sans);letter-spacing:-.015em;color:var(--ink-2)}
+.bhead h1{margin:0 0 14px;font:800 24px/1.15 var(--sans);letter-spacing:-.015em;color:var(--ink-2)}
 .bweeks-wrap{display:flex;align-items:center;gap:4px}
 .bweeks{flex:1;min-width:0;display:flex;overflow-x:auto;position:relative;scrollbar-width:none}
 .bweeks::-webkit-scrollbar{display:none}
@@ -247,22 +247,24 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .bempty{margin:0;color:var(--muted);font:500 15px/1.4 var(--sans)}
 .bhead-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .bhead-top .bcls{margin:0 0 14px;align-self:center}
-.bhead-top h1{margin:0 0 14px;font:800 28px/1.1 var(--sans);letter-spacing:-.015em;color:var(--ink-2)}
+.bfilters{display:flex;flex-wrap:wrap;gap:0 8px;align-self:center;min-width:0}
+.bfilters .bcls{min-width:0;max-width:230px;text-overflow:ellipsis}
+@media (max-width:640px){.bfilters{width:100%;flex-wrap:nowrap}.bfilters .bcls{flex:1 1 0;max-width:none}}
+.bhead-top h1{margin:0 0 14px;font:800 24px/1.15 var(--sans);letter-spacing:-.015em;color:var(--ink-2)}
 .bhead-link{color:var(--blue);font:600 14px/1 var(--sans);text-decoration:none;white-space:nowrap}
 /* ---------- county stats page (?stats) ---------- */
 .c-sub{margin:2px 0 0;color:var(--muted);font:400 13.5px/1.45 var(--sans)}
-.bhead-top h1.c-title{font:800 30px/1.15 var(--sans)}
-.bhead-top h1.b-title{font-size:28px}
+.bhead-top h1.c-title{font:800 24px/1.15 var(--sans)}
 .c-tabs{display:flex;border-bottom:1px solid var(--line);margin:2px 0 16px;overflow-x:auto;scrollbar-width:none}
 .c-tabs::-webkit-scrollbar{display:none}
-.c-tabs button,.c-tabs a{flex:1 0 auto;text-align:center;text-decoration:none;border:0;background:none;padding:13px 16px;border-bottom:3px solid transparent;font:700 16px/1 var(--sans);color:var(--muted);cursor:pointer;white-space:nowrap}
+.c-tabs button,.c-tabs a{flex:1 0 auto;text-align:center;text-decoration:none;border:0;background:none;padding:11px 14px;border-bottom:3px solid transparent;font:600 13px/1 var(--sans);color:var(--muted);cursor:pointer;white-space:nowrap}
 .c-tabs button.on,.c-tabs a.on{color:var(--ink-2);border-bottom-color:var(--red)}
 .c-pills{display:inline-flex;background:#EEEFF1;border-radius:26px;padding:4px;margin:0 0 12px}
-.c-pills button{border:0;background:none;border-radius:22px;padding:11px 20px;font:600 15px/1 var(--sans);color:var(--ink-2);cursor:pointer}
+.c-pills button{border:0;background:none;border-radius:22px;padding:9px 16px;font:600 12px/1 var(--sans);color:var(--ink-2);cursor:pointer}
 .c-pills button.on{background:#FFFFFF;color:var(--red);box-shadow:0 1px 5px rgba(0,0,0,.16)}
 .c-filters{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px}
-.c-sel{-webkit-appearance:none;appearance:none;border:1px solid var(--line);border-radius:20px;cursor:pointer;padding:9px 34px 9px 14px;font:600 14px/1 var(--sans);color:var(--ink-2);
-  background:#FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%233772DF' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 13px center}
+.c-sel{-webkit-appearance:none;appearance:none;border:1px solid var(--line);border-radius:20px;cursor:pointer;padding:8px 30px 8px 12px;font:600 12px/1 var(--sans);color:var(--ink-2);
+  background:#FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%233772DF' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 11px center}
 /* the table runs the full width of the card: clip it to the card's rounded corners, and leave the last
    row the same room at the bottom that the heading has at the top, so it doesn't sit on the edge */
 .ccard{padding:16px 0 14px;overflow:hidden}
@@ -625,7 +627,7 @@ table.pl-log td.nm .cn-in,table.pl-log td.nm .pl-opp{min-width:0;overflow:hidden
 .pl-short{display:none}
 /* phones: sized like ESPN's stats pages (13px table, tight rows, small logos) with short names ("W. Quinn") */
 @media (max-width:640px){.bhead-top h1.c-title{font-size:20px;margin-bottom:10px}.ccard-hd{padding:0 14px 8px}
-  .c-tabs button,.c-tabs a{padding:12px 12px;font-size:14px}.c-pills button{padding:10px 14px;font-size:14px}
+  .c-tabs button,.c-tabs a{padding:11px 12px;font-size:13px}.c-pills button{padding:9px 14px;font-size:12px}
   .ctbl{font-size:13px}.ctbl th{font-size:12px}.ctbl th,.ctbl td{padding:7px 8px}
   .ctbl .rk{padding-left:10px;width:32px;min-width:32px;max-width:32px}.ctbl .nm{left:32px}
   .ctbl .nm + .num{padding-left:10px}
@@ -961,7 +963,7 @@ button.h-btn{cursor:pointer}
   .board{padding:10px 10px 30px;gap:10px}
   .bcard{padding:14px 14px;border-radius:12px}
   /* sized like ESPN's phone scoreboard */
-  .bhead h1,.bhead-top h1.b-title{font-size:22px;margin-bottom:10px}
+  .bhead h1,.bhead-top h1.b-title{font-size:20px;margin-bottom:10px}
   .bw{min-width:104px;padding:6px 6px}
   .bw b{font-size:12px}
   .bw span{font-size:10px}
@@ -5671,9 +5673,18 @@ const boardName = () => ui.av ? 'AVCTL' : ui.state ? 'State' : 'BUCO';
 // Every game goes on the State and AVCTL boards: tracked, scored by hand or from KPreps, played or still to come.
 const onStateBoard = x => !!x;
 const SEASON_WEEKS = 13;   // nine regular-season weeks, then regionals, sectionals, sub-state and state
-const board = {err:'', seen:null, cls:new URLSearchParams(location.search).get('class') || ''};
+const board = {err:'', seen:null, cls:new URLSearchParams(location.search).get('class') || '', lg:new URLSearchParams(location.search).get('lg') || ''};
 // The State Scoreboard one class at a time (Chuck, 2026-10-30): a game is in a class when either school is.
 const BOARD_CLASSES = ['6A', '5A', '4A', '3A', '2A', '1A', '8-Man I', '8-Man II', '6-Man'];
+// And one league at a time (Chuck, 2026-11-01), the same way: the list is the Leagues menu's, AVCTL first.
+const BOARD_LEAGUES = [{slug:'avctl', name:'AVCTL'}, ...LEAGUES.filter(l => lgDivs(l)[0] === l).map(l => ({slug:l.slug, name:lgPlain(l.name)}))];
+const boardLeague = () => BOARD_LEAGUES.find(l => l.slug === board.lg) || null;
+function inBoardLeague(x){
+  const l = ui.state && boardLeague(); if (!l) return true;
+  if (l.slug === 'avctl') return inAvctl(x);
+  const teams = new Set(lgDivs(LEAGUES.find(y => y.slug === l.slug)).flatMap(d => d.teams).map(canonSchool));
+  return ['A', 'H'].some(s => teams.has(canonSchool(x.teams[s].name)));
+}
 // Schools the poll's class lists spell another way.
 const BOARD_CLASS_AKA = {'Lakeside':'Lakeside Downs', 'Madison':'Madison/Hamilton', "St John's":"St. John's/Tipton Catholic", 'Elkhart':'Elkhart/Rolla',
   'Skyline':'Pratt Skyline', 'Maranatha':'Maranatha Academy', 'Plainville':'Plainville/Natoma', 'Perry-Lecompton':'Perry-Lecompton/Bishop Seabury',
@@ -5689,7 +5700,7 @@ function boardClassOf(n){
   return boardCls.idx.get(canonSchool(n)) || boardCls.idx.get(canonSchool(BOARD_CLASS_AKA[n] || '')) || null;
 }
 const inBoardClass = x => !board.cls || !ui.state || ['A', 'H'].some(s => boardClassOf(x.teams[s].name) === board.cls);
-const boardUrl = () => `?${boardParam()}=${ui.week}${board.cls && ui.state ? '&class=' + encodeURIComponent(board.cls) : ''}`;
+const boardUrl = () => `?${boardParam()}=${ui.week}${board.cls && ui.state ? '&class=' + encodeURIComponent(board.cls) : ''}${board.lg && ui.state ? '&lg=' + encodeURIComponent(board.lg) : ''}`;
 const seasonKeys = y => Array.from({length:SEASON_WEEKS}, (_, i) => weekKey(week1(y).getTime() + i * WEEK_MS + 3 * 864e5));
 // This week, kept inside the season: before Week 1 it opens Week 1, after the finals the last week.
 function boardDefaultWeek(){
@@ -5989,11 +6000,11 @@ function renderScoreboard(){
     <b>${esc(weekLabel(k).toUpperCase())}</b><span>${weekRange(k)}</span></button>`).join('');
   // The State Scoreboard: games with stats kept on them, and games still to come.
   // The league board draws on the same pool as the State board, then keeps its own schools' games.
-  const games = weekGames(key, false, ui.state || ui.av).filter(x => (!ui.state && !ui.av) ? inBuco(x) : (onStateBoard(x) && (!ui.av || inAvctl(x)) && inBoardClass(x))), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
+  const games = weekGames(key, false, ui.state || ui.av).filter(x => (!ui.state && !ui.av) ? inBuco(x) : (onStateBoard(x) && (!ui.av || inAvctl(x)) && inBoardClass(x) && inBoardLeague(x))), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (board.err) body = note(board.err);
   else if (scores.ready !== key && !allGames.list) body = note('Loading scores…');
-  else if (!games.length) body = note(`No ${board.cls && ui.state ? board.cls + ' ' : ''}games for ${weekLabel(key)} yet.`);
+  else if (!games.length) body = note(`No ${ui.state ? [board.cls, (boardLeague() || {}).name].filter(Boolean).map(t => t + ' ').join('') : ''}games for ${weekLabel(key)} yet.`);
   else {
     const days = [];
     games.forEach(x => {
@@ -6010,7 +6021,7 @@ function renderScoreboard(){
     days.sort((a, b) => (b.live ? 1 : 0) - (a.live ? 1 : 0) || a.k.localeCompare(b.k));
     // The first dozen cards now, the rest as they scroll near (a State week is 160 games); the card being typed on
     // is always drawn.
-    const lk = 'board|' + boardName() + '|' + key + '|' + board.cls;
+    const lk = 'board|' + boardName() + '|' + key + '|' + board.cls + '|' + board.lg;
     if (board.lazyKey !== lk){ lazyReset(); board.lazyKey = lk; }
     let room = 12;
     body = days.map((day, di) => { const first = board.edit && day.games.some(x => x.id === board.edit.id) ? day.games.length : room;
@@ -6022,8 +6033,9 @@ function renderScoreboard(){
   const act = document.activeElement, focusId = act && box.contains(act) && act.id && act.id.startsWith('bs-') ? act.id : null;
   // Live games redraw the page every few seconds: the side bar stays put unless it changed, or its list would snap shut.
   const rail = boardRail(), oldRail = box.querySelector('.b-rail');
-  box.innerHTML = `<div class="bd-grid"><div class="bd-col"><section class="bcard bhead"><div class="bhead-top"><h1 class="b-title">${boardName()} Scoreboard</h1>${ui.state ? `<select class="c-sel bcls" id="bcls" aria-label="Class">
-      ${['', ...BOARD_CLASSES].map(c => `<option value="${esc(c)}"${c === board.cls ? ' selected' : ''}>${c ? esc(c) : 'All classes'}</option>`).join('')}</select>` : ''}</div>
+  box.innerHTML = `<div class="bd-grid"><div class="bd-col"><section class="bcard bhead"><div class="bhead-top"><h1 class="b-title">${boardName()} Scoreboard</h1>${ui.state ? `<div class="bfilters"><select class="c-sel bcls" id="blg" aria-label="League">
+      ${[{slug:'', name:'All leagues'}, ...BOARD_LEAGUES].map(l => `<option value="${esc(l.slug)}"${l.slug === board.lg ? ' selected' : ''}>${esc(l.name)}</option>`).join('')}</select><select class="c-sel bcls" id="bcls" aria-label="Class">
+      ${['', ...BOARD_CLASSES].map(c => `<option value="${esc(c)}"${c === board.cls ? ' selected' : ''}>${c ? esc(c) : 'All classes'}</option>`).join('')}</select></div>` : ''}</div>
     <div class="bweeks-wrap"><button type="button" class="bw-arrow" data-bscroll="-1" aria-label="Earlier weeks">${chev('M9 1L1 9l8 8')}</button>
       <div class="bweeks">${tabs}</div>
       <button type="button" class="bw-arrow" data-bscroll="1" aria-label="Later weeks">${chev('M1 1l8 8-8 8')}</button></div></section>${body}</div><aside class="b-rail"></aside></div>`;
@@ -6064,8 +6076,8 @@ document.addEventListener('change', e => {
     board.rail = e.target.value;
     return renderScoreboard();
   }
-  if (!ui.board || e.target.id !== 'bcls') return;
-  board.cls = e.target.value; history.pushState(null, '', boardUrl()); renderScoreboard();
+  if (!ui.board || (e.target.id !== 'bcls' && e.target.id !== 'blg')) return;
+  board[e.target.id === 'bcls' ? 'cls' : 'lg'] = e.target.value; history.pushState(null, '', boardUrl()); renderScoreboard();
 });
 // The final typed on a card: both boxes filled, then saved the same way as from a team page.
 function saveBoardFinal(){
@@ -12567,8 +12579,8 @@ addEventListener('popstate', () => {
   if (['all', 'scoring', 'drives'].includes(plays) && ui.pbp !== plays){ ui.pbp = plays; drew = true; }
   // A board address with no week on it means this week, so going back to it has to come back here.
   const wkAt = ['scores', 'avctl', 'state'].find(k => q.has(k));
-  if (wkAt === 'state' && typeof board !== 'undefined' && board.cls !== (q.get('class') || '')){
-    board.cls = q.get('class') || ''; board.seen = null;
+  if (wkAt === 'state' && typeof board !== 'undefined' && (board.cls !== (q.get('class') || '') || board.lg !== (q.get('lg') || ''))){
+    board.cls = q.get('class') || ''; board.lg = q.get('lg') || ''; board.seen = null;
     if (ui.week === (q.get(wkAt) || boardDefaultWeek()) && ui.board) return void renderScoreboard();
   }
   if (wkAt && typeof ui.week !== 'undefined'){

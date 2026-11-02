@@ -17,9 +17,18 @@ const boardName = () => ui.av ? 'AVCTL' : ui.state ? 'State' : 'BUCO';
 // Every game goes on the State and AVCTL boards: tracked, scored by hand or from KPreps, played or still to come.
 const onStateBoard = x => !!x;
 const SEASON_WEEKS = 13;   // nine regular-season weeks, then regionals, sectionals, sub-state and state
-const board = {err:'', seen:null, cls:new URLSearchParams(location.search).get('class') || ''};
+const board = {err:'', seen:null, cls:new URLSearchParams(location.search).get('class') || '', lg:new URLSearchParams(location.search).get('lg') || ''};
 // The State Scoreboard one class at a time (Chuck, 2026-10-30): a game is in a class when either school is.
 const BOARD_CLASSES = ['6A', '5A', '4A', '3A', '2A', '1A', '8-Man I', '8-Man II', '6-Man'];
+// And one league at a time (Chuck, 2026-11-01), the same way: the list is the Leagues menu's, AVCTL first.
+const BOARD_LEAGUES = [{slug:'avctl', name:'AVCTL'}, ...LEAGUES.filter(l => lgDivs(l)[0] === l).map(l => ({slug:l.slug, name:lgPlain(l.name)}))];
+const boardLeague = () => BOARD_LEAGUES.find(l => l.slug === board.lg) || null;
+function inBoardLeague(x){
+  const l = ui.state && boardLeague(); if (!l) return true;
+  if (l.slug === 'avctl') return inAvctl(x);
+  const teams = new Set(lgDivs(LEAGUES.find(y => y.slug === l.slug)).flatMap(d => d.teams).map(canonSchool));
+  return ['A', 'H'].some(s => teams.has(canonSchool(x.teams[s].name)));
+}
 // Schools the poll's class lists spell another way.
 const BOARD_CLASS_AKA = {'Lakeside':'Lakeside Downs', 'Madison':'Madison/Hamilton', "St John's":"St. John's/Tipton Catholic", 'Elkhart':'Elkhart/Rolla',
   'Skyline':'Pratt Skyline', 'Maranatha':'Maranatha Academy', 'Plainville':'Plainville/Natoma', 'Perry-Lecompton':'Perry-Lecompton/Bishop Seabury',
@@ -35,7 +44,7 @@ function boardClassOf(n){
   return boardCls.idx.get(canonSchool(n)) || boardCls.idx.get(canonSchool(BOARD_CLASS_AKA[n] || '')) || null;
 }
 const inBoardClass = x => !board.cls || !ui.state || ['A', 'H'].some(s => boardClassOf(x.teams[s].name) === board.cls);
-const boardUrl = () => `?${boardParam()}=${ui.week}${board.cls && ui.state ? '&class=' + encodeURIComponent(board.cls) : ''}`;
+const boardUrl = () => `?${boardParam()}=${ui.week}${board.cls && ui.state ? '&class=' + encodeURIComponent(board.cls) : ''}${board.lg && ui.state ? '&lg=' + encodeURIComponent(board.lg) : ''}`;
 const seasonKeys = y => Array.from({length:SEASON_WEEKS}, (_, i) => weekKey(week1(y).getTime() + i * WEEK_MS + 3 * 864e5));
 // This week, kept inside the season: before Week 1 it opens Week 1, after the finals the last week.
 function boardDefaultWeek(){
@@ -335,11 +344,11 @@ function renderScoreboard(){
     <b>${esc(weekLabel(k).toUpperCase())}</b><span>${weekRange(k)}</span></button>`).join('');
   // The State Scoreboard: games with stats kept on them, and games still to come.
   // The league board draws on the same pool as the State board, then keeps its own schools' games.
-  const games = weekGames(key, false, ui.state || ui.av).filter(x => (!ui.state && !ui.av) ? inBuco(x) : (onStateBoard(x) && (!ui.av || inAvctl(x)) && inBoardClass(x))), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
+  const games = weekGames(key, false, ui.state || ui.av).filter(x => (!ui.state && !ui.av) ? inBuco(x) : (onStateBoard(x) && (!ui.av || inAvctl(x)) && inBoardClass(x) && inBoardLeague(x))), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (board.err) body = note(board.err);
   else if (scores.ready !== key && !allGames.list) body = note('Loading scores…');
-  else if (!games.length) body = note(`No ${board.cls && ui.state ? board.cls + ' ' : ''}games for ${weekLabel(key)} yet.`);
+  else if (!games.length) body = note(`No ${ui.state ? [board.cls, (boardLeague() || {}).name].filter(Boolean).map(t => t + ' ').join('') : ''}games for ${weekLabel(key)} yet.`);
   else {
     const days = [];
     games.forEach(x => {
@@ -356,7 +365,7 @@ function renderScoreboard(){
     days.sort((a, b) => (b.live ? 1 : 0) - (a.live ? 1 : 0) || a.k.localeCompare(b.k));
     // The first dozen cards now, the rest as they scroll near (a State week is 160 games); the card being typed on
     // is always drawn.
-    const lk = 'board|' + boardName() + '|' + key + '|' + board.cls;
+    const lk = 'board|' + boardName() + '|' + key + '|' + board.cls + '|' + board.lg;
     if (board.lazyKey !== lk){ lazyReset(); board.lazyKey = lk; }
     let room = 12;
     body = days.map((day, di) => { const first = board.edit && day.games.some(x => x.id === board.edit.id) ? day.games.length : room;
@@ -368,8 +377,9 @@ function renderScoreboard(){
   const act = document.activeElement, focusId = act && box.contains(act) && act.id && act.id.startsWith('bs-') ? act.id : null;
   // Live games redraw the page every few seconds: the side bar stays put unless it changed, or its list would snap shut.
   const rail = boardRail(), oldRail = box.querySelector('.b-rail');
-  box.innerHTML = `<div class="bd-grid"><div class="bd-col"><section class="bcard bhead"><div class="bhead-top"><h1 class="b-title">${boardName()} Scoreboard</h1>${ui.state ? `<select class="c-sel bcls" id="bcls" aria-label="Class">
-      ${['', ...BOARD_CLASSES].map(c => `<option value="${esc(c)}"${c === board.cls ? ' selected' : ''}>${c ? esc(c) : 'All classes'}</option>`).join('')}</select>` : ''}</div>
+  box.innerHTML = `<div class="bd-grid"><div class="bd-col"><section class="bcard bhead"><div class="bhead-top"><h1 class="b-title">${boardName()} Scoreboard</h1>${ui.state ? `<div class="bfilters"><select class="c-sel bcls" id="blg" aria-label="League">
+      ${[{slug:'', name:'All leagues'}, ...BOARD_LEAGUES].map(l => `<option value="${esc(l.slug)}"${l.slug === board.lg ? ' selected' : ''}>${esc(l.name)}</option>`).join('')}</select><select class="c-sel bcls" id="bcls" aria-label="Class">
+      ${['', ...BOARD_CLASSES].map(c => `<option value="${esc(c)}"${c === board.cls ? ' selected' : ''}>${c ? esc(c) : 'All classes'}</option>`).join('')}</select></div>` : ''}</div>
     <div class="bweeks-wrap"><button type="button" class="bw-arrow" data-bscroll="-1" aria-label="Earlier weeks">${chev('M9 1L1 9l8 8')}</button>
       <div class="bweeks">${tabs}</div>
       <button type="button" class="bw-arrow" data-bscroll="1" aria-label="Later weeks">${chev('M1 1l8 8-8 8')}</button></div></section>${body}</div><aside class="b-rail"></aside></div>`;
@@ -410,8 +420,8 @@ document.addEventListener('change', e => {
     board.rail = e.target.value;
     return renderScoreboard();
   }
-  if (!ui.board || e.target.id !== 'bcls') return;
-  board.cls = e.target.value; history.pushState(null, '', boardUrl()); renderScoreboard();
+  if (!ui.board || (e.target.id !== 'bcls' && e.target.id !== 'blg')) return;
+  board[e.target.id === 'bcls' ? 'cls' : 'lg'] = e.target.value; history.pushState(null, '', boardUrl()); renderScoreboard();
 });
 // The final typed on a card: both boxes filled, then saved the same way as from a team page.
 function saveBoardFinal(){

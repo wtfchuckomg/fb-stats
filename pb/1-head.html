@@ -253,7 +253,7 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .board{box-sizing:border-box;width:100%;max-width:1280px;margin:0 auto;padding:16px 16px 40px;display:flex;flex-direction:column;gap:14px}
 .bcard{box-sizing:border-box;min-width:0;max-width:100%;background:var(--card);border-radius:14px;box-shadow:0 1px 2px rgba(18,18,19,.06);padding:20px 26px}
 .bhead{padding-bottom:10px}
-.bhead h1{margin:0 0 14px;font:800 28px/1.1 var(--sans);letter-spacing:-.015em;color:var(--ink-2)}
+.bhead h1{margin:0 0 14px;font:800 24px/1.15 var(--sans);letter-spacing:-.015em;color:var(--ink-2)}
 .bweeks-wrap{display:flex;align-items:center;gap:4px}
 .bweeks{flex:1;min-width:0;display:flex;overflow-x:auto;position:relative;scrollbar-width:none}
 .bweeks::-webkit-scrollbar{display:none}
@@ -267,22 +267,24 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .bempty{margin:0;color:var(--muted);font:500 15px/1.4 var(--sans)}
 .bhead-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .bhead-top .bcls{margin:0 0 14px;align-self:center}
-.bhead-top h1{margin:0 0 14px;font:800 28px/1.1 var(--sans);letter-spacing:-.015em;color:var(--ink-2)}
+.bfilters{display:flex;flex-wrap:wrap;gap:0 8px;align-self:center;min-width:0}
+.bfilters .bcls{min-width:0;max-width:230px;text-overflow:ellipsis}
+@media (max-width:640px){.bfilters{width:100%;flex-wrap:nowrap}.bfilters .bcls{flex:1 1 0;max-width:none}}
+.bhead-top h1{margin:0 0 14px;font:800 24px/1.15 var(--sans);letter-spacing:-.015em;color:var(--ink-2)}
 .bhead-link{color:var(--blue);font:600 14px/1 var(--sans);text-decoration:none;white-space:nowrap}
 /* ---------- county stats page (?stats) ---------- */
 .c-sub{margin:2px 0 0;color:var(--muted);font:400 13.5px/1.45 var(--sans)}
-.bhead-top h1.c-title{font:800 30px/1.15 var(--sans)}
-.bhead-top h1.b-title{font-size:28px}
+.bhead-top h1.c-title{font:800 24px/1.15 var(--sans)}
 .c-tabs{display:flex;border-bottom:1px solid var(--line);margin:2px 0 16px;overflow-x:auto;scrollbar-width:none}
 .c-tabs::-webkit-scrollbar{display:none}
-.c-tabs button,.c-tabs a{flex:1 0 auto;text-align:center;text-decoration:none;border:0;background:none;padding:13px 16px;border-bottom:3px solid transparent;font:700 16px/1 var(--sans);color:var(--muted);cursor:pointer;white-space:nowrap}
+.c-tabs button,.c-tabs a{flex:1 0 auto;text-align:center;text-decoration:none;border:0;background:none;padding:11px 14px;border-bottom:3px solid transparent;font:600 13px/1 var(--sans);color:var(--muted);cursor:pointer;white-space:nowrap}
 .c-tabs button.on,.c-tabs a.on{color:var(--ink-2);border-bottom-color:var(--red)}
 .c-pills{display:inline-flex;background:#EEEFF1;border-radius:26px;padding:4px;margin:0 0 12px}
-.c-pills button{border:0;background:none;border-radius:22px;padding:11px 20px;font:600 15px/1 var(--sans);color:var(--ink-2);cursor:pointer}
+.c-pills button{border:0;background:none;border-radius:22px;padding:9px 16px;font:600 12px/1 var(--sans);color:var(--ink-2);cursor:pointer}
 .c-pills button.on{background:#FFFFFF;color:var(--red);box-shadow:0 1px 5px rgba(0,0,0,.16)}
 .c-filters{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px}
-.c-sel{-webkit-appearance:none;appearance:none;border:1px solid var(--line);border-radius:20px;cursor:pointer;padding:9px 34px 9px 14px;font:600 14px/1 var(--sans);color:var(--ink-2);
-  background:#FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%233772DF' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 13px center}
+.c-sel{-webkit-appearance:none;appearance:none;border:1px solid var(--line);border-radius:20px;cursor:pointer;padding:8px 30px 8px 12px;font:600 12px/1 var(--sans);color:var(--ink-2);
+  background:#FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%233772DF' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 11px center}
 /* the table runs the full width of the card: clip it to the card's rounded corners, and leave the last
    row the same room at the bottom that the heading has at the top, so it doesn't sit on the edge */
 .ccard{padding:16px 0 14px;overflow:hidden}
@@ -645,7 +647,7 @@ table.pl-log td.nm .cn-in,table.pl-log td.nm .pl-opp{min-width:0;overflow:hidden
 .pl-short{display:none}
 /* phones: sized like ESPN's stats pages (13px table, tight rows, small logos) with short names ("W. Quinn") */
 @media (max-width:640px){.bhead-top h1.c-title{font-size:20px;margin-bottom:10px}.ccard-hd{padding:0 14px 8px}
-  .c-tabs button,.c-tabs a{padding:12px 12px;font-size:14px}.c-pills button{padding:10px 14px;font-size:14px}
+  .c-tabs button,.c-tabs a{padding:11px 12px;font-size:13px}.c-pills button{padding:9px 14px;font-size:12px}
   .ctbl{font-size:13px}.ctbl th{font-size:12px}.ctbl th,.ctbl td{padding:7px 8px}
   .ctbl .rk{padding-left:10px;width:32px;min-width:32px;max-width:32px}.ctbl .nm{left:32px}
   .ctbl .nm + .num{padding-left:10px}
@@ -981,7 +983,7 @@ button.h-btn{cursor:pointer}
   .board{padding:10px 10px 30px;gap:10px}
   .bcard{padding:14px 14px;border-radius:12px}
   /* sized like ESPN's phone scoreboard */
-  .bhead h1,.bhead-top h1.b-title{font-size:22px;margin-bottom:10px}
+  .bhead h1,.bhead-top h1.b-title{font-size:20px;margin-bottom:10px}
   .bw{min-width:104px;padding:6px 6px}
   .bw b{font-size:12px}
   .bw span{font-size:10px}
