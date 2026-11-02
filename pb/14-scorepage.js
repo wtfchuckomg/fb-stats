@@ -43,6 +43,19 @@ function boardClassOf(n){
   }
   return boardCls.idx.get(canonSchool(n)) || boardCls.idx.get(canonSchool(BOARD_CLASS_AKA[n] || '')) || null;
 }
+/* Skeleton screens (Chuck, 2026-11-02): while a page's data is on its way, grey shapes where its rows will be,
+   not a "Loading…" line. */
+const SK_W = [62, 48, 70, 55, 66, 44, 58, 72, 50, 64];
+function skelList(n = 8, nums = 5){
+  return `<div class="sk-list" aria-hidden="true">${Array.from({length:n}, (_, i) => `<div class="sk-row"><i class="sk sk-dot"></i><i class="sk" style="width:${SK_W[i % 10] * .5}%"></i>
+    <span class="sk-nums">${'<i class="sk"></i>'.repeat(nums)}</span></div>`).join('')}</div>`;
+}
+function skelRows(n = 10, nums = 5){ return `<section class="bcard" aria-busy="true"><i class="sk sk-hd"></i>${skelList(n, nums)}</section>`; }
+function skelGames(n = 6){
+  const team = i => `<div class="sk-team"><i class="sk sk-dot"></i><i class="sk" style="width:${SK_W[i % 10] * .7}%"></i></div>`;
+  return `<section class="bcard" aria-busy="true"><i class="sk sk-hd"></i><div aria-hidden="true">${Array.from({length:n}, (_, i) =>
+    `<div class="sk-game"><div class="sk-teams">${team(2 * i)}${team(2 * i + 1)}</div><i class="sk sk-st"></i></div>`).join('')}</div></section>`;
+}
 const inBoardClass = x => !board.cls || !ui.state || ['A', 'H'].some(s => boardClassOf(x.teams[s].name) === board.cls);
 const boardUrl = () => `?${boardParam()}=${ui.week}${board.cls && ui.state ? '&class=' + encodeURIComponent(board.cls) : ''}${board.lg && ui.state ? '&lg=' + encodeURIComponent(board.lg) : ''}`;
 const seasonKeys = y => Array.from({length:SEASON_WEEKS}, (_, i) => weekKey(week1(y).getTime() + i * WEEK_MS + 3 * 864e5));
@@ -352,7 +365,7 @@ function renderScoreboard(){
   const games = weekGames(key, false, ui.state || ui.av).filter(x => (!ui.state && !ui.av) ? inBuco(x) : (onStateBoard(x) && (!ui.av || inAvctl(x)) && inBoardClass(x) && inBoardLeague(x))), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (board.err) body = note(board.err);
-  else if (scores.ready !== key && !allGames.list) body = note('Loading scores…');
+  else if (scores.ready !== key && !allGames.list) body = skelGames(6);
   else if (!games.length) body = note(`No ${ui.state ? [board.cls, (boardLeague() || {}).name].filter(Boolean).map(t => t + ' ').join('') : ''}games for ${weekLabel(key)} yet.`);
   else {
     const days = [];

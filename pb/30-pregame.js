@@ -347,7 +347,7 @@ function renderPreview(){
 }
 function previewHtml(){
   const x = previewGame();
-  if (!x) return `<section class="bcard"><p class="bempty">${esc(pre.err || (allGames.list ? 'That game isn’t on the site.' : 'Loading the game…'))}</p></section>`;
+  if (!x) return pre.err || allGames.list ? `<section class="bcard"><p class="bempty">${esc(pre.err || 'That game isn’t on the site.')}</p></section>` : skelRows(6, 3);
   const T = x.teams, A = T.A.name, H = T.H.name;
   document.title = `${A} at ${H} · Preview · ${SITE_TITLE}`;
   const day = gameDay(x), P = predict(A, H, day.getFullYear());
@@ -431,7 +431,7 @@ function pgCards(T){
   const noStats = county.games && !LA.pass && !LA.rush && !LA.rec && !LH.pass && !LH.rush && !LH.rec;
   const leaders = `<section class="bcard pg-card"><h2 class="pg-h">Season leaders</h2>
       <div class="pg-lhead"><span>${markFor(T.A, 26)}<b>${esc(T.A.abbr || shortName(A))}</b></span><span><b>${esc(T.H.abbr || shortName(H))}</b>${markFor(T.H, 26)}</span></div>
-      <div class="pg-leaders">${!county.games ? '<p class="bempty">Loading the stats…</p>' : noStats ? '<p class="bempty">Neither team has stats on the site yet.</p>'
+      <div class="pg-leaders">${!county.games ? skelList(5, 1) : noStats ? '<p class="bempty">Neither team has stats on the site yet.</p>'
         : leadRow('Passing yards', 'pass', 'py') + leadRow('Rushing yards', 'rush', 'ry') + leadRow('Receiving yards', 'rec', 'rey')}</div>
     </section>`;
 
@@ -479,7 +479,7 @@ function pgCards(T){
       <td class="num">${first}, ${second}${m.ot ? ' (OT)' : ''}</td></tr>`;
   }).join('');
   const past = met.length || waiting ? `<section class="bcard pg-card"><h2 class="pg-h">Past meetings</h2>
-      ${waiting && !met.length ? '<p class="bempty">Loading past seasons…</p>' : `<div class="pg-tbl"><table class="ctbl"><thead><tr><th>Year</th><th>Where</th><th class="num">Final</th></tr></thead><tbody>${metRows}</tbody></table></div>`}
+      ${waiting && !met.length ? skelList(5, 2) : `<div class="pg-tbl"><table class="ctbl"><thead><tr><th>Year</th><th>Where</th><th class="num">Final</th></tr></thead><tbody>${metRows}</tbody></table></div>`}
     </section>` : '';
 
   // Standings: each team's AVCTL division (one table when they share it).

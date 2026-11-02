@@ -150,7 +150,7 @@ function renderPlayer(){
   const note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (county.err) body = note(county.err);
-  else if (!county.games) body = note('Loading stats…');
+  else if (!county.games) body = skelRows(6, 6);
   else if (!rows.length && !p2025()) body = note(`No stats for ${ppage.name} yet. A player turns up here once a game he played in has been kept on this site.`);
   else {
     const old25 = p2025();

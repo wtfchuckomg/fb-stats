@@ -334,7 +334,7 @@ function poFinish(s){
 }
 function playoffCard(name){
   const P = teamPlayoffs(name);
-  if (!P) return `<section class="bcard"><h2 class="tp-h">Playoff History</h2><p class="bempty">${tpage.po[logoSlug(name)] === false ? 'No playoff games on file.' : 'Loading…'}</p></section>`;
+  if (!P) return `<section class="bcard"><h2 class="tp-h">Playoff History</h2>${tpage.po[logoSlug(name)] === false ? '<p class="bempty">No playoff games on file.</p>' : skelList(4, 2)}</section>`;
   if (!P.seasons || !P.seasons.length) return '';
   const games = P.seasons.flatMap(s => s.g), w = games.filter(g => g.w === 1).length, l = games.filter(g => g.w === 0).length;
   const titles = P.seasons.filter(s => poFinish(s) === 'State champion').map(s => s.y).sort((a, b) => a - b);
@@ -494,7 +494,7 @@ function teamPageHtml(nameIn){
     ${PO_VIEW ? playoffCard(name) : `<section class="bcard"><div class="tp-h-row"><h2 class="tp-h">Schedule &amp; Results</h2>${seasonPick}</div>
       ${past ? `<div class="tbl-x"><table class="tp-sched"><tbody>${past}</tbody></table></div>`
         : allGames.list ? (sched ? `<div class="tbl-x"><table class="tp-sched"><tbody>${sched}</tbody></table></div>` : `<p class="bempty">No games for ${esc(name)} on the site yet.</p>`)
-        : `<p class="bempty">${esc(allGames.err || 'Loading…')}</p>`}
+        : allGames.err ? `<p class="bempty">${esc(allGames.err)}</p>` : skelList(8, 2)}
     </section>`}
     ${PO_VIEW ? '' : (() => {
       // Whoever has kept a game for this school has shared its roster; anyone setting one up can use it.

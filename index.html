@@ -263,6 +263,21 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .c-pills button{border:0;background:none;border-radius:22px;padding:9px 16px;font:600 12px/1 var(--sans);color:var(--ink-2);cursor:pointer}
 .c-pills button.on{background:#FFFFFF;color:var(--red);box-shadow:0 1px 5px rgba(0,0,0,.16)}
 .c-filters{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.sk{display:block;height:12px;border-radius:6px;background:#E3E5E8 linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent) no-repeat;background-size:40% 100%;animation:sk 1.3s ease-in-out infinite}
+@keyframes sk{from{background-position:-150% 0}to{background-position:250% 0}}
+@media (prefers-reduced-motion:reduce){.sk{animation:none}}
+.sk-dot{width:24px;height:24px;border-radius:50%;flex:none}
+.sk-hd{width:180px;height:16px;margin:2px 0 12px}
+.sk-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #EEEFF0}
+.sk-row:last-child{border-bottom:0}
+.sk-nums{margin-left:auto;display:flex;gap:20px}.sk-nums .sk{width:34px}
+.sk-game{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px dotted var(--line)}
+.sk-game:last-child{border-bottom:0}
+.sk-teams{flex:1;display:grid;gap:10px;min-width:0}
+.sk-team{display:flex;align-items:center;gap:10px}
+.sk-st{width:64px;height:14px;flex:none}
+.ms-game .sk-st{width:48px;justify-self:end}.ms-row .sk{height:11px}.ms-row .sk-dot{width:20px;height:20px}
+@media (max-width:640px){.sk-nums .sk:nth-child(n+3){display:none}}
 .c-filters .c-size{margin:0;padding:3px}.c-filters .c-size button{padding:6px 12px}
 .c-sel{-webkit-appearance:none;appearance:none;border:1px solid var(--line);border-radius:20px;cursor:pointer;padding:8px 30px 8px 12px;font:600 12px/1 var(--sans);color:var(--ink-2);
   background:#FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%233772DF' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 11px center}
@@ -4404,7 +4419,7 @@ function standingsHtml(){
   document.title = `${SITE_AV ? 'Standings' : 'AVCTL Standings'} · ${SITE_TITLE}`;
   const head = leagueNav('standings');
   if (stand.err) return head + `<section class="bcard"><p class="bempty">${esc(stand.err)}</p></section>`;
-  if (!allGames.list) return head + '<section class="bcard"><p class="bempty">Loading the league…</p></section>';
+  if (!allGames.list) return head + skelRows(8, 4);
   return head + AV_NAMES.map(div => standingsCard(`Division ${div}`, standingsRows(div))).join('');
 }
 
@@ -4505,7 +4520,7 @@ function lgStandingsHtml(){
   document.title = `${LG.name} Standings · ${SITE_TITLE}`;
   const head = leagueNav('standings');
   if (stand.err) return head + `<section class="bcard"><p class="bempty">${esc(stand.err)}</p></section>`;
-  if (!allGames.list) return head + '<section class="bcard"><p class="bempty">Loading the league…</p></section>';
+  if (!allGames.list) return head + skelRows(10, 4);
   const rows = standSort(LG.teams.map(name => ({name, r:avRecord(name, o => !!lgOf(o)), rec:shownRecord(name)})));
   return head + standingsCard('Standings', rows);
 }
@@ -4740,7 +4755,7 @@ async function startViewer(id){
   const tab0 = new URLSearchParams(location.search).get('tab');
   if (['gamecast', 'box', 'pbp', 'team'].includes(tab0)) ui.tab = tab0;
   $('#sample').hidden = true;
-  if (!g) $('#view').innerHTML = '<div class="panel"><div class="empty">Loading the live game…</div></div>';
+  if (!g) $('#view').innerHTML = `<div class="panel">${skelList(8, 4)}</div>`;
   let api; try { api = await viewerApi(); } catch (e) { viewerApiP = null; return viewerMessage('Can’t reach the live game. Check your connection and reload.'); }
   const {fsM, fsdb, asAdmin} = api;
   let noted = false;
@@ -5724,6 +5739,19 @@ function boardClassOf(n){
   }
   return boardCls.idx.get(canonSchool(n)) || boardCls.idx.get(canonSchool(BOARD_CLASS_AKA[n] || '')) || null;
 }
+/* Skeleton screens (Chuck, 2026-11-02): while a page's data is on its way, grey shapes where its rows will be,
+   not a "Loading…" line. */
+const SK_W = [62, 48, 70, 55, 66, 44, 58, 72, 50, 64];
+function skelList(n = 8, nums = 5){
+  return `<div class="sk-list" aria-hidden="true">${Array.from({length:n}, (_, i) => `<div class="sk-row"><i class="sk sk-dot"></i><i class="sk" style="width:${SK_W[i % 10] * .5}%"></i>
+    <span class="sk-nums">${'<i class="sk"></i>'.repeat(nums)}</span></div>`).join('')}</div>`;
+}
+function skelRows(n = 10, nums = 5){ return `<section class="bcard" aria-busy="true"><i class="sk sk-hd"></i>${skelList(n, nums)}</section>`; }
+function skelGames(n = 6){
+  const team = i => `<div class="sk-team"><i class="sk sk-dot"></i><i class="sk" style="width:${SK_W[i % 10] * .7}%"></i></div>`;
+  return `<section class="bcard" aria-busy="true"><i class="sk sk-hd"></i><div aria-hidden="true">${Array.from({length:n}, (_, i) =>
+    `<div class="sk-game"><div class="sk-teams">${team(2 * i)}${team(2 * i + 1)}</div><i class="sk sk-st"></i></div>`).join('')}</div></section>`;
+}
 const inBoardClass = x => !board.cls || !ui.state || ['A', 'H'].some(s => boardClassOf(x.teams[s].name) === board.cls);
 const boardUrl = () => `?${boardParam()}=${ui.week}${board.cls && ui.state ? '&class=' + encodeURIComponent(board.cls) : ''}${board.lg && ui.state ? '&lg=' + encodeURIComponent(board.lg) : ''}`;
 const seasonKeys = y => Array.from({length:SEASON_WEEKS}, (_, i) => weekKey(week1(y).getTime() + i * WEEK_MS + 3 * 864e5));
@@ -6033,7 +6061,7 @@ function renderScoreboard(){
   const games = weekGames(key, false, ui.state || ui.av).filter(x => (!ui.state && !ui.av) ? inBuco(x) : (onStateBoard(x) && (!ui.av || inAvctl(x)) && inBoardClass(x) && inBoardLeague(x))), note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (board.err) body = note(board.err);
-  else if (scores.ready !== key && !allGames.list) body = note('Loading scores…');
+  else if (scores.ready !== key && !allGames.list) body = skelGames(6);
   else if (!games.length) body = note(`No ${ui.state ? [board.cls, (boardLeague() || {}).name].filter(Boolean).map(t => t + ' ').join('') : ''}games for ${weekLabel(key)} yet.`);
   else {
     const days = [];
@@ -7570,7 +7598,7 @@ function renderCounty(){
   const y25 = county.season === 2025 && !STATE_STATS && !AV_STATS && !LG_STATS, note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (county.err && !y25) body = note(county.err);
-  else if (!county.games && !y25) body = note('Loading stats…');
+  else if (!county.games && !y25) body = skelRows(12, v === 'team' ? 7 : 6);
   else {
     const {teams, players} = y25 ? countyStats2025() : countyStats(games);
     if (v === 'team'){
@@ -8150,7 +8178,8 @@ function homeBoardGame(x){
 function homeBoard(only){
   const key = shownWeek(), rank = x => { const m = summary(x); return m.live ? (x.plays && x.plays.length ? 0 : 1) : m.fin ? 2 : 3; };
   const games = weekGames(key, false, true).filter(only || Boolean).map(x => [rank(x), x]).sort((a, b) => a[0] - b[0] || (a[0] === 2 ? (b[1].updated || 0) - (a[1].updated || 0) : 0)).slice(0, HOME_BOARD_GAMES).map(o => o[1]);
-  if (!games.length) return '';
+  if (!games.length) return allGames.list || scores.ready === key || only ? '' : `<section class="hcard ms" aria-busy="true"><h2 class="ms-hd">${esc(weekLabel(key))} Scoreboard</h2>
+      <div class="ms-grid">${Array.from({length:HOME_BOARD_GAMES}, (_, i) => `<div class="ms-game"><div class="ms-teams">${[0, 1].map(j => `<div class="ms-row"><i class="sk sk-dot"></i><i class="sk" style="width:${SK_W[(2 * i + j) % 10]}%"></i></div>`).join('')}</div><i class="sk sk-st"></i></div>`).join('')}</div></section>`;
   return `<section class="hcard ms"><h2 class="ms-hd">${esc(weekLabel(key))} Scoreboard</h2>
       <div class="ms-grid">${games.map(homeBoardGame).join('')}</div>
       <a class="ms-all" href="?${SITE_AV ? 'avctl' : 'state'}=${key}">Complete scoreboard</a></section>`;
@@ -8633,7 +8662,7 @@ function poFinish(s){
 }
 function playoffCard(name){
   const P = teamPlayoffs(name);
-  if (!P) return `<section class="bcard"><h2 class="tp-h">Playoff History</h2><p class="bempty">${tpage.po[logoSlug(name)] === false ? 'No playoff games on file.' : 'Loading…'}</p></section>`;
+  if (!P) return `<section class="bcard"><h2 class="tp-h">Playoff History</h2>${tpage.po[logoSlug(name)] === false ? '<p class="bempty">No playoff games on file.</p>' : skelList(4, 2)}</section>`;
   if (!P.seasons || !P.seasons.length) return '';
   const games = P.seasons.flatMap(s => s.g), w = games.filter(g => g.w === 1).length, l = games.filter(g => g.w === 0).length;
   const titles = P.seasons.filter(s => poFinish(s) === 'State champion').map(s => s.y).sort((a, b) => a - b);
@@ -8793,7 +8822,7 @@ function teamPageHtml(nameIn){
     ${PO_VIEW ? playoffCard(name) : `<section class="bcard"><div class="tp-h-row"><h2 class="tp-h">Schedule &amp; Results</h2>${seasonPick}</div>
       ${past ? `<div class="tbl-x"><table class="tp-sched"><tbody>${past}</tbody></table></div>`
         : allGames.list ? (sched ? `<div class="tbl-x"><table class="tp-sched"><tbody>${sched}</tbody></table></div>` : `<p class="bempty">No games for ${esc(name)} on the site yet.</p>`)
-        : `<p class="bempty">${esc(allGames.err || 'Loading…')}</p>`}
+        : allGames.err ? `<p class="bempty">${esc(allGames.err)}</p>` : skelList(8, 2)}
     </section>`}
     ${PO_VIEW ? '' : (() => {
       // Whoever has kept a game for this school has shared its roster; anyone setting one up can use it.
@@ -10912,7 +10941,7 @@ function renderPreview(){
 }
 function previewHtml(){
   const x = previewGame();
-  if (!x) return `<section class="bcard"><p class="bempty">${esc(pre.err || (allGames.list ? 'That game isn’t on the site.' : 'Loading the game…'))}</p></section>`;
+  if (!x) return pre.err || allGames.list ? `<section class="bcard"><p class="bempty">${esc(pre.err || 'That game isn’t on the site.')}</p></section>` : skelRows(6, 3);
   const T = x.teams, A = T.A.name, H = T.H.name;
   document.title = `${A} at ${H} · Preview · ${SITE_TITLE}`;
   const day = gameDay(x), P = predict(A, H, day.getFullYear());
@@ -10996,7 +11025,7 @@ function pgCards(T){
   const noStats = county.games && !LA.pass && !LA.rush && !LA.rec && !LH.pass && !LH.rush && !LH.rec;
   const leaders = `<section class="bcard pg-card"><h2 class="pg-h">Season leaders</h2>
       <div class="pg-lhead"><span>${markFor(T.A, 26)}<b>${esc(T.A.abbr || shortName(A))}</b></span><span><b>${esc(T.H.abbr || shortName(H))}</b>${markFor(T.H, 26)}</span></div>
-      <div class="pg-leaders">${!county.games ? '<p class="bempty">Loading the stats…</p>' : noStats ? '<p class="bempty">Neither team has stats on the site yet.</p>'
+      <div class="pg-leaders">${!county.games ? skelList(5, 1) : noStats ? '<p class="bempty">Neither team has stats on the site yet.</p>'
         : leadRow('Passing yards', 'pass', 'py') + leadRow('Rushing yards', 'rush', 'ry') + leadRow('Receiving yards', 'rec', 'rey')}</div>
     </section>`;
 
@@ -11044,7 +11073,7 @@ function pgCards(T){
       <td class="num">${first}, ${second}${m.ot ? ' (OT)' : ''}</td></tr>`;
   }).join('');
   const past = met.length || waiting ? `<section class="bcard pg-card"><h2 class="pg-h">Past meetings</h2>
-      ${waiting && !met.length ? '<p class="bempty">Loading past seasons…</p>' : `<div class="pg-tbl"><table class="ctbl"><thead><tr><th>Year</th><th>Where</th><th class="num">Final</th></tr></thead><tbody>${metRows}</tbody></table></div>`}
+      ${waiting && !met.length ? skelList(5, 2) : `<div class="pg-tbl"><table class="ctbl"><thead><tr><th>Year</th><th>Where</th><th class="num">Final</th></tr></thead><tbody>${metRows}</tbody></table></div>`}
     </section>` : '';
 
   // Standings: each team's AVCTL division (one table when they share it).
@@ -11451,7 +11480,7 @@ function renderPlayer(){
   const note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (county.err) body = note(county.err);
-  else if (!county.games) body = note('Loading stats…');
+  else if (!county.games) body = skelRows(6, 6);
   else if (!rows.length && !p2025()) body = note(`No stats for ${ppage.name} yet. A player turns up here once a game he played in has been kept on this site.`);
   else {
     const old25 = p2025();
@@ -12201,7 +12230,7 @@ function renderBracket(){
   document.title = `${title} · ${SITE_TITLE}`;
   const head = `<section class="bcard bhead"><div class="bhead-top"><h1>${title}</h1></div>
     <div class="tp-links">${BK_CLASSES.map(c => `<a class="h-btn${c === bk.cls ? ' on' : ''}" href="?bracket=${c}">${bkTab(c)}</a>`).join('')}</div></section>`;
-  if (!allGames.list && !allGames.err) return void (box.innerHTML = head + '<section class="bcard"><p class="bempty">Loading the season…</p></section>');
+  if (!allGames.list && !allGames.err) return void (box.innerHTML = head + skelRows(8, 2));
   if (allGames.err) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${esc(allGames.err)}</p></section>`);
   if (DISTRICTS[bk.cls]) return renderDistricts(box, head);
   const east = bkSeed(S.East), west = bkSeed(S.West);
@@ -12269,7 +12298,7 @@ function renderAvHome(){
   // Leaders: the top five in each, from the same numbers as the stats pages.
   let leaders;
   if (avHome.err && !county.games) leaders = note(avHome.err);
-  else if (!county.games) leaders = note('Loading the leaders…');
+  else if (!county.games) leaders = skelRows(5, 1);
   else {
     const {players} = countyStats(countyGames());
     leaders = `<div class="avh-grid">${AV_LEADS.map(([title, view, keep, val]) => {
@@ -12284,7 +12313,7 @@ function renderAvHome(){
   // The four divisions: league record first, then overall, the way the standings read.
   let divs;
   if (avHome.err && !allGames.list) divs = note(avHome.err);
-  else if (!allGames.list) divs = note('Loading the standings…');
+  else if (!allGames.list) divs = skelRows(6, 2);
   else divs = `<div class="avh-grid">${AV_NAMES.map(d => `<section class="bcard avh-card"><div class="avh-hd"><h2>Division ${d}</h2><a href="?standings">Standings »</a></div>
       <table class="avh-st"><thead><tr><th></th><th>League</th><th>Overall</th></tr></thead><tbody>${standingsRows(d).map(o => {
         const rec = o.rec || {}, r = o.r;
@@ -12383,7 +12412,7 @@ function renderPlayoffHistory(){
   const head = `<section class="bcard bhead"><div class="tp-h-row"><h1>Playoff History</h1>${yearPick}</div><div class="tp-links">${tabs}</div></section>`;
   if (ph.err) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${esc(ph.err)}</p></section>`);
   const doc = y && ph.docs[y], B = doc && doc.classes && doc.classes[c];
-  if (!B) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${doc === false ? 'No bracket on file for this year.' : 'Loading…'}</p></section>`);
+  if (!B) return void (box.innerHTML = head + (doc === false ? '<section class="bcard"><p class="bempty">No bracket on file for this year.</p></section>' : skelRows(8, 2)));
   const extra = B.extra && B.extra.length ? `<section class="bcard"><h2 class="tp-h">Other games</h2><div class="tbl-x"><table class="tp-sched"><tbody>${B.extra.map(g =>
     `<tr><td class="wk">${esc(g.r)}</td><td>${phTeam(g.a, !g.w)}</td><td>${phTeam(g.b, !!g.w)}</td></tr>`).join('')}</tbody></table></div></section>` : '';
   const third = B.third && B.third.length ? `<div class="ph-third"><div class="ph-h">Third place</div>${B.third.map(phGame).join('')}</div>` : '';
@@ -12533,7 +12562,7 @@ function muResult(part){
   const S = mu.sim;
   if (!mu.a || !mu.h || (part === 'how' && (!S || !pre.rat || canonSchool(mu.a) === canonSchool(mu.h)))) return '';
   if (canonSchool(mu.a) === canonSchool(mu.h)) return '<section class="bcard"><p class="bempty">Pick two different schools.</p></section>';
-  if (!pre.rat) return '<section class="bcard"><p class="bempty">Loading…</p></section>';
+  if (!pre.rat) return skelRows(6, 3);
   if (!S) return `<section class="bcard"><p class="bempty">${!ratingOf(mu.a) || !ratingOf(mu.h) ? 'No ratings for one of these schools yet.' : 'These two don’t play the same game (11-man, 8-man, 6-man).'}</p></section>`;
   const A = S.A, H = S.H, n = S.games, pA = S.w.A / n, pH = S.w.H / n;
   const ab = name => listAbbr(name) || shortName(name), mark = (name, size) => markFor({name, abbr:ab(name), color:'#4A4B4D'}, size);

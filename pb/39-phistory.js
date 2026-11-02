@@ -87,7 +87,7 @@ function renderPlayoffHistory(){
   const head = `<section class="bcard bhead"><div class="tp-h-row"><h1>Playoff History</h1>${yearPick}</div><div class="tp-links">${tabs}</div></section>`;
   if (ph.err) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${esc(ph.err)}</p></section>`);
   const doc = y && ph.docs[y], B = doc && doc.classes && doc.classes[c];
-  if (!B) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${doc === false ? 'No bracket on file for this year.' : 'Loading…'}</p></section>`);
+  if (!B) return void (box.innerHTML = head + (doc === false ? '<section class="bcard"><p class="bempty">No bracket on file for this year.</p></section>' : skelRows(8, 2)));
   const extra = B.extra && B.extra.length ? `<section class="bcard"><h2 class="tp-h">Other games</h2><div class="tbl-x"><table class="tp-sched"><tbody>${B.extra.map(g =>
     `<tr><td class="wk">${esc(g.r)}</td><td>${phTeam(g.a, !g.w)}</td><td>${phTeam(g.b, !!g.w)}</td></tr>`).join('')}</tbody></table></div></section>` : '';
   const third = B.third && B.third.length ? `<div class="ph-third"><div class="ph-h">Third place</div>${B.third.map(phGame).join('')}</div>` : '';

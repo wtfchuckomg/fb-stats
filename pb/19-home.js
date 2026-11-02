@@ -98,7 +98,8 @@ function homeBoardGame(x){
 function homeBoard(only){
   const key = shownWeek(), rank = x => { const m = summary(x); return m.live ? (x.plays && x.plays.length ? 0 : 1) : m.fin ? 2 : 3; };
   const games = weekGames(key, false, true).filter(only || Boolean).map(x => [rank(x), x]).sort((a, b) => a[0] - b[0] || (a[0] === 2 ? (b[1].updated || 0) - (a[1].updated || 0) : 0)).slice(0, HOME_BOARD_GAMES).map(o => o[1]);
-  if (!games.length) return '';
+  if (!games.length) return allGames.list || scores.ready === key || only ? '' : `<section class="hcard ms" aria-busy="true"><h2 class="ms-hd">${esc(weekLabel(key))} Scoreboard</h2>
+      <div class="ms-grid">${Array.from({length:HOME_BOARD_GAMES}, (_, i) => `<div class="ms-game"><div class="ms-teams">${[0, 1].map(j => `<div class="ms-row"><i class="sk sk-dot"></i><i class="sk" style="width:${SK_W[(2 * i + j) % 10]}%"></i></div>`).join('')}</div><i class="sk sk-st"></i></div>`).join('')}</div></section>`;
   return `<section class="hcard ms"><h2 class="ms-hd">${esc(weekLabel(key))} Scoreboard</h2>
       <div class="ms-grid">${games.map(homeBoardGame).join('')}</div>
       <a class="ms-all" href="?${SITE_AV ? 'avctl' : 'state'}=${key}">Complete scoreboard</a></section>`;

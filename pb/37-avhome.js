@@ -34,7 +34,7 @@ function renderAvHome(){
   // Leaders: the top five in each, from the same numbers as the stats pages.
   let leaders;
   if (avHome.err && !county.games) leaders = note(avHome.err);
-  else if (!county.games) leaders = note('Loading the leaders…');
+  else if (!county.games) leaders = skelRows(5, 1);
   else {
     const {players} = countyStats(countyGames());
     leaders = `<div class="avh-grid">${AV_LEADS.map(([title, view, keep, val]) => {
@@ -49,7 +49,7 @@ function renderAvHome(){
   // The four divisions: league record first, then overall, the way the standings read.
   let divs;
   if (avHome.err && !allGames.list) divs = note(avHome.err);
-  else if (!allGames.list) divs = note('Loading the standings…');
+  else if (!allGames.list) divs = skelRows(6, 2);
   else divs = `<div class="avh-grid">${AV_NAMES.map(d => `<section class="bcard avh-card"><div class="avh-hd"><h2>Division ${d}</h2><a href="?standings">Standings »</a></div>
       <table class="avh-st"><thead><tr><th></th><th>League</th><th>Overall</th></tr></thead><tbody>${standingsRows(d).map(o => {
         const rec = o.rec || {}, r = o.r;

@@ -136,7 +136,7 @@ function muResult(part){
   const S = mu.sim;
   if (!mu.a || !mu.h || (part === 'how' && (!S || !pre.rat || canonSchool(mu.a) === canonSchool(mu.h)))) return '';
   if (canonSchool(mu.a) === canonSchool(mu.h)) return '<section class="bcard"><p class="bempty">Pick two different schools.</p></section>';
-  if (!pre.rat) return '<section class="bcard"><p class="bempty">Loading…</p></section>';
+  if (!pre.rat) return skelRows(6, 3);
   if (!S) return `<section class="bcard"><p class="bempty">${!ratingOf(mu.a) || !ratingOf(mu.h) ? 'No ratings for one of these schools yet.' : 'These two don’t play the same game (11-man, 8-man, 6-man).'}</p></section>`;
   const A = S.A, H = S.H, n = S.games, pA = S.w.A / n, pH = S.w.H / n;
   const ab = name => listAbbr(name) || shortName(name), mark = (name, size) => markFor({name, abbr:ab(name), color:'#4A4B4D'}, size);

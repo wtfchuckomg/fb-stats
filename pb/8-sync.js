@@ -229,7 +229,7 @@ async function startViewer(id){
   const tab0 = new URLSearchParams(location.search).get('tab');
   if (['gamecast', 'box', 'pbp', 'team'].includes(tab0)) ui.tab = tab0;
   $('#sample').hidden = true;
-  if (!g) $('#view').innerHTML = '<div class="panel"><div class="empty">Loading the live game…</div></div>';
+  if (!g) $('#view').innerHTML = `<div class="panel">${skelList(8, 4)}</div>`;
   let api; try { api = await viewerApi(); } catch (e) { viewerApiP = null; return viewerMessage('Can’t reach the live game. Check your connection and reload.'); }
   const {fsM, fsdb, asAdmin} = api;
   let noted = false;

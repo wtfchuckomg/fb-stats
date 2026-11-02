@@ -517,7 +517,7 @@ function renderCounty(){
   const y25 = county.season === 2025 && !STATE_STATS && !AV_STATS && !LG_STATS, note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
   let body;
   if (county.err && !y25) body = note(county.err);
-  else if (!county.games && !y25) body = note('Loading stats…');
+  else if (!county.games && !y25) body = skelRows(12, v === 'team' ? 7 : 6);
   else {
     const {teams, players} = y25 ? countyStats2025() : countyStats(games);
     if (v === 'team'){
