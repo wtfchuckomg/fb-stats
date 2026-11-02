@@ -7075,7 +7075,15 @@ const groupOf = name => LG_STATS ? lgOf(name)
 const countyOf = name => COUNTY.find(c => [c, ...(COUNTY_ALIASES[c] || [])].some(a => logoSlug(a) === logoSlug(name))) || null;
 const groupName = () => AV_STATS ? 'AVCTL' : LG_STATS ? LG.name : STATE_STATS ? 'State' : 'BUCO';
 const C_VIEWS = ['passing', 'rushing', 'receiving', 'scoring', 'kicking', 'team'];
-const county = {games:null, err:'', team:'all', season:new Date().getFullYear(), view:'passing', sort:{}};
+const county = {games:null, err:'', team:'all', season:new Date().getFullYear(), view:'passing', sort:{}, part:'team', cls:''};
+// Team Stats comes in three parts, like the player pages' Passing / Rushing / Receiving: Team, Offense, Defense
+// (Chuck, 2026-11-02: "there are too many teams to just scroll to the bottom").
+const C_PARTS = [['team', 'Team'], ['offense', 'Offense'], ['defense', 'Defense']];
+// The page's address: the view, and the part and class when they aren't the default.
+const cAddr = () => `?${LG_STATS ? `league=${LG.slug}&lgstats` : AV_STATS ? 'avstats' : STATE_STATS ? 'statestats' : 'stats'}=${county.view}`
+  + (county.view === 'team' && county.part !== 'team' ? `&part=${county.part}` : '') + (STATE_STATS && county.cls ? `&class=${encodeURIComponent(county.cls)}` : '');
+// State Stats can be narrowed to one class; a school we have no class for shows only under All classes.
+const inCls = name => !STATE_STATS || !county.cls || boardClassOf(name) === county.cls;
 
 async function startCounty(){
   ui.viewer = true; ui.county = true; document.body.classList.add('viewer', 'bpage');
@@ -7088,6 +7096,9 @@ async function startCounty(){
   if (GROUP.includes(pickTeam) || (STATE_STATS && pickTeam)) county.team = pickTeam;
   const pickSeason = +new URLSearchParams(location.search).get('season');   // &season=2025
   if (pickSeason) county.season = pickSeason;
+  const qp = new URLSearchParams(location.search), part = qp.get('part'), cls = qp.get('class');
+  if (C_PARTS.some(([k]) => k === part)) county.part = part;
+  if (STATE_STATS && BOARD_CLASSES.includes(cls)) county.cls = cls;
   loadLogos(); loadStatsFile(); renderCounty();
   try {
     // The admin's own devices (the Game Tracker marks them at sign-in) sign in here too, to set the minimums.
@@ -7529,14 +7540,16 @@ function stateTeamList(games){
 function renderCounty(){
   if (!ui.county) return;
   const box = $('#board'), v = county.view, tab = tabOf(v), games = countyGames();
-  const allLabel = STATE_STATS ? 'All Kansas Teams' : AV_STATS ? 'All AVCTL Teams' : LG_STATS ? `All ${LG.name} Teams` : 'All County Teams', teamList = STATE_STATS ? stateTeamList(games) : GROUP;
-  const who = county.team === 'all' ? allLabel : county.team;
+  const allLabel = STATE_STATS ? 'All Kansas Teams' : AV_STATS ? 'All AVCTL Teams' : LG_STATS ? `All ${LG.name} Teams` : 'All County Teams', teamList = STATE_STATS ? stateTeamList(games).filter(inCls) : GROUP;
+  const who = county.team !== 'all' ? county.team : STATE_STATS && county.cls ? `All ${county.cls} Teams` : allLabel;
   const title = v === 'team' ? `${who} Team Stats ${county.season}` : `${who} Player ${P_VIEWS[v].label} Stats ${county.season}`;
   document.title = `${title} · ${groupName()} Stats`;
   const head = `<section class="bcard bhead"><div class="bhead-top"><h1 class="c-title">${esc(title)}</h1></div>
     <nav class="c-tabs">${C_TABS.map(([k, label, first]) => `<button type="button"${k === tab ? ' class="on"' : ''} data-cview="${first}">${label}</button>`).join('')}</nav>
+    ${v === 'team' ? `<div class="c-pills">${C_PARTS.map(([k, label]) => `<button type="button"${k === county.part ? ' class="on"' : ''} data-cpart="${k}">${label}</button>`).join('')}</div>` : ''}
     ${tab === 'offense' ? `<div class="c-pills">${['passing', 'rushing', 'receiving'].map(k => `<button type="button"${k === v ? ' class="on"' : ''} data-cview="${k}">${P_VIEWS[k].label}</button>`).join('')}</div>` : ''}
     <div class="c-filters"><select class="c-sel" id="cseason" aria-label="Season">${countySeasons().map(y => `<option value="${y}"${y === county.season ? ' selected' : ''}>${y}</option>`).join('')}</select>
+      ${STATE_STATS ? `<select class="c-sel" id="ccls" aria-label="Class">${['', ...BOARD_CLASSES].map(c => `<option value="${esc(c)}"${c === county.cls ? ' selected' : ''}>${c ? esc(c) : 'All classes'}</option>`).join('')}</select>` : ''}
       <select class="c-sel" id="cteam" aria-label="Team">${['all', ...teamList].map(c => `<option value="${esc(c)}"${county.team === c ? ' selected' : ''}>${c === 'all' ? allLabel : esc(c)}</option>`).join('')}</select></div></section>`;
   // 2025 comes from the season leaderboard, not games: passing, rushing, receiving and touchdowns, and nothing to load.
   const y25 = county.season === 2025 && !STATE_STATS && !AV_STATS && !LG_STATS, note = t => `<section class="bcard"><p class="bempty">${esc(t)}</p></section>`;
@@ -7547,18 +7560,19 @@ function renderCounty(){
     const {teams, players} = y25 ? countyStats2025() : countyStats(games);
     if (v === 'team'){
       const o = {first:'TEAM', name:t => `${cMark(t.name)}<a class="tlink" href="?team=${encodeURIComponent(t.name)}"><b>${esc(t.name)}</b></a>`, hi:t => sameTeamName(t.name, county.team)};
-      const card = (title, id, cols, def, asc) => `<section class="bcard ccard"><div class="ccard-hd"><h2>${title}</h2></div>${statTable(id, STATE_STATS ? teams.filter(t => t.gp) : teams, cols, def, {...o, asc})}</section>`;
+      const card = (title, id, cols, def, asc) => `<section class="bcard ccard"><div class="ccard-hd"><h2>${title}</h2></div>${statTable(id, STATE_STATS ? teams.filter(t => t.gp && inCls(t.name)) : teams, cols, def, {...o, asc})}</section>`;
       if (y25){
         const cols = yardCols('').filter(c => !c[0].endsWith('/G'));
         body = card('Offense', 'off25', cols, cols.findIndex(c => c[0] === 'TOTAL YDS'));
       } else {
         const qcols = quarterCols(teams.some(t => t.ot));
-        body = card('Team Totals', 'team', T_COLS, 1) + card('Offense', 'off', yardCols(''), 10) + card('Defensive Team Stats', 'allow', yardCols('o'), 10, true)
-          + card('Scoring by Quarter (for-against)', 'qtr', qcols, qcols.length - 2);
+        body = county.part === 'offense' ? card('Offense', 'off', yardCols(''), 10)
+          : county.part === 'defense' ? card('Defensive Team Stats', 'allow', yardCols('o'), 10, true)
+          : card('Team Totals', 'team', T_COLS, 1) + card('Scoring by Quarter (for-against)', 'qtr', qcols, qcols.length - 2);
       }
     } else if (y25 && v === 'kicking') body = note('The 2025 leaderboard has no kicking stats.');
     else {
-      const V = y25 && v === 'scoring' ? SCORING_25 : P_VIEWS[v], rows = players.filter(p => V.keep(p) && (county.team === 'all' || sameTeamName(p.team, county.team)));
+      const V = y25 && v === 'scoring' ? SCORING_25 : P_VIEWS[v], rows = players.filter(p => V.keep(p) && inCls(p.team) && (county.team === 'all' || sameTeamName(p.team, county.team)));
       // Phones show the short form, like ESPN's ("W. Quinn").
       const name = p => `${cMark(p.team)}<a class="c-pl" href="${playerHref(p.name, p.team)}"><b><span class="pl-full">${esc(p.name)}</span><span class="pl-short">${esc(plShort(p.name))}</span></b><small>${esc(shortName(p.team))}${p.yr ? `<span class="pl-yr"> · ${esc(p.yr)}</span>` : ''}</small></a>`;
       // 2025's tables keep their own sort (its Scoring has fewer columns than this season's).
@@ -7578,10 +7592,11 @@ document.addEventListener('click', e => {
   if (vb){
     county.view = vb.dataset.cview;
     // The address keeps the page it's on: a league's, the AVCTL's, the state's or the county's.
-    const at = LG_STATS ? `league=${LG.slug}&lgstats` : AV_STATS ? 'avstats' : STATE_STATS ? 'statestats' : 'stats';
-    history.pushState(null, '', `?${at}=${county.view}`);
+    history.pushState(null, '', cAddr());
     return renderCounty();
   }
+  const pb = e.target.closest('[data-cpart]');
+  if (pb){ county.part = pb.dataset.cpart; history.replaceState(null, '', cAddr()); return renderCounty(); }
   const th = e.target.closest('[data-csort]'); if (!th) return;
   const [id, i] = th.dataset.csort.split(':'), cur = county.sort[id];
   county.sort[id] = {i:+i, desc:cur && cur.i === +i ? !cur.desc : true};
@@ -7594,6 +7609,12 @@ document.addEventListener('change', e => {
   if (!ui.county) return;
   if (e.target.id === 'cteam'){ county.team = e.target.value; renderCounty(); }
   if (e.target.id === 'cseason'){ county.season = +e.target.value; renderCounty(); }
+  if (e.target.id === 'ccls'){
+    county.cls = e.target.value;
+    // A school picked from another class would show nothing: back to all teams.
+    if (county.team !== 'all' && !inCls(county.team)) county.team = 'all';
+    history.replaceState(null, '', cAddr()); renderCounty();
+  }
 });
 /* Where each school's logo is. The stats site's own logos folder first (the set Chuck uploaded 2026-09-15),
    then whatever Media Rankings or Pick 'Em had for schools that set doesn't cover. Generated by logomap.py,
