@@ -201,6 +201,9 @@ input.st-clock{width:72px;text-align:center;border:1px solid var(--line);border-
   .st-score{font-size:38px}
   .st-mid{min-width:0}
   .st-line1{font-size:16px}
+  .st-fouls{text-align:center}
+  .st-fouls .bn-dot{display:none}
+  .st-fouls .bn{display:block;margin-top:3px;white-space:normal}
 }
 
 /* ---------- tabs ---------- */
@@ -1338,7 +1341,7 @@ function renderBoard(){
       <div class="st-logo">${teamMark(s, 64)}</div>
       <div class="st-id"><div class="st-name">${esc(fullName(T[s]))}</div><div class="st-rec">${esc(T[s].rec ? T[s].rec : s === 'A' ? 'Away' : 'Home')}</div></div>
       <div class="st-scorebox"><div class="st-score"><span>${st.score[s]}</span>${has ? '<span class="st-poss" title="Has the ball"></span>' : ''}${won === s ? '<i class="st-win" title="Won"></i>' : ''}</div>
-        ${st.final ? '' : `<div class="st-fouls ${b ? 'bonus' : ''}" title="Team fouls this ${ru.n === 2 ? 'half' : 'quarter'}">${st.fouls[s]} ${st.fouls[s] === 1 ? 'foul' : 'fouls'}${b ? ' · ' + b : ''}</div>
+        ${st.final ? '' : `<div class="st-fouls ${b ? 'bonus' : ''}" title="Team fouls this ${ru.n === 2 ? 'half' : 'quarter'}">${st.fouls[s]} ${st.fouls[s] === 1 ? 'foul' : 'fouls'}${b ? `<span class="bn-dot"> · </span><span class="bn">${b}</span>` : ''}</div>
         <div class="st-tos" title="${st.tos[s].f} full and ${st.tos[s].s} thirty-second timeouts left">${dots(s)}</div>`}</div></div>`;
   };
   const per = st.final ? `Final${st.per > ru.n ? '/OT' : ''}` : perShort(st.per, ru);
