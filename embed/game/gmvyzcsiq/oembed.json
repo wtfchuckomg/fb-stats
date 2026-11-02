@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "type": "rich",
+  "provider_name": "Kansas Media Stats",
+  "provider_url": "https://stats.kansasmediarankings.com",
+  "title": "Hayden at St. Pius X (Mo.)",
+  "width": 700,
+  "height": 1000,
+  "cache_age": 86400,
+  "html": "<iframe src=\"https://stats.kansasmediarankings.com/?game=gmvyzcsiq&amp;embed=1\" width=\"700\" height=\"1000\" frameborder=\"0\" scrolling=\"yes\" title=\"Hayden at St. Pius X (Mo.) - Kansas Media Stats\"></iframe>"
+}

@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "type": "rich",
+  "provider_name": "Kansas Media Stats",
+  "provider_url": "https://stats.kansasmediarankings.com",
+  "title": "Bennington at Hoxie",
+  "width": 700,
+  "height": 1000,
+  "cache_age": 86400,
+  "html": "<iframe src=\"https://stats.kansasmediarankings.com/?game=gmvyzdnci&amp;embed=1\" width=\"700\" height=\"1000\" frameborder=\"0\" scrolling=\"yes\" title=\"Bennington at Hoxie - Kansas Media Stats\"></iframe>"
+}
