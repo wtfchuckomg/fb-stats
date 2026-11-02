@@ -34,6 +34,7 @@ const gameWeek = x => weekKey(gameDay(x).getTime());
 /* ---------- quick scores: a game's score and nothing else ---------- */
 // Kept apart from the games (db.scores), synced as their own documents (kind 'score'), always public.
 const qsLib = () => db.scores || (db.scores = {});
+// Forfeits are set on team pages (Chuck, 2026-11-01); 'ff' shows here only on a game that already is one.
 const QS_PER = [['pre', 'Pre'], ['1', '1st'], ['2', '2nd'], ['half', 'Half'], ['3', '3rd'], ['4', '4th'], ['ot', 'OT'], ['final', 'Final'], ['fot', 'OT/F'], ['ff', 'Forfeit']];
 const QS_STATUS = {pre:'Pregame', half:'Halftime', ot:'OT', final:'Final', fot:'Final/OT', ff:'Forfeit'};
 // Over and done: a final, a final that went to overtime, or a forfeit.
@@ -111,8 +112,7 @@ function dlgScore(id){
   const side = (s, label) => `<div class="qs-side"><div class="fld"><label class="eyebrow" for="qs-${s}-name">${label}</label>
       ${schoolPicker(`qs-${s}-name`, x ? x.teams[s].name : (pre && pre.side === s ? pre.name : ''), s === 'A' ? 'Visiting school' : 'Home school')}</div>
     <div class="fld qs-pts"><label class="eyebrow" for="qs-${s}-pts">Score</label>
-      <input class="inp" id="qs-${s}-pts" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" value="${x ? +x[s] || 0 : ''}" placeholder="0">
-      <button type="button" class="linkbtn qs-ffwin" data-qs-ffwin="${s}">Won by forfeit</button></div></div>
+      <input class="inp" id="qs-${s}-pts" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" value="${x ? +x[s] || 0 : ''}" placeholder="0"></div></div>
 `;
   // On a school's page the admin is signed in beside the records, not through the tracker's sync.
   const upThere = !!sync.user || (ui.admin && !!teamRecs.api);
@@ -125,7 +125,7 @@ function dlgScore(id){
       : '<button type="button" class="btn small primary" data-qs-box="">Paste a box score instead</button>'}</div>
     <p class="hint qs-or">${x ? 'Or just update the score:' : 'Or just enter the score:'}</p>
     ${side('A', 'Visitors')}${side('H', 'Home')}
-    <div class="fld"><span class="eyebrow">Status</span><div class="seg" id="qs-per">${QS_PER.map(([v, l]) => `<button type="button" data-qs-per="${v}" aria-pressed="${per === v}">${l}</button>`).join('')}</div></div>
+    <div class="fld"><span class="eyebrow">Status</span><div class="seg" id="qs-per">${QS_PER.filter(([v]) => v !== 'ff' || per === 'ff').map(([v, l]) => `<button type="button" data-qs-per="${v}" aria-pressed="${per === v}">${l}</button>`).join('')}</div></div>
     <div class="fld"${inQuarter(per) ? '' : ' hidden'}><label class="eyebrow" for="qs-clk">Time left, optional</label><input class="inp" id="qs-clk" inputmode="numeric" placeholder="4:12" value="${esc(x && x.clk || '')}"></div>
     <p class="hint" id="qs-ff"${per === 'ff' ? '' : ' hidden'}>A forfeit goes down as ${FORFEIT}-0. Put the ${FORFEIT} beside the team that was awarded the win.</p>
     <div class="fld"><label class="eyebrow" for="qs-date">Game date</label><input class="inp" type="date" id="qs-date" value="${date}"></div>
@@ -612,14 +612,6 @@ document.addEventListener('click', e => {
         if (!(+a.value) && !(+h.value)){ a.value = String(FORFEIT); h.value = '0'; }
       }
       return;
-    }
-    // One tap for a forfeit (Chuck, 2026-10-24): that side 2, the other 0, marked Forfeit, saved.
-    const ffw = t.closest('[data-qs-ffwin]');
-    if (ffw){
-      const s = ffw.dataset.qsFfwin;
-      $(`#qs-${s}-pts`).value = String(FORFEIT); $(`#qs-${s === 'A' ? 'H' : 'A'}-pts`).value = '0';
-      $('#qs-per').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.qsPer === 'ff')));
-      return saveScore($('[data-qs-save]').dataset.qsSave);
     }
     const sv = t.closest('[data-qs-save]');
     if (sv) return saveScore(sv.dataset.qsSave);

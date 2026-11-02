@@ -826,7 +826,6 @@ button.h-btn{cursor:pointer}
 .rs-tbl .num{text-align:right;font-variant-numeric:tabular-nums}
 .rs-more{display:block;margin-top:10px;font:600 13px/1 var(--sans);color:var(--blue);text-decoration:none}
 .rs-more:hover{text-decoration:underline}
-.qs-ffwin{display:block;margin-top:6px;font-size:12px;white-space:nowrap}
 .tp-recwrap{display:flex;flex-direction:column;align-items:center;gap:10px}
 .tp-ppg{display:flex;gap:22px;font:600 12px/1 var(--sans);letter-spacing:.06em;color:var(--muted)}
 .tp-ppg b{font:800 16px/1 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink-2);margin-left:4px;letter-spacing:0}
@@ -946,8 +945,9 @@ button.h-btn{cursor:pointer}
 .bt-rec{display:none}
 .bgame.one .b-mid,.bgame.one .b-lead{grid-column:2/4}
 .bgame.nomid .b-lead{margin-left:12px}
-/* the score boxes are wider than the T column: the column grows to hold them, so they stay clear of the buttons */
-.bgame.btyping{grid-template-columns:minmax(0,1fr) 190px;column-gap:16px}
+/* the score boxes are wider than the T column: the column grows to hold them, and the card keeps its usual width, so
+   the boxes stay where the score was with the buttons right beside them */
+.bgame.btyping{grid-template-columns:minmax(0,320px) 190px;justify-content:start;column-gap:16px}
 .bgame.btyping .b-hd,.bgame.btyping .bt{grid-template-columns:minmax(0,1fr) auto 56px 12px}
 .bgame.btyping .b-mid,.bgame.btyping .b-lead{display:none}
 .bgame.btyping .b-acts{grid-column:2}

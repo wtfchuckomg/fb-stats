@@ -287,7 +287,7 @@ function boardGame(x){
   // No click-through until stats are being kept (live or entered afterward): schedule entries and quick scores never.
   const acts = m.pre ? `<a class="bbtn" href="?preview=${id}">Preview</a>` : m.quick || !hasStats(x) ? '' : x.box ? `<a class="bbtn" href="?game=${id}&amp;tab=box">Box Score</a>` : `<a class="bbtn" href="?game=${id}">Gamecast</a><a class="bbtn box" href="?game=${id}&amp;tab=box">Box Score</a><a class="bbtn box" href="?game=${id}&amp;tab=pbp">Play-By-Play</a>`;
   const typeActs = typing ? `<label class="b-ot"><input type="checkbox" id="bs-ot"${board.edit.ot ? ' checked' : ''}> OT/F</label>
-    <button type="button" class="bbtn" data-bsave>Save final</button>${['A', 'H'].map(s => `<button type="button" class="bhide" data-bff="${s}">${esc(x.teams[s].abbr || shortName(x.teams[s].name))} won by forfeit</button>`).join('')}<button type="button" class="bhide" data-bcancel>Cancel</button>` : '';
+    <button type="button" class="bbtn" data-bsave>Save final</button><button type="button" class="bhide" data-bcancel>Cancel</button>` : '';
   // ESPN's four columns: the score, the story or the field, the leaders, the buttons. Either middle column takes
   // the other's room when it has nothing to show.
   const leaders = m.pre ? preLeaders(x) : m.S ? boardLeaders(x, m.S) : '';
@@ -410,12 +410,6 @@ document.addEventListener('click', e => {
     return;
   }
   if (e.target.closest('[data-bsave]')) return saveBoardFinal();
-  // A forfeit in one tap (Chuck, 2026-10-24): 2-0 to that side, marked Forfeit.
-  const bff = e.target.closest('[data-bff]');
-  if (bff && board.edit){
-    const x = weekGames(ui.week, ui.admin, true).find(y => y.id === board.edit.id), w = bff.dataset.bff;
-    board.edit = null; saveFinal(x, {[w]:FORFEIT, [w === 'A' ? 'H' : 'A']:0}, false, 'ff'); return renderScoreboard();
-  }
   if (e.target.closest('[data-bcancel]')){ board.edit = null; return renderScoreboard(); }
   const a = e.target.closest('[data-bscroll]');
   if (a){ const wk = $('#board .bweeks'); wk.scrollBy({left:+a.dataset.bscroll * wk.clientWidth * .7, behavior:'smooth'}); }
