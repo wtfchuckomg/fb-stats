@@ -5358,9 +5358,43 @@ function recordText(t, s, current, thru, score){
 function recFields(){ return ''; }
 const recValue = (pre, s, k, was) => { const el = $(`#${pre}-${s}-${k}`); return el ? el.value.trim().slice(0, 9) : (was || ''); };
 
+/* ---------- quarter scores from MaxPreps ----------
+   For finals kept without quarters (Chuck, 2026-11-02: "fill in the quarter by quarter scoring if it's available"):
+   qlines.json holds MaxPreps' quarters by date and schools. They show only when they add up to the final on the site,
+   so a score he has changed never shows quarters that don't match it. */
+const qLines = {list:null, p:null, idx:null, lib:undefined};
+function loadQLines(){
+  return qLines.p || (qLines.p = fetch(DATA + '/qlines.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : []).catch(() => [])
+    .then(list => { qLines.list = Array.isArray(list) ? list : []; renderScores(); renderScoreboard(); renderHome(); }));
+}
+const qPair = (a, b) => [canonSchool(a), canonSchool(b)].sort().join('|');
+function qLinesFor(x, score){
+  if (!qLines.list){ loadQLines(); return null; }
+  // Keyed again once the school list arrives, like the class index: before it, only exact spellings match.
+  if (!qLines.idx || qLines.lib !== logoLib.list){
+    qLines.lib = logoLib.list; qLines.idx = new Map();
+    qLines.list.forEach(o => qLines.idx.set(o.d + '|' + qPair(o.t[0], o.t[1]), o));
+  }
+  const day = gameDay(x), pair = qPair(x.teams.A.name, x.teams.H.name);
+  for (const off of [0, -1, 1, -2, 2, -3, 3]){   // a few days either way: a game moved for weather keeps its quarters
+    const o = qLines.idx.get(ymd(new Date(day.getTime() + off * 864e5)) + '|' + pair); if (!o) continue;
+    const a = canonSchool(o.t[0]) === canonSchool(x.teams.A.name) ? 0 : 1, L = {A:o.q[a], H:o.q[1 - a]};
+    const sum = r => r.reduce((n, v) => n + (+v || 0), 0);
+    return sum(L.A) === +score.A && sum(L.H) === +score.H ? L : null;
+  }
+  return null;
+}
+
 /* ---------- the strip ---------- */
 // What a strip card or a scoreboard row needs from a game or a quick score: status, score, line score, stats.
+// A final with no quarters of its own takes MaxPreps', when they add up.
 function summary(x){
+  const m = summary0(x);
+  if (!m.fin || m.ff || (m.lines && ['A', 'H'].some(s => (m.lines[s] || []).slice(0, 4).some(v => v != null)))) return m;
+  const L = qLinesFor(x, m.score);
+  return L ? {...m, lines:L, qPlayed:4, typed:true} : m;
+}
+function summary0(x){
   // A snapshot game (season.json) already carries its result, so the board can draw it the moment the file
   // lands, without waiting on the database. It draws again, with the line score and the leaders, when the live
   // copy arrives a moment later. A quick score with its own score in it is the real thing, not a snapshot:
