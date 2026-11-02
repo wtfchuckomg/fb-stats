@@ -76,9 +76,11 @@ function lineCols(st){
   return Array.from({length:last + 1}, (_, i) => i);
 }
 const colLabel = i => i < 4 ? String(i + 1) : i === 4 ? 'OT' : `${i - 3}OT`;
+// A box score posted with only the final has no quarter figures at all: its quarters are blank, not X.
+const noQuarters = st => ![...(st.lines.A || []), ...(st.lines.H || [])].some(v => v != null);
 function qCell(st, s, i){
   const v = st.lines[s][i];
-  if (v == null) return 'X';                                        // the scorer left this quarter blank
+  if (v == null) return noQuarters(st) ? '' : 'X';                  // the scorer left this quarter blank
   if (st.typed) return v;                                           // typed by hand: show it, reached or not
   if (i < 4 && st.final && i >= (st.qPlayed || 0)) return 'X';
   return i === 4 || st.q > i || st.final ? v : '';

@@ -238,9 +238,12 @@ function parseBox(txt){
       // "October 16" isn't taken for a team.
       const ls = l.match(/^(.*?[A-Za-z][^\d]*?)\s+((?:(?:\d+|[Xx]|[—–-])\s*[ ]\s*){0,11}(?:\d+|[Xx]|[—–-]))\s*(?:[—–-]+\s*(\d+))?$/);
       const cells0 = ls ? ls[2].trim().split(/\s+/) : [];
-      if (ls && (cells0.length >= 3 || ls[3] != null || (typeof knownSchool === 'function' && knownSchool(ls[1].replace(/[\s:,.—–-]+$/, ''))))){
+      // Only the final, no quarters: "Olathe West — 52", as MaxPreps posts some games (2026-11-02). It was read as an
+      // unplayed first quarter and 52 in the second.
+      const finalOnly = !!ls && ls[3] == null && cells0.length === 2 && /^[—–]$/.test(cells0[0]) && /^\d+$/.test(cells0[1]);
+      if (ls && (finalOnly || cells0.length >= 3 || ls[3] != null || (typeof knownSchool === 'function' && knownSchool(ls[1].replace(/[\s:,.—–-]+$/, ''))))){
         const cell = v => /^[Xx]$/.test(v) || /^[—–-]$/.test(v) ? null : Number(v);
-        let q = cells0.map(cell), tot = ls[3] != null ? +ls[3] : null;
+        let q = finalOnly ? [] : cells0.map(cell), tot = finalOnly ? +cells0[1] : ls[3] != null ? +ls[3] : null;
         // "0 7 — 7": a dash just before the last number is the total, not a quarter never played.
         if (tot == null && cells0.length >= 3 && /^[—–-]$/.test(cells0[cells0.length - 2]) && q[q.length - 1] != null){ tot = q.pop(); q.pop(); }
         const add = a => a.reduce((t, v) => t + (v || 0), 0);
@@ -253,7 +256,7 @@ function parseBox(txt){
         if (typeof knownSchool === 'function' && !knownSchool(name)){ const near = similarSchools(name, 2); if (near.length === 1) name = near[0]; }
         const s = out.names.length ? 'H' : 'A', sum = add(q);
         out.names.push(name); out.lines[s] = q; out.total[s] = tot ?? sum;
-        if (tot != null && tot !== sum) out.warn.push(`${name}’s quarters add up to ${sum}, but the total says ${tot}. Using ${tot}.`);
+        if (tot != null && q.length && tot !== sum) out.warn.push(`${name}’s quarters add up to ${sum}, but the total says ${tot}. Using ${tot}.`);
         sec = null; continue;
       }
     }
