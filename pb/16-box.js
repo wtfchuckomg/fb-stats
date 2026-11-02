@@ -110,14 +110,16 @@ function parseBox(txt){
     });
   // One team stat for both teams on a line of its own (Chuck, 2026-10-19): "Fumbles-lost: Eisenhower 1-1, Ark City 1-0",
   // "Penalties: Andover 3-37, Newton 5-60". Read as the team stats line it means.
-  const TS1 = /^\s*(fumbles?[\s-]*lost|penalties(?:[\s-]*yards)?|first downs?|third[\s-]*downs?(?:\s+conv(?:ersions)?)?|fourth[\s-]*downs?(?:\s+conv(?:ersions)?)?|time of possession|punts(?:[\s-]*(?:avg\.?|average|yards))?)\s*[:—–]\s*(.+?)\s+(-?[\d(][\d().:-]*)\s*[,;]\s*(.+?)\s+(-?[\d(][\d().:-]*)\s*\.?\s*$/i;
+  const TS1 = /^\s*(fumbles?[\s-]*lost|penalties(?:[\s-]*yards)?|first downs?|(?:third|3rd)[\s-]*downs?(?:\s+(?:conv(?:ersions)?|eff(?:iciency)?))?|(?:fourth|4th)[\s-]*downs?(?:\s+(?:conv(?:ersions)?|eff(?:iciency)?))?|time of possession|punts(?:[\s-]*(?:avg\.?|average|yards))?)\s*[:—–]\s*(.+?)\s+(-?[\d(][\d().:-]*)\s*[,;]\s*(.+?)\s+(-?[\d(][\d().:-]*)\s*\.?\s*$/i;
   raw.forEach((l, i) => {
     const m = l.match(TS1); if (!m) return;
     // Not a players line ("Fumbles lost: Ellinwood - Cade Coleman 1; Carter Schartz 1"): the names are bare team
     // names, and the counted-pair stats come as pairs ("1-1", "9-63").
     if ([m[2], m[4]].some(x => /\s[—–-]\s|[—–:]/.test(x))) return;
-    if (/^(fum|pen|third|fourth|punt)/i.test(m[1]) && ![m[3], m[5]].every(v => /\d\s*-\s*\(?-?\d/.test(v))) return;
-    const what = /^fum/i.test(m[1]) ? 'fumbles-lost' : m[1].toLowerCase();
+    if (/^(fum|pen|third|3rd|fourth|4th|punt)/i.test(m[1]) && ![m[3], m[5]].every(v => /\d\s*-\s*\(?-?\d/.test(v))) return;
+    // Every spelling down to the one the team stats line reads: "Third-down conversions" and "Penalties-yards" too.
+    const what = /^fum/i.test(m[1]) ? 'fumbles-lost' : /^(?:third|3rd)/i.test(m[1]) ? 'third downs' : /^(?:fourth|4th)/i.test(m[1]) ? 'fourth downs'
+      : /^pen/i.test(m[1]) ? 'penalties' : m[1].toLowerCase();
     raw[i] = `TEAM STATS — ${m[2]}, ${what} ${m[3]}. ${m[4]}, ${what} ${m[5]}.`;
   });
   const rows = raw.map(l => l.replace(/[ \t]+/g, ' ').trim());
@@ -382,8 +384,8 @@ function parseBox(txt){
             sub2(/rushing\s+(\d+)/i, 'fdR'); sub2(/passing\s+(\d+)/i, 'fdP'); sub2(/penalt(?:y|ies)\s+(\d+)/i, 'fdX');
             return;
           }
-          if ((m = n(/third downs?\D+(\d+)\D+(\d+)/i))){ put('d3m', m[0]); put('d3a', m[1]); return; }
-          if ((m = n(/fourth downs?\D+(\d+)\D+(\d+)/i))){ put('d4m', m[0]); put('d4a', m[1]); return; }
+          if ((m = n(/(?:third|3rd)[\s-]*downs?\D+(\d+)\D+(\d+)/i))){ put('d3m', m[0]); put('d3a', m[1]); return; }
+          if ((m = n(/(?:fourth|4th)[\s-]*downs?\D+(\d+)\D+(\d+)/i))){ put('d4m', m[0]); put('d4a', m[1]); return; }
           if ((m = n(/rushing\s+(\d+)\s*-\s*(-?\d+)/i))){ put('rushN', m[0]); put('rushY', m[1]); return; }
           if ((m = n(/passing\s+(\d+)\s*-\s*(\d+)\s*-\s*(\d+)/i))){ put('passC', m[0]); put('passA', m[1]); put('passInt', m[2]); return; }
           if ((m = n(/passing\s+(-?\d+)\s*$/i)) || (m = n(/passing yards\s+(-?\d+)/i))){ put('passY', m[0]); return; }
@@ -396,7 +398,7 @@ function parseBox(txt){
           if ((m = n(/kickoff returns?\s+(\d+)\s*-\s*(-?\d+)/i))){ put('krN', m[0]); put('krY', m[1]); return; }
           if ((m = n(/punt returns?\s+(\d+)\s*-\s*(-?\d+)/i))){ put('prN', m[0]); put('prY', m[1]); return; }
           if ((m = chunk.match(/punts\s+(\d+)\s*-\s*([\d.]+)/i))){ put('pnt', +m[1]); put('pntY', Math.round(+m[1] * +m[2])); return; }
-          if ((m = n(/penalt(?:ies|y)\s+(\d+)\s*-\s*(\d+)/i))){ put('pen', m[0]); put('penY', m[1]); return; }
+          if ((m = n(/penalt(?:ies|y)(?:[\s-]*(?:yards|yds))?\s+(\d+)\s*-\s*(\d+)/i))){ put('pen', m[0]); put('penY', m[1]); return; }
           if ((m = chunk.match(/time of possession\D*(\d{1,2}):(\d{2})/i))){ put('top', +m[1] * 60 + +m[2]); return; }
           if ((m = n(/(\d+)\s*(?:total\s*)?plays\b/i))) put('plays', m[0]);
         });
