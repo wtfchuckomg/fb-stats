@@ -267,7 +267,7 @@ function boardGame(x){
   const tCell = s => typing ? `<div class="bt-t"><input class="inp b-in" id="bs-${s}" inputmode="numeric" maxlength="3" autocomplete="off"
         value="${esc(board.edit[s] != null ? board.edit[s] : m.pre ? '' : String(m.score[s]))}" aria-label="${esc(schoolName(T[s].name))} final"></div>`
     : canType ? `<button type="button" class="bt-t b-type" data-bscore="${esc(x.id)}" data-side="${s}" title="Type the final">${m.pre ? '' : m.score[s]}</button>`
-    : `<div class="bt-t">${m.pre ? '' : m.score[s]}</div>`;
+    : `<div class="bt-t">${m.pre ? `<span class="bt-rec">${esc((recordText(T[s], s, true, gameWeek(x), m.score) || '').split(',')[0])}</span>` : m.score[s]}</div>`;
   // Quarters played so far (every one, once it's final; OT when there was one); a quick score has no line score.
   // Four quarters, plus a column for each overtime the game went to.
   const idx = m.lines ? lineCols({q:m.q, lines:m.lines}) : [];
@@ -291,11 +291,11 @@ function boardGame(x){
   // ESPN's four columns: the score, the story or the field, the leaders, the buttons. Either middle column takes
   // the other's room when it has nothing to show.
   const leaders = m.pre ? preLeaders(x) : m.S ? boardLeaders(x, m.S) : '';
-  const mid = boardField(x, m) || (story ? `<div class="bs-h">${esc(story.head)}</div>${story.text ? `<p class="bs-t">— ${esc(story.text)}</p>` : ''}` : '');
+  const field = boardField(x, m), mid = field || (story ? `<div class="bs-h">${esc(story.head)}</div>${story.text ? `<p class="bs-t">— ${esc(story.text)}</p>` : ''}` : '');
   return `<article class="bgame${m.live ? ' live' : ''}${typing ? ' btyping' : ''}${mid && leaders ? '' : ' one'}${mid ? '' : ' nomid'}">
     <div class="b-main"><div class="b-hd"><span class="b-st">${status}</span><div class="bt-q b-qh">${cells(i => i < 4 ? i + 1 : 'OT')}</div><span class="b-th">T</span><i></i></div>
       ${team('A')}${team('H')}${po ? `<div class="b-round">${esc(po.label)}</div>` : ''}</div>
-    ${mid ? `<div class="b-mid">${mid}</div>` : ''}${leaders ? `<div class="b-lead">${leaders}</div>` : ''}
+    ${mid ? `<div class="b-mid${field ? '' : ' story'}">${mid}</div>` : ''}${leaders ? `<div class="b-lead">${leaders}</div>` : ''}
     <div class="b-acts"><span class="b-st2">${status}</span>${typing ? typeActs : acts}</div></article>`;
 }
 
