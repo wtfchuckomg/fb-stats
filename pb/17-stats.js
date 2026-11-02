@@ -278,6 +278,9 @@ function gameNumbers(x){
   return {fin:!!st.final, q:st.q, A:side('A'), H:side('H')};
 }
 const C_KEYS = ['pc', 'pa', 'py', 'ptd', 'pint', 'ru', 'ry', 'rtd', 're', 'rey', 'retd', 'ret', 'two', 'fgm', 'fga', 'xpm', 'xpa'];
+// A school from another state carries its state in its name: "Rockhurst (Mo.)", "Dalhart (TX)", "Holyoke (Colo.)".
+// State Stats is Kansas schools only (Chuck, 2026-11-02).
+const outOfState = n => /\((?!Kan)(?:[A-Z][a-z]{1,4}\.?|[A-Z]{2})\)\s*$/.test(String(n || ''));
 function countyStats(games){
   // Each team's own offense and, from the other side of the same games, what opponents did against it ('o' keys).
   const blank = c => Object.assign({name:c, gp:0, w:0, l:0, t:0, pf:0, pa:0, qf:[0, 0, 0, 0, 0], qa:[0, 0, 0, 0, 0], ot:false},
@@ -285,7 +288,7 @@ function countyStats(games){
   const teams = Object.fromEntries((STATE_STATS ? [] : GROUP).map(c => [c, blank(c)])), players = {};
   // Whose side counts: in Butler County only its ten schools, by their proper names; statewide every school, one row
   // each however its name was typed (the first spelling seen names the row).
-  const names = {}, sideOf = n => STATE_STATS ? (names[canonSchool(n)] || (names[canonSchool(n)] = n)) : groupOf(n);
+  const names = {}, sideOf = n => STATE_STATS ? (outOfState(n) ? null : names[canonSchool(n)] || (names[canonSchool(n)] = n)) : groupOf(n);
   const played = playedNames(games);
   for (const x of games){
     const g = gameNumbers(x); if (!g) continue;
@@ -467,7 +470,7 @@ const plShort = n => { const p = String(n).trim().split(/\s+/); return p.length 
 const sameTeamName = (a, b) => !!a && !!b && canonSchool(a) === canonSchool(b);
 function stateTeamList(games){
   const seen = {};
-  games.forEach(x => ['A', 'H'].forEach(s => { const k = canonSchool(x.teams[s].name); if (!seen[k]) seen[k] = schoolName(x.teams[s].name); }));
+  games.forEach(x => ['A', 'H'].forEach(s => { const k = canonSchool(x.teams[s].name); if (!seen[k] && !outOfState(x.teams[s].name)) seen[k] = schoolName(x.teams[s].name); }));
   return Object.values(seen).sort((a, b) => a.localeCompare(b));
 }
 function renderCounty(){
