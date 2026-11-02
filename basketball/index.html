@@ -378,6 +378,7 @@ table.st tr:last-child td{border-bottom:0}
 table.st tr.tot td{font-weight:700;color:var(--ink-2);border-top:1px solid var(--line)}
 table.st tr.pct td{color:var(--muted);font-size:12.5px;padding-top:2px}
 table.st td .pn{color:var(--muted);font-weight:400;margin-right:5px}
+table.st.box tr.bx-sec td{background:var(--surface);font:700 12px/1 var(--sans);text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2);padding-top:9px;padding-bottom:9px}
 table.st.box th:first-child,table.st.box td:first-child{position:sticky;left:0;background:var(--card);z-index:1;max-width:150px;overflow:hidden;text-overflow:ellipsis}
 
 /* ---------- entry pad ---------- */
@@ -1571,7 +1572,8 @@ function dlgSetup(isNew){
       <div class="fld"><label class="eyebrow" for="s-${s}-color">Color</label><input type="color" id="s-${s}-color" value="${esc(src.teams[s].color)}"></div></div>
       <div class="row"><div class="fld"><label class="eyebrow" for="s-${s}-rec">Record, optional</label><input class="inp" id="s-${s}-rec" maxlength="9" autocomplete="off" value="${esc(src.teams[s].rec || '')}" placeholder="5-2"></div></div>
       <div class="fld"><label class="eyebrow" for="s-${s}-roster">Roster, optional · one player per line, number then name</label>
-      <textarea class="inp" id="s-${s}-roster" rows="4" placeholder="3 Cole Brandt&#10;12 Mason Ortiz">${esc(rosterToText(src.teams[s].roster))}</textarea><div class="hint" id="s-${s}-lib"></div></div></div>`;
+      <textarea class="inp" id="s-${s}-roster" rows="4" placeholder="3 Cole Brandt&#10;12 Mason Ortiz">${esc(rosterToText(src.teams[s].roster))}</textarea><div class="hint" id="s-${s}-lib"></div></div>
+      <div class="fld"><label class="eyebrow" for="s-${s}-starters">Starters, optional · numbers</label><input class="inp" id="s-${s}-starters" inputmode="numeric" autocomplete="off" value="${esc((src.teams[s].starters || []).join(' '))}" placeholder="3 11 12 15 23"></div></div>`;
   return `${dlgHead(isNew ? 'New game' : 'Game setup')}<div class="dlg-bd">${teamRow('A', 'Visitors')}${teamRow('H', 'Home')}
     <div class="grp"><h3>Game</h3>
       <div class="fld"><span class="eyebrow">Periods</span><div class="seg" id="s-fmt">${[['q', 'Four quarters'], ['h', 'Two halves'], ['wc', 'Women’s college']].map(([m, l]) => `<button type="button" data-fmt="${m}" aria-pressed="${ru.fmt === m}">${l}</button>`).join('')}</div></div>
@@ -1592,7 +1594,8 @@ function saveSetup(isNew){
   const v = id => $('#' + id).value.trim();
   const team = (s, def) => {
     const name = v(`s-${s}-name`) || def;
-    return {name, mascot:v(`s-${s}-mascot`), abbr:(v(`s-${s}-abbr`) || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(), color:$(`#s-${s}-color`).value, roster:parseRosterText($(`#s-${s}-roster`).value), rec:v(`s-${s}-rec`).slice(0, 9)};
+    return {name, mascot:v(`s-${s}-mascot`), abbr:(v(`s-${s}-abbr`) || name.replace(/[^A-Za-z]/g, '').slice(0, 4)).toUpperCase(), color:$(`#s-${s}-color`).value, roster:parseRosterText($(`#s-${s}-roster`).value), rec:v(`s-${s}-rec`).slice(0, 9),
+      starters:[...new Set(v(`s-${s}-starters`).match(/\d+/g) || [])]};
   };
   const fmtBtn = $('#s-fmt [aria-pressed="true"]'), fmt = fmtBtn ? fmtBtn.dataset.fmt : 'q';
   const set = {fmt, per:clamp(parseInt(v('s-per')) || FORMATS[fmt].per, 1, 30), ot:clamp(parseInt(v('s-ot')) || 4, 1, 15)};
@@ -2198,13 +2201,20 @@ const boxRow = p => [p.pts, `${p.fgm}-${p.fga}`, `${p.tpm}-${p.tpa}`, `${p.ftm}-
 function boxTable(s){
   const T = g.teams, t = R.S.team[s];
   const rows = Object.values(R.S.pl[s]).sort((a, b) => b.pts - a.pts || b.reb - a.reb || b.ast - a.ast || (+a.n) - (+b.n));
+  // starters set in Setup get their own section (in number order, even with no stats); otherwise one list
+  const five = T[s].starters || [];
+  const starters = five.map(n => R.S.pl[s][n] || Object.assign(zeros(PL_KEYS), {n})).sort((a, b) => a.n - b.n);
+  const reserves = rows.filter(p => !five.includes(p.n));
+  const sec = l => `<tr class="bx-sec"><td>${l}</td><td colspan="${BOX_COLS.length}"></td></tr>`;
+  const prow = p => `<tr class="${p.dq ? 'dq' : ''}"><td>${/^\d+$/.test(p.n) ? `<span class="pn">${esc(p.n)}</span>${esc(rosterName(s, p.n) || '')}` : esc(p.n)}${p.dq ? `<span class="dqtag" title="${esc(p.dq)}">${p.dq === 'ejected' ? 'EJ' : 'FO'}</span>` : ''}</td>${boxRow(p).map((v, i) => `<td${i === 11 && p.pf >= 5 ? ' class="pf5"' : ''}>${v}</td>`).join('')}</tr>`;
+  const body = five.length ? sec('Starters') + starters.map(prow).join('') + (reserves.length ? sec('Reserves') + reserves.map(prow).join('') : '') : rows.map(prow).join('');
   // team-only rebounds, turnovers and fouls (no player) show as a TEAM line
   const sum = k => rows.reduce((n, p) => n + p[k], 0);
   const tm = {reb:t.reb - sum('reb'), oreb:t.oreb - sum('oreb'), dreb:t.dreb - sum('dreb'), to:t.to - sum('to'), pf:t.pf - sum('pf')};
   const teamLine = tm.reb || tm.to || tm.pf ? `<tr><td>TEAM</td><td></td><td></td><td></td><td></td><td>${tm.oreb}</td><td>${tm.dreb}</td><td>${tm.reb}</td><td></td><td></td><td></td><td>${tm.to}</td><td>${tm.pf}</td></tr>` : '';
   return `<section class="card"><div class="bx-team">${teamMark(s, 26)}${esc(T[s].name)}</div>
-    ${rows.length || teamLine ? `<div class="tbl-wrap"><table class="st box"><thead><tr><th>Player</th>${BOX_COLS.map(c => `<th>${c}</th>`).join('')}</tr></thead>
-      <tbody>${rows.map(p => `<tr class="${p.dq ? 'dq' : ''}"><td>${/^\d+$/.test(p.n) ? `<span class="pn">${esc(p.n)}</span>${esc(rosterName(s, p.n) || '')}` : esc(p.n)}${p.dq ? `<span class="dqtag" title="${esc(p.dq)}">${p.dq === 'ejected' ? 'EJ' : 'FO'}</span>` : ''}</td>${boxRow(p).map((v, i) => `<td${i === 11 && p.pf >= 5 ? ' class="pf5"' : ''}>${v}</td>`).join('')}</tr>`).join('')}${teamLine}
+    ${rows.length || five.length || teamLine ? `<div class="tbl-wrap"><table class="st box"><thead><tr><th>Player</th>${BOX_COLS.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+      <tbody>${body}${teamLine}
       <tr class="tot"><td>Totals</td>${boxRow(t).map(v => `<td>${v}</td>`).join('')}</tr>
       <tr class="pct"><td></td><td></td><td>${pct(t.fgm, t.fga)}%</td><td>${pct(t.tpm, t.tpa)}%</td><td>${pct(t.ftm, t.fta)}%</td><td colspan="8"></td></tr></tbody></table></div>`
       : '<div class="empty">No stats yet.</div>'}</section>`;
