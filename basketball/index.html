@@ -547,6 +547,14 @@ body.viewer .pl:hover{background:none}
 #printsheet .ps-bx tr{break-inside:avoid}
 #printsheet .ps-bx tfoot td{font-weight:700;border-top:1.5px solid #000}
 #printsheet .ps-key{margin-top:12px}
+#printsheet .ps-gt{font-weight:700;border-bottom:1px solid #888;padding-bottom:4px;margin:16px 0 4px}
+#printsheet .ps-pbp{font-size:8.5pt;table-layout:fixed}
+#printsheet .ps-pbp th:nth-child(1){width:9%}
+#printsheet .ps-pbp th:nth-child(2),#printsheet .ps-pbp th:nth-child(4){width:40%}
+#printsheet .ps-pbp th:nth-child(3){width:11%}
+#printsheet .ps-pbp td{white-space:normal;vertical-align:top;padding:2px 6px}
+#printsheet .ps-pbp .c{text-align:center}
+#printsheet .ps-pbp tr{break-inside:avoid}
 </style>
 <style>
 /* Apple-style Liquid Glass layer, adopted from the football stats site (fb stats/index.html, part 1b-glass):
@@ -1812,7 +1820,7 @@ function importText(txt){
 }
 /* ---------- the printed box score (Chuck, 2026-11-02, Butler CC's "Print Version" PDF, like the football one):
    monospace, black on white. Page 1: the header, score by periods, team statistics and shooting by half;
-   then each team's box score on a page of its own, starters first with a *. Drawn into #printsheet, the only
+   then each team's box score on a page of its own, starters first with a *, then the play-by-play. Drawn into #printsheet, the only
    thing on the page while printing. ---------- */
 const psPct = (m, a) => a ? `${(m / a * 100).toFixed(1)}%` : '-';
 const psFull = t => t.mascot && !String(t.name).toLowerCase().endsWith(t.mascot.toLowerCase()) ? `${t.name} ${t.mascot}` : t.name;
@@ -1874,7 +1882,26 @@ function psBox(s){
     <tfoot><tr><td></td><td class="l">Totals</td>${row(t).map(v => `<td>${v}</td>`).join('')}</tr></tfoot></table>
     ${five.length ? '<div class="ps-key">* = Starter</div>' : ''}</section>`;
 }
-function printSheet(){ return psHeader() + psLines() + psTeam() + psHalves() + psBox('A') + psBox('H'); }
+// Play-by-Play the PrestoSports way: by period, the visitors' plays on the left, the home team's on the right,
+// the score between them on the plays that changed it (games kept play by play; a box-score game has none)
+function psPbp(){
+  if (R.box || !R.log.length) return '';
+  const T = g.teams;
+  let h = '', per = null;
+  for (const e of R.log){
+    if (e.per !== per){
+      h += `${per != null ? '</tbody></table>' : ''}<div class="ps-gt">${perName(e.per, R.ru)}</div><table class="ps-t ps-pbp">
+        <thead><tr><th class="l">Time</th><th class="l">${esc(T.A.name)}</th><th class="c">Score</th><th class="l">${esc(T.H.name)}</th></tr></thead><tbody>`;
+      per = e.per;
+    }
+    const prev = e.i ? R.log[e.i - 1] : null, sc = prev ? prev.A !== e.A || prev.H !== e.H : !!(e.A || e.H);
+    const t = esc(e.text), score = sc ? `<b>${e.A}-${e.H}</b>` : '';
+    h += `<tr><td class="l">${e.clk != null ? mmss(e.clk) : ''}</td>${e.s === 'A' ? `<td class="l">${t}</td><td class="c">${score}</td><td></td>`
+      : e.s === 'H' ? `<td></td><td class="c">${score}</td><td class="l">${t}</td>` : `<td class="c" colspan="3">${t}</td>`}</tr>`;
+  }
+  return `<section class="ps-page"><h2 class="ps-h">Play-by-Play</h2><hr class="ps-rule">${h}</tbody></table></section>`;
+}
+function printSheet(){ return psHeader() + psLines() + psTeam() + psHalves() + psBox('A') + psBox('H') + psPbp(); }
 function printAll(){
   closeDialog();
   let el = document.getElementById('printsheet');
