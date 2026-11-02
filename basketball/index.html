@@ -517,7 +517,36 @@ body.viewer .pl:hover{background:none}
   .gc{display:block;padding:0}
   .card{box-shadow:none;border:1px solid #ccc;margin-bottom:12px}
   body{background:#fff}
+  /* the Print button: only the box-score sheet, set like Butler CC's print version */
+  body.printing > *:not(#printsheet){display:none!important}
+  body.printing #printsheet{display:block!important}
+  @page{size:letter;margin:.6in .55in}
 }
+.gtab-print{margin-left:auto}
+#printsheet{display:none;font:10pt/1.45 Menlo,Consolas,"DejaVu Sans Mono","Courier New",monospace;color:#000;background:#fff;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact}
+#printsheet *{color:#000}
+#printsheet .ps-page{break-before:page}
+#printsheet .ps-kicker{text-align:center;color:#555!important;letter-spacing:.06em;font-size:10pt}
+#printsheet .ps-title{text-align:center;font-size:15pt;margin:4px 0 6px;line-height:1.25}
+#printsheet .ps-sub{text-align:center;margin-bottom:10px}
+#printsheet .ps-thick{border:0;border-top:2.5px solid #000;margin:10px 0 18px}
+#printsheet .ps-rule{border:0;border-top:1px solid #000;margin:0 0 10px}
+#printsheet .ps-h{text-align:center;font-size:12pt;margin:16px 0 6px}
+#printsheet .ps-t{width:100%;border-collapse:collapse}
+#printsheet .ps-t th{font-weight:700;text-align:right;padding:5px 6px;border-bottom:1px solid #000;white-space:nowrap}
+#printsheet .ps-t td{text-align:right;padding:4px 6px;white-space:nowrap}
+#printsheet .ps-t .l{text-align:left}
+#printsheet .ps-ls{width:75%;margin:0 auto;border-top:1px solid #000}
+#printsheet .ps-ts{border-top:1px solid #000}
+#printsheet .ps-ts th,#printsheet .ps-ts td{text-align:center;width:33%}
+#printsheet .ps-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+#printsheet .ps-tm{font-weight:700;margin-bottom:2px}
+#printsheet .ps-bx{border-top:1.5px solid #000;font-size:9pt}
+#printsheet .ps-bx th,#printsheet .ps-bx td{padding-left:4px;padding-right:4px}
+#printsheet .ps-bx tr{break-inside:avoid}
+#printsheet .ps-bx tfoot td{font-weight:700;border-top:1.5px solid #000}
+#printsheet .ps-key{margin-top:12px}
 </style>
 <style>
 /* Apple-style Liquid Glass layer, adopted from the football stats site (fb stats/index.html, part 1b-glass):
@@ -667,6 +696,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
     <button class="gtab" role="tab" data-tab="box">Box Score</button>
     <button class="gtab" role="tab" data-tab="pbp">Play-by-Play</button>
     <button class="gtab" role="tab" data-tab="team">Team Stats</button>
+    <button class="gtab gtab-print" type="button" data-print>Print</button>
   </div>
 </nav>
 <main class="gc">
@@ -1339,7 +1369,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
 const STORE = 'hoops.v1';
 let db = {cur:null, games:{}}, g = null, R = null;
-const ui = {editing:null, ctx:null, tab:'gamecast', pbp:null, open:null, confirm:null, qtext:'', cheat:false, dlg:null, viewer:false, start:false, teamKey:null, printing:false};
+const ui = {editing:null, ctx:null, tab:'gamecast', pbp:null, open:null, confirm:null, qtext:'', cheat:false, dlg:null, viewer:false, start:false, teamKey:null};
 
 const ab = s => g.teams[s].abbr || s;
 const rosterName = (s, n) => (g.teams[s].roster || {})[String(n)] || '';
@@ -1780,9 +1810,79 @@ function importText(txt){
   x.id = 'g' + Date.now().toString(36); x.set = x.set || {fmt:'q', per:8, ot:4}; x.clk = x.clk || {s:rulesOf(x).per * 60, run:false, at:0};
   g = x; resetUi(); save(); closeDialog(); refresh(); toast('Game imported');
 }
+/* ---------- the printed box score (Chuck, 2026-11-02, Butler CC's "Print Version" PDF, like the football one):
+   monospace, black on white. Page 1: the header, score by periods, team statistics and shooting by half;
+   then each team's box score on a page of its own, starters first with a *. Drawn into #printsheet, the only
+   thing on the page while printing. ---------- */
+const psPct = (m, a) => a ? `${(m / a * 100).toFixed(1)}%` : '-';
+const psFull = t => t.mascot && !String(t.name).toLowerCase().endsWith(t.mascot.toLowerCase()) ? `${t.name} ${t.mascot}` : t.name;
+function psHeader(){
+  const T = g.teams, d = gameDay(g);
+  return `<div class="ps-kicker">Basketball Box Score</div>
+    <h1 class="ps-title">${esc(psFull(T.A).toUpperCase())} VS. ${esc(psFull(T.H).toUpperCase())}</h1>
+    <div class="ps-sub">${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}</div><hr class="ps-thick">`;
+}
+function psLines(){
+  const st = R.st, T = g.teams, ru = R.ru, cols = Array.from({length:Math.max(ru.n, st.per)}, (_, i) => i);
+  const lab = i => i < ru.n ? i + 1 : `OT${i - ru.n ? i - ru.n + 1 : ''}`;
+  const val = (s, i) => st.per > i || st.final ? st.lines[s][i] || 0 : '-';
+  return `<h2 class="ps-h">Score by Periods</h2><table class="ps-t ps-ls">
+    <thead><tr><th class="l">Team</th>${cols.map(i => `<th>${lab(i)}</th>`).join('')}<th>Total</th></tr></thead>
+    <tbody>${['A', 'H'].map(s => `<tr><td class="l">${esc(T[s].name)}</td>${cols.map(i => `<td>${val(s, i)}</td>`).join('')}<td>${st.score[s]}</td></tr>`).join('')}</tbody></table>`;
+}
+// every roster player plus anyone with a stat; starters (from Setup) first, the rest by number
+function psPlayers(s){
+  const T = g.teams[s], five = T.starters || [];
+  const all = {...Object.fromEntries(Object.keys(T.roster || {}).map(n => [n, Object.assign(zeros(PL_KEYS), {n})])), ...R.S.pl[s]};
+  const list = Object.values(all).filter(p => p.n !== 'team').sort((a, b) => (+a.n) - (+b.n));
+  return [...list.filter(p => five.includes(p.n)), ...list.filter(p => !five.includes(p.n))];
+}
+function psTeam(){
+  const S = R.S.team, T = g.teams;
+  const bench = s => { const five = T[s].starters || []; return five.length ? psPlayers(s).filter(p => !five.includes(p.n)).reduce((n, p) => n + p.pts, 0) : '-'; };
+  const rows = [
+    ['Total FG%', s => psPct(S[s].fgm, S[s].fga)], ['3-Pt. FG%', s => psPct(S[s].tpm, S[s].tpa)], ['Free Throw%', s => psPct(S[s].ftm, S[s].fta)],
+    ['Technical Fouls', s => S[s].tf || 'None']];
+  if (!R.box) rows.push(['Points in the Paint', s => S[s].pip], ['Points off Turnovers', s => S[s].pot], ['2nd Chance Points', s => S[s].scp], ['Fast Break Points', s => S[s].fbp]);
+  if ((T.A.starters || []).length || (T.H.starters || []).length) rows.push(['Bench Points', bench]);
+  return `<h2 class="ps-h">Team Statistics</h2><table class="ps-t ps-ts">
+    <thead><tr><th>${esc(T.A.name)}</th><th></th><th>${esc(T.H.name)}</th></tr></thead>
+    <tbody>${rows.map(([l, f]) => `<tr><td>${f('A')}</td><td class="lab">${l}</td><td>${f('H')}</td></tr>`).join('')}</tbody></table>`;
+}
+// 1st half / 2nd half (overtime goes with the 2nd) / game, from a replay stopped where the 2nd half starts
+function psHalves(){
+  if (R.box) return '';
+  const ru = R.ru, cut = R.log.findIndex(e => e.per > ru.n / 2);
+  const h1 = (cut < 0 ? R : replay(g, cut)).S.team, G = R.S.team;
+  const h2 = s => Object.fromEntries(['fgm', 'fga', 'tpm', 'tpa', 'ftm', 'fta'].map(k => [k, G[s][k] - h1[s][k]]));
+  const side = s => `<div><div class="ps-tm">${esc(g.teams[s].name)}</div><table class="ps-t ps-hv">
+    <thead><tr><th class="l">Shooting %</th><th>1st Half</th><th>2nd Half</th><th>Game</th></tr></thead>
+    <tbody>${[['Total FG%', 'fgm', 'fga'], ['3-Pt. FG%', 'tpm', 'tpa'], ['Free Throw%', 'ftm', 'fta']].map(([l, m, a]) =>
+      `<tr><td class="l">${l}</td><td>${psPct(h1[s][m], h1[s][a])}</td><td>${psPct(h2(s)[m], h2(s)[a])}</td><td>${psPct(G[s][m], G[s][a])}</td></tr>`).join('')}</tbody></table></div>`;
+  return `<h2 class="ps-h">Shooting Percentages</h2><hr class="ps-rule"><div class="ps-two">${side('A')}${side('H')}</div>`;
+}
+function psBox(s){
+  const T = g.teams[s], t = R.S.team[s], five = T.starters || [], list = psPlayers(s);
+  const sum = k => list.reduce((n, p) => n + p[k], 0);
+  const row = p => [`${p.fgm}-${p.fga}`, `${p.tpm}-${p.tpa}`, `${p.ftm}-${p.fta}`, p.oreb, p.dreb, p.reb, p.pf, p.pts, p.ast, p.to, p.blk, p.stl];
+  const tm = ['0-0', '0-0', '0-0', t.oreb - sum('oreb'), t.dreb - sum('dreb'), t.reb - sum('reb'), t.pf - sum('pf'), '', '', t.to - sum('to'), '', ''];
+  const no = p => /^\d+$/.test(p.n) ? `#${p.n}` : '';
+  return `<section class="ps-page"><h2 class="ps-h">${esc(T.name)}</h2><table class="ps-t ps-bx">
+    <thead><tr><th class="l">#</th><th class="l">Player Name</th>${['FGM-A', '3PM-A', 'FTM-A', 'OREB', 'DREB', 'REB', 'PF', 'TP', 'AST', 'TO', 'BLK', 'STL'].map(h => `<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${list.map(p => `<tr><td class="l">${no(p)}</td><td class="l">${esc(PT(s, p.n))}${five.includes(p.n) ? '*' : ''}</td>${row(p).map(v => `<td>${v}</td>`).join('')}</tr>`).join('')}
+      <tr><td class="l">#TM</td><td class="l">TEAM</td>${tm.map(v => `<td>${v}</td>`).join('')}</tr></tbody>
+    <tfoot><tr><td></td><td class="l">Totals</td>${row(t).map(v => `<td>${v}</td>`).join('')}</tr></tfoot></table>
+    ${five.length ? '<div class="ps-key">* = Starter</div>' : ''}</section>`;
+}
+function printSheet(){ return psHeader() + psLines() + psTeam() + psHalves() + psBox('A') + psBox('H'); }
 function printAll(){
-  closeDialog(); ui.printing = true; renderView();
-  try { window.print(); } finally { setTimeout(() => { ui.printing = false; renderView(); }, 300); }
+  closeDialog();
+  let el = document.getElementById('printsheet');
+  if (!el){ el = document.createElement('div'); el.id = 'printsheet'; document.body.appendChild(el); }
+  el.innerHTML = printSheet(); document.body.classList.add('printing');
+  // a phone's print dialog doesn't block, so the sheet comes down when printing is over
+  window.addEventListener('afterprint', () => { document.body.classList.remove('printing'); el.innerHTML = ''; }, {once:true});
+  window.print();
 }
 // A plain-text box score for pasting into a story.
 function summaryText(){
@@ -2310,9 +2410,8 @@ function renderView(){
   document.querySelectorAll('#tabs .gtab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
   if (!g || !R) return;
   const pbpCard = () => R.box ? '<section class="card"><div class="card-hd"><h2 class="card-title">Play-by-Play</h2></div><div class="empty">This game was entered from a box score, so there is no play-by-play.</div></section>'
-    : `<section class="card"><div class="card-hd"><h2 class="card-title">Play-by-Play</h2></div>${ui.printing ? '' : filterPills()}${playsList()}</section>`;
-  const V = ui.printing ? () => cardLinescore() + viewBoxTab() + cardCmp(true) + pbpCard()
-    : R.box ? ({gamecast:() => cardLinescore() + viewBoxTab(), box:viewBoxTab, pbp:pbpCard, team:() => cardCmp(true) + cardLinescore()})[ui.tab] || (() => '')
+    : `<section class="card"><div class="card-hd"><h2 class="card-title">Play-by-Play</h2></div>${filterPills()}${playsList()}</section>`;
+  const V = R.box ? ({gamecast:() => cardLinescore() + viewBoxTab(), box:viewBoxTab, pbp:pbpCard, team:() => cardCmp(true) + cardLinescore()})[ui.tab] || (() => '')
     : ({gamecast:() => cardOffense() + cardTrends() + cardLinescore() + cardFlow() + cardPbp(), box:viewBoxTab, pbp:pbpCard, team:() => cardCmp(true) + cardLinescore() + cardFlow()})[ui.tab] || (() => '');
   $('#view').innerHTML = V();
   drawFlow();
