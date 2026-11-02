@@ -280,7 +280,8 @@ function gameNumbers(x){
 const C_KEYS = ['pc', 'pa', 'py', 'ptd', 'pint', 'ru', 'ry', 'rtd', 're', 'rey', 'retd', 'ret', 'two', 'fgm', 'fga', 'xpm', 'xpa'];
 // A school from another state carries its state in its name: "Rockhurst (Mo.)", "Dalhart (TX)", "Holyoke (Colo.)".
 // State Stats is Kansas schools only (Chuck, 2026-11-02).
-const outOfState = n => /\((?!Kan)(?:[A-Z][a-z]{1,4}\.?|[A-Z]{2})\)\s*$/.test(String(n || ''));
+// The states by name, since a Kansas school can carry a county the same way: "Southeast (Cherokee)".
+const outOfState = n => /\((?:Mo|Okla|Neb|Colo|Tex|Texas|Ark|Iowa|Ill|Wyo|N\.? ?M|N\.? ?D|S\.? ?D|MO|OK|NE|CO|TX|AR|IA|NM)\.?\)\s*$/.test(String(n || ''));
 function countyStats(games){
   // Each team's own offense and, from the other side of the same games, what opponents did against it ('o' keys).
   const blank = c => Object.assign({name:c, gp:0, w:0, l:0, t:0, pf:0, pa:0, qf:[0, 0, 0, 0, 0], qa:[0, 0, 0, 0, 0], ot:false},
