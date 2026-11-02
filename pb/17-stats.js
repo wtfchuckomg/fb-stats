@@ -31,14 +31,14 @@ const C_PARTS = [['team', 'Team'], ['offense', 'Offense'], ['defense', 'Defense'
 const cAddr = () => `?${LG_STATS ? `league=${LG.slug}&lgstats` : AV_STATS ? 'avstats' : STATE_STATS ? 'statestats' : 'stats'}=${county.view}`
   + (county.view === 'team' && county.part !== 'team' ? `&part=${county.part}` : '') + (county.size ? `&size=${county.size}` : '')
   + (STATE_STATS && county.cls ? `&class=${encodeURIComponent(county.cls)}` : '');
-// 11-Man or 8-Man only (Chuck, 2026-11-02), then State Stats one class at a time. A school we have no class for,
-// and 6-Man, show only under All.
-const C_SIZES = [['', 'All'], ['11', '11-Man'], ['8', '8-Man']];
-const sizeOfCls = c => /^[1-6]A$/.test(c || '') ? '11' : /^8-Man/.test(c || '') ? '8' : null;
+// 11-Man, 8-Man or 6-Man only (Chuck, 2026-11-02), then State Stats one class at a time. A school we have no
+// class for shows only under All.
+const C_SIZES = [['', 'All'], ['11', '11-Man'], ['8', '8-Man'], ['6', '6-Man']];
+const sizeOfCls = c => /^[1-6]A$/.test(c || '') ? '11' : /^8-Man/.test(c || '') ? '8' : /^6-Man/.test(c || '') ? '6' : null;
 const inCls = name => (!county.size || sizeOfCls(boardClassOf(name)) === county.size)
   && (!STATE_STATS || !county.cls || boardClassOf(name) === county.cls);
 // The toggle shows where the page has both kinds of schools: always statewide, and a county or league only if so.
-const hasSizes = list => STATE_STATS || ['11', '8'].every(z => list.some(n => sizeOfCls(boardClassOf(n)) === z));
+const hasSizes = list => STATE_STATS || new Set(list.map(n => sizeOfCls(boardClassOf(n))).filter(Boolean)).size > 1;
 
 async function startCounty(){
   ui.viewer = true; ui.county = true; document.body.classList.add('viewer', 'bpage');
