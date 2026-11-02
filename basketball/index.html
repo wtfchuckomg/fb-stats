@@ -719,7 +719,7 @@ const tosLeft = t => t.f + t.s;
 function replay(g, upto = g.plays.length){
   if (g.box) return replayBox(g);   // a game entered from a box score has no plays
   const ru = rulesOf(g), T = g.teams;
-  const st = {per:1, score:{A:0, H:0}, lines:{A:[0], H:[0]}, final:false, poss:null, arrow:null, periodStart:true, fouls:{A:0, H:0}, tos:{A:{...ru.tos}, H:{...ru.tos}},
+  const st = {per:1, score:{A:0, H:0}, lines:{A:[0], H:[0]}, final:false, poss:null, possN:0, possT:null, arrow:null, periodStart:true, fouls:{A:0, H:0}, tos:{A:{...ru.tos}, H:{...ru.tos}},
     lastMiss:null, pot:null, scp:null, run:{s:null, pts:0}, and1:null};
   const S = {pl:{A:{}, H:{}}, team:{A:zeros(TEAM_KEYS), H:zeros(TEAM_KEYS)}};
   const X = {lead:{A:0, H:0}, leadChanges:0, ties:0, bigRun:{A:0, H:0}, flow:[]};
@@ -767,6 +767,11 @@ function replay(g, upto = g.plays.length){
   for (let i = 0; i < upto && i < g.plays.length; i++){
     const p = g.plays[i], e = {i, t:p.t, per:st.per, clk:p.clk ?? null, s:p.s || null, text:'', tags:[], src:p.q || '', grp:p.grp || null, pts:0};
     const A0 = st.score.A, H0 = st.score.H;
+    // possession count: a new one each time the other team has the ball (an offensive rebound keeps it),
+    // and every period starts a new one; a play belongs to the possession it happened in. A team
+    // shooting or turning it over has the ball, even when nothing before said so (free throws).
+    if (['shot', 'ft', 'to'].includes(p.t) && p.s && p.s !== st.possT){ st.possN++; st.possT = p.s; }
+    const n0 = st.possN;
     switch (p.t){
       case 'shot': {
         const v = p.v === 3 ? 3 : 2, who = name(p.s, p.n), what = p.how || `${v}-pt shot`;
@@ -897,6 +902,9 @@ function replay(g, upto = g.plays.length){
       default: e.text = 'Play';
     }
     if (!['endq', 'tmo', 'note', 'arrow', 'final'].includes(p.t)) st.periodStart = false;
+    if (p.t === 'endq') st.possT = null;
+    if (st.poss && st.poss !== st.possT){ st.possN++; st.possT = st.poss; }
+    e.poss = n0 || st.possN;
     e.A = st.score.A; e.H = st.score.H;
     log.push(e);
     if (st.score.A !== A0 || st.score.H !== H0) scoring.push({i, per:e.per, clk:e.clk, s:e.s, pts:e.pts, A:e.A, H:e.H, desc:e.text, t:p.t});
@@ -1006,7 +1014,31 @@ function tokenize(s){
   return joinPhrases(String(s).replace(/#/g, '').replace(/&/g, ' and ')).split(/[\s,()\/\-–—]+/).filter(Boolean);
 }
 
+// Several times on one line split it into plays, each at its own time:
+// "b11 to n4 s 9:34 n4-2 fouled b1 9:28". Times go after their play, or before it if the line starts with one.
+const CLK_TOK = /^(\d{0,2}:\d\d(\.\d)?|\d{1,2}\.\d)$/;
 function parseQuick(raw, st){
+  const words = String(raw || '').trim().split(/\s+/), at = words.filter(w => CLK_TOK.test(w)).length;
+  if (at < 2) return parseQuick1(raw, st);
+  const lead = CLK_TOK.test(words[0]), segs = [];
+  let cur = [];
+  words.forEach(w => {
+    if (!CLK_TOK.test(w)){ cur.push(w); return; }
+    if (lead){ if (cur.length) segs.push(cur); cur = [w]; } else { cur.push(w); segs.push(cur); cur = []; }
+  });
+  if (cur.length) segs.push(cur);
+  const plays = []; let clk = null;
+  for (const seg of segs){
+    const r = parseQuick1(seg.join(' '), st);
+    if (!r) continue;
+    if (r.error) return {error:`${seg.filter(w => !CLK_TOK.test(w)).join(' ')}: ${r.error}`};
+    if (r.undo) return {error:'Undo goes on a line by itself.'};
+    r.plays.forEach(p => { p.clk = r.clk; });
+    plays.push(...r.plays); if (r.clk != null) clk = r.clk;
+  }
+  return {plays, clk, timed:true};
+}
+function parseQuick1(raw, st){
   const line = String(raw || '').trim(); if (!line) return null;
   let toks = tokenize(line);
   if (!toks.length) return null;
@@ -1500,14 +1532,14 @@ function recordQuick(){
   plays.forEach((p, k) => { if (grp) p.grp = grp; if (k === 0) p.q = line; });
   if (ui.editing != null){
     const from = ui.editing, to = editEnd(from), old = g.plays[from];
-    plays.forEach(p => { p.clk = r.clk != null ? r.clk : old.clk ?? null; });
+    plays.forEach(p => { p.clk = r.timed ? p.clk : r.clk != null ? r.clk : old.clk ?? null; });
     g.plays.splice(from, to - from, ...plays);
     ui.editing = null; ui.open = null;
     save(); refresh(); return toast('Play updated');
   }
   if (r.clk != null) g.clk = {s:r.clk, run:g.clk.run, at:Date.now()};
   const clk = clkRound(clockNow());
-  plays.forEach(p => { p.clk = clk; });
+  plays.forEach(p => { if (!r.timed || p.clk == null) p.clk = clk; });
   if (plays.some(p => p.t === 'tmo' || p.t === 'endq' || p.t === 'final')) g.clk = {s:clockNow(), run:false, at:Date.now()};
   const dqBefore = dqList();
   g.plays.push(...plays);
@@ -2177,7 +2209,7 @@ function playsList(limit){
     if (e.per !== lastPer){ h += `<div class="qhd">${perName(e.per, R.ru)}</div>`; lastPer = e.per; }
     const changed = prev ? (prev.A !== e.A || prev.H !== e.H) : !!(e.A || e.H);
     h += `<button type="button" class="pl ${open ? 'open' : ''} ${changed ? 'score' : ''}" data-row="${e.i}">
-      <div><div class="pl-clk">${e.clk != null ? mmss(e.clk) : '—'}</div><span class="pl-no">Play ${e.i + 1}</span></div>
+      <div><div class="pl-clk">${e.clk != null ? mmss(e.clk) : '—'}</div>${e.poss ? `<span class="pl-no">Poss ${e.poss}</span>` : ''}</div>
       <div>${e.s ? teamMark(e.s, 26) : ''}</div>
       <div class="pl-txt">${esc(e.text)}${e.tags.length ? `<span class="tags">${tagHtml(e.tags)}</span>` : ''}${e.src && !ui.viewer ? ` <code class="qsrc">${esc(e.src)}</code>` : ''}</div>
       <div class="pl-sc">${changed && e.s === 'A' ? `<b>${e.A}</b>` : e.A}-${changed && e.s === 'H' ? `<b>${e.H}</b>` : e.H}</div></button>`;
