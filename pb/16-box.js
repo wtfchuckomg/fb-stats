@@ -32,7 +32,8 @@ function canonSchool(n){
   M.by.set(n, out);
   return out;
 }
-const sameSchool = (a, b) => { const x = logoSlug(a), y = logoSlug(b); return !!x && !!y && (x === y || x.startsWith(y) || y.startsWith(x) || canonSchool(a) === canonSchool(b)); };
+// A whole word has to match: "Wichita North" isn't "Wichita Northwest", nor "Blue Valley North" "Blue Valley Northwest".
+const sameSchool = (a, b) => { const x = logoSlug(a), y = logoSlug(b); return !!x && !!y && (x === y || x.startsWith(y + '-') || y.startsWith(x + '-') || canonSchool(a) === canonSchool(b)); };
 
 // The clock on a scoring line. Papers put it at the end, usually after a semicolon —
 // "Will Quinn 79 run (Vega kick); 3:45" — and sometimes at the front instead.
