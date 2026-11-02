@@ -83,17 +83,111 @@ body.bpage .sample,body.bpage .strip,body.bpage .gtabs,body.bpage main.gc,body.b
 .fan-sec h2{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 12px;font:700 16px/1.2 var(--sans);color:var(--ink-2)}
 .fan-sec h2 small{font:500 13px/1 var(--sans);color:var(--muted)}
 .fan-note{margin:0;font:500 14px/1.4 var(--sans);color:var(--muted)}
-.sb-day{margin:0 0 10px;font:500 14px/1.2 var(--sans);color:var(--ink-2)}
-.sb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
-.sb-game{display:block;padding:12px 14px;border:1px solid var(--line-2);border-radius:8px;background:#FFFFFF;color:inherit;text-decoration:none}
-.sb-game:hover{background:#F7F8F9}
-.sb-st{margin-bottom:8px;font:600 11px/1 var(--sans);text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
-.sb-game.live .sb-st{color:#DD0000}
-.sb-row{display:flex;align-items:center;gap:10px;min-height:32px;font:600 14px/1.2 var(--sans);color:var(--ink-2)}
-.sb-row span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sb-row b{font:800 17px/1 var(--sans);font-variant-numeric:tabular-nums}
-.sb-row.lose{color:var(--muted)}
-.sb-row.lose b{font-weight:500}
+/* ---------- on a phone: the menu as a flat tab bar along the bottom (football's pb/1d-skins.html) ---------- */
+.lgtabs{display:none}
+@media (max-width:700px){
+  .lgtabs{position:fixed;z-index:50;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+    padding-bottom:env(safe-area-inset-bottom,0px);background:#FFFFFF;border-top:1px solid var(--line)}
+  .lgtabs a{display:grid;justify-items:center;gap:3px;padding:8px 2px 7px;color:var(--muted);text-decoration:none;font:500 10px/1 var(--sans)}
+  .lgtabs svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .lgtabs a[aria-current="page"]{color:var(--ink-2);box-shadow:inset 0 2px 0 var(--red)}
+  body{padding-bottom:calc(56px + env(safe-area-inset-bottom,0px))}
+  body .toast{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+}
+@media print{.lgtabs{display:none!important}body{padding-bottom:0!important}}
+
+/* ---------- scoreboard: ESPN's four columns, as on the football site (pb/14-scorepage.js boardGame) ---------- */
+.bday{margin:0;padding-bottom:16px;border-bottom:1px dotted var(--line);font:600 16px/1.2 var(--sans);color:var(--ink-2)}
+.hcard.sb-daycard{padding:20px 26px}
+.bgame{display:grid;grid-template-columns:minmax(0,290fr) minmax(0,240fr) minmax(0,220fr) 116px;padding:16px 0;border-bottom:1px dotted var(--line)}
+.bgame:last-child{border-bottom:0;padding-bottom:2px}
+.b-main{min-width:0}
+.b-hd,.bt{display:grid;grid-template-columns:minmax(0,1fr) auto 50px 12px;align-items:center}
+.b-st,.b-st2{font:600 11px/13px var(--sans);text-transform:uppercase;color:var(--ink-2);white-space:nowrap}
+.bgame.live .b-st,.bgame.live .b-st2{color:#DD0000;text-transform:none}
+.bt-q{display:flex}
+.bt-q span{width:20px;text-align:center;font:400 11px/13px var(--sans);font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.b-qh span{color:var(--muted)}
+.bt.lose .bt-q span{color:var(--muted)}
+.b-th{text-align:right;font:400 11px/13px var(--sans);color:var(--muted)}
+.bt{padding-top:12px}
+.bt-team{display:flex;align-items:center;gap:10px;min-width:0}
+.bt-id{min-width:0}
+.bt-name{display:flex;align-items:center;gap:8px;min-width:0;font:600 14px/16px var(--sans);color:var(--ink-2)}
+.bt-name span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bt-name a{color:inherit;text-decoration:none}
+.bt-name a:hover{text-decoration:underline}
+.bt.lose .bt-name{color:var(--muted)}
+.bt-sub{font:400 11px/13px var(--sans);color:var(--muted)}
+.bt-t{text-align:right;font:800 17px/22px var(--sans);font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.bt.lose .bt-t{color:var(--muted)}
+.sc-win{flex:none;width:0;height:0;border-style:solid;border-width:5px 6px 5px 0;border-color:transparent var(--ink-2) transparent transparent;visibility:hidden;justify-self:end}
+.bt.won .sc-win{visibility:visible}
+.b-mid{min-width:0;border-left:1px dotted var(--line);padding:0 8px;margin-left:12px}
+.bs-h{font:600 13px/16px var(--sans);color:var(--ink-2)}
+.b-lead{min-width:0;border-left:1px dotted var(--line);padding-left:8px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.bgame.one .b-mid,.bgame.one .b-lead{grid-column:2/4}
+.bgame.nomid .b-lead{margin-left:12px}
+.bp{display:grid;grid-template-columns:30px 30px minmax(0,1fr);align-items:center;column-gap:6px}
+.bp-k{font:400 10px/12px var(--sans);text-transform:uppercase;color:var(--muted)}
+.bp-body{min-width:0}
+.bp-who{font:400 11px/13px var(--sans);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bp-who span{font-size:10px;text-transform:uppercase;color:var(--muted)}
+.bp-line{margin-top:1px;font:400 10px/12px var(--sans);color:var(--muted)}
+.bp-line b{font-weight:600;color:var(--ink-2)}
+.b-acts{grid-column:4;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:12px}
+.b-st2{display:none}
+.bbtn{display:block;width:100px;box-sizing:border-box;text-align:center;padding:7.5px 8px;border:1px solid var(--blue);border-radius:50px;color:var(--blue);font:600 11px/1 var(--sans);text-decoration:none}
+.bbtn:hover{background:#F1F5FD}
+@media (max-width:1000px){.bgame{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) 116px}.b-lead{display:none}
+  .bgame.one .b-mid{grid-column:2}.b-acts{grid-column:3}
+  .bgame.nomid{grid-template-columns:minmax(0,1fr) 116px}.bgame.nomid .b-acts{grid-column:2}}
+@media (max-width:760px){.bgame{grid-template-columns:minmax(0,1fr) 116px}.b-acts{grid-column:2;grid-row:1}
+  .b-mid,.bgame.one .b-mid{grid-column:1/-1;grid-row:2;border-left:0;margin:10px 0 0;padding:0}}
+@media (max-width:640px){
+  .hcard.sb-daycard{padding:0 12px;border-radius:10px}
+  .bday{margin-left:4px;padding:16px 0 15px;font:500 14px/20px var(--sans)}
+  .bgame,.bgame.nomid{grid-template-columns:minmax(0,1fr) 125px;padding:10px 0}
+  .bgame:last-child{padding-bottom:10px}
+  .b-hd,.bt-q,.bt-sub,.b-mid.story{display:none}
+  .bt{grid-template-columns:minmax(0,1fr) auto 12px;padding:0;min-height:23px}
+  .bt+.bt{margin-top:4px}
+  .bt-team{gap:8px}
+  .bt-team .tlogo,.bt-team .tmono{width:20px!important;height:20px!important;font-size:8px!important}
+  .bt-name{font-size:14px;line-height:21px}
+  .bt-name span{white-space:normal;overflow:visible;line-height:1.15}
+  .bt-t{font-size:16px;line-height:21px}
+  .b-acts{grid-column:2;grid-row:1;border-left:1px solid #CECFCF;padding-left:12px;gap:4px;min-width:0;align-self:start;min-height:50px;align-items:flex-start;justify-content:center}
+  .b-st2{display:block;font-size:11px;line-height:13px;text-transform:none}
+  .bbtn{height:32px;padding:0;font:600 12px/30px var(--sans)}
+  .bbtn.box{display:none}
+}
+
+/* ---------- home: the latest games and the quick links on the left, as on the football site's front page ---------- */
+.hpage{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}
+.h-left{display:flex;flex-direction:column;gap:16px;min-width:0}
+.hm-hero h1{margin:9px 0 18px;font:800 24px/1.15 var(--sans);letter-spacing:-.01em;color:var(--ink-2)}
+.ms-hd{margin:0 0 4px;font:700 13px/1.2 var(--sans);text-transform:uppercase;letter-spacing:.02em;color:var(--ink-2)}
+.ms-grid{display:grid;grid-template-columns:1fr}
+.ms-game{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px dotted var(--line);color:inherit;text-decoration:none}
+.ms-game:first-child{border-top:0}
+.ms-teams{flex:1;min-width:0}
+.ms-row{display:flex;align-items:center;gap:8px;min-height:24px;font:600 13px/1.2 var(--sans);color:var(--ink-2)}
+.ms-row.lose{color:var(--muted)}
+.ms-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-row b{font:800 14px/1 var(--sans);font-variant-numeric:tabular-nums}
+.ms-st{flex:none;width:76px;white-space:nowrap;padding-left:10px;border-left:1px solid var(--line-2);font:600 11px/1.3 var(--sans);color:var(--ink-2)}
+.ms-game.live .ms-st{color:#DD0000}
+.ms-all{display:block;margin-top:8px;font:600 12px/1 var(--sans);color:var(--blue);text-decoration:none}
+.h-links a{display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px dotted var(--line);font:500 14px/1.25 var(--sans);color:var(--ink-2);text-decoration:none}
+.h-links a:last-child{border-bottom:0}
+.h-links a:hover{color:var(--blue)}
+.h-links svg,.h-rail svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--muted)}
+.h-rail svg{color:var(--red)}
+.sk{display:block;height:10px;border-radius:5px;background:linear-gradient(90deg,#ECEDEF 25%,#F6F7F8 50%,#ECEDEF 75%);background-size:200% 100%;animation:sk 1.4s ease-in-out infinite}
+.sk-dot{width:20px;height:20px;border-radius:50%;flex:none}
+@keyframes sk{from{background-position:200% 0}to{background-position:-200% 0}}
+@media (max-width:900px){.hpage{grid-template-columns:1fr}.h-left{display:contents}.hm-hero{order:2}.h-left>.hcard:last-child{order:3}}
 .tm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 12px}
 .tm-card{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:10px;color:var(--ink-2);text-decoration:none;min-width:0}
 .tm-card:hover{background:#F1F2F3}
@@ -118,7 +212,7 @@ table.st.stand th.grp{text-align:center;border-bottom:0;color:var(--ink-2)}
 .res-live{color:var(--red);font-weight:700}
 .fan-go{color:var(--blue);font-weight:600;text-decoration:none;white-space:nowrap}
 .fan-top>.line{min-width:0;max-width:100%}
-@media (max-width:640px){.fan-top>.line{width:100%}.fan-sel{width:100%}.board{padding:10px 10px 32px;gap:10px}.fan-hd{padding:14px;border-radius:12px}.fan-hd h1{font-size:18px;margin-bottom:10px}.fan-top>.line{margin-bottom:10px}.fan-tabs a{padding:11px 12px}.tp-id h1{font-size:18px}.tp-recs{gap:18px}.sb-grid{grid-template-columns:1fr}}
+@media (max-width:640px){.fan-top>.line{width:100%}.fan-sel{width:100%}.board{padding:10px 10px 32px;gap:10px}.fan-hd{padding:14px;border-radius:12px}.fan-hd h1{font-size:18px;margin-bottom:10px}.fan-top>.line{margin-bottom:10px}.fan-tabs a{padding:11px 12px}.tp-id h1{font-size:18px}.tp-recs{gap:18px}}
 .abtns,.vbtns{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 .abtn{background:none;border:0;border-radius:6px;color:#FFFFFF;padding:9px 9px;font:600 14px/1 var(--sans);white-space:nowrap}
 .abtn:hover{background:rgba(255,255,255,.12)}
@@ -503,6 +597,7 @@ dialog.fallback[open]{display:block;position:fixed;top:50%;left:50%;transform:tr
 .h-codes td{padding:8px 0;border-top:1px solid var(--line-2);vertical-align:top}
 .h-codes td:first-child{width:44%;padding-right:10px}
 .h-codes code{font:600 13px/1.3 var(--mono);background:var(--surface-2);padding:2px 6px;border-radius:4px;color:var(--ink-2);white-space:nowrap}
+@media (max-width:640px){.h-codes td,.h-codes td:first-child{display:block;width:auto;padding-right:0}.h-codes td+td{border-top:0;padding-top:0}.h-codes code{display:inline-block;margin:0 0 3px}}
 .h-sec{margin:8px 0 12px;font:800 22px/1.2 var(--sans);color:var(--ink-2)}
 @media (max-width:900px){.start{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:640px){.start{padding:10px 10px 30px;gap:10px}.s-hero h1{font-size:25px}}
@@ -598,7 +693,7 @@ body.viewer .pl:hover{background:none}
 <nav class="navbar" aria-label="Kansas Media Stats pages">
   <div class="navbar-in">
     <div class="navlinks">
-      <a class="navlink" href="https://stats.kansasmediarankings.com/">Football</a>
+      <a class="navlink" data-nav="home" href="?home">Home</a>
       <button type="button" class="navlink navdrop" data-drop="buco" aria-haspopup="true" aria-expanded="false" aria-controls="navmenu">Butler County<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
       <button type="button" class="navlink navdrop" data-drop="avctl" aria-haspopup="true" aria-expanded="false" aria-controls="navmenu">AVCTL<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
       <button type="button" class="navlink navdrop" data-drop="state" aria-haspopup="true" aria-expanded="false" aria-controls="navmenu">State<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
@@ -617,6 +712,12 @@ body.viewer .pl:hover{background:none}
       </div>
     </div>
   </div>
+</nav>
+<nav class="lgtabs" id="lgtabs" aria-label="Sections">
+  <a href="?scores=state" data-lgtab="scores"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M3.5 10h17M9.5 10v9"/></svg><span>Scores</span></a>
+  <a href="?standings=state" data-lgtab="standings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19V11M12 19V5M18 19v-6"/></svg><span>Standings</span></a>
+  <a href="?home" data-lgtab="gamecast" id="lgtab-gc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l7 2.6v5.4c0 4.3-2.9 7.6-7 9-4.1-1.4-7-4.7-7-9V6.1z"/></svg><span>Gamecast</span></a>
+  <a href="./" data-lgtab="tracker"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 4.5l4 4L9 19H5v-4z"/></svg><span>Tracker</span></a>
 </nav>
 <div class="sample" id="sample" hidden>
   <span>This is a sample game with made-up teams and plays, so you can see how it works.</span>
@@ -3399,7 +3500,7 @@ function schoolTeam(n){
 }
 
 const FAN_Q = new URLSearchParams(location.search);
-const FAN_PAGE = FAN_Q.has('scores') ? 'scores' : FAN_Q.has('teams') ? 'teams' : FAN_Q.has('standings') ? 'standings' : FAN_Q.has('team') ? 'team' : null;
+const FAN_PAGE = FAN_Q.has('home') ? 'home' : FAN_Q.has('scores') ? 'scores' : FAN_Q.has('teams') ? 'teams' : FAN_Q.has('standings') ? 'standings' : FAN_Q.has('team') ? 'team' : null;
 const SCOPE_OF = v => ['buco', 'avctl', 'state'].includes(v) ? v : 'state';
 const fan = {on:!!FAN_PAGE, page:FAN_PAGE, scope:SCOPE_OF(FAN_Q.get(FAN_PAGE === 'team' ? 'in' : FAN_PAGE)), team:FAN_Q.get('team') || '', remote:{}, err:'', ready:false,
   league:FAN_Q.get('league') || ''};
@@ -3472,10 +3573,21 @@ document.addEventListener('click', e => {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
 addEventListener('resize', closeMenu);
 (function markNav(){
-  const top = fan.on ? fan.scope : FAN_Q.has('game') || FAN_Q.has('live') ? '' : 'tracker';
-  const a = top && document.querySelector(fan.on ? `.navdrop[data-drop="${top}"]` : `.navlink[data-nav="${top}"]`);
+  const home = fan.page === 'home', top = home ? 'home' : fan.on ? fan.scope : FAN_Q.has('game') || FAN_Q.has('live') ? '' : 'tracker';
+  const a = top && document.querySelector(fan.on && !home ? `.navdrop[data-drop="${top}"]` : `.navlink[data-nav="${top}"]`);
   if (a) a.classList.add('on');
+  lgTabs();
 })();
+// The phone tab bar: mark the section you're in, and point Gamecast at a game worth watching.
+function lgTabs(){
+  const bar = $('#lgtabs'); if (!bar) return;
+  const here = FAN_Q.has('game') || FAN_Q.has('live') ? 'gamecast' : fan.page === 'scores' ? 'scores' : fan.page === 'standings' ? 'standings' : fan.on ? '' : 'tracker';
+  bar.querySelectorAll('[data-lgtab]').forEach(a => { if (a.dataset.lgtab === here) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  const gc = $('#lgtab-gc'); if (!gc || !fan.on || !fan.ready) return;
+  const G = fanGames().filter(x => x.x.plays && x.x.plays.length);
+  const pick = G.find(x => x.live) || G.sort((a, b) => (b.x.updated || 0) - (a.x.updated || 0))[0];
+  gc.href = pick ? gameHref(pick.x) : '?home';
+}
 
 /* ---------- the pages ---------- */
 async function startFan(){
@@ -3519,22 +3631,75 @@ document.addEventListener('change', e => {
   renderFan();
 });
 
-function scoreCard(G0){
-  const T = G0.x.teams, st = G0.st;
-  const won = G0.final ? (st.score.A > st.score.H ? 'A' : st.score.H > st.score.A ? 'H' : null) : null;
-  const row = s => { const n = G0.sch[s] || T[s].name, t = G0.sch[s] ? schoolTeam(G0.sch[s]) : T[s];
-    return `<div class="sb-row ${won && won !== s ? 'lose' : ''}">${markFor(t, 26)}<span>${esc(n)}</span><b>${G0.x.box || G0.live || G0.final ? st.score[s] : ''}</b></div>`; };
-  return `<a class="sb-game ${G0.live ? 'live' : ''}" href="${gameHref(G0.x)}"><div class="sb-st">${esc(G0.status)}</div>${row('A')}${row('H')}</a>`;
+// Each school's record through each game, ESPN style "(5-2, 2-1 Away)": a final counts itself, a game still to come doesn't.
+function recThrough(G){
+  const run = {}, out = {}, R0 = () => ({w:0, l:0, aw:0, al:0, hw:0, hl:0});
+  [...G].sort((a, b) => a.day.localeCompare(b.day)).forEach(g0 => {
+    const T = {};
+    if (g0.final){
+      const won = g0.st.score.A > g0.st.score.H ? 'A' : g0.st.score.H > g0.st.score.A ? 'H' : null;
+      ['A', 'H'].forEach(s => { const n = g0.sch[s]; if (!n || !won) return; const r = run[n] || (run[n] = R0()), k = won === s ? 'w' : 'l'; r[k]++; r[(s === 'A' ? 'a' : 'h') + k]++; });
+    }
+    ['A', 'H'].forEach(s => { const r = g0.sch[s] && run[g0.sch[s]]; T[s] = r && r.w + r.l ? `(${r.w}-${r.l}, ${s === 'A' ? `${r.aw}-${r.al} Away` : `${r.hw}-${r.hl} Home`})` : s === 'A' ? 'Away' : 'Home'; });
+    out[g0.x.id] = T;
+  });
+  return out;
 }
+// A headline for a final, written from the score alone: who won, by how much, and whether it took overtime.
+function gameStory(G0){
+  if (!G0.final) return null;
+  const sc = G0.st.score, w = sc.A > sc.H ? 'A' : sc.H > sc.A ? 'H' : null; if (!w) return null;
+  const l = w === 'A' ? 'H' : 'A', nm = s => G0.sch[s] || G0.x.teams[s].name, m = sc[w] - sc[l];
+  const verb = m >= 20 ? 'rolls past' : m <= 3 ? 'edges' : 'beats', ot = G0.st.per - G0.r.ru.n;
+  return `${nm(w)} ${verb} ${nm(l)}${ot > 1 ? ` in ${ot} overtimes` : ot === 1 ? ' in overtime' : ''}`;
+}
+// The game's best in points, rebounds and assists, whichever side he's on; the school's logo stands where ESPN has a headshot.
+function boardLeaders(G0){
+  const S = G0.r.S, x = G0.x; if (!S || !S.pl) return '';
+  const best = (s, k) => { let top = null; Object.entries(S.pl[s] || {}).forEach(([n, p]) => { if (n !== 'team' && p[k] > 0 && (!top || p[k] > top.p[k])) top = {n, p}; }); return top; };
+  return [['Pts', 'pts', p => `<b>${p.pts}</b> PTS, <b>${p.fgm}-${p.fga}</b> FG`], ['Reb', 'reb', p => `<b>${p.reb}</b> REB, <b>${p.pts}</b> PTS`], ['Ast', 'ast', p => `<b>${p.ast}</b> AST, <b>${p.pts}</b> PTS`]].map(([k, key, line]) => {
+    const o = ['A', 'H'].map(s => ({s, b:best(s, key)})).filter(o => o.b).sort((a, b) => b.b.p[key] - a.b.p[key])[0];
+    if (!o) return '';
+    const T = x.teams[o.s], nm = (T.roster || {})[String(o.b.n)] || (/^\d+$/.test(o.b.n) ? `#${o.b.n}` : o.b.n), no = /^\d+$/.test(o.b.n) && (T.roster || {})[String(o.b.n)] ? `#${o.b.n} - ` : '';
+    return `<div class="bp"><span class="bp-k">${k}</span>${markFor(G0.sch[o.s] ? schoolTeam(G0.sch[o.s]) : T, 30)}<div class="bp-body">
+      <div class="bp-who">${esc(nm)} <span>${esc(no)}${esc(T.abbr || G0.sch[o.s] || T.name)}</span></div><div class="bp-line">${line(o.b.p)}</div></div></div>`;
+  }).join('');
+}
+// ESPN's four columns, as on the football scoreboard: the score by period, the headline, the leaders, the buttons.
+function boardGame(G0, recs, sc){
+  const T = G0.x.teams, st = G0.st, ru = G0.r.ru, id = G0.x.id, started = G0.final || G0.live || !!G0.x.box;
+  const won = G0.final ? (st.score.A > st.score.H ? 'A' : st.score.H > st.score.A ? 'H' : null) : null;
+  const ncol = Math.max(ru.n, started ? st.per : 0), cols = Array.from({length:ncol}, (_, i) => i);
+  const L = st.lines || {A:[], H:[]}, noLines = started && !['A', 'H'].some(s => (L[s] || []).some(v => v));
+  const cells = f => cols.map(i => `<span>${f(i)}</span>`).join('');
+  const team = s => {
+    const n = G0.sch[s] || T[s].name, t = G0.sch[s] ? schoolTeam(G0.sch[s]) : T[s], cls = won ? (won === s ? ' won' : ' lose') : '';
+    const nmHtml = G0.sch[s] ? `<a href="?team=${encodeURIComponent(n)}&in=${sc}">${esc(n)}</a>` : esc(n);
+    return `<div class="bt${cls}"><div class="bt-team">${markFor(t, 32)}<div class="bt-id"><div class="bt-name"><span>${nmHtml}</span></div><div class="bt-sub">${esc((recs[id] || {})[s] || '')}</div></div></div>
+      <div class="bt-q">${cells(i => !started || noLines || i >= st.per ? '' : (L[s] || [])[i] || 0)}</div><div class="bt-t">${started ? st.score[s] : ''}</div><i class="sc-win"></i></div>`;
+  };
+  const story = gameStory(G0), leaders = started ? boardLeaders(G0) : '';
+  const mid = story ? `<div class="bs-h">${esc(story)}</div>` : '';
+  const q = `?game=${encodeURIComponent(id)}`;
+  const acts = !started ? '' : G0.x.box ? `<a class="bbtn" href="${q}&amp;tab=box">Box Score</a>`
+    : `<a class="bbtn" href="${q}">Gamecast</a><a class="bbtn box" href="${q}&amp;tab=box">Box Score</a><a class="bbtn box" href="${q}&amp;tab=pbp">Play-By-Play</a>`;
+  return `<article class="bgame${G0.live ? ' live' : ''}${mid && leaders ? '' : ' one'}${mid ? '' : ' nomid'}">
+    <div class="b-main"><div class="b-hd"><span class="b-st">${esc(G0.status)}</span><div class="bt-q b-qh">${cells(i => i < ru.n ? i + 1 : 'OT')}</div><span class="b-th">T</span><i></i></div>${team('A')}${team('H')}</div>
+    ${mid ? `<div class="b-mid story">${mid}</div>` : ''}${leaders ? `<div class="b-lead">${leaders}</div>` : ''}
+    <div class="b-acts"><span class="b-st2">${esc(G0.status)}</span>${acts}</div></article>`;
+}
+const skelGames = n => `<section class="hcard sb-daycard" aria-busy="true"><h2 class="bday"><i class="sk" style="width:180px;height:14px"></i></h2>${Array.from({length:n}, () =>
+  `<div class="bgame nomid"><div class="b-main">${[70, 55].map(w => `<div class="bt"><div class="bt-team"><i class="sk sk-dot"></i><i class="sk" style="width:${w}%"></i></div></div>`).join('')}</div></div>`).join('')}</section>`;
 function pageScores(){
   const sc = fan.scope, G = fanGames().filter(x => inScope(x, sc));
   const days = {};
   G.forEach(x => { (days[x.day] || (days[x.day] = [])).push(x); });
   const order = Object.keys(days).sort((a, b) => b.localeCompare(a));
-  const dayName = d => new Date(d + 'T12:00:00').toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'});
-  const body = order.length ? order.map(d => `<section class="hcard"><h2 class="sb-day">${esc(dayName(d))}</h2><div class="sb-grid">${days[d]
-      .sort((a, b) => (b.live - a.live) || String(a.sch.A || a.x.teams.A.name).localeCompare(String(b.sch.A || b.x.teams.A.name))).map(scoreCard).join('')}</div></section>`).join('')
-    : `<section class="hcard"><p class="fan-note">${fan.ready ? `No ${esc(SCOPE[sc].label === 'State' ? '' : SCOPE[sc].label + ' ')}games yet in ${seasonLabel(SEASON)}.` : 'Loading games…'}</p></section>`;
+  const dayName = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+  const recs = recThrough(fanGames());
+  const body = order.length ? order.map(d => `<section class="hcard sb-daycard"><h2 class="bday">${esc(dayName(d))}</h2>${days[d]
+      .sort((a, b) => (b.live - a.live) || String(a.sch.A || a.x.teams.A.name).localeCompare(String(b.sch.A || b.x.teams.A.name))).map(x => boardGame(x, recs, sc)).join('')}</section>`).join('')
+    : fan.ready ? `<section class="hcard"><p class="fan-note">No ${esc(SCOPE[sc].label === 'State' ? '' : SCOPE[sc].label + ' ')}games yet in ${seasonLabel(SEASON)}.</p></section>` : skelGames(4);
   return fanHead(`${SCOPE[sc].label} Scoreboard`) + body;
 }
 function pageTeams(){
@@ -3578,11 +3743,41 @@ function pageTeam(){
     <section class="hcard fan-sec"><h2>${seasonLabel(SEASON)} Schedule</h2>${rows ? `<div class="tbl-wrap"><table class="st"><thead><tr><th>Date</th><th>Opponent</th><th>Result</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
       : `<p class="fan-note">${fan.ready ? 'No games yet.' : 'Loading games…'}</p>`}</section>`;
 }
+/* ---------- home: the latest games and the quick links, the way the football site's front page has them ---------- */
+const HOME_BOARD_GAMES = 8;
+const HICON = {board:'<rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M3.5 10h17M9.5 10v9"/>', stand:'<path d="M6 19V11M12 19V5M18 19v-6"/>',
+  teams:'<path d="M12 3.5l7 2.6v5.4c0 4.3-2.9 7.6-7 9-4.1-1.4-7-4.7-7-9V6.1z"/>', pen:'<path d="M15.5 4.5l4 4L9 19H5v-4z"/>',
+  link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>', ext:'<path d="M14 4h6v6M20 4l-9 9M18 14v5H5V6h5"/>'};
+const hIcon = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${HICON[k]}</svg>`;
+function homeBoard(){
+  const rank = G0 => G0.live ? (G0.x.plays && G0.x.plays.length ? 0 : 1) : G0.final ? 2 : 3;
+  const G = fanGames().sort((a, b) => rank(a) - rank(b) || (rank(a) === 2 ? b.day.localeCompare(a.day) || (b.x.updated || 0) - (a.x.updated || 0) : a.day.localeCompare(b.day))).slice(0, HOME_BOARD_GAMES);
+  if (!G.length) return fan.ready ? '' : `<section class="hcard" aria-busy="true"><h2 class="ms-hd">Scoreboard</h2><div class="ms-grid">${Array.from({length:4}, () =>
+    `<div class="ms-game"><div class="ms-teams">${[70, 55].map(w => `<div class="ms-row"><i class="sk sk-dot"></i><i class="sk" style="width:${w}%"></i></div>`).join('')}</div></div>`).join('')}</div></section>`;
+  const game = G0 => {
+    const st = G0.st, won = G0.final ? (st.score.A > st.score.H ? 'A' : st.score.H > st.score.A ? 'H' : null) : null, started = G0.final || G0.live || !!G0.x.box;
+    const row = s => `<div class="ms-row${won && won !== s ? ' lose' : ''}">${markFor(G0.sch[s] ? schoolTeam(G0.sch[s]) : G0.x.teams[s], 20)}<span class="ms-name">${esc(G0.sch[s] || G0.x.teams[s].name)}</span><b>${started ? st.score[s] : ''}</b></div>`;
+    const inner = `<div class="ms-teams">${row('A')}${row('H')}</div><div class="ms-st">${esc(G0.status)}</div>`;
+    return started ? `<a class="ms-game${G0.live ? ' live' : ''}" href="${gameHref(G0.x)}">${inner}</a>` : `<div class="ms-game">${inner}</div>`;
+  };
+  return `<section class="hcard"><h2 class="ms-hd">Scoreboard</h2><div class="ms-grid">${G.map(game).join('')}</div><a class="ms-all" href="?scores=state">Complete scoreboard</a></section>`;
+}
+function pageHome(){
+  const links = [['Butler County Scoreboard', '?scores=buco', 'board'], ['AVCTL Scoreboard', '?scores=avctl', 'board'], ['State Scoreboard', '?scores=state', 'board'],
+    ['AVCTL Standings', '?standings=avctl', 'stand'], ['State Standings', '?standings=state', 'stand'], ['State Teams', '?teams=state', 'teams'], ['Game Tracker', './', 'pen'],
+    ['Football Stats', 'https://stats.kansasmediarankings.com/', 'ext'], ['Media Rankings', 'https://kansasmediarankings.com/', 'ext'], ['Pick ’Em', 'https://picks.kansasmediarankings.com', 'ext']];
+  return `<div class="hpage"><aside class="h-left">${homeBoard()}<section class="hcard"><h2 class="h-rail">${hIcon('link')}Quick Links</h2>
+      <nav class="h-links" aria-label="Quick links">${links.map(([t, h, k]) => `<a href="${esc(h)}">${hIcon(k)}${esc(t)}</a>`).join('')}</nav></section></aside>
+    <section class="hcard hm-hero"><span class="h-eyebrow">Kansas Media Stats</span><h1>Track any high school basketball game, live</h1>
+      <div class="h-btns"><a class="h-btn primary" href="./">Start tracking</a><a class="h-btn" href="?scores=state">Scoreboard</a><a class="h-btn" href="?standings=state">Standings</a></div></section></div>`;
+}
 function renderFan(){
   if (!fan.on) return;
   const el = $('#board'); if (!el) return;
-  const html = fan.page === 'scores' ? pageScores() : fan.page === 'teams' ? pageTeams() : fan.page === 'standings' ? pageStandings() : pageTeam();
+  const html = fan.page === 'home' ? pageHome() : fan.page === 'scores' ? pageScores() : fan.page === 'teams' ? pageTeams() : fan.page === 'standings' ? pageStandings() : pageTeam();
   el.innerHTML = html + (fan.err ? `<p class="fan-note">${esc(fan.err)}</p>` : '');
+  lgTabs();
+  if (fan.page === 'home'){ document.title = 'Kansas Media Stats · Basketball'; return; }
   document.title = `${fan.page === 'team' ? (schoolOf(fan.team) || fan.team) + ' Basketball' : `${SCOPE[fan.scope].label} ${({scores:'Scoreboard', teams:'Teams', standings:'Standings'})[fan.page]}`} · Kansas Media Stats`;
 }
 
