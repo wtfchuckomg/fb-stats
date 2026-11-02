@@ -146,7 +146,7 @@ async function startBracket(){
     const fsdb = fsM.getFirestore(app);
     scoresReady({fsM, fsdb});
     watchFlips({fsM, fsdb});
-  } catch (e) { allGames.err = 'Can’t reach the games. Check your connection and reload.'; renderBracket(); }
+  } catch (e) { flips.ready = true; allGames.err = 'Can’t reach the games. Check your connection and reload.'; renderBracket(); }
 }
 
 /* ---------- coin flips, as the KSHSAA calls them ----------
@@ -155,15 +155,27 @@ async function startBracket(){
    "<season>|<class>|<schools in it>" and holds the schools in the order the flips put them (the winner first;
    in a three-way, the next one tapped is second, and so on). */
 const FLIPS_DOC = 'bracket-flips';
-const flips = {map:{}, api:null};
+// The bracket waits for the flips (Chuck, 2026-11-02): drawn before them, a settled tie showed as a coin flip for
+// a second. Five seconds at most, so a slow connection still gets the bracket.
+const flips = {map:{}, api:null, ready:false};
+const flipsReady = () => { if (!flips.ready){ flips.ready = true; renderBracket(); } };
 function watchFlips(api){
   flips.api = api;
   const {fsM, fsdb} = api;
+  setTimeout(flipsReady, 5000);
   fsM.onSnapshot(fsM.doc(fsdb, 'pressbox', FLIPS_DOC), snap => {
     const d = snap.exists() ? snap.data() : null;
     let map = {}; if (d && d.owner === ADMIN_UID && !d.deleted){ try { map = JSON.parse(d.json).flips || {}; } catch (e) {} }
-    flips.map = map; renderBracket();
-  }, () => {});
+    flips.map = map; flips.ready = true; renderBracket();
+  }, flipsReady);
+}
+// A bracket's outline while it loads: four rounds of matchups, or a district's standings.
+function skelBracket(districts){
+  if (districts) return skelRows(8, 4) + skelRows(8, 4);
+  const box = i => `<div class="skb-m"><div class="sk-team"><i class="sk sk-dot"></i><i class="sk" style="width:${SK_W[i % 10]}%"></i></div><div class="sk-team"><i class="sk sk-dot"></i><i class="sk" style="width:${SK_W[(i + 3) % 10]}%"></i></div></div>`;
+  const half = () => `<section class="bcard" aria-busy="true"><i class="sk sk-hd"></i><div class="skb" aria-hidden="true">${[8, 4, 2, 1].map((n, r) =>
+    `<div class="skb-r">${Array.from({length:n}, (_, i) => box(i + r)).join('')}</div>`).join('')}</div></section>`;
+  return half() + half();
 }
 const flipKey = group => `${BK_WEEK8_END.slice(0, 4)}|${bk.cls}|${group.map(t => canonSchool(t.name)).sort().join(',')}`;
 // The order the flips gave for a tie among `group`, from a settled tie that takes them all in (a three-way flip
@@ -481,7 +493,7 @@ function bkPill(t){
     return `<div class="bkp lot" title="${esc(L.map(x => x.name).join(' or ') + ': KSHSAA coin flip')}"><span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>${L.map(x => bkMark(x.name)).join('')}
       <span class="bk-nm">${L.map(x => ui.admin
         ? `<button type="button" class="bk-flipbtn" data-flip-key="${esc(flipKey(L))}" data-flip-win="${esc(canonSchool(x.name))}" data-flip-name="${esc(x.name)}" title="${esc(x.name)} won the flip">${esc(listAbbr(x.name) || shortName(x.name))}</button>`
-        : `<a href="?team=${encodeURIComponent(x.name)}">${esc(listAbbr(x.name) || shortName(x.name))}</a>`).join(' / ')}</span>
+        : esc(listAbbr(x.name) || shortName(x.name))).join(' / ')}</span>
       <span class="bk-rec">${recs.length === 1 ? esc(recs[0]) : ''}</span></div>`;
   }
   return `<div class="bkp"><span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>${bkMark(t.name)}
@@ -709,7 +721,7 @@ function renderBracket(){
   document.title = `${title} · ${SITE_TITLE}`;
   const head = `<section class="bcard bhead"><div class="bhead-top"><h1>${title}</h1></div>
     <div class="tp-links">${BK_CLASSES.map(c => `<a class="h-btn${c === bk.cls ? ' on' : ''}" href="?bracket=${c}">${bkTab(c)}</a>`).join('')}</div></section>`;
-  if (!allGames.list && !allGames.err) return void (box.innerHTML = head + skelRows(8, 2));
+  if ((!allGames.list || !flips.ready) && !allGames.err) return void (box.innerHTML = head + skelBracket(!!DISTRICTS[bk.cls]));
   if (allGames.err) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${esc(allGames.err)}</p></section>`);
   if (DISTRICTS[bk.cls]) return renderDistricts(box, head);
   const east = bkSeed(S.East), west = bkSeed(S.West);
