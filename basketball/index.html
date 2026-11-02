@@ -6,7 +6,11 @@
 <meta name="robots" content="noindex">
 <link rel="canonical" href="https://bball.kansasmediarankings.com/">
 <!-- The basketball site moved to its own address on 2026-11-02. Old links (games, scoreboards, teams) keep their ?… part. -->
-<script>location.replace('https://bball.kansasmediarankings.com/' + location.search + location.hash);</script>
+<script>
+// Games scored on this device before the move are in this address's storage; window.name carries them to the new one.
+try { const d = localStorage.getItem('hoops.v1'); if (d && /"plays"|"box"/.test(d)) window.name = 'hoopsmove:' + d; } catch (e) {}
+location.replace('https://bball.kansasmediarankings.com/' + location.search + location.hash);
+</script>
 <meta http-equiv="refresh" content="0; url=https://bball.kansasmediarankings.com/">
 <p style="font:16px/1.4 -apple-system,system-ui,sans-serif;margin:40px 16px">The basketball site moved to <a href="https://bball.kansasmediarankings.com/">bball.kansasmediarankings.com</a>.</p>
 </html>
