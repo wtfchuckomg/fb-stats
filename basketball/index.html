@@ -396,6 +396,8 @@ textarea.inp{height:auto;min-height:80px;padding:8px 10px;font:400 14.5px/1.4 va
 .seg{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)}
 .seg button{flex:1 1 auto;border:0;background:none;padding:10px 9px;font:700 13.5px/1 var(--cond);text-transform:uppercase;letter-spacing:.02em;border-right:1px solid var(--line);white-space:nowrap}
 .seg button:last-child{border-right:0}
+.bx-split{margin-bottom:12px}
+.bx-split button{flex:1 0 auto}
 .seg button[aria-pressed="true"]{background:var(--ink-2);color:var(--card)}
 .hint{font-size:12.5px;color:var(--muted);margin:0}
 .actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
@@ -1997,6 +1999,7 @@ document.addEventListener('click', e => {
   const d = b.dataset;
   if (d.tab){ ui.tab = d.tab; renderView(); if (b.classList.contains('linkbtn2')) window.scrollTo({top:0, behavior:'smooth'}); return; }
   if (d.pbp){ ui.pbp = d.pbp; renderView(); return; }
+  if (d.bxs){ ui.bxs = d.bxs; renderView(); return; }
   if ('close' in d) return closeDialog();
   if (d.filter || d.freset) return;   // the play-by-play filters, handled with the views
   if (ui.viewer) return;
@@ -2357,10 +2360,10 @@ function cardPbp(){
 /* ---------- Box Score tab ---------- */
 const BOX_COLS = ['PTS', 'FG', '3PT', 'FT', 'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TO', 'PF'];
 const boxRow = p => [p.pts, `${p.fgm}-${p.fga}`, `${p.tpm}-${p.tpa}`, `${p.ftm}-${p.fta}`, p.oreb, p.dreb, p.reb, p.ast, p.stl, p.blk, p.to, p.pf];
-function boxTable(s){
-  const T = g.teams, t = R.S.team[s];
+function boxTable(s, S = R.S){
+  const T = g.teams, t = S.team[s];
   // everyone on the roster shows, with zeros until they do something
-  const all = {...Object.fromEntries(Object.keys(T[s].roster || {}).map(n => [n, Object.assign(zeros(PL_KEYS), {n})])), ...R.S.pl[s]};
+  const all = {...Object.fromEntries(Object.keys(T[s].roster || {}).map(n => [n, Object.assign(zeros(PL_KEYS), {n})])), ...S.pl[s]};
   const rows = Object.values(all).sort((a, b) => b.pts - a.pts || b.reb - a.reb || b.ast - a.ast || (+a.n) - (+b.n));
   // starters set in Setup get their own section, then reserves, both in number order; otherwise one list
   const five = T[s].starters || [];
@@ -2381,6 +2384,38 @@ function boxTable(s){
       : '<div class="empty">No stats yet.</div>'}</section>`;
 }
 function viewBoxTab(){ return boxTable('A') + boxTable('H'); }
+// The Box Score tab, with the game split by quarter, half or overtime (Chuck, 2026-11-02): a stretch's stats are
+// the stats through its end less the stats through its start. Halves leave overtime out; each overtime is its own.
+function boxSplits(){
+  const ru = R.ru, st = R.st, o = [['g', 'Game', 0, 0]];
+  if (ru.n === 4) for (let q = 1; q <= Math.min(4, st.per); q++) o.push([`q${q}`, `${ord(q)} Qtr`, q, q]);
+  const h = ru.n / 2;
+  o.push(['h1', '1st Half', 1, h]);
+  if (st.per > h) o.push(['h2', '2nd Half', h + 1, ru.n]);
+  for (let q = ru.n + 1; q <= st.per; q++) o.push([`o${q}`, perShort(q, ru), q, q]);
+  return o;
+}
+function splitStats(qa, qb){
+  const at = q => { const i = R.log.findIndex(e => e.per > q); return i < 0 ? R.log.length : i; };
+  const A = replay(g, at(qa - 1)).S, B = replay(g, at(qb)).S;
+  const less = (b, a, keys) => Object.fromEntries(keys.map(k => [k, (b[k] || 0) - ((a || {})[k] || 0)]));
+  const S = {team:{}, pl:{}};
+  ['A', 'H'].forEach(s => {
+    S.team[s] = less(B.team[s], A.team[s], TEAM_KEYS); S.pl[s] = {};
+    Object.values(B.pl[s]).forEach(p => {
+      const d = {...less(p, A.pl[s][p.n], PL_KEYS), n:p.n, dq:p.dq};
+      if (PL_KEYS.some(k => d[k])) S.pl[s][p.n] = d;
+    });
+  });
+  return S;
+}
+function viewBoxSplit(){
+  if (R.box) return viewBoxTab();
+  const opts = boxSplits(), cur = opts.find(o => o[0] === ui.bxs) || opts[0];
+  const S = cur[0] === 'g' ? R.S : splitStats(cur[2], cur[3]);
+  return `<div class="seg bx-split" role="group" aria-label="Part of the game">${opts.map(([k, l]) => `<button type="button" data-bxs="${k}" aria-pressed="${k === cur[0]}">${esc(l)}</button>`).join('')}</div>`
+    + boxTable('A', S) + boxTable('H', S);
+}
 
 /* ---------- Team Stats: bars in team colors ---------- */
 function cmpRows(full){
@@ -2439,7 +2474,7 @@ function renderView(){
   const pbpCard = () => R.box ? '<section class="card"><div class="card-hd"><h2 class="card-title">Play-by-Play</h2></div><div class="empty">This game was entered from a box score, so there is no play-by-play.</div></section>'
     : `<section class="card"><div class="card-hd"><h2 class="card-title">Play-by-Play</h2></div>${filterPills()}${playsList()}</section>`;
   const V = R.box ? ({gamecast:() => cardLinescore() + viewBoxTab(), box:viewBoxTab, pbp:pbpCard, team:() => cardCmp(true) + cardLinescore()})[ui.tab] || (() => '')
-    : ({gamecast:() => cardOffense() + cardTrends() + cardLinescore() + cardFlow() + cardPbp(), box:viewBoxTab, pbp:pbpCard, team:() => cardCmp(true) + cardLinescore() + cardFlow()})[ui.tab] || (() => '');
+    : ({gamecast:() => cardOffense() + cardTrends() + cardLinescore() + cardFlow() + cardPbp(), box:viewBoxSplit, pbp:pbpCard, team:() => cardCmp(true) + cardLinescore() + cardFlow()})[ui.tab] || (() => '');
   $('#view').innerHTML = V();
   drawFlow();
 }
