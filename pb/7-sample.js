@@ -64,7 +64,8 @@ function startTracker(){
   ui.start = !EDIT_ID && !back && idleGame(g);
   setCurrent();
   refresh();
-  if (EDIT_ID && g.box) boxPop();
+  if (EDIT_ID && db.games[EDIT_ID]){ if (g.box) boxPop(); }
+  else if (EDIT_ID) sync.editId = EDIT_ID;   // not on this device yet: it opens when the account's games arrive
   // ?tracker&open=games (or setup, export, share): from the scorer's buttons on the other pages.
   const OPEN = new URLSearchParams(location.search).get('open');
   if (['games', 'setup', 'export', 'share', 'others'].includes(OPEN)){ history.replaceState(null, '', `${location.pathname}?tracker`); openDialog(OPEN); }

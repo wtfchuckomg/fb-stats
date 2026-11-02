@@ -40,6 +40,7 @@ async function startSync(){
     ui.admin = !!user && user.uid === ADMIN_UID;
     try { localStorage.setItem('pressbox.admin', ui.admin ? '1' : ''); localStorage.setItem('pressbox.scorer', user ? '1' : ''); } catch (e) {}
     sync.state = user ? 'saving' : 'signed-out';
+    if (!user && sync.editId) toast('Sign in to edit this game');
     if (user) listen();
     if (ui.admin) setTimeout(pushPrivateFinals, 4000);   // after the page has drawn
     renderSync();
@@ -49,6 +50,11 @@ async function startSync(){
   setInterval(retryFailed, 30000);   // a signal can come back without the browser saying so
 }
 
+function openToEdit(){
+  g = db.games[sync.editId]; sync.editId = null;
+  resetUi(); ui.start = false; setCurrent(); persist(); refresh();
+  if (g.box) boxPop();
+}
 const newestGame = () => Object.values(db.games).filter(x => !x.sample && !x.foreign).sort((a, b) => (b.updated || 0) - (a.updated || 0))[0];
 
 function listen(){
@@ -100,6 +106,9 @@ function listen(){
       refresh();
       toast(current === 'opened' ? (ui.start ? 'Your games are synced' : 'Opened your latest game') : current === 'gone' ? 'That game was deleted on another device' : 'Updated from another device');
     }
+    // ?edit=<id> on a device that didn't have the game yet: now it does, or the database says it isn't this account's.
+    if (sync.editId && db.games[sync.editId]) openToEdit();
+    else if (sync.editId && !snap.metadata.fromCache){ sync.editId = null; toast('That game isn’t in your account'); }
     if (ui.dlg === 'games') dlg().innerHTML = dlgGames();
     if (!sync.pending && !Object.keys(sync.timers).length && !sync.err) sync.state = 'on';
     renderSync();
@@ -247,7 +256,7 @@ async function startViewer(id){
     let game; try { game = soundGame(JSON.parse(d.json)); } catch (e) { return; }
     if (!game) return gone();   // a half-written copy: nothing to show, and it must not break the page
     g = game; $('#tabs').hidden = false;
-    refresh(); viewerTools(id);
+    refresh(); viewerTools(id, asAdmin && d.owner === ADMIN_UID);
     const [hi, lo] = R.st.score.H > R.st.score.A ? ['H', 'A'] : ['A', 'H'];   // the higher score first, like the link's preview
     document.title = `${schoolName(g.teams[hi].name)} ${R.st.score[hi]}, ${schoolName(g.teams[lo].name)} ${R.st.score[lo]} · ${SITE_TITLE}`;
   }, gone);
@@ -312,14 +321,15 @@ async function startSchoolCast(school){
   }, () => { weeks[k] = {}; pick(); }));
   setInterval(pick, 60000);   // the school list arriving, or the day turning over
 }
-// On a game's own page: Edit, only for its scorer, signed in on the device where the game is kept. Everyone else
-// just watches (the address bar has the link).
-function viewerTools(id){
+// On a game's own page: Edit, only for its scorer, signed in on the device where the game is kept, and for the
+// admin's own games on any of his devices (Chuck, 2026-11-01: a game saved on another device had no Edit here).
+// Everyone else just watches (the address bar has the link).
+function viewerTools(id, own){
   const el = $('#vbtns'); if (!el) return;
   let mine = false;
   try {
     const d = JSON.parse(localStorage.getItem(STORE) || 'null');
-    mine = localStorage.getItem('pressbox.scorer') === '1' && !!(d && d.games && d.games[id]);
+    mine = !!own || (localStorage.getItem('pressbox.scorer') === '1' && !!(d && d.games && d.games[id]));
   } catch (e) {}
   el.hidden = !mine;
   // Always the site's own address, never the current one: on a preview link the path is /g/<id>/, and that page
