@@ -428,8 +428,6 @@ function teamPageHtml(nameIn){
         <label class="tp-ot"><input type="checkbox" id="tp-s-ot"${(d.ot != null ? d.ot : x.per === 'fot') ? ' checked' : ''}> OT/F</label>
         <a class="btn" href="?tracker&amp;box=${encodeURIComponent(x.id)}">Paste box score</a>
         <button type="button" class="btn primary" data-tp-score-save>Save final</button>
-        <button type="button" class="btn" data-tp-ff="mine">${esc(x.teams[side].name)} won by forfeit</button>
-        <button type="button" class="btn" data-tp-ff="opp">${esc(o.name)} won by forfeit</button>
         ${m.fin ? '<button type="button" class="btn" data-tp-score-clear>Not played yet</button>' : ''}
         <button type="button" class="btn" data-tp-score-cancel>Cancel</button>
         ${tpage.removing === x.id
