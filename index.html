@@ -6388,8 +6388,9 @@ function scoreLine(d){
 
 // Passing numbers with no column heading. AP style is cmp-att-int-yds(-td), "Meeker 4-7-1-93"; others write
 // cmp-att-yds-td-int, "Quinn 6-8-87-1-0". Yardage is nearly always the biggest number, which tells them apart.
+// A loss can only be yards: "McIntosh 1-2-(-4)-0-0" has its -4 in the yards column, not interceptions.
 function passOrder(v){
-  const tail = v.slice(2), big = 2 + tail.indexOf(Math.max(...tail));
+  const tail = v.slice(2), neg = tail.findIndex(x => x < 0), big = 2 + (neg >= 0 ? neg : tail.indexOf(Math.max(...tail)));
   return big === 3 ? ['cmp', 'att', 'int', 'yds', 'td'] : ['cmp', 'att', 'yds', 'td', 'int'];
 }
 
