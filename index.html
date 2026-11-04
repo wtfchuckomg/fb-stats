@@ -11771,15 +11771,10 @@ document.addEventListener('click', e => {
 
 // One school's season so far: record, and the average margin the KSHSAA counts (13 a game, 1 in overtime).
 function bkTeam(name){
-  const t = {name, w:0, l:0, t:0, gp:0, marg:0, beat:new Set(), lost:new Set(), games:[], left:[], po:{w:0, l:0, t:0}};
+  const t = {name, w:0, l:0, t:0, gp:0, marg:0, beat:new Set(), lost:new Set(), games:[], left:[]};
   schoolRows(name).forEach(({x, side, opp}) => {
-    // Seeding is weeks 1-8 only: a playoff game, once it's final, changes nobody's record or margin here. It does go
-    // on the record the bracket shows (Chuck, 2026-11-04: "the W-L records are not updating on the brackets").
-    if (gameDay(x) > fromYmd(BK_WEEK8_END)){
-      const f = finalOf(x);
-      if (f.fin && f.score){ const a = +f.score[side], b = +f.score[opp]; t.po[a > b ? 'w' : a < b ? 'l' : 't']++; }
-      return;
-    }
+    // Seeding is weeks 1-8 only: a playoff game, once it's final, changes nobody's record or margin here.
+    if (gameDay(x) > fromYmd(BK_WEEK8_END)) return;
     const f = finalOf(x);
     // Not played yet (or no final on file): one of the games that can still move it, through week 8. Once week 8 is
     // over, a game with no score is the manual's "no game played" (Ellinwood at Southwestern Heights, 9/4) and holds
@@ -11980,6 +11975,61 @@ function bkSeed(names){
   return all.slice(0, 16).map((t, i) => Object.assign(t, {seed:i + 1, lock:locks.has(canonSchool(t.name))}));
 }
 
+// The regular season's final district standings, locked in place (Chuck, 2026-11-04: "you can lock their regular
+// season standings/districts in place"), as the site had them when the season ended. A district in this list is read
+// in this order whatever is entered for weeks 1-8 later, every place bold and everyone past the cut out.
+const BK_DLOCK = {
+  '3A':[
+    ["Frontenac", "Columbus", "Iola", "Girard", "Parsons"],
+    ["Wellsville", "Burlington", "Anderson County", "Osawatomie", "Prairie View"],
+    ["Hayden", "Baldwin", "Perry-Lecompton", "Santa Fe Trail", "Bishop Ward"],
+    ["Jefferson West", "Nemaha Central", "Holton", "Atchison", "Hiawatha"],
+    ["Hesston", "Chapman", "Concordia", "Clay Center", "Smoky Valley"],
+    ["Andale", "Wichita Collegiate", "Cheney", "Wichita Trinity", "Clearwater"],
+    ["Hoisington", "Pratt", "Lyons", "Larned", "Nickerson"],
+    ["Holcomb", "Hugoton", "Goodland", "Scott City", "Colby"]],
+  '2A':[
+    ["Caney Valley", "Baxter Springs", "Riverton", "Cherryvale", "Galena"],
+    ["Neodesha", "Humboldt", "Central Heights", "Jayhawk-Linn", "Fredonia"],
+    ["Silver Lake", "Osage City", "Oskaloosa", "West Franklin", "Maranatha"],
+    ["Sabetha", "Riverside", "Royal Valley", "Pleasant Ridge", "Horton"],
+    ["Marysville", "Riley County", "Council Grove", "Southeast of Saline", "Minneapolis"],
+    ["Beloit", "Norton", "Phillipsburg", "Russell", "Ellsworth"],
+    ["Garden Plain", "Haven", "Halstead", "Douglass", "Marion"],
+    ["Chaparral", "Kingman", "Cimarron", "Southwestern Heights", "Lakin"]],
+  '1A':[
+    ["Olpe", "St Mary's Colgan", "Uniontown", "Northeast-Arma", "Eureka"],
+    ["Rossville", "St Marys", "Wabaunsee", "Mission Valley"],
+    ["Jefferson County North", "McLouth", "Maur Hill-Mount", "Atchison County", "Doniphan West"],
+    ["Centralia", "Valley Heights", "Onaga", "Jackson Heights", "Valley Falls"],
+    ["Inman", "Hillsboro", "Moundridge", "Remington", "Hutch Trinity"],
+    ["Thomas More Prep", "Smith Center", "Plainville", "Sacred Heart", "Republic County"],
+    ["Conway Springs", "Belle Plaine", "Sedgwick", "Bluestem"],
+    ["Sterling", "Medicine Lodge", "Ellinwood", "Syracuse"]],
+  '8M-I':[
+    ["Oswego", "Yates Center", "Erie", "Southeast (Cherokee)", "West Elk"],
+    ["Oxford", "South Sumner", "Central Burden", "Cedar Vale-Dexter", "Udall"],
+    ["Chase County", "Lyndon", "Cair Paravel", "Pleasanton", "Northern Heights"],
+    ["Clifton-Clyde", "Washington County", "Canton-Galva", "Solomon", "Herington"],
+    ["Lincoln", "Ell-Saline", "WaKeeney-Trego", "Bennington", "Rock Hills"],
+    ["Hoxie", "Hill City", "Decatur", "Rawlins County", "Oakley"],
+    ["South Central", "Kiowa County", "Central Plains", "Spearville", "St John"],
+    ["Wichita County", "Stanton County", "Elkhart", "South Gray", "Sublette"]],
+  '8M-II':[
+    ["Marmaton Valley", "Flinthills", "Madison", "Sedan", "Colony-Crest", "St Paul"],
+    ["Cunningham", "Hutch Central Christian", "Attica-Argonia", "Norwich", "Pretty Prairie", "Fairfield"],
+    ["Lebo", "Waverly", "Wakefield", "Hartford", "Goessel", "Rural Vista", "Burlingame"],
+    ["Axtell", "Hanover", "Troy", "Frankfort", "Linn", "BV Randolph"],
+    ["Hodgeman County", "Kinsley", "Meade", "Minneola", "Skyline", "Macksville"],
+    ["Sylvan-Lucas Unified", "Little River", "Victoria", "Ellis", "Stafford", "La Crosse"],
+    ["Osborne", "Thunder Ridge", "St John's", "Lakeside", "Pike Valley", "Stockton"],
+    ["Quinter", "Wallace County", "Dighton", "Ness City", "St Francis", "Greeley County"]],
+  '6M':[
+    ["Peabody-Burns", "Centre", "Marais des Cygnes Valley", "Chetopa", "Elyria Christian", "Southern Coffey County", "Altoona-Midway"],
+    ["Tescott", "Otis-Bison", "Logan", "Palco", "Pawnee Heights", "Chase", "Western Plains"],
+    ["Ingalls", "South Barber", "Ashland", "Satanta", "Deerfield", "Bucklin", "Moscow"],
+    ["Weskan", "Wheatland-Grinnell", "Cheylin", "Golden Plains", "Northern Valley", "Winona-Triplains", "Brewster"]]
+};
 // One district in place order (the criteria at the top). No district games yet reads as .500, as the league
 // tables do. Past the margin the KSHSAA draws lots; before district play has settled much that's nearly everyone,
 // so the projection goes on to the season's record and margin.
@@ -12014,6 +12064,11 @@ function bkDistrict(names, cut = 4){
     const flipIn = t.lotWith && t.lotWith.some(x => out.indexOf(x) < cut);
     if (i >= cut && !flipIn) gone.add(canonSchool(t.name));
   });
+  const fixed = (BK_DLOCK[bk.cls] || []).map(l => l.map(canonSchool)).find(l => l.length === out.length && out.every(t => l.includes(canonSchool(t.name))));
+  if (fixed){
+    out.sort((a, b) => fixed.indexOf(canonSchool(a.name)) - fixed.indexOf(canonSchool(b.name)));
+    return out.map((t, i) => Object.assign(t, {place:i + 1, placeLock:true, elim:i >= cut, lotWith:null}));
+  }
   return out.map((t, i) => Object.assign(t, {place:i + 1, placeLock:locks.has(canonSchool(t.name)), elim:gone.has(canonSchool(t.name))},
     t.lotWith ? {dhow:'coin flip'} : {}));
 }
@@ -12035,14 +12090,16 @@ function bkDistrictSeeds(dists){
 const bkUndo = t => ui.admin && t.flipKey ? ` <button type="button" class="bk-undo" data-flip-key="${esc(t.flipKey)}">Undo</button>` : '';
 const bkRec = t => `${t.w}-${t.l}${t.t ? `-${t.t}` : ''}`;
 // The record now, playoff games and all: what a team's line in the bracket shows. The seeding tables keep bkRec.
-const bkRecNow = t => { const p = t.po || {w:0, l:0, t:0}, w = t.w + p.w, l = t.l + p.l, d = t.t + p.t; return `${w}-${l}${d ? `-${d}` : ''}`; };
+// Regional on, a team's line shows the Overall record from its team page (Chuck, 2026-11-04); Week 9 keeps the
+// regular-season record it was seeded on.
+const bkRecNow = t => (shownRecord(t.name) || {}).rec || bkRec(t);
 const bkMark = name => markFor({name, abbr:shortName(name), color:'#4A4B4D'}, 22);
 // One team inside a bracket game. A seed with no games on file says so instead of pretending to a record.
 function bkTeamRow(t, win){
   if (!t) return `<div class="bk-row empty"><span class="bk-seed"></span><span class="bk-nm">—</span></div>`;
   return `<div class="bk-row${win ? ' win' : ''}"><span class="bk-seed">${t.seed}</span>${bkMark(t.name)}
     <a class="bk-nm" href="?team=${encodeURIComponent(t.name)}" title="${esc(t.name)}">${esc(t.name)}</a>
-    <span class="bk-rec">${t.gp ? esc(bkRecNow(t)) : '<i>no games</i>'}</span></div>`;
+    <span class="bk-rec">${t.gp ? esc(bkRec(t)) : '<i>no games</i>'}</span></div>`;
 }
 const bkGame = (a, b) => {
   const win = !a ? null : !b ? a : (a.seed <= b.seed ? a : b);   // the projection: the higher seed moves on
@@ -12050,11 +12107,11 @@ const bkGame = (a, b) => {
 };
 
 // LOOK 2: the bracket. Each team its own pill, the pair joined by a connector into the next round.
-function bkPill(t){
+function bkPill(t, r = 0){
   if (!t) return `<div class="bkp empty"><span class="bk-nm">—</span></div>`;
   // Going to a coin flip: this line belongs to any of them, so it carries them all.
   if (t.lotWith){
-    const L = t.lotWith, recs = [...new Set(L.map(bkRecNow))];
+    const L = t.lotWith, recs = [...new Set(L.map(bkRec))];
     return `<div class="bkp lot" title="${esc(L.map(x => x.name).join(' or ') + ': KSHSAA coin flip')}"><span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>${L.map(x => bkMark(x.name)).join('')}
       <span class="bk-nm">${L.map(x => ui.admin
         ? `<button type="button" class="bk-flipbtn" data-flip-key="${esc(flipKey(L))}" data-flip-win="${esc(canonSchool(x.name))}" data-flip-name="${esc(x.name)}" title="${esc(x.name)} won the flip">${esc(listAbbr(x.name) || shortName(x.name))}</button>`
@@ -12063,7 +12120,7 @@ function bkPill(t){
   }
   return `<div class="bkp"><span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>${bkMark(t.name)}
     <a class="bk-nm${t.lock ? ' locked' : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a>
-    <span class="bk-rec">${t.gp ? esc(bkRecNow(t)) : '<i>no games</i>'}</span></div>`;
+    <span class="bk-rec">${r ? esc(bkRecNow(t)) : t.gp ? esc(bkRec(t)) : '<i>no games</i>'}</span></div>`;
 }
 // A matchup opens its game, not the teams (Chuck, 2026-10-24: "make the bracket pairing go to the preview… They can go
 // to the team profiles when they are in the preview"): the preview until there are stats, then the gamecast or box.
@@ -12207,10 +12264,10 @@ function bkSchedRefresh(){
   bkSched.list = out; bkSched.sig = sig;
   return true;
 }
-function bkLine(t, game, small){
+function bkLine(t, game, small, r = 0){
   if (t && t.bye) return `<div class="bkp bye"><span class="bk-nm">Bye</span></div>`;
   if (!t) return `<div class="bkp empty"><span class="bk-nm">&nbsp;</span></div>`;
-  if (!small && !game) return bkPill(t);
+  if (!small && !game) return bkPill(t, r);
   const won = game && game.win === t, lost = game && game.win !== t;
   // A short code in the narrow rounds: the school's own if it is one ("AND"), otherwise its initials ("ING", "PB").
   const code = n => { const a = listAbbr(n); return a && a.length <= 4 ? a : initialsOf(n).slice(0, 4); };
@@ -12218,7 +12275,7 @@ function bkLine(t, game, small){
   // Past week 9 the boxes are narrow: the logo and short name, no seed.
   return `<div class="bkp${small ? ' sm' : ''}${lost ? ' lost' : ''}">${small ? '' : `<span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>`}${bkMark(t.name)}
     <a class="bk-nm${won ? ' locked' : ''}" href="?team=${encodeURIComponent(t.name)}" title="${esc(t.name)}">${nm}</a>
-    <span class="bk-rec">${game ? `<b>${game.pts.get(t)}</b>` : small ? '' : t.gp ? esc(bkRecNow(t)) : ''}</span></div>`;
+    <span class="bk-rec">${game ? `<b>${game.pts.get(t)}</b>` : small ? '' : r ? esc(bkRecNow(t)) : t.gp ? esc(bkRec(t)) : ''}</span></div>`;
 }
 function bkFullHtml(eastSlots, westSlots){
   const ROUNDS = ['Week 9', 'Regional', 'Sectional', 'Sub-State'];
@@ -12234,7 +12291,7 @@ function bkFullHtml(eastSlots, westSlots){
   const width = r => r === cur ? 'minmax(220px,3fr)' : r < cur ? 'minmax(112px,1.4fr)' : 'minmax(72px,1fr)';   // a finished round has scores to fit
   const grid = [0, 1, 2, 3].map(width).join(' ') + ' minmax(84px,1.1fr) ' + [3, 2, 1, 0].map(width).join(' ');
   const col = (c, r, west) => `<div class="bkf-col${west ? ' w' : ''}"><span class="bkt-h">${ROUNDS[r]}</span><div class="bkf-pairs">${c.games.map((gm, i) =>
-    bkPair(c.slots[2 * i], c.slots[2 * i + 1], bkLine(c.slots[2 * i], gm, r !== cur) + bkLine(c.slots[2 * i + 1], gm, r !== cur))).join('')}</div></div>`;
+    bkPair(c.slots[2 * i], c.slots[2 * i + 1], bkLine(c.slots[2 * i], gm, r !== cur, r) + bkLine(c.slots[2 * i + 1], gm, r !== cur, r))).join('')}</div></div>`;
   const fin = bkPlayed(W.champ, E.champ), state = bkPair(W.champ, E.champ, bkLine(W.champ, fin, true) + bkLine(E.champ, fin, true), ' st');
   // A phone (Chuck, 2026-10-25: "shrink it… so we can see multiple rounds at the same time"): each side's four rounds
   // across in small boxes, the logo and short name, then State under both.
