@@ -11771,10 +11771,15 @@ document.addEventListener('click', e => {
 
 // One school's season so far: record, and the average margin the KSHSAA counts (13 a game, 1 in overtime).
 function bkTeam(name){
-  const t = {name, w:0, l:0, t:0, gp:0, marg:0, beat:new Set(), lost:new Set(), games:[], left:[]};
+  const t = {name, w:0, l:0, t:0, gp:0, marg:0, beat:new Set(), lost:new Set(), games:[], left:[], po:{w:0, l:0, t:0}};
   schoolRows(name).forEach(({x, side, opp}) => {
-    // Seeding is weeks 1-8 only: a playoff game, once it's final, changes nobody's record or margin here.
-    if (gameDay(x) > fromYmd(BK_WEEK8_END)) return;
+    // Seeding is weeks 1-8 only: a playoff game, once it's final, changes nobody's record or margin here. It does go
+    // on the record the bracket shows (Chuck, 2026-11-04: "the W-L records are not updating on the brackets").
+    if (gameDay(x) > fromYmd(BK_WEEK8_END)){
+      const f = finalOf(x);
+      if (f.fin && f.score){ const a = +f.score[side], b = +f.score[opp]; t.po[a > b ? 'w' : a < b ? 'l' : 't']++; }
+      return;
+    }
     const f = finalOf(x);
     // Not played yet (or no final on file): one of the games that can still move it, through week 8. Once week 8 is
     // over, a game with no score is the manual's "no game played" (Ellinwood at Southwestern Heights, 9/4) and holds
@@ -12029,13 +12034,15 @@ function bkDistrictSeeds(dists){
 // The admin can take back a settled flip from the standings (a tap on the wrong team).
 const bkUndo = t => ui.admin && t.flipKey ? ` <button type="button" class="bk-undo" data-flip-key="${esc(t.flipKey)}">Undo</button>` : '';
 const bkRec = t => `${t.w}-${t.l}${t.t ? `-${t.t}` : ''}`;
+// The record now, playoff games and all: what a team's line in the bracket shows. The seeding tables keep bkRec.
+const bkRecNow = t => { const p = t.po || {w:0, l:0, t:0}, w = t.w + p.w, l = t.l + p.l, d = t.t + p.t; return `${w}-${l}${d ? `-${d}` : ''}`; };
 const bkMark = name => markFor({name, abbr:shortName(name), color:'#4A4B4D'}, 22);
 // One team inside a bracket game. A seed with no games on file says so instead of pretending to a record.
 function bkTeamRow(t, win){
   if (!t) return `<div class="bk-row empty"><span class="bk-seed"></span><span class="bk-nm">—</span></div>`;
   return `<div class="bk-row${win ? ' win' : ''}"><span class="bk-seed">${t.seed}</span>${bkMark(t.name)}
     <a class="bk-nm" href="?team=${encodeURIComponent(t.name)}" title="${esc(t.name)}">${esc(t.name)}</a>
-    <span class="bk-rec">${t.gp ? esc(bkRec(t)) : '<i>no games</i>'}</span></div>`;
+    <span class="bk-rec">${t.gp ? esc(bkRecNow(t)) : '<i>no games</i>'}</span></div>`;
 }
 const bkGame = (a, b) => {
   const win = !a ? null : !b ? a : (a.seed <= b.seed ? a : b);   // the projection: the higher seed moves on
@@ -12047,7 +12054,7 @@ function bkPill(t){
   if (!t) return `<div class="bkp empty"><span class="bk-nm">—</span></div>`;
   // Going to a coin flip: this line belongs to any of them, so it carries them all.
   if (t.lotWith){
-    const L = t.lotWith, recs = [...new Set(L.map(bkRec))];
+    const L = t.lotWith, recs = [...new Set(L.map(bkRecNow))];
     return `<div class="bkp lot" title="${esc(L.map(x => x.name).join(' or ') + ': KSHSAA coin flip')}"><span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>${L.map(x => bkMark(x.name)).join('')}
       <span class="bk-nm">${L.map(x => ui.admin
         ? `<button type="button" class="bk-flipbtn" data-flip-key="${esc(flipKey(L))}" data-flip-win="${esc(canonSchool(x.name))}" data-flip-name="${esc(x.name)}" title="${esc(x.name)} won the flip">${esc(listAbbr(x.name) || shortName(x.name))}</button>`
@@ -12056,7 +12063,7 @@ function bkPill(t){
   }
   return `<div class="bkp"><span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>${bkMark(t.name)}
     <a class="bk-nm${t.lock ? ' locked' : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a>
-    <span class="bk-rec">${t.gp ? esc(bkRec(t)) : '<i>no games</i>'}</span></div>`;
+    <span class="bk-rec">${t.gp ? esc(bkRecNow(t)) : '<i>no games</i>'}</span></div>`;
 }
 // A matchup opens its game, not the teams (Chuck, 2026-10-24: "make the bracket pairing go to the preview… They can go
 // to the team profiles when they are in the preview"): the preview until there are stats, then the gamecast or box.
@@ -12211,7 +12218,7 @@ function bkLine(t, game, small){
   // Past week 9 the boxes are narrow: the logo and short name, no seed.
   return `<div class="bkp${small ? ' sm' : ''}${lost ? ' lost' : ''}">${small ? '' : `<span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>`}${bkMark(t.name)}
     <a class="bk-nm${won ? ' locked' : ''}" href="?team=${encodeURIComponent(t.name)}" title="${esc(t.name)}">${nm}</a>
-    <span class="bk-rec">${game ? `<b>${game.pts.get(t)}</b>` : small ? '' : t.gp ? esc(bkRec(t)) : ''}</span></div>`;
+    <span class="bk-rec">${game ? `<b>${game.pts.get(t)}</b>` : small ? '' : t.gp ? esc(bkRecNow(t)) : ''}</span></div>`;
 }
 function bkFullHtml(eastSlots, westSlots){
   const ROUNDS = ['Week 9', 'Regional', 'Sectional', 'Sub-State'];
