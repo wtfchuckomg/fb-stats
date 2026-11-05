@@ -169,13 +169,10 @@ function watchFlips(api){
     flips.map = map; flips.ready = true; renderBracket();
   }, flipsReady);
 }
-// A bracket's outline while it loads: four rounds of matchups, or a district's standings.
-function skelBracket(districts){
-  if (districts) return skelRows(8, 4) + skelRows(8, 4);
-  const box = i => `<div class="skb-m"><div class="sk-team"><i class="sk sk-dot"></i><i class="sk" style="width:${SK_W[i % 10]}%"></i></div><div class="sk-team"><i class="sk sk-dot"></i><i class="sk" style="width:${SK_W[(i + 3) % 10]}%"></i></div></div>`;
-  const half = () => `<section class="bcard" aria-busy="true"><i class="sk sk-hd"></i><div class="skb" aria-hidden="true">${[8, 4, 2, 1].map((n, r) =>
-    `<div class="skb-r">${Array.from({length:n}, (_, i) => box(i + r)).join('')}</div>`).join('')}</div></section>`;
-  return half() + half();
+// A bracket's outline while it loads: the real bracket with every box empty, never table rows (Chuck, 2026-11-04).
+function skelBracket(){
+  const none = Array(16).fill(null);
+  return `<section class="bcard ccard" aria-busy="true">${bkFullHtml(none, none)}</section>`;
 }
 const flipKey = group => `${BK_WEEK8_END.slice(0, 4)}|${bk.cls}|${group.map(t => canonSchool(t.name)).sort().join(',')}`;
 // The order the flips gave for a tie among `group`, from a settled tie that takes them all in (a three-way flip
@@ -785,7 +782,7 @@ function renderBracket(){
   document.title = `${title} · ${SITE_TITLE}`;
   const head = `<section class="bcard bhead"><div class="bhead-top"><h1>${title}</h1></div>
     <div class="tp-links">${BK_CLASSES.map(c => `<a class="h-btn${c === bk.cls ? ' on' : ''}" href="?bracket=${c}">${bkTab(c)}</a>`).join('')}</div></section>`;
-  if ((!allGames.list || !flips.ready) && !allGames.err) return void (box.innerHTML = head + skelBracket(!!DISTRICTS[bk.cls]));
+  if ((!allGames.list || !flips.ready) && !allGames.err) return void (box.innerHTML = head + skelBracket());
   if (allGames.err) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${esc(allGames.err)}</p></section>`);
   if (DISTRICTS[bk.cls]) return renderDistricts(box, head);
   const east = bkSeed(S.East), west = bkSeed(S.West);
