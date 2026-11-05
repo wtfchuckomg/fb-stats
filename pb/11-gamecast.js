@@ -122,6 +122,13 @@ function playsList(oldFirst = false){
       <div><div class="pl-clk">${e.clk != null ? mmss(e.clk) : '—'}</div><span class="pl-no">Play ${num[e.i]}</span></div>
       <div><div class="pl-sit">${['endq', 'final'].includes(e.t) ? '' : esc(e.sit)}${e.src && !ui.viewer ? ` <code class="qsrc">${esc(e.src)}</code>` : ''}</div>
       <div class="pl-txt">${e.wiped ? `<s>${esc(e.wiped)}</s> ` : ''}${esc(e.text)}${tags.length ? `<span class="tags">${tagHtml(tags)}</span>` : ''}</div></div></button>`;
+    // Editing a play, or adding one before it, opens the entry box right there in the log (Chuck, 2026-11-05);
+    // renderView moves #pad into the slot. A play put in before this one lands on its earlier side.
+    if (ui.editing === e.i && !ui.viewer){
+      const slot = `<div class="pl-slot" data-slot="${e.i}"></div>`;
+      if (!ui.ins) return h.replace('class="pl ', 'class="pl editing ') + slot;
+      return oldFirst ? slot + h : h + slot;
+    }
     if (open){
       const editable = !['endq', 'final', 'to'].includes(e.t);
       h += `<div class="pl-act">${editable ? `<button class="btn small" data-edit="${e.i}">Edit</button>` : ''}
@@ -176,7 +183,7 @@ function playsList(oldFirst = false){
     const key = `${g.id}:${it.gr.d.i0}`, pick = ui.pbpFold && ui.pbpFold[key];
     // The scorer sees every drive open and folds what they like (Chuck, 2026-10-30); anyone on a link sees them
     // folded, all but the drive under way.
-    const isOpen = pick != null ? pick : !ui.viewer || it.gr.d.open;
+    const isOpen = (ui.editing != null && it.plays.some(e => e.i === ui.editing)) || (pick != null ? pick : !ui.viewer || it.gr.d.open);
     h += head(it.gr, isOpen) + (isOpen ? `<div class="pbd-plays">${plays.map(row).join('')}</div>` : '');
   }
   return `<div class="plays">${h}</div>`;
@@ -372,6 +379,14 @@ function renderView(){
     ? (({gamecast:() => cardLinescore() + scoringCard() + viewBoxTab(), box:viewBoxTab, pbp:scoringCard, team:() => cardLinescore() + cardCmp(true)})[ui.tab] || (() => ''))
     : ({gamecast:() => cardDrive() + cardLinescore() + cardPbp(), box:viewBoxTab, pbp:() => pbpCard() + cardDriveChart(),
         team:() => cardLinescore() + cardCmp(true) + cardTeamTable() + cardDrives()})[ui.tab] || (() => '');
-  $('#view').innerHTML = V();
+  // The entry box goes home before the log is redrawn (or it would be wiped with it), then back into the play's slot.
+  // Moving it drops the cursor, so a box being typed in gets it back where it was.
+  const pad = $('#pad'), view = $('#view'), act = document.activeElement, typing = pad && act && pad.contains(act) && act.matches('input,textarea');
+  const sel = typing ? [act.selectionStart, act.selectionEnd] : null;
+  if (pad && view.contains(pad)) view.before(pad);
+  view.innerHTML = V();
+  const slot = ui.editing != null && view.querySelector(`.pl-slot[data-slot="${ui.editing}"]`);
+  if (pad && slot) slot.append(pad);
+  if (typing && document.activeElement !== act && act.isConnected){ act.focus({preventScroll:true}); try { act.setSelectionRange(...sel); } catch (e) {} }
   renderField();
 }

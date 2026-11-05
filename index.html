@@ -1196,6 +1196,9 @@ body:not(.viewer) .pl{-webkit-touch-callout:none;-webkit-user-select:none;user-s
 .pl-no{display:block;font-size:11px;color:var(--muted)}
 .pl-sit{font:600 12px/1.3 var(--sans);color:var(--muted);margin-bottom:2px}
 .pl-txt s{color:var(--muted)}
+.pl-slot{padding:8px 6px 12px;background:var(--surface);border-bottom:1px solid var(--line-2)}
+.pl-slot > #pad{margin:0}
+.pl.editing{background:var(--surface)}
 .pl-act{display:flex;gap:8px;padding:0 6px 10px 78px;background:var(--surface);border-bottom:1px solid var(--line-2)}
 .tags{display:inline-flex;gap:4px;margin-left:6px;vertical-align:1px;flex-wrap:wrap}
 .tag{font:700 10px/1 var(--sans);text-transform:uppercase;letter-spacing:.04em;padding:3px 5px;border-radius:3px;white-space:nowrap}
@@ -3444,7 +3447,7 @@ function endq(v, src){
 // A missed play, put in ahead of play i: typed against the situation before i, and everything after replays.
 function startInsert(i){
   Object.assign(ui, {editing:i, ins:true, ctx:replay(g, i), type:null, draft:null, open:null, confirm:null, qedit:false, qtext:''});
-  renderPad(); renderView(); $('#pad').scrollIntoView({behavior:'smooth', block:'start'});
+  renderPad(); renderView(); $('#pad').scrollIntoView({behavior:'smooth', block:'nearest'});
   if (ui.mode === 'quick') focusQuick();
 }
 // With no time typed, a play put in later takes the clock of the play before it (the clock isn't known).
@@ -3458,7 +3461,7 @@ function startEdit(i){
   const p = g.plays[i]; ui.editing = i; ui.ins = false; ui.ctx = replay(g, i); ui.type = p.t; ui.open = null;
   // A play typed in shorthand is edited by retyping its line; others use the form.
   ui.qedit = !!p.q; ui.qtext = p.q || ''; ui.draft = p.q ? null : toDraft(p, ui.ctx.st);
-  renderPad(); renderView(); $('#pad').scrollIntoView({behavior:'smooth', block:'start'});
+  renderPad(); renderView(); $('#pad').scrollIntoView({behavior:'smooth', block:'nearest'});
   if (p.q) focusQuick();
 }
 function editClock(){
@@ -3918,6 +3921,13 @@ function playsList(oldFirst = false){
       <div><div class="pl-clk">${e.clk != null ? mmss(e.clk) : '—'}</div><span class="pl-no">Play ${num[e.i]}</span></div>
       <div><div class="pl-sit">${['endq', 'final'].includes(e.t) ? '' : esc(e.sit)}${e.src && !ui.viewer ? ` <code class="qsrc">${esc(e.src)}</code>` : ''}</div>
       <div class="pl-txt">${e.wiped ? `<s>${esc(e.wiped)}</s> ` : ''}${esc(e.text)}${tags.length ? `<span class="tags">${tagHtml(tags)}</span>` : ''}</div></div></button>`;
+    // Editing a play, or adding one before it, opens the entry box right there in the log (Chuck, 2026-11-05);
+    // renderView moves #pad into the slot. A play put in before this one lands on its earlier side.
+    if (ui.editing === e.i && !ui.viewer){
+      const slot = `<div class="pl-slot" data-slot="${e.i}"></div>`;
+      if (!ui.ins) return h.replace('class="pl ', 'class="pl editing ') + slot;
+      return oldFirst ? slot + h : h + slot;
+    }
     if (open){
       const editable = !['endq', 'final', 'to'].includes(e.t);
       h += `<div class="pl-act">${editable ? `<button class="btn small" data-edit="${e.i}">Edit</button>` : ''}
@@ -3972,7 +3982,7 @@ function playsList(oldFirst = false){
     const key = `${g.id}:${it.gr.d.i0}`, pick = ui.pbpFold && ui.pbpFold[key];
     // The scorer sees every drive open and folds what they like (Chuck, 2026-10-30); anyone on a link sees them
     // folded, all but the drive under way.
-    const isOpen = pick != null ? pick : !ui.viewer || it.gr.d.open;
+    const isOpen = (ui.editing != null && it.plays.some(e => e.i === ui.editing)) || (pick != null ? pick : !ui.viewer || it.gr.d.open);
     h += head(it.gr, isOpen) + (isOpen ? `<div class="pbd-plays">${plays.map(row).join('')}</div>` : '');
   }
   return `<div class="plays">${h}</div>`;
@@ -4168,7 +4178,15 @@ function renderView(){
     ? (({gamecast:() => cardLinescore() + scoringCard() + viewBoxTab(), box:viewBoxTab, pbp:scoringCard, team:() => cardLinescore() + cardCmp(true)})[ui.tab] || (() => ''))
     : ({gamecast:() => cardDrive() + cardLinescore() + cardPbp(), box:viewBoxTab, pbp:() => pbpCard() + cardDriveChart(),
         team:() => cardLinescore() + cardCmp(true) + cardTeamTable() + cardDrives()})[ui.tab] || (() => '');
-  $('#view').innerHTML = V();
+  // The entry box goes home before the log is redrawn (or it would be wiped with it), then back into the play's slot.
+  // Moving it drops the cursor, so a box being typed in gets it back where it was.
+  const pad = $('#pad'), view = $('#view'), act = document.activeElement, typing = pad && act && pad.contains(act) && act.matches('input,textarea');
+  const sel = typing ? [act.selectionStart, act.selectionEnd] : null;
+  if (pad && view.contains(pad)) view.before(pad);
+  view.innerHTML = V();
+  const slot = ui.editing != null && view.querySelector(`.pl-slot[data-slot="${ui.editing}"]`);
+  if (pad && slot) slot.append(pad);
+  if (typing && document.activeElement !== act && act.isConnected){ act.focus({preventScroll:true}); try { act.setSelectionRange(...sel); } catch (e) {} }
   renderField();
 }
 /* ================================================================

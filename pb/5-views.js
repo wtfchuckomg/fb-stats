@@ -330,7 +330,7 @@ function endq(v, src){
 // A missed play, put in ahead of play i: typed against the situation before i, and everything after replays.
 function startInsert(i){
   Object.assign(ui, {editing:i, ins:true, ctx:replay(g, i), type:null, draft:null, open:null, confirm:null, qedit:false, qtext:''});
-  renderPad(); renderView(); $('#pad').scrollIntoView({behavior:'smooth', block:'start'});
+  renderPad(); renderView(); $('#pad').scrollIntoView({behavior:'smooth', block:'nearest'});
   if (ui.mode === 'quick') focusQuick();
 }
 // With no time typed, a play put in later takes the clock of the play before it (the clock isn't known).
@@ -344,7 +344,7 @@ function startEdit(i){
   const p = g.plays[i]; ui.editing = i; ui.ins = false; ui.ctx = replay(g, i); ui.type = p.t; ui.open = null;
   // A play typed in shorthand is edited by retyping its line; others use the form.
   ui.qedit = !!p.q; ui.qtext = p.q || ''; ui.draft = p.q ? null : toDraft(p, ui.ctx.st);
-  renderPad(); renderView(); $('#pad').scrollIntoView({behavior:'smooth', block:'start'});
+  renderPad(); renderView(); $('#pad').scrollIntoView({behavior:'smooth', block:'nearest'});
   if (p.q) focusQuick();
 }
 function editClock(){
