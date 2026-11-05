@@ -1673,7 +1673,7 @@ try { if (new URLSearchParams(location.search).has('embed')) document.documentEl
 const SITE = 'kmr';
 const SITE_AV = SITE === 'avctl';
 // The scorer's tools (shorthand, voice, imports, the spreadsheet) are a file of their own, named by build.py.
-const TRACKER_JS = 'tracker-ebf8d80110.js';
+const TRACKER_JS = 'tracker-6a04e7041a.js';
 const SITE_NAME = SITE_AV ? 'Ark Valley Chisholm Trail League statistics and leaders' : 'Kansas Media Stats';
 const SITE_TITLE = SITE_AV ? 'AVCTL Stats' : 'Kansas Media Stats';   // after the page's own name in a tab's title
 // Where the nightly files (season.json, stats.json, schedules, logos, game snapshots) live: stats/KMR builds
@@ -2519,7 +2519,12 @@ function replay(g, upto = g.plays.length){
     return {text};
   }
 
+  // A try is untimed: the PAT or 2-point play carries the touchdown's time (Chuck, 2026-11-05), unless the scorer
+  // typed a different one (clkMan). Set on the stored play, so every reader of plays[].clk agrees.
+  let tdClk = null;
   for (let i = 0; i < upto && i < g.plays.length; i++){
+    if (st.phase === 'try' && typeof tdClk === 'number' && !g.plays[i].clkMan && !['endq', 'final'].includes(g.plays[i].t)) g.plays[i].clk = tdClk;
+    const wasTry = st.phase === 'try';
     let p = wholeYards(g.plays[i]);
     // A punt typed without a distance takes it from the spot typed next ("S ball at S10").
     if (p.t === 'punt' && p.d == null && p.res !== 'tb' && p.res !== 'blk' && st.phase === 'play'){
@@ -2545,6 +2550,7 @@ function replay(g, upto = g.plays.length){
     // bookkeeping, not a play: it is recorded after the half has already turned the clock to the 3rd quarter.
     if (!['final', 'note', 'to'].includes(p.t) && pre.q > st.qPlayed) st.qPlayed = pre.q;
     const r = apply(p);
+    if (st.phase === 'try' && !wasTry) tdClk = p.clk ?? null;
     log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, spot:pre.spot, down:pre.down, phase:pre.phase, trace, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q, A:st.score.A, H:st.score.H});
   }
   if (g.box) boxInto(g, st, S, scoring);   // entered from a pasted box score: no plays, just its totals
@@ -3423,9 +3429,12 @@ function record(){
   if (ui.editing != null && ui.ins){
     const c = parseClock(ui.draft.clkTxt || '');
     p.clk = c != null ? c : insClock(ui.editing);
+    if (c != null) p.clkMan = true;
     g.plays.splice(ui.editing, 0, p); ui.editing = null; ui.ins = false; ui.open = null; toast('Play added');
   } else if (ui.editing != null){
-    const c = parseClock(ui.draft.clkTxt || ''); if (c != null) p.clk = c;
+    const c = parseClock(ui.draft.clkTxt || ''), was = g.plays[ui.editing];
+    if (c != null) p.clk = c;
+    if (c != null && c !== was.clk) p.clkMan = true; else if (was.clkMan) p.clkMan = true;   // a time he changed by hand stays
     g.plays[ui.editing] = p; ui.editing = null; ui.open = null; toast('Play updated');
   } else {
     if (R.st.q <= 4 && clockUsed(g)) p.clk = Math.ceil(clockNow());

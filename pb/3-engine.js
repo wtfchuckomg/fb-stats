@@ -822,7 +822,12 @@ function replay(g, upto = g.plays.length){
     return {text};
   }
 
+  // A try is untimed: the PAT or 2-point play carries the touchdown's time (Chuck, 2026-11-05), unless the scorer
+  // typed a different one (clkMan). Set on the stored play, so every reader of plays[].clk agrees.
+  let tdClk = null;
   for (let i = 0; i < upto && i < g.plays.length; i++){
+    if (st.phase === 'try' && typeof tdClk === 'number' && !g.plays[i].clkMan && !['endq', 'final'].includes(g.plays[i].t)) g.plays[i].clk = tdClk;
+    const wasTry = st.phase === 'try';
     let p = wholeYards(g.plays[i]);
     // A punt typed without a distance takes it from the spot typed next ("S ball at S10").
     if (p.t === 'punt' && p.d == null && p.res !== 'tb' && p.res !== 'blk' && st.phase === 'play'){
@@ -848,6 +853,7 @@ function replay(g, upto = g.plays.length){
     // bookkeeping, not a play: it is recorded after the half has already turned the clock to the 3rd quarter.
     if (!['final', 'note', 'to'].includes(p.t) && pre.q > st.qPlayed) st.qPlayed = pre.q;
     const r = apply(p);
+    if (st.phase === 'try' && !wasTry) tdClk = p.clk ?? null;
     log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, spot:pre.spot, down:pre.down, phase:pre.phase, trace, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q, A:st.score.A, H:st.score.H});
   }
   if (g.box) boxInto(g, st, S, scoring);   // entered from a pasted box score: no plays, just its totals

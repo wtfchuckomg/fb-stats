@@ -306,9 +306,12 @@ function record(){
   if (ui.editing != null && ui.ins){
     const c = parseClock(ui.draft.clkTxt || '');
     p.clk = c != null ? c : insClock(ui.editing);
+    if (c != null) p.clkMan = true;
     g.plays.splice(ui.editing, 0, p); ui.editing = null; ui.ins = false; ui.open = null; toast('Play added');
   } else if (ui.editing != null){
-    const c = parseClock(ui.draft.clkTxt || ''); if (c != null) p.clk = c;
+    const c = parseClock(ui.draft.clkTxt || ''), was = g.plays[ui.editing];
+    if (c != null) p.clk = c;
+    if (c != null && c !== was.clk) p.clkMan = true; else if (was.clkMan) p.clkMan = true;   // a time he changed by hand stays
     g.plays[ui.editing] = p; ui.editing = null; ui.open = null; toast('Play updated');
   } else {
     if (R.st.q <= 4 && clockUsed(g)) p.clk = Math.ceil(clockNow());

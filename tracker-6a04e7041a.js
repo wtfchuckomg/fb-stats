@@ -152,7 +152,7 @@ function parseQuick(raw, st){
   toks = toks.filter(t => { const m = t.match(/^(?:@|tk)(\d+)$/); if (m){ tk.push(m[1]); return false; } return true; });
   const bad = msg => ({error:msg});
   const ok = p => {
-    if (clk != null) p.clk = clk;
+    if (clk != null){ p.clk = clk; p.clkMan = true; }   // a typed time: kept even on a try
     if (tk.length && ['run', 'pass', 'punt', 'ko'].includes(p.t) && !p.tk) p.tk = tk.slice(0, 2);
     p.q = line;
     return {play:p};
