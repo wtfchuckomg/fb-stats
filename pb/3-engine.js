@@ -194,6 +194,11 @@ function replay(g, upto = g.plays.length, from = 0){
   function kickoffBy(s, kind = 'kickoff'){
     st.phase = 'kick'; st.poss = s; st.kickKind = kind;
     st.kickFrom = kind === 'free' ? RU.safety : RU.kickFrom;
+    // A flag put off until the kickoff ("pen r 15 on kickoff", Chuck 2026-11-06) is marked off from the kicking spot.
+    if (st.koPen && st.koPen.length){
+      for (const pen of st.koPen){ const y = enforce(pen); S.team[pen.side].pen++; S.team[pen.side].penY += y; }
+      st.koPen = [];
+    }
   }
   function driveTouch(){
     if (!st.drive || st.drive.team !== st.poss){
@@ -776,6 +781,16 @@ function replay(g, upto = g.plays.length, from = 0){
     return t;
   }
   function apply(p){
+    // A foul enforced on the next kickoff (a dead-ball foul after a touchdown): the play stands as it was, and the
+    // yards wait for kickoffBy. Already lined up for the kickoff, it is marked off now, like any flag before a kick.
+    const kp = p.pen;
+    if (kp && kp.ko && !['off', 'dec'].includes(kp.enf) && st.phase !== 'kick'){
+      const r = p.t === 'pen' ? (clk = p.clk ?? null, tags = [], trace = [], flagNow = null, defer = null, {text:''}) : apply({...p, pen:null});
+      st.koPen = (st.koPen || []).concat({...kp, ko:false});
+      tags.push(['flag', 'Flag']);
+      r.text = `${r.text ? r.text + ' ' : ''}PENALTY ${ab(kp.side)} ${kp.name}${kp.n ? ` (${nm(kp.side, kp.n)})` : ''}, ${plural(+kp.y || 0, 'yard')}, enforced on the kickoff.`;
+      return r;
+    }
     clk = p.clk ?? null; tags = []; trace = []; flagNow = null; defer = null;
     let pen = p.pen && PLAY[p.t] ? p.pen : null;
     if (pen && (pen.enf === 'prev' || pen.enf === 'off')){

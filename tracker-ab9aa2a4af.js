@@ -256,6 +256,7 @@ function parseQuick(raw, st){
     if (said && said.side) pen.at = {side:said.side, n:said.raw};   // re-read once we know who has the ball after the play
     if (pt.some(t => ['1st', 'auto', 'af'].includes(t))) pen.a = true;
     if (pt.includes('lod')) pen.l = true;
+    if (pt.some(t => ['kickoff', 'ko'].includes(t))) pen.ko = true;   // "pen r 15 on kickoff": marked off on the next kickoff
     const declined = pt.some(t => ['dec', 'declined'].includes(t));
     if (!toks.length){ delete pen.at; return ok({t:'pen', pen:{...pen, enf:declined ? 'dec' : 'acc'}}); }
     pen.enf = pt.some(t => ['np', 'noplay', 'nullified', 'replay'].includes(t)) ? 'prev'

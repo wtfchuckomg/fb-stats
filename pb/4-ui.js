@@ -269,7 +269,7 @@ function toDraft(p, st){
   d.clkTxt = p.clk != null ? mmss(p.clk) : '';
   return d;
 }
-function cleanPen(x){ return {side:x.side, name:x.name, y:Number(x.y) || 0, a:!!x.a, l:!!x.l, n:String(x.n || '').replace(/\D/g, '') || undefined, enf:x.enf}; }
+function cleanPen(x){ return {side:x.side, name:x.name, y:Number(x.y) || 0, a:!!x.a, l:!!x.l, n:String(x.n || '').replace(/\D/g, '') || undefined, enf:x.enf, ...(x.ko ? {ko:true} : {})}; }
 function buildPlay(d){
   const n = v => v === '' || v == null ? undefined : Number(String(v).replace(/[^\d.]/g, '')) || 0;
   const j = v => String(v ?? '').replace(/\D/g, '') || undefined;
@@ -397,7 +397,7 @@ function flagFields(standalone){
     ${row(fSeg('pen.side', 'Against', [['A', ab('A')], ['H', ab('H')]]),
       `<div class="fld"><label class="eyebrow" for="f-pen.name">Foul</label><select class="inp" id="f-pen.name" data-k="pen.name">${PENALTIES.map(x => `<option ${x.name === pn.name ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>`)}
     ${row(fN('pen.y', 'Yards', '0'), fJ('pen.n', 'Player', pn.side))}
-    <div class="checks">${tog('pen.a', 'Automatic 1st down')}${tog('pen.l', 'Loss of down')}</div>
+    <div class="checks">${tog('pen.a', 'Automatic 1st down')}${tog('pen.l', 'Loss of down')}${tog('pen.ko', 'On the kickoff')}</div>
     ${fSeg('pen.enf', 'Enforcement', enf)}
     <p class="hint">${ENF_HINT[pn.enf]}</p></div>`;
 }
