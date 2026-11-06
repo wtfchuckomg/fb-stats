@@ -41,7 +41,7 @@ async function startSync(){
     try { localStorage.setItem('pressbox.admin', ui.admin ? '1' : ''); localStorage.setItem('pressbox.scorer', user ? '1' : ''); } catch (e) {}
     sync.state = user ? 'saving' : 'signed-out';
     if (!user && sync.editId) toast('Sign in to edit this game');
-    if (user) listen();
+    if (user){ listen(); saveProfile(user); }
     if (ui.admin) setTimeout(pushPrivateFinals, 4000);   // after the page has drawn
     renderSync();
   });
@@ -50,6 +50,18 @@ async function startSync(){
   setInterval(retryFailed, 30000);   // a signal can come back without the browser saying so
 }
 
+// Who a scorer is, for the admin’s Others window (Chuck, 2026-11-06: their email, not an account code). Private:
+// public game records never carry it, since anyone can read those. One
+// record per account, written once a day on sign-in, so games saved before this get a name too.
+function saveProfile(user){
+  if (!user.email) return;
+  const key = `${user.uid}|${user.email}|${new Date().toDateString()}`;
+  try { if (localStorage.getItem('pressbox.profile') === key) return; } catch (e) {}
+  const {fsM, fsdb} = sync.api;
+  fsM.setDoc(fsM.doc(fsdb, 'pressbox', `user-${user.uid}`), {owner:user.uid, updated:Date.now(), public:false, kind:'user',
+    email:user.email, name:user.displayName || '', json:'{}'})
+    .then(() => { try { localStorage.setItem('pressbox.profile', key); } catch (e) {} }).catch(() => {});
+}
 function openToEdit(){
   g = db.games[sync.editId]; sync.editId = null;
   resetUi(); ui.start = false; setCurrent(); persist(); refresh();
@@ -67,7 +79,7 @@ function listen(){
       const id = ch.doc.id, d = ch.doc.data(), local = db.games[id];
       if (id === teamsDocId()) return mergeTeams(d.json);        // the saved-teams library, not a game
       if (id === mySchoolsDocId() || d.kind === 'my-schools') return mergeMySchools(d.json);   // schools this scorer added, not a game
-      if (id === HIDE_DOC || id === RECS_DOC || id === MINS_DOC || d.kind === 'roster' || d.kind === 'massey' || d.kind === 'flips') return;   // hidden games, team records, stat minimums, shared rosters, the old Massey lines, coin flips: not games
+      if (id === HIDE_DOC || id === RECS_DOC || id === MINS_DOC || d.kind === 'user' || d.kind === 'roster' || d.kind === 'massey' || d.kind === 'flips') return;   // hidden games, team records, stat minimums, shared rosters, the old Massey lines, coin flips: not games
       if (d.kind === 'score') return mergeScore(id, d);           // a quick score, not a game
       const lu = local ? local.updated || 0 : -1, ru = d.updated || 0;
       if (ru > lu){

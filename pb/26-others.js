@@ -16,15 +16,17 @@ function watchOthers(){
   const {fsM, fsdb} = sync.api;
   const redraw = () => { if (ui.dlg === 'others' && dlg().open) dlg().innerHTML = dlgOthers(); };
   others.unsub = fsM.onSnapshot(fsM.collection(fsdb, 'pressbox'), snap => {
-    const list = [];
+    const list = [], who = {};
     snap.forEach(d => {
       const v = d.data();
+      if (v.kind === 'user' && v.email){ who[v.owner] = v.email; return; }
       if (v.deleted || !v.json || v.owner === ADMIN_UID || ['roster', 'teams', 'hidden', 'records'].includes(v.kind)) return;
       try {
         const x = Object.assign(JSON.parse(v.json), {id:d.id});
         if (x.teams && x.teams.A && x.teams.H) list.push({x, owner:v.owner || '', shared:!!v.public, updated:v.updated || x.updated || 0});
       } catch (e) {}
     });
+    list.forEach(o => { o.email = who[o.owner] || ''; });
     others.list = list.sort((a, b) => b.updated - a.updated); others.err = ''; redraw();
   }, e => {
     others.unsub = null;   // opening the window again tries again
@@ -48,7 +50,7 @@ function othersRow(o){
   const live = `<button class="btn small${o.shared ? '' : ' primary'}" data-golive="${esc(x.id)}">${o.shared ? 'Take off' : 'Push live'}</button>`;
   return `<div class="gitem"><div><b>${esc(A.abbr || A.name)} ${m.pre ? '' : m.score.A} at ${esc(H.abbr || H.name)} ${m.pre ? '' : m.score.H}</b>`
     + `<span class="cur-tag"${o.shared ? '' : ' style="color:var(--flag-ink)"'}>${o.shared ? 'Shared' : 'Not shared'}</span>
-    <div class="meta">${esc(A.name)} at ${esc(H.name)} · ${gameDay(x).toLocaleDateString()} · ${esc(m.status)} · ${how} · scorer ${esc(o.owner.slice(0, 6))} · updated ${agoText(o.updated)}</div></div>
+    <div class="meta">${esc(A.name)} at ${esc(H.name)} · ${gameDay(x).toLocaleDateString()} · ${esc(m.status)} · ${how} · ${o.email ? `<b>${esc(o.email)}</b>` : `scorer ${esc(o.owner.slice(0, 6))}`} · updated ${agoText(o.updated)}</div></div>
     <div class="acts">${watch}${edit}${live}<button class="btn small danger" data-odel="${esc(x.id)}">${ui.confirm === 'o:' + x.id ? 'Tap again' : 'Delete'}</button></div></div>`;
 }
 function dlgOthers(){
