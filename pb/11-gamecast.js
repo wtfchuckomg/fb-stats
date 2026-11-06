@@ -367,6 +367,16 @@ function renderRail(){
   wpBind();
 }
 
+// A game scored play by play that has reached the 3rd quarter can be split at the half. Not a pasted box score:
+// its numbers are for the whole game.
+function halfSplit(){
+  if (g.box || g.statBox || !R || !R.log.length) return null;
+  const e = R.log.find(e => e.q >= 3); if (!e) return null;
+  const h = e.i;
+  return {1:() => replay(g, h), 2:() => replay(g, g.plays.length, h)};
+}
+const halfBar = on => `<div class="segctl half-tog" role="group" aria-label="Which half">${[['all', 'Full Game'], ['1', '1st Half'], ['2', '2nd Half']]
+  .map(([k, l]) => `<button type="button" data-half="${k}" aria-pressed="${on === k}">${l}</button>`).join('')}</div>`;
 function renderView(){
   document.querySelectorAll('#tabs .gtab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
   if (!g || !R) return;
@@ -384,7 +394,10 @@ function renderView(){
   const pad = $('#pad'), view = $('#view'), act = document.activeElement, typing = pad && act && pad.contains(act) && act.matches('input,textarea');
   const sel = typing ? [act.selectionStart, act.selectionEnd] : null;
   if (pad && view.contains(pad)) view.before(pad);
-  view.innerHTML = V();
+  // Box Score and Team Stats split by half (Chuck, 2026-11-06): the same cards drawn from the plays of one half.
+  const split = ['box', 'team'].includes(ui.tab) ? halfSplit() : null, half = split && split[ui.half] ? ui.half : 'all';
+  if (half === 'all') view.innerHTML = (split ? halfBar('all') : '') + V();
+  else { const full = R; R = split[half](); try { view.innerHTML = halfBar(half) + V(); } finally { R = full; } }
   const slot = ui.editing != null && view.querySelector(`.pl-slot[data-slot="${ui.editing}"]`);
   if (pad && slot) slot.append(pad);
   if (typing && document.activeElement !== act && act.isConnected){ act.focus({preventScroll:true}); try { act.setSelectionRange(...sel); } catch (e) {} }

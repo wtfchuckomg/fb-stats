@@ -102,7 +102,8 @@ function wholeYards(p){
   ['fum', 'lat', 'pen'].forEach(k => { const v = q[k] && fix(q[k], ['y', 'ry', 'foul', 'ball']); if (q[k] && v !== q[k]) q = {...q, [k]:v}; });
   return q;
 }
-function replay(g, upto = g.plays.length){
+// `from`: stats count only from that play on (the 2nd-half toggle); the game itself still replays from the start.
+function replay(g, upto = g.plays.length, from = 0){
   const RU = rulesOf(g), FL = RU.len, HALF = FL / 2;
   const T = g.teams, qSec = (g.set.qtr || 12) * 60, otSpot = FL - RU.ot;
   let st = {q:1, phase:'kick', kickKind:'kickoff', poss:g.set.firstKick || 'H', kickFrom:RU.kickFrom,
@@ -826,6 +827,7 @@ function replay(g, upto = g.plays.length){
   // typed a different one (clkMan). Set on the stored play, so every reader of plays[].clk agrees.
   let tdClk = null;
   for (let i = 0; i < upto && i < g.plays.length; i++){
+    if (from && i === from) S = {team:{A:zeros(TEAM_KEYS), H:zeros(TEAM_KEYS)}, pl:{A:{}, H:{}}};
     if (st.phase === 'try' && typeof tdClk === 'number' && !g.plays[i].clkMan && !['endq', 'final'].includes(g.plays[i].t)) g.plays[i].clk = tdClk;
     const wasTry = st.phase === 'try';
     let p = wholeYards(g.plays[i]);
@@ -857,7 +859,7 @@ function replay(g, upto = g.plays.length){
     log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, spot:pre.spot, down:pre.down, phase:pre.phase, trace, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q, A:st.score.A, H:st.score.H});
   }
   if (g.box) boxInto(g, st, S, scoring);   // entered from a pasted box score: no plays, just its totals
-  if (g.statBox && !g.box && upto >= g.plays.length) statBoxInto(g, S);   // tracked, with the player stats from a box score
+  if (g.statBox && !g.box && !from && upto >= g.plays.length) statBoxInto(g, S);   // tracked, with the player stats from a box score
   if (g.lines && upto >= g.plays.length) applyLines(g.lines, st);   // a typed line score wins over the plays
   const open = st.drive ? [{...st.drive, res:'In progress', open:true}] : [];
   return {st, S, log, scoring, drives:drives.concat(open), sit:sit(), yl, nm, ab, FL, RU, box:!!g.box};
