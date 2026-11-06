@@ -502,11 +502,12 @@ function parseQuick(raw, st){
     const nums = toks.filter(isNum), no = has(...NO_WORDS);
     if (has('fg', 'punt', 'sack', 'sacked', 'sk', 'int', 'fum', 'fumble'))
       return bad('This is the try after the touchdown: 15-xp for the kick (15-xp-no if missed), 3 for a two-point run, 7-88 for a two-point pass.');
-    if (has('xp', 'pat', 'kick', '1pt')) return ok({t:'try', kind:'kick', ...(nums[0] != null ? {k:nums[0]} : {}), res:has(...BLK_WORDS) ? 'blk' : no ? 'miss' : 'good'});
+    // A flag on the same line goes with the try (Chuck, 2026-11-06): "15-xp pen n 10" brings a good kick back.
+    if (has('xp', 'pat', 'kick', '1pt')) return flag({t:'try', kind:'kick', ...(nums[0] != null ? {k:nums[0]} : {}), res:has(...BLK_WORDS) ? 'blk' : no ? 'miss' : 'good'});
     const need = FL - st.spot;
-    if (has('inc')) return ok({t:'pass', qb:nums[0], res:'i', ...(nums[1] != null ? {to:nums[1]} : {})});
-    if (nums.length === 1) return ok({t:'run', r:nums[0], y:no ? 0 : need});
-    if (nums.length >= 2) return ok({t:'pass', qb:nums[0], to:nums[1], res:'c', y:no ? 0 : need});
+    if (has('inc')) return flag({t:'pass', qb:nums[0], res:'i', ...(nums[1] != null ? {to:nums[1]} : {})});
+    if (nums.length === 1) return flag({t:'run', r:nums[0], y:no ? 0 : need});
+    if (nums.length >= 2) return flag({t:'pass', qb:nums[0], to:nums[1], res:'c', y:no ? 0 : need});
     return bad('After a touchdown: 15-xp for the kick (15-xp-no if missed), 3 for a 2-point run, 7-88 for a 2-point pass.');
   }
 

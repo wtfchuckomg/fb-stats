@@ -736,7 +736,7 @@ function replay(g, upto = g.plays.length, from = 0){
     return '';
   }
 
-  const PLAY = {run:1, pass:1, punt:1, ko:1, fg:1};
+  const PLAY = {run:1, pass:1, punt:1, ko:1, fg:1, try:1};
   function core(p){
     switch (p.t){
       case 'run': return run(p);
@@ -820,7 +820,8 @@ function replay(g, upto = g.plays.length, from = 0){
     let text = core(p);
     if (mayWipe){
       const made = scoring.slice(scoredFrom);
-      if (made.length && made.some(e => e.side === pen.side)){
+      // A try's point goes onto the touchdown's line rather than a line of its own, so the score itself is checked too.
+      if ((made.length && made.some(e => e.side === pen.side)) || st.score[pen.side] > before.st.score[pen.side]){
         const wiped = text;
         ({st, S, scoring, drives} = before);
         tags = []; trace = [];

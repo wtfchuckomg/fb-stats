@@ -329,7 +329,7 @@ function buildPlay(d){
       if (yes(F.twice) && F.then){ p.fum.then = one(F.then); p.fum.endLost = p.fum.lost !== p.fum.then.lost; }
     }
   }
-  if (['run', 'pass', 'punt', 'ko', 'fg'].includes(d.t) && d.penOn) p.pen = cleanPen(d.pen);
+  if (['run', 'pass', 'punt', 'ko', 'fg', 'try'].includes(d.t) && d.penOn) p.pen = cleanPen(d.pen);
   return JSON.parse(JSON.stringify(p));
 }
 const fumbleAllowed = d => d.t === 'run' || (d.t === 'pass' && (d.res === 'c' || d.res === 's' || d.res === 'x')) || ((d.t === 'punt' || d.t === 'ko') && d.res === 'ret');
@@ -471,6 +471,7 @@ function formHtml(){
       if (d.kind === 'kick') h += row(fJ('k', 'Kicker', O, 'kick')) + fSeg('res', 'Result', [['good', 'Good'], ['miss', 'No good'], ['blk', 'Blocked']]);
       if (d.kind === 'run') h += row(fJ('r', 'Ball carrier', O, 'rush')) + fSeg('res', 'Result', [['good', 'Good'], ['miss', 'No good']]);
       if (d.kind === 'pass') h += row(fJ('qb', 'Passer', O, 'qb'), fJ('to', 'Receiver', O, 'rec')) + fSeg('res', 'Result', [['good', 'Good'], ['miss', 'No good']]);
+      h += `<div class="more"><div class="checks">${tog('penOn', 'Flag on the play', 'flagtog')}</div>${d.penOn ? flagFields(false) : ''}</div>`;
       return h + '<p class="hint">NFHS try is snapped from the 3-yard line. If the defense takes the ball, the try is over.</p>';
     }
     case 'pen': return flagFields(true);

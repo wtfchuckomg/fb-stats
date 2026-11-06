@@ -1674,7 +1674,7 @@ try { if (new URLSearchParams(location.search).has('embed')) document.documentEl
 const SITE = 'kmr';
 const SITE_AV = SITE === 'avctl';
 // The scorer's tools (shorthand, voice, imports, the spreadsheet) are a file of their own, named by build.py.
-const TRACKER_JS = 'tracker-ab9aa2a4af.js';
+const TRACKER_JS = 'tracker-18d85a71d8.js';
 const SITE_NAME = SITE_AV ? 'Ark Valley Chisholm Trail League statistics and leaders' : 'Kansas Media Stats';
 const SITE_TITLE = SITE_AV ? 'AVCTL Stats' : 'Kansas Media Stats';   // after the page's own name in a tab's title
 // Where the nightly files (season.json, stats.json, schedules, logos, game snapshots) live: stats/KMR builds
@@ -2434,7 +2434,7 @@ function replay(g, upto = g.plays.length, from = 0){
     return '';
   }
 
-  const PLAY = {run:1, pass:1, punt:1, ko:1, fg:1};
+  const PLAY = {run:1, pass:1, punt:1, ko:1, fg:1, try:1};
   function core(p){
     switch (p.t){
       case 'run': return run(p);
@@ -2518,7 +2518,8 @@ function replay(g, upto = g.plays.length, from = 0){
     let text = core(p);
     if (mayWipe){
       const made = scoring.slice(scoredFrom);
-      if (made.length && made.some(e => e.side === pen.side)){
+      // A try's point goes onto the touchdown's line rather than a line of its own, so the score itself is checked too.
+      if ((made.length && made.some(e => e.side === pen.side)) || st.score[pen.side] > before.st.score[pen.side]){
         const wiped = text;
         ({st, S, scoring, drives} = before);
         tags = []; trace = [];
@@ -2908,7 +2909,7 @@ function buildPlay(d){
       if (yes(F.twice) && F.then){ p.fum.then = one(F.then); p.fum.endLost = p.fum.lost !== p.fum.then.lost; }
     }
   }
-  if (['run', 'pass', 'punt', 'ko', 'fg'].includes(d.t) && d.penOn) p.pen = cleanPen(d.pen);
+  if (['run', 'pass', 'punt', 'ko', 'fg', 'try'].includes(d.t) && d.penOn) p.pen = cleanPen(d.pen);
   return JSON.parse(JSON.stringify(p));
 }
 const fumbleAllowed = d => d.t === 'run' || (d.t === 'pass' && (d.res === 'c' || d.res === 's' || d.res === 'x')) || ((d.t === 'punt' || d.t === 'ko') && d.res === 'ret');
@@ -3050,6 +3051,7 @@ function formHtml(){
       if (d.kind === 'kick') h += row(fJ('k', 'Kicker', O, 'kick')) + fSeg('res', 'Result', [['good', 'Good'], ['miss', 'No good'], ['blk', 'Blocked']]);
       if (d.kind === 'run') h += row(fJ('r', 'Ball carrier', O, 'rush')) + fSeg('res', 'Result', [['good', 'Good'], ['miss', 'No good']]);
       if (d.kind === 'pass') h += row(fJ('qb', 'Passer', O, 'qb'), fJ('to', 'Receiver', O, 'rec')) + fSeg('res', 'Result', [['good', 'Good'], ['miss', 'No good']]);
+      h += `<div class="more"><div class="checks">${tog('penOn', 'Flag on the play', 'flagtog')}</div>${d.penOn ? flagFields(false) : ''}</div>`;
       return h + '<p class="hint">NFHS try is snapped from the 3-yard line. If the defense takes the ball, the try is over.</p>';
     }
     case 'pen': return flagFields(true);
