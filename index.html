@@ -4134,11 +4134,20 @@ function driveClocks(){
     return hit;
   };
   let endAt = null;
+  const timed = P.some(p => typeof p.clk === 'number' && p.t !== 'endq');
   return D.map((d, k) => {
     const prev = D[k - 1], next = D[k + 1];
     // The clock can't run back up within a quarter, so a start later than the last drive's end takes that end,
     // and an end later than its own start is a mistyped clock, left out.
-    let t0 = d.q <= 4 ? clockIn(prev ? prev.i1 : 0, d.i0, d.q, true) : null;
+    // A drive starts the moment the last one ended (Chuck, 2026-11-07: "it starts as soon as the [last] drive ends",
+    // kickoffs included), and the first drive of a quarter at the top of it. Only when the last drive's end isn't
+    // known is a clock typed after it used, and never this drive's own first play: that's when the play was over.
+    let t0 = null;
+    if (d.q <= 4){
+      if (endAt && endAt.q === d.q) t0 = endAt.t;
+      else if ((!prev || prev.endQ < d.q) && timed) t0 = qSec;
+      else t0 = clockIn(prev ? prev.i1 : 0, d.i0 - 1, d.q, true);
+    }
     if (t0 != null && endAt && endAt.q === d.q && t0 > endAt.t) t0 = endAt.t;
     let t1 = d.open || d.endQ > 4 ? null : clockIn(d.i1, next ? next.i0 : L.length - 1, d.endQ, false);
     // A clock that hit 0:00 stays there, so a drive whose last play is at 0:00 ends at 0:00 even if the zero was typed earlier.
