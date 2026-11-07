@@ -4049,7 +4049,9 @@ const BOX_CATS = [
     p => [p.tk + p.ast, p.tk, p.ast, fy(p.tfl), fy(p.sk), p.dint, p.pbu, p.ff, p.fr], p => p.tk + p.ast],
   ['Kicking', ['FG', 'Lng', 'XP', 'KO', 'TB', 'Pts'], p => p.fga || p.xpa || p.ko, p => [`${p.fgm}/${p.fga}`, p.fglg || '—', `${p.xpm}/${p.xpa}`, p.ko, p.ktb, p.fgm * 3 + p.xpm], 'fga'],
   ['Punting', ['No', 'Yds', 'Avg', 'Lng', 'In 20', 'TB'], p => p.pu, p => [p.pu, p.puy, avg(p.puy, p.pu), p.pulg, p.pi20, p.ptb], 'pu'],
-  ['Returns', ['KR', 'Yds', 'Lng', 'PR', 'Yds', 'Lng', 'TD'], p => p.kr || p.pr, p => [p.kr, p.kry, p.krlg, p.pr, p.pry, p.prlg, p.krtd + p.prtd], 'kry']];
+  // Kick and punt returns each get a table of their own (Chuck, 2026-11-06).
+  ['Kick Returns', ['No', 'Yds', 'Avg', 'Lng', 'TD'], p => p.kr, p => [p.kr, p.kry, avg(p.kry, p.kr), p.krlg, p.krtd || 0], 'kry'],
+  ['Punt Returns', ['No', 'Yds', 'Avg', 'Lng', 'TD'], p => p.pr, p => [p.pr, p.pry, avg(p.pry, p.pr), p.prlg, p.prtd || 0], 'pry']];
 function viewBoxTab(){
   const T = g.teams;
   // The sort column is a key, or a sum of them — the defense goes in order of total tackles.
@@ -4066,7 +4068,7 @@ function viewBoxTab(){
     const table = s => `<div><div class="bx-team">${teamMark(s, 22)}${ui.viewer ? `<a class="tlink" href="?team=${encodeURIComponent(schoolName(T[s].name))}">${esc(schoolName(T[s].name))}</a>` : esc(schoolName(T[s].name))}</div>${lists[s].length
       ? `<div class="tbl-wrap"><table class="st"><thead><tr><th>${title}</th>${heads.map(x => `<th>${x}</th>`).join('')}</tr></thead>
         <tbody>${lists[s].map(p => `<tr><td>${plName(s, p.n)}</td>${row(p).map(v => `<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`
-      : `<div class="muted" style="font-size:13px;padding:6px 0">No ${title.toLowerCase()} stats</div>`}</div>`;
+      : `<div class="muted" style="font-size:13px;padding:6px 0">No ${title.toLowerCase()}${/s$/.test(title) ? '' : ' stats'}</div>`}</div>`;
     h += `<section class="card"><div class="card-hd"><h2 class="card-title">${title}</h2></div><div class="bx2${heads.length >= 8 ? ' wide' : ''}">${table('A')}${table('H')}</div></section>`;
   }
   // The scorer can hand the player stats over to a pasted box score (a stream that cut off before the end).
