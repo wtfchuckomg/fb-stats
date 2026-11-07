@@ -417,6 +417,8 @@ function bkSeed(names){
 // The regular season's final district standings, locked in place (Chuck, 2026-11-04: "you can lock their regular
 // season standings/districts in place"), as the site had them when the season ended. A district in this list is read
 // in this order whatever is entered for weeks 1-8 later, every place bold and everyone past the cut out.
+// Corrected 2026-11-06 from the playoff games actually played: 8-Man II D4 had Linn 4th (at Lebo in week 9), not
+// Frankfort; 6-Man D3 had Bucklin 5th and Deerfield 6th (Bucklin at Golden Plains, Deerfield at Cheylin).
 const BK_DLOCK = {
   '3A':[
     ["Frontenac", "Columbus", "Iola", "Girard", "Parsons"],
@@ -458,7 +460,7 @@ const BK_DLOCK = {
     ["Marmaton Valley", "Flinthills", "Madison", "Sedan", "Colony-Crest", "St Paul"],
     ["Cunningham", "Hutch Central Christian", "Attica-Argonia", "Norwich", "Pretty Prairie", "Fairfield"],
     ["Lebo", "Waverly", "Wakefield", "Hartford", "Goessel", "Rural Vista", "Burlingame"],
-    ["Axtell", "Hanover", "Troy", "Frankfort", "Linn", "BV Randolph"],
+    ["Axtell", "Hanover", "Troy", "Linn", "Frankfort", "BV Randolph"],
     ["Hodgeman County", "Kinsley", "Meade", "Minneola", "Skyline", "Macksville"],
     ["Sylvan-Lucas Unified", "Little River", "Victoria", "Ellis", "Stafford", "La Crosse"],
     ["Osborne", "Thunder Ridge", "St John's", "Lakeside", "Pike Valley", "Stockton"],
@@ -466,7 +468,7 @@ const BK_DLOCK = {
   '6M':[
     ["Peabody-Burns", "Centre", "Marais des Cygnes Valley", "Chetopa", "Elyria Christian", "Southern Coffey County", "Altoona-Midway"],
     ["Tescott", "Otis-Bison", "Logan", "Palco", "Pawnee Heights", "Chase", "Western Plains"],
-    ["Ingalls", "South Barber", "Ashland", "Satanta", "Deerfield", "Bucklin", "Moscow"],
+    ["Ingalls", "South Barber", "Ashland", "Satanta", "Bucklin", "Deerfield", "Moscow"],
     ["Weskan", "Wheatland-Grinnell", "Cheylin", "Golden Plains", "Northern Valley", "Winona-Triplains", "Brewster"]]
 };
 // One district in place order (the criteria at the top). No district games yet reads as .500, as the league
