@@ -282,6 +282,7 @@ function parseQuick(raw, st){
         if (pen.foul != null) pen.foul = pos; else if (pen.ball != null) pen.ball = pos;
       }
       delete pen.at; p.pen = pen;
+      passFlag(p, st);   // a flag on a pass takes the pass away
     }
     return ok(p);
   };

@@ -330,7 +330,20 @@ function buildPlay(d){
     }
   }
   if (['run', 'pass', 'punt', 'ko', 'fg', 'try'].includes(d.t) && d.penOn) p.pen = cleanPen(d.pen);
+  if (p.pen && p.t === 'pass' && p.pen.enf === 'end') passFlag(p, replay(g, ui.editing ?? g.plays.length).st);
   return JSON.parse(JSON.stringify(p));
+}
+// A flag on a pass takes the pass away (Chuck, 2026-11-06: "penalties should cancel out pass plays. Only running
+// plays should still gain yards."): a completion or incompletion flagged "add to play" goes in as no play, marked
+// off from the line. Done when the play is entered, so games already saved (and imported ones, whose source
+// said whether the play stood) read as they always did. Not a sack (a run in the rules), an interception, a catch
+// that was fumbled, or a touchdown the defense fouled on: the offense keeps that one.
+function passFlag(p, st){
+  const pen = p.pen;
+  if (!pen || pen.enf !== 'end' || p.t !== 'pass' || !st || st.phase !== 'play' || !['c', 'i'].includes(p.res) || p.fum || p.lat) return p;
+  if (p.res === 'c' && pen.side !== st.poss && st.spot + (+p.y || 0) >= rulesOf(g).len) return p;
+  p.pen = {...pen, enf:'prev'};
+  return p;
 }
 const fumbleAllowed = d => d.t === 'run' || (d.t === 'pass' && (d.res === 'c' || d.res === 's' || d.res === 'x')) || ((d.t === 'punt' || d.t === 'ko') && d.res === 'ret');
 const getK = (o, path) => path.split('.').reduce((a, k) => a == null ? a : a[k], o);
@@ -386,7 +399,7 @@ function fumbleFields(){
 }
 const ENF_HINT = {
   prev:'The play is wiped out and its stats don’t count. Yards are marked off from the previous spot.',
-  end:'The play and its stats count, then the yards are marked off from where it ended. For a foul downfield, enter the play’s yards only up to the spot of the foul.',
+  end:'A run and its stats count, then the yards are marked off from where it ended. For a foul downfield, enter the run’s yards only up to the spot of the foul. A pass is wiped out and marked off from the previous spot.',
   dec:'The play stands. The foul is noted but not charged.',
   off:'Fouls by both teams cancel and the down is replayed.',
   acc:'Marked off from the current spot. Half the distance to the goal applies automatically.'};
