@@ -729,8 +729,10 @@ function bkFullHtml(eastSlots, westSlots){
   // every pairing in it, both sides, has a final (a bye needs none).
   const done = c => c.games.every((gm, i) => gm || (c.slots[2 * i] || {}).bye || (c.slots[2 * i + 1] || {}).bye);
   let cur = 0; while (cur < 3 && done(W.cols[cur]) && done(E.cols[cur])) cur++;
-  const width = r => r === cur ? 'minmax(220px,3fr)' : r < cur ? 'minmax(112px,1.4fr)' : 'minmax(72px,1fr)';   // a finished round has scores to fit
-  const grid = [0, 1, 2, 3].map(width).join(' ') + ' minmax(84px,1.1fr) ' + [3, 2, 1, 0].map(width).join(' ');
+  // Each column only as wide as what's in it, and the whole bracket centered (Chuck, 2026-11-13: the East side was
+  // cut off, with open space in the middle): the columns sit together and the connectors keep their 20px gap.
+  const width = r => r === cur ? 'minmax(150px,220px)' : r < cur ? 'minmax(98px,104px)' : 'minmax(64px,84px)';   // a finished round has scores to fit
+  const grid = [0, 1, 2, 3].map(width).join(' ') + ' minmax(76px,120px) ' + [3, 2, 1, 0].map(width).join(' ');
   const col = (c, r, west) => `<div class="bkf-col${west ? ' w' : ''}"><span class="bkt-h">${ROUNDS[r]}</span><div class="bkf-pairs">${c.games.map((gm, i) =>
     bkPair(c.slots[2 * i], c.slots[2 * i + 1], bkLine(c.slots[2 * i], gm, r !== cur, r) + bkLine(c.slots[2 * i + 1], gm, r !== cur, r))).join('')}</div></div>`;
   const fin = bkPlayed(W.champ, E.champ), state = bkPair(W.champ, E.champ, bkLine(W.champ, fin, true) + bkLine(E.champ, fin, true), ' st');

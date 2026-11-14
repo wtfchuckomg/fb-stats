@@ -581,8 +581,8 @@ table.pl-tbl{table-layout:fixed;width:100%}
 .bkf,.bkf-sides{display:none}
 @media (min-width:1200px){
   .bkt-wrap.has-full{display:none}
-  .bkf{display:grid;grid-template-columns:minmax(220px,3fr) repeat(3,minmax(72px,1fr)) minmax(84px,1.1fr) repeat(3,minmax(72px,1fr)) minmax(220px,3fr);
-    column-gap:20px;padding:4px 12px 8px;align-items:stretch}
+  .bkf{display:grid;grid-template-columns:minmax(150px,220px) repeat(3,minmax(64px,84px)) minmax(76px,120px) repeat(3,minmax(64px,84px)) minmax(150px,220px);
+    justify-content:center;column-gap:20px;padding:4px 12px 8px;align-items:stretch}
   .bkf-sides{display:flex;justify-content:space-between;padding:0 14px 12px;font:700 14px/1.2 var(--sans);color:var(--ink-2)}
   .bkf-col{display:flex;flex-direction:column;min-width:0}
   .bkf-pairs{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:12px}
@@ -598,7 +598,7 @@ table.pl-tbl{table-layout:fixed;width:100%}
   .bkf .bkp.lost{opacity:.55}
   .bkf .bkp.empty{min-height:32px}
   .bkf .bkt-pair.st{border:2px solid var(--bk-line);border-radius:12px;padding:6px}
-  .bkf .bkp.lot .bk-nm,.bkf .bk-nm{white-space:normal;line-height:1.2;overflow-wrap:anywhere}
+  .bkf .bkp.lot .bk-nm,.bkf .bk-nm{white-space:normal;line-height:1.2;overflow-wrap:break-word;min-width:0}
   .bkf .bkp.sm{padding:5px 6px;gap:5px}
   .bkf .bkp.sm .bk-nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
 }
@@ -12386,8 +12386,10 @@ function bkFullHtml(eastSlots, westSlots){
   // every pairing in it, both sides, has a final (a bye needs none).
   const done = c => c.games.every((gm, i) => gm || (c.slots[2 * i] || {}).bye || (c.slots[2 * i + 1] || {}).bye);
   let cur = 0; while (cur < 3 && done(W.cols[cur]) && done(E.cols[cur])) cur++;
-  const width = r => r === cur ? 'minmax(220px,3fr)' : r < cur ? 'minmax(112px,1.4fr)' : 'minmax(72px,1fr)';   // a finished round has scores to fit
-  const grid = [0, 1, 2, 3].map(width).join(' ') + ' minmax(84px,1.1fr) ' + [3, 2, 1, 0].map(width).join(' ');
+  // Each column only as wide as what's in it, and the whole bracket centered (Chuck, 2026-11-13: the East side was
+  // cut off, with open space in the middle): the columns sit together and the connectors keep their 20px gap.
+  const width = r => r === cur ? 'minmax(150px,220px)' : r < cur ? 'minmax(98px,104px)' : 'minmax(64px,84px)';   // a finished round has scores to fit
+  const grid = [0, 1, 2, 3].map(width).join(' ') + ' minmax(76px,120px) ' + [3, 2, 1, 0].map(width).join(' ');
   const col = (c, r, west) => `<div class="bkf-col${west ? ' w' : ''}"><span class="bkt-h">${ROUNDS[r]}</span><div class="bkf-pairs">${c.games.map((gm, i) =>
     bkPair(c.slots[2 * i], c.slots[2 * i + 1], bkLine(c.slots[2 * i], gm, r !== cur, r) + bkLine(c.slots[2 * i + 1], gm, r !== cur, r))).join('')}</div></div>`;
   const fin = bkPlayed(W.champ, E.champ), state = bkPair(W.champ, E.champ, bkLine(W.champ, fin, true) + bkLine(E.champ, fin, true), ' st');
