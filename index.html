@@ -1191,6 +1191,7 @@ input.st-clock{width:72px;text-align:center;border:1px solid var(--line);border-
 .pbd-chev{width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 4px 4px 2px;transition:transform .15s}
 .pbd.on .pbd-chev{transform:rotate(-135deg);margin:4px 4px 0 2px}
 .pbd-plays{margin:-4px 0 12px;padding:0 4px}
+.pbd-all{display:flex;justify-content:flex-end;gap:8px;margin:0 0 10px}
 .drivehd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 2px;padding:9px 10px;border-radius:8px;background:var(--surface);font-size:13px;color:var(--muted)}
 .drivehd b{font:700 13px/1 var(--cond);text-transform:uppercase;color:var(--ink-2)}
 .drivehd .res{font-weight:600;color:var(--ink-2)}
@@ -3573,6 +3574,7 @@ document.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
   const d = t.dataset;
   // A drive on the play-by-play opens and folds for anyone.
+  if (d.pfoldall != null){ ui.pbpFold = ui.pbpFold || {}; document.querySelectorAll('[data-pdrive]').forEach(b => { ui.pbpFold[`${g.id}:${b.dataset.pdrive}`] = d.pfoldall === '1'; }); return renderView(); }
   if (d.pdrive != null){ const k = `${g.id}:${d.pdrive}`; ui.pbpFold = ui.pbpFold || {}; ui.pbpFold[k] = t.getAttribute('aria-expanded') !== 'true'; return renderView(); }
   if (d.half){ ui.half = d.half; return renderView(); }      // anyone: the box score by half
   if (ui.viewer && !d.tab && !d.pbp && !d.pbsort) return;     // viewers can switch tabs and nothing else
@@ -4060,7 +4062,10 @@ function playsList(oldFirst = false){
     const isOpen = (ui.editing != null && it.plays.some(e => e.i === ui.editing)) || (pick != null ? pick : !ui.viewer || it.gr.d.open);
     h += head(it.gr, isOpen) + (isOpen ? `<div class="pbd-plays">${plays.map(row).join('')}</div>` : '');
   }
-  return `<div class="plays">${h}</div>`;
+  // The admin can open or fold every drive at once (Chuck, 2026-11-14).
+  let adm = ui.admin; try { adm = adm || localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
+  const tools = adm && list.some(it => it.gr) ? `<div class="pbd-all"><button type="button" class="h-btn" data-pfoldall="1">Expand all</button><button type="button" class="h-btn" data-pfoldall="0">Collapse all</button></div>` : '';
+  return `${tools}<div class="plays">${h}</div>`;
 }
 function cardPbp(){
   const mode = ui.pbp || (ui.viewer ? 'scoring' : 'all');

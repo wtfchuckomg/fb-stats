@@ -186,7 +186,10 @@ function playsList(oldFirst = false){
     const isOpen = (ui.editing != null && it.plays.some(e => e.i === ui.editing)) || (pick != null ? pick : !ui.viewer || it.gr.d.open);
     h += head(it.gr, isOpen) + (isOpen ? `<div class="pbd-plays">${plays.map(row).join('')}</div>` : '');
   }
-  return `<div class="plays">${h}</div>`;
+  // The admin can open or fold every drive at once (Chuck, 2026-11-14).
+  let adm = ui.admin; try { adm = adm || localStorage.getItem('pressbox.admin') === '1'; } catch (e) {}
+  const tools = adm && list.some(it => it.gr) ? `<div class="pbd-all"><button type="button" class="h-btn" data-pfoldall="1">Expand all</button><button type="button" class="h-btn" data-pfoldall="0">Collapse all</button></div>` : '';
+  return `${tools}<div class="plays">${h}</div>`;
 }
 function cardPbp(){
   const mode = ui.pbp || (ui.viewer ? 'scoring' : 'all');
