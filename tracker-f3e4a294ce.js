@@ -149,6 +149,9 @@ function parseQuick(raw, st){
   const ci = toks.findIndex(t => /^\d{1,2}:\d{2}$/.test(t));
   if (ci >= 0){ clk = parseClock(toks[ci]); toks.splice(ci, 1); }
   const tk = [];
+  // "recovered by @21": an @ right after a recovery word is the man who fell on it, not a tackler (Chuck, 2026-11-14).
+  const recW = ['rec', 'recovered', 'recovers', 'recover'];
+  toks = toks.map((t, i) => /^@\d+$/.test(t) && (recW.includes(toks[i - 1]) || (toks[i - 1] === 'by' && recW.includes(toks[i - 2]))) ? t.slice(1) : t);
   toks = toks.filter(t => { const m = t.match(/^(?:@|tk)(\d+)$/); if (m){ tk.push(m[1]); return false; } return true; });
   const bad = msg => ({error:msg});
   const ok = p => {
@@ -484,7 +487,7 @@ function parseQuick(raw, st){
       if (recSide === Rk) p.res = 'spot';                 // the receiving team fell on it: a plain short kick
       else if (recNo != null) p.ret = String(recNo);
     }
-    else if (muff){ p.res = 'muff'; if (muff.by != null) p.by = muff.by; if (muff.ret != null) p.ret = muff.ret; if (muff.recSide === Rk) p.mr = true; }
+    else if (muff){ p.res = 'muff'; if (muff.by != null) p.by = muff.by; else if (nx.length) p.by = nx.length > 1 && +nx[0] === +p.d ? nx[1] : nx[0]; if (muff.ret != null) p.ret = muff.ret; if (muff.recSide === Rk) p.mr = true; }
     else if (has('fc')){ p.res = 'fc'; if (retNo != null) p.ret = retNo; }
     else if (retNo != null || endSp || ryTold != null){
       p.res = 'ret';
@@ -585,6 +588,8 @@ function parseQuick(raw, st){
       else if (prev != null && isNum(prev) && kickNamed && !bare.includes(+prev)) retNo = prev;
       rest = rest.slice(0, retNo != null ? ri - 1 : ri);
     }
+    // A number in the returner's slot before the word is the man who muffed it: "punt 40 1 muffed" (Chuck, 2026-11-14).
+    // With a recovery spot given, the distance is still on the line ahead of him, so it is skipped.
     const muffP = muffOf(rest);
     const skip = bare.concat(ydNums, retNums.length ? [] : []);   // yard lines and return yards aren't the punt
     const after = (muffP ? muffP.before : rest.filter(isNum)).filter(t => {
@@ -611,7 +616,7 @@ function parseQuick(raw, st){
     const landR = p.d != null ? FL - (st.spot + p.d) : null;  // where the receiving team fielded it
     // "out of bounds" with a return on the line is the returner going out, not the kick: the return still counts.
     const retSaid = retNo != null || retYds != null || retEnd != null || ri >= 0;
-    if (muffP){ p.res = 'muff'; if (muffP.by != null) p.by = muffP.by; if (muffP.ret != null) p.ret = muffP.ret; if (muffP.recSide === D) p.mr = true; }
+    if (muffP){ p.res = 'muff'; if (muffP.by != null) p.by = muffP.by; else if (nx.length) p.by = nx.length > 1 && +nx[0] === +p.d ? nx[1] : nx[0]; if (muffP.ret != null) p.ret = muffP.ret; if (muffP.recSide === D) p.mr = true; }
     else if (has('fc')){ p.res = 'fc'; const r = retNo ?? nx[0]; if (r != null) p.ret = r; }
     else if (has('oob') && !retSaid) p.res = 'oob';
     else if (has('down', 'downed')) p.res = 'down';
