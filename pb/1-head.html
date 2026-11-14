@@ -618,7 +618,12 @@ table.pl-tbl{table-layout:fixed;width:100%}
   .bkf .bkp.lost{opacity:.55}
   .bkf .bkp.empty{min-height:32px}
   .bkf .bkt-pair.st{border:2px solid var(--bk-line);border-radius:12px;padding:6px}
-  .bkf .bkp.lot .bk-nm,.bkf .bk-nm{white-space:normal;line-height:1.2;overflow-wrap:break-word;min-width:0}
+  /* A name wraps only between words, never inside one (Chuck, 2026-11-13: "Wichit / a"); the column is as wide as its longest word. */
+  .bkf .bkp.lot .bk-nm,.bkf .bk-nm{white-space:normal;line-height:1.2;overflow-wrap:normal;word-break:normal;hyphens:none}
+  .bkf .bk-seed.tag{min-width:0;font-size:10px}
+  .bkf .bkf-col.cur{min-width:min-content}
+  .bkf .bkf-col.cur .bk-nm{min-width:min-content}
+  .bkf{overflow-x:auto;overflow-y:hidden}
   .bkf .bkp.sm{padding:5px 6px;gap:5px}
   .bkf .bkp.sm .bk-nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
 }
