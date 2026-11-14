@@ -339,6 +339,13 @@ function replay(g, upto = g.plays.length, from = 0){
     if (h1 === O) return txt + progress(fin, null);
     newSeries(h1, fin); return txt;
   }
+  // A muffed kick is a fumble by the man who muffed it (Chuck, 2026-11-14), and a lost one when the kicking team
+  // falls on it. The receiving team's own recovery is an own-fumble recovery.
+  function muffStats(R, p){
+    bump(pl(R, p.by), 'fum'); S.team[R].fum++;
+    if (p.mr){ if (p.ret != null) bump(pl(R, p.ret), 'ofr'); }
+    else { bump(pl(R, p.by), 'fuml'); S.team[R].fumL++; }
+  }
   // The offense gets its own fumble back; a teammate's advance moves the ball but isn't the carrier's yardage.
   function fumbleKept(cs, cn, f, end){
     bump(pl(cs, cn), 'fum'); S.team[cs].fum++;
@@ -587,6 +594,7 @@ function replay(g, upto = g.plays.length, from = 0){
       case 'onside': { const s = kf + d; bump(pl(K, p.ret), 'fr'); newSeries(K, s); tags.push(['to', 'Onside']);
         return txt + `, onside, recovered by ${p.ret ? nm(K, p.ret) : ab(K)} at the ${yl(K, s)}.`; }
       case 'muff': {
+        muffStats(R, p);
         if (p.mr){ const s = at <= 0 ? RU.tb : at; newSeries(R, s);   // the receiving team fell on its own muff
           return txt + ` to the ${yl(R, s)}, MUFFED${p.by ? ` by ${nm(R, p.by)}` : ''}, recovered by ${p.ret != null ? nm(R, p.ret) : ab(R)} at the ${yl(R, s)}.`; }
         const s = kf + d; if (p.ret != null) bump(pl(K, p.ret), 'fr'); newSeries(K, s); tags.push(['to', 'Muff']);
@@ -636,6 +644,7 @@ function replay(g, upto = g.plays.length, from = 0){
     leg('kick', O, st.spot, p.res === 'tb' || at <= 0 ? Math.max(st.spot + d, FL + 5) : st.spot + d);
     let txt = `${nm(O, p.k)} punt ${d < 0 ? `for a loss of ${plural(-d, 'yard')}` : plural(d, 'yard')}`;
     if (p.res === 'tb' || at <= 0){ bump(k, 'ptb'); t.pntTB++; newSeries(R, RU.tb); return txt + `, touchback. ${ab(R)} ball at the ${yl(R, RU.tb)}.`; }
+    if (p.res === 'muff') muffStats(R, p);
     if (p.res === 'muff' && p.mr){
       // The receiving team fell on its own muff: its ball where it happened, and no change of possession.
       newSeries(R, at);
