@@ -529,6 +529,8 @@ function bkDistrictSeeds(dists){
 
 // The admin can take back a settled flip from the standings (a tap on the wrong team).
 const bkUndo = t => ui.admin && t.flipKey ? ` <button type="button" class="bk-undo" data-flip-key="${esc(t.flipKey)}">Undo</button>` : '';
+// A district place shown short (Chuck, 2026-11-13: "Just have it D8-1"); the tag itself stays "D8 #1".
+const bkTagTxt = tag => String(tag).replace(' #', '-');
 const bkRec = t => `${t.w}-${t.l}${t.t ? `-${t.t}` : ''}`;
 // The record now, playoff games and all: what a team's line in the bracket shows. The seeding tables keep bkRec.
 // Regional on, a team's line shows the Overall record from its team page (Chuck, 2026-11-04); Week 9 keeps the
@@ -553,13 +555,13 @@ function bkPill(t, r = 0){
   // Going to a coin flip: this line belongs to any of them, so it carries them all.
   if (t.lotWith){
     const L = t.lotWith, recs = [...new Set(L.map(bkRec))];
-    return `<div class="bkp lot" title="${esc(L.map(x => x.name).join(' or ') + ': KSHSAA coin flip')}"><span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>${L.map(x => bkMark(x.name)).join('')}
+    return `<div class="bkp lot" title="${esc(L.map(x => x.name).join(' or ') + ': KSHSAA coin flip')}"><span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag ? bkTagTxt(t.tag) : t.seed}</span>${L.map(x => bkMark(x.name)).join('')}
       <span class="bk-nm">${L.map(x => ui.admin
         ? `<button type="button" class="bk-flipbtn" data-flip-key="${esc(flipKey(L))}" data-flip-win="${esc(canonSchool(x.name))}" data-flip-name="${esc(x.name)}" title="${esc(x.name)} won the flip">${esc(listAbbr(x.name) || shortName(x.name))}</button>`
         : esc(listAbbr(x.name) || shortName(x.name))).join(' / ')}</span>
       <span class="bk-rec">${recs.length === 1 ? esc(recs[0]) : ''}</span></div>`;
   }
-  return `<div class="bkp"><span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>${bkMark(t.name)}
+  return `<div class="bkp"><span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag ? bkTagTxt(t.tag) : t.seed}</span>${bkMark(t.name)}
     <a class="bk-nm${t.lock ? ' locked' : ''}" href="?team=${encodeURIComponent(t.name)}">${esc(t.name)}</a>
     <span class="bk-rec">${r ? esc(bkRecNow(t)) : t.gp ? esc(bkRec(t)) : '<i>no games</i>'}</span></div>`;
 }
@@ -714,7 +716,7 @@ function bkLine(t, game, small, r = 0){
   const code = n => { const a = listAbbr(n); return a && a.length <= 4 ? a : initialsOf(n).slice(0, 4); };
   const nm = small ? esc(code(t.name)) : esc(t.name);
   // Past week 9 the boxes are narrow: the logo and short name, no seed.
-  return `<div class="bkp${small ? ' sm' : ''}${lost ? ' lost' : ''}">${small ? '' : `<span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag || t.seed}</span>`}${bkMark(t.name)}
+  return `<div class="bkp${small ? ' sm' : ''}${lost ? ' lost' : ''}">${small ? '' : `<span class="bk-seed${t.tag ? ' tag' : ''}">${t.tag ? bkTagTxt(t.tag) : t.seed}</span>`}${bkMark(t.name)}
     <a class="bk-nm${won ? ' locked' : ''}" href="?team=${encodeURIComponent(t.name)}" title="${esc(t.name)}">${nm}</a>
     <span class="bk-rec">${game ? `<b>${game.pts.get(t)}</b>` : small ? '' : r ? esc(bkRecNow(t)) : t.gp ? esc(bkRec(t)) : ''}</span></div>`;
 }
