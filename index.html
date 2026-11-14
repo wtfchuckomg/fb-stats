@@ -10279,8 +10279,12 @@ function saveSchoolAbbrs(){
   const abbr = {...schoolsDoc.abbr};
   document.querySelectorAll('.sch-ab').forEach(el => {
     const name = el.dataset.sch, v = el.value.trim();
-    const listed = ((LOGO_SRC[0].list || []).find(t => logoSlug(t.name) === logoSlug(name)) || {}).abbr || '';
-    if (!v || v === listed) delete abbr[name]; else abbr[name] = v;
+    const hit = (LOGO_SRC[0].list || []).find(t => logoSlug(t.name) === logoSlug(name)) || {}, listed = hit.abbr || '';
+    // Any older entry for the same school under another spelling goes too ("Gardner-Edgerton": "G-E" kept winning
+    // over a new "GE" for Gardner Edgerton, Chuck 2026-11-13).
+    const same = new Set([name, ...(hit.aliases || [])].map(logoSlug));
+    Object.keys(abbr).forEach(n => { if (same.has(logoSlug(n))) delete abbr[n]; });
+    if (v && v !== listed) abbr[name] = v;
   });
   saveSchools({abbr}, 'Short names saved');
 }
