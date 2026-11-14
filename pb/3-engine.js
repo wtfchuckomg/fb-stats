@@ -792,7 +792,11 @@ function replay(g, upto = g.plays.length, from = 0){
   function apply(p){
     // Muffs typed "recovered by @21" before 2026-11-14 kept the recoverer as a tackler: read him back as the recoverer.
     if (p.res === 'muff' && p.ret == null && p.tk && p.tk.length === 1 && /\brec\w*\s+(?:by\s+)?@\d/.test(p.q || '')) p = {...p, ret:p.tk[0], tk:undefined};
-    // …and "punt 40 1 muffed" before then lost the man who muffed it.
+    // "24 muffed a50": a kicking-team number was once taken for the man who muffed it.
+    if (p.res === 'muff' && p.by != null){ const m = String(p.q || '').match(new RegExp(`muff\\w*\\s+([a-z]+)${p.by}\\b`)), kt = st.poss;
+      const pre = (s, w) => { const t = T[s] || {}; return [t.abbr, t.name].some(x => String(x || '').toLowerCase().startsWith(w)); };
+      if (m && kt && pre(kt, m[1]) && !pre(other(kt), m[1])) p = {...p, by:undefined}; }
+    // …and "punt 40 1 muffed" lost him altogether.
     if (p.res === 'muff' && p.by == null){ const m = String(p.q || '').match(/(\d+)\s+muff/); if (m && +m[1] !== +p.d && m[1] !== p.k) p = {...p, by:m[1]}; }
     // A foul enforced on the next kickoff (a dead-ball foul after a touchdown): the play stands as it was, and the
     // yards wait for kickoffBy. Already lined up for the kickoff, it is marked off now, like any flag before a kick.

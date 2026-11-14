@@ -385,7 +385,7 @@ function parseQuick(raw, st){
     // "…muff-44-22" with no word between them: the second number is whoever fell on it.
     const rec = ri >= 0 ? tail.slice(ri + 1).map(who).filter(Boolean)[0] : pre[1];
     const recSide = (rec && rec.side) || (ri >= 0 ? tail.slice(ri + 1).map(T).find(Boolean) : null) || null;
-    return {i, by:pre[0] ? pre[0].n : null, ret:rec ? rec.n : null, recSide, spot,
+    return {i, by:pre[0] ? pre[0].n : null, bySide:pre[0] ? pre[0].side : null, ret:rec ? rec.n : null, recSide, spot,
       before:list.slice(0, i).filter(isNum), beforeToks:list.slice(0, i)};
   };
 
@@ -487,7 +487,7 @@ function parseQuick(raw, st){
       if (recSide === Rk) p.res = 'spot';                 // the receiving team fell on it: a plain short kick
       else if (recNo != null) p.ret = String(recNo);
     }
-    else if (muff){ p.res = 'muff'; if (muff.by != null) p.by = muff.by; else if (nx.length) p.by = nx.length > 1 && +nx[0] === +p.d ? nx[1] : nx[0]; if (muff.ret != null) p.ret = muff.ret; if (muff.recSide === Rk) p.mr = true; }
+    else if (muff){ p.res = 'muff'; if (muff.by != null && (!muff.bySide || muff.bySide === Rk)) p.by = muff.by; else if (nx.length) p.by = nx.length > 1 && +nx[0] === +p.d ? nx[1] : nx[0]; if (muff.ret != null) p.ret = muff.ret; if (muff.recSide === Rk) p.mr = true; }
     else if (has('fc')){ p.res = 'fc'; if (retNo != null) p.ret = retNo; }
     else if (retNo != null || endSp || ryTold != null){
       p.res = 'ret';
@@ -589,7 +589,8 @@ function parseQuick(raw, st){
       rest = rest.slice(0, retNo != null ? ri - 1 : ri);
     }
     // A number in the returner's slot before the word is the man who muffed it: "punt 40 1 muffed" (Chuck, 2026-11-14).
-    // With a recovery spot given, the distance is still on the line ahead of him, so it is skipped.
+    // With a recovery spot given, the distance is still on the line ahead of him, so it is skipped. A kicking-team
+    // number after the word ("24 muffed a50") can't be the man who muffed it, so it never is.
     const muffP = muffOf(rest);
     const skip = bare.concat(ydNums, retNums.length ? [] : []);   // yard lines and return yards aren't the punt
     const after = (muffP ? muffP.before : rest.filter(isNum)).filter(t => {
@@ -616,7 +617,7 @@ function parseQuick(raw, st){
     const landR = p.d != null ? FL - (st.spot + p.d) : null;  // where the receiving team fielded it
     // "out of bounds" with a return on the line is the returner going out, not the kick: the return still counts.
     const retSaid = retNo != null || retYds != null || retEnd != null || ri >= 0;
-    if (muffP){ p.res = 'muff'; if (muffP.by != null) p.by = muffP.by; else if (nx.length) p.by = nx.length > 1 && +nx[0] === +p.d ? nx[1] : nx[0]; if (muffP.ret != null) p.ret = muffP.ret; if (muffP.recSide === D) p.mr = true; }
+    if (muffP){ p.res = 'muff'; if (muffP.by != null && (!muffP.bySide || muffP.bySide === D)) p.by = muffP.by; else if (nx.length) p.by = nx.length > 1 && +nx[0] === +p.d ? nx[1] : nx[0]; if (muffP.ret != null) p.ret = muffP.ret; if (muffP.recSide === D) p.mr = true; }
     else if (has('fc')){ p.res = 'fc'; const r = retNo ?? nx[0]; if (r != null) p.ret = r; }
     else if (has('oob') && !retSaid) p.res = 'oob';
     else if (has('down', 'downed')) p.res = 'down';
