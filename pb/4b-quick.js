@@ -153,6 +153,8 @@ function parseQuick(raw, st){
   const recW = ['rec', 'recovered', 'recovers', 'recover'];
   toks = toks.map((t, i) => /^@\d+$/.test(t) && (recW.includes(toks[i - 1]) || (toks[i - 1] === 'by' && recW.includes(toks[i - 2]))) ? t.slice(1) : t);
   toks = toks.filter(t => { const m = t.match(/^(?:@|tk)(\d+)$/); if (m){ tk.push(m[1]); return false; } return true; });
+  // The 50 has no side: "at 50", "to 50" and "midfield" are the 50-yard line, as a50 and c50 already are (Chuck, 2026-11-14).
+  toks = toks.map((t, i) => t === 'midfield' || (t === String(HALF) && ['at', 'on', 'to'].includes(toks[i - 1])) ? key[st.poss] + HALF : t);
   const bad = msg => ({error:msg});
   const ok = p => {
     if (clk != null){ p.clk = clk; p.clkMan = true; }   // a typed time: kept even on a try
@@ -374,18 +376,26 @@ function parseQuick(raw, st){
     const i = list.findIndex(t => ['muff', 'muffed', 'muffs'].includes(t));
     if (i < 0) return null;
     const tail = [], raw = list.slice(i + 1);
-    let spot = null;
+    let mAt = null, rAt = null, seenRec = false;
+    // A spot ahead of "rec" is where it was muffed, one after it where it was fallen on. The 50 is always a spot.
     for (let k = 0; k < raw.length; k++){
-      if (['at', 'on', 'inside'].includes(raw[k]) && raw[k + 1] && spotOf(raw[k + 1])){ spot = spotOf(raw[++k]); continue; }
+      if (['rec', 'recovered', 'recovers'].includes(raw[k])) seenRec = true;
+      const half = spotOf(raw[k]) && spotOf(raw[k]).n === HALF;
+      if (half || (['at', 'on', 'inside'].includes(raw[k]) && raw[k + 1] && spotOf(raw[k + 1]))){
+        const sp = spotOf(half ? raw[k] : raw[++k]);
+        if (seenRec) rAt = rAt || sp; else mAt = mAt || sp;
+        continue;
+      }
       tail.push(raw[k]);
     }
+    const spot = mAt || rAt, recAt = mAt && rAt ? rAt : null;
     const who = t => { const x = spotOf(t); return x ? {n:String(x.n), side:x.side} : isNum(t) ? {n:t, side:null} : null; };
     const ri = tail.findIndex(t => ['rec', 'recovered', 'recovers'].includes(t));
     const pre = (ri >= 0 ? tail.slice(0, ri) : tail).map(who).filter(Boolean);
     // "…muff-44-22" with no word between them: the second number is whoever fell on it.
     const rec = ri >= 0 ? tail.slice(ri + 1).map(who).filter(Boolean)[0] : pre[1];
     const recSide = (rec && rec.side) || (ri >= 0 ? tail.slice(ri + 1).map(T).find(Boolean) : null) || null;
-    return {i, by:pre[0] ? pre[0].n : null, bySide:pre[0] ? pre[0].side : null, ret:rec ? rec.n : null, recSide, spot,
+    return {i, by:pre[0] ? pre[0].n : null, bySide:pre[0] ? pre[0].side : null, ret:rec ? rec.n : null, recSide, spot, recAt,
       before:list.slice(0, i).filter(isNum), beforeToks:list.slice(0, i)};
   };
 
@@ -487,7 +497,7 @@ function parseQuick(raw, st){
       if (recSide === Rk) p.res = 'spot';                 // the receiving team fell on it: a plain short kick
       else if (recNo != null) p.ret = String(recNo);
     }
-    else if (muff){ p.res = 'muff'; if (muff.by != null && (!muff.bySide || muff.bySide === Rk)) p.by = muff.by; else if (nx.length) p.by = nx.length > 1 && +nx[0] === +p.d ? nx[1] : nx[0]; if (muff.ret != null) p.ret = muff.ret; if (muff.recSide === Rk) p.mr = true; }
+    else if (muff){ p.res = 'muff'; if (muff.by != null && (!muff.bySide || muff.bySide === Rk)) p.by = muff.by; else if (nx.length) p.by = nx.length > 1 && +nx[0] === +p.d ? nx[1] : nx[0]; if (muff.ret != null) p.ret = muff.ret; if (muff.recSide === Rk) p.mr = true; if (muff.recAt) p.mat = muff.recAt; }
     else if (has('fc')){ p.res = 'fc'; if (retNo != null) p.ret = retNo; }
     else if (retNo != null || endSp || ryTold != null){
       p.res = 'ret';
@@ -617,7 +627,7 @@ function parseQuick(raw, st){
     const landR = p.d != null ? FL - (st.spot + p.d) : null;  // where the receiving team fielded it
     // "out of bounds" with a return on the line is the returner going out, not the kick: the return still counts.
     const retSaid = retNo != null || retYds != null || retEnd != null || ri >= 0;
-    if (muffP){ p.res = 'muff'; if (muffP.by != null && (!muffP.bySide || muffP.bySide === D)) p.by = muffP.by; else if (nx.length) p.by = nx.length > 1 && +nx[0] === +p.d ? nx[1] : nx[0]; if (muffP.ret != null) p.ret = muffP.ret; if (muffP.recSide === D) p.mr = true; }
+    if (muffP){ p.res = 'muff'; if (muffP.by != null && (!muffP.bySide || muffP.bySide === D)) p.by = muffP.by; else if (nx.length) p.by = nx.length > 1 && +nx[0] === +p.d ? nx[1] : nx[0]; if (muffP.ret != null) p.ret = muffP.ret; if (muffP.recSide === D) p.mr = true; if (muffP.recAt) p.mat = muffP.recAt; }
     else if (has('fc')){ p.res = 'fc'; const r = retNo ?? nx[0]; if (r != null) p.ret = r; }
     else if (has('oob') && !retSaid) p.res = 'oob';
     else if (has('down', 'downed')) p.res = 'down';

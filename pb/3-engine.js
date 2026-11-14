@@ -339,6 +339,8 @@ function replay(g, upto = g.plays.length, from = 0){
     if (h1 === O) return txt + progress(fin, null);
     newSeries(h1, fin); return txt;
   }
+  // Where a muff was fallen on, when it rolled away from where it was muffed ("muffed a50 rec 22 at b38"), in s's frame.
+  const muffAt = (p, s) => clamp(p.mat.side === s ? p.mat.n : FL - p.mat.n, 1, FL - 1);
   // A muffed kick is a fumble by the man who muffed it (Chuck, 2026-11-14), and a lost one when the kicking team
   // falls on it. The receiving team's own recovery is an own-fumble recovery.
   function muffStats(R, p){
@@ -595,9 +597,9 @@ function replay(g, upto = g.plays.length, from = 0){
         return txt + `, onside, recovered by ${p.ret ? nm(K, p.ret) : ab(K)} at the ${yl(K, s)}.`; }
       case 'muff': {
         muffStats(R, p);
-        if (p.mr){ const s = at <= 0 ? RU.tb : at; newSeries(R, s);   // the receiving team fell on its own muff
+        if (p.mr){ const s = p.mat ? muffAt(p, R) : at <= 0 ? RU.tb : at; newSeries(R, s);   // the receiving team fell on its own muff
           return txt + ` to the ${yl(R, s)}, MUFFED${p.by ? ` by ${nm(R, p.by)}` : ''}, recovered by ${p.ret != null ? nm(R, p.ret) : ab(R)} at the ${yl(R, s)}.`; }
-        const s = kf + d; if (p.ret != null) bump(pl(K, p.ret), 'fr'); newSeries(K, s); tags.push(['to', 'Muff']);
+        const s = p.mat ? muffAt(p, K) : kf + d; if (p.ret != null) bump(pl(K, p.ret), 'fr'); newSeries(K, s); tags.push(['to', 'Muff']);
         return txt + ` to the ${at <= 0 ? `${ab(R)} end zone` : yl(R, at)}, MUFFED${p.by ? ` by ${nm(R, p.by)}` : ''}, `
           + `recovered by ${p.ret != null ? nm(K, p.ret) : ab(K)} at the ${yl(K, s)}.`; }
       case 'fc': case 'down': {
@@ -647,17 +649,19 @@ function replay(g, upto = g.plays.length, from = 0){
     if (p.res === 'muff') muffStats(R, p);
     if (p.res === 'muff' && p.mr){
       // The receiving team fell on its own muff: its ball where it happened, and no change of possession.
-      newSeries(R, at);
+      const s = p.mat ? muffAt(p, R) : at;
+      newSeries(R, s);
       return txt + ` to the ${yl(R, at)}, MUFFED${p.by ? ` by ${nm(R, p.by)}` : ''}, recovered by `
-        + `${p.ret != null ? nm(R, p.ret) : ab(R)} at the ${yl(R, at)}.`;
+        + `${p.ret != null ? nm(R, p.ret) : ab(R)} at the ${yl(R, s)}.`;
     }
     if (p.res === 'muff'){
       // The receiving team never had it: the kicking team keeps the ball where it fell on it.
       if (p.ret != null) bump(pl(O, p.ret), 'fr');
       tags.push(['to', 'Muff']);
-      newSeries(O, st.spot + d);
+      const s = p.mat ? muffAt(p, O) : st.spot + d;
+      newSeries(O, s);
       return txt + ` to the ${yl(R, at)}, MUFFED${p.by ? ` by ${nm(R, p.by)}` : ''}, recovered by `
-        + `${p.ret != null ? nm(O, p.ret) : ab(O)} at the ${yl(R, at)}.`;
+        + `${p.ret != null ? nm(O, p.ret) : ab(O)} at the ${yl(O, s)}.`;
     }
     if (p.res === 'ret'){
       const r = kickReturn(R, 'pr', p, at);
@@ -792,6 +796,12 @@ function replay(g, upto = g.plays.length, from = 0){
   function apply(p){
     // Muffs typed "recovered by @21" before 2026-11-14 kept the recoverer as a tackler: read him back as the recoverer.
     if (p.res === 'muff' && p.ret == null && p.tk && p.tk.length === 1 && /\brec\w*\s+(?:by\s+)?@\d/.test(p.q || '')) p = {...p, ret:p.tk[0], tk:undefined};
+    // "muffed a50" saved before 2026-11-14: the 50 is where it was muffed, and the spot the punt was given is where
+    // it was fallen on. The 50 was taken for a player.
+    if (p.res === 'muff' && p.t === 'punt' && !p.mat && p.by === String(HALF) && new RegExp(`muff\\w*\\s+[a-z]+${HALF}\\b`).test(p.q || '') && p.d != null){
+      const O = st.poss, mb = String(p.q).match(/(\d+)\s+muff/);   // "24 muffed a50": #24 muffed it
+      p = {...p, by:mb && mb[1] !== p.k ? mb[1] : undefined, mat:{side:O, n:st.spot + (+p.d)}, d:HALF - st.spot};
+    }
     // "24 muffed a50": a kicking-team number was once taken for the man who muffed it.
     if (p.res === 'muff' && p.by != null){ const m = String(p.q || '').match(new RegExp(`muff\\w*\\s+([a-z]+)${p.by}\\b`)), kt = st.poss;
       const pre = (s, w) => { const t = T[s] || {}; return [t.abbr, t.name].some(x => String(x || '').toLowerCase().startsWith(w)); };
