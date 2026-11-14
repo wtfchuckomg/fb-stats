@@ -147,6 +147,12 @@ function renderField(){
   for (let y = 5; y < FL; y += 5) s += `<path d="M${P(X(y), 0)} L${P(X(y), 1)}" style="stroke:var(--fld-line);stroke-width:${y === HALF ? 3 : y % 10 === 0 ? 1.6 : .8}"/>`;
   let hash = ''; for (let y = 1; y < FL; y++) if (y % 5) hash += `M${P(X(y), .04)} L${P(X(y), .08)} M${P(X(y), .92)} L${P(X(y), .96)} `;
   s += `<path d="${hash}" style="stroke:var(--fld-line);stroke-width:1.2"/>`;
+  // The home team's logo painted on the 50 (Chuck, 2026-11-14), flattened a little as if lying on the tipped field.
+  const mLogo = (logoUrls(T.H) || [])[0];
+  if (mLogo && !LOGO_GUESS.has(mLogo)){
+    const sz = (bot - top) * 1.35, cx = PX(X(HALF), .5);   // bigger and faded: his pick of three
+    s += `<image href="${esc(mLogo)}" x="${(-sz / 2).toFixed(1)}" y="${(-sz / 2).toFixed(1)}" width="${sz.toFixed(1)}" height="${sz.toFixed(1)}" preserveAspectRatio="xMidYMid meet" transform="translate(${cx.toFixed(1)} ${mid}) scale(1 .82)" style="opacity:.4"/>`;
+  }
   // The mascot if one is set, else the school, leaning with the end zone. Sized from an estimate here, then measured below.
   const room = bot - top - 16;
   const ez = (side, x, rot) => {
