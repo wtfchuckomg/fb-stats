@@ -147,11 +147,19 @@ function renderField(){
   for (let y = 5; y < FL; y += 5) s += `<path d="M${P(X(y), 0)} L${P(X(y), 1)}" style="stroke:var(--fld-line);stroke-width:${y === HALF ? 3 : y % 10 === 0 ? 1.6 : .8}"/>`;
   let hash = ''; for (let y = 1; y < FL; y++) if (y % 5) hash += `M${P(X(y), .04)} L${P(X(y), .08)} M${P(X(y), .92)} L${P(X(y), .96)} `;
   s += `<path d="${hash}" style="stroke:var(--fld-line);stroke-width:1.2"/>`;
-  // The home team's logo painted on the 50 (Chuck, 2026-11-14), flattened a little as if lying on the tipped field.
+  // The home team's logo painted on the 50 (Chuck, 2026-11-14), lying on the field the way the yard lines do: as
+  // deep as it is wide in yards, so flattened as much as the field is, and narrower at the far edge. SVG can't tip an
+  // image, so it is cut into thin strips across, each squeezed to the field's width at that depth.
   const mLogo = (logoUrls(T.H) || [])[0];
   if (mLogo && !LOGO_GUESS.has(mLogo)){
-    const sz = (bot - top) * 1.35, cx = PX(X(HALF), .5);   // bigger and faded: his pick of three
-    s += `<image href="${esc(mLogo)}" x="${(-sz / 2).toFixed(1)}" y="${(-sz / 2).toFixed(1)}" width="${sz.toFixed(1)}" height="${sz.toFixed(1)}" preserveAspectRatio="xMidYMid meet" transform="translate(${cx.toFixed(1)} ${mid}) scale(1 .82)" style="opacity:.4"/>`;
+    const sz = 26 * k, dv = 26 / (FL === 80 ? 40 : 53.3), y0 = PY(.5 + dv / 2), hs = PY(.5 - dv / 2) - y0, N = 28;
+    let defs = '', strips = '';
+    for (let i = 0; i < N; i++){
+      const ya = y0 + hs * i / N, yb = y0 + hs * (i + 1) / N, f = 1 - .1 * ((bot - (ya + yb) / 2) / (bot - top));
+      defs += `<clipPath id="fl50-${i}"><rect x="0" y="${(ya - .4).toFixed(2)}" width="${W}" height="${(yb - ya + .8).toFixed(2)}"/></clipPath>`;
+      strips += `<g clip-path="url(#fl50-${i})"><image href="${esc(mLogo)}" x="0" y="0" width="${sz.toFixed(1)}" height="${sz.toFixed(1)}" preserveAspectRatio="xMidYMid meet" transform="translate(${(W / 2 - sz * f / 2).toFixed(2)} ${y0.toFixed(2)}) scale(${f.toFixed(4)} ${(hs / sz).toFixed(4)})"/></g>`;
+    }
+    s += `<defs>${defs}</defs><g style="opacity:.4">${strips}</g>`;   // faded as a whole, so the strip edges don't show
   }
   // The mascot if one is set, else the school, leaning with the end zone. Sized from an estimate here, then measured below.
   const room = bot - top - 16;
