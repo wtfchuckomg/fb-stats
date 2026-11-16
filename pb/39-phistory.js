@@ -7,13 +7,13 @@
 
      ?brackets                      the latest year, its first class
      ?brackets=<year>&class=<c>     that year's bracket for that class
-     ?brackets&view=streak|home|titles   the other views in its View menu (Chuck, 2026-11-16), from
+     ?brackets&view=streak|home|titles   the other views in the bar's Playoff History menu (Chuck, 2026-11-16), from
                                     playoffs/records.json: current playoff win streaks, current home
                                     playoff win streaks, and state titles (&class=<c> for one class)
    ================================================================ */
 const PH_PAGE = PAGE_Q.has('brackets');
 const ph = {index:null, year:'', cls:'', docs:{}, err:'', rec:null};
-const PH_VIEWS = [['', 'Brackets'], ['streak', 'Playoff win streaks'], ['home', 'Home playoff win streaks'], ['titles', 'State championships']];
+const PH_VIEWS = [['', 'Brackets'], ['streak', 'Playoff Win Streaks'], ['home', 'Home Playoff Win Streaks'], ['titles', 'State Championships']];
 const PH_VIEW = (v => PH_VIEWS.some(x => x[0] === v) ? v : '')(PAGE_Q.get('view') || '');
 const PH_ORDER = ['6A', '5A', '4A', '4A-I', '4A-II', '3A', '2A', '2-1A', '1A', '8M', '8M-I', '8M-II', '6M'];
 const PH_LABEL = c => ({'8M':'8-Man', '8M-I':'8-Man I', '8M-II':'8-Man II', '6M':'6-Man'})[c] || `Class ${c}`;
@@ -120,7 +120,7 @@ function renderPlayoffHistory(){
   const yearPick = years.length ? `<div class="tp-season"><label class="eyebrow" for="ph-year">Season</label>
       <select class="inp" id="ph-year">${years.map(v => `<option value="${v}"${v === y ? ' selected' : ''}>${v}</option>`).join('')}</select></div>` : '';
   const tabs = y && ph.index ? (ph.index[y] || []).map(k => `<a class="h-btn${k === c ? ' on' : ''}" href="?brackets=${y}&amp;class=${encodeURIComponent(k)}">${esc(PH_LABEL(k))}</a>`).join('') : '';
-  const head = `<section class="bcard bhead"><div class="tp-h-row"><h1>Playoff History</h1><div class="ph-picks">${phViewPick()}${yearPick}</div></div><div class="tp-links">${tabs}</div></section>`;
+  const head = `<section class="bcard bhead"><div class="tp-h-row"><h1>Playoff History</h1>${yearPick}</div><div class="tp-links">${tabs}</div></section>`;
   if (ph.err) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${esc(ph.err)}</p></section>`);
   const doc = y && ph.docs[y], B = doc && doc.classes && doc.classes[c];
   if (!B) return void (box.innerHTML = head + (doc === false ? '<section class="bcard"><p class="bempty">No bracket on file for this year.</p></section>' : skelRows(8, 2)));
@@ -130,8 +130,6 @@ function renderPlayoffHistory(){
   box.innerHTML = head + `<section class="bcard"><h2 class="tp-h">${y} ${esc(PH_LABEL(c))}</h2>${phBracketHtml(B)}${third}${B.note ? `<p class="ph-note">${esc(B.note)}</p>` : ''}</section>` + extra;
 }
 
-const phViewPick = () => `<div class="tp-season"><label class="eyebrow" for="ph-view">View</label>
-  <select class="inp" id="ph-view">${PH_VIEWS.map(([k, t]) => `<option value="${k}"${k === PH_VIEW ? ' selected' : ''}>${t}</option>`).join('')}</select></div>`;
 function renderPlayoffRecords(){
   const box = $('#board'), R = ph.rec, v = PH_VIEW;
   const title = PH_VIEWS.find(x => x[0] === v)[1];
@@ -143,13 +141,12 @@ function renderPlayoffRecords(){
   document.title = `${ph.cls ? `${PH_LABEL(ph.cls)} ` : ''}${title} · Playoff History · ${SITE_TITLE}`;
   const tabs = v === 'titles' && R ? [['', 'All']].concat(PH_ORDER.filter(k => (R.titles || []).some(o => o.c[k])).map(k => [k, PH_LABEL(k)]))
     .map(([k, t]) => `<a class="h-btn${k === ph.cls ? ' on' : ''}" href="?brackets&amp;view=titles${k ? `&amp;class=${encodeURIComponent(k)}` : ''}">${esc(t)}</a>`).join('') : '';
-  const head = `<section class="bcard bhead"><div class="tp-h-row"><h1>Playoff History</h1>${phViewPick()}</div>${tabs ? `<div class="tp-links">${tabs}</div>` : ''}</section>`;
+  const head = `<section class="bcard bhead"><div class="tp-h-row"><h1>Playoff History</h1></div>${tabs ? `<div class="tp-links">${tabs}</div>` : ''}</section>`;
   if (ph.err) return void (box.innerHTML = head + `<section class="bcard"><p class="bempty">${esc(ph.err)}</p></section>`);
   box.innerHTML = head + (R ? phRecordsHtml() : skelRows(10, 3));
 }
 
 document.addEventListener('change', e => {
-  if (ui.phist && e.target.id === 'ph-view') return void (location.href = `?brackets${e.target.value ? `&view=${e.target.value}` : ''}`);
   if (!ui.phist || e.target.id !== 'ph-year') return;
   const y = e.target.value, classes = (ph.index && ph.index[y]) || [];
   location.href = `?brackets=${y}&class=${encodeURIComponent(classes.includes(ph.cls) ? ph.cls : classes[0] || '')}`;
