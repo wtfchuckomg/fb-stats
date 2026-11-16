@@ -40,6 +40,39 @@ function playTitle(e){
   return 'Play';
 }
 
+/* ---------- Replay (Chuck, 2026-11-16): the game again from the kickoff, a play every 2 seconds ---------- */
+const RP_MS = 2000;
+// Plays a fan never sees ("ball at the 23") don't get their own 2 seconds.
+const rpHidden = i => g.plays[i] && g.plays[i].t === 'set';
+function rpClock(){
+  const lp = lastPlay();
+  return lp && lp.clk != null && lp.q === R.st.q ? lp.clk : (g.set.qtr || 12) * 60;
+}
+function rpTick(){
+  if (!ui.rp || !g) return;
+  let n = ui.rp.n + 1;
+  while (n < g.plays.length && rpHidden(n - 1)) n++;
+  if (n > g.plays.length) return rpStop();
+  ui.rp.n = n; refresh();
+}
+function rpRun(){ clearInterval(ui.rp.t); ui.rp.t = setInterval(rpTick, RP_MS); ui.rp.on = true; }
+function rpStop(draw = true){ if (ui.rp) clearInterval(ui.rp.t); ui.rp = null; if (draw) refresh(); }
+function rpAct(a){
+  if (a === 'start'){ rpStop(false); ui.rp = {id:g.id, n:0}; rpRun(); return refresh(); }
+  if (!ui.rp) return;
+  if (a === 'stop') return rpStop();
+  if (a === 'pause'){ clearInterval(ui.rp.t); ui.rp.on = false; return refresh(); }
+  if (a === 'play'){ rpRun(); rpTick(); }
+}
+function rpCtl(){
+  if (g.box || g.statBox || !g.plays.length) return '';
+  if (!ui.rp) return `<div class="rp-ctl"><button type="button" class="rp-btn" data-rp="start"><svg viewBox="0 0 12 12"><path d="M2 1l9 5-9 5z"/></svg>Replay</button></div>`;
+  const shown = i => g.plays.slice(0, i).filter((p, k) => !rpHidden(k)).length;
+  return `<div class="rp-ctl"><span class="pill">${shown(ui.rp.n)} of ${shown(g.plays.length)}</span>
+    <button type="button" class="rp-btn" data-rp="${ui.rp.on ? 'pause' : 'play'}">${ui.rp.on ? '<svg viewBox="0 0 12 12"><rect x="1.5" y="1" width="3.4" height="10"/><rect x="7.1" y="1" width="3.4" height="10"/></svg>Pause' : '<svg viewBox="0 0 12 12"><path d="M2 1l9 5-9 5z"/></svg>Play'}</button>
+    <button type="button" class="rp-btn" data-rp="stop"><svg viewBox="0 0 12 12"><rect x="1.5" y="1.5" width="9" height="9"/></svg>Stop</button></div>`;
+}
+
 /* ---------- Gamecast tab ---------- */
 function cardDrive(){
   const st = R.st, d = openDrive();
@@ -53,7 +86,7 @@ function cardDrive(){
   const ball = R.yl(st.poss, st.phase === 'kick' ? st.kickFrom : st.spot);
   const lp = lastPlay();
   return `<section class="card">
-    <div class="card-hd">${st.final ? '' : teamMark(st.poss, 34)}<div><h2 class="card-title">${title}</h2>${sub ? `<div class="card-sub">${esc(sub)}</div>` : ''}</div></div>
+    <div class="card-hd">${st.final ? '' : teamMark(st.poss, 34)}<div><h2 class="card-title">${title}</h2>${sub ? `<div class="card-sub">${esc(sub)}</div>` : ''}</div>${ui.viewer ? rpCtl() : ''}</div>
     ${st.final ? `<div class="cd-split"><div><div class="cd-lbl">${esc(g.teams.A.name)}</div><div class="cd-val">${st.score.A}</div></div><i></i><div><div class="cd-lbl">${esc(g.teams.H.name)}</div><div class="cd-val">${st.score.H}</div></div></div>`
       : `<div class="cd-split"><div><div class="cd-lbl">Down:</div><div class="cd-val">${esc(down)}</div></div><i></i><div><div class="cd-lbl">Ball on:</div><div class="cd-val">${esc(ball)}</div></div></div>`}
     <div class="fieldbox" id="field"></div>

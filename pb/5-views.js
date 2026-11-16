@@ -290,6 +290,9 @@ function refresh(){
     if (!g.share && !g.finalLive && !g.sample){ g.share = true; g.finalLive = true; save(); }
   }
   ui.seen = {id:g.id, final:!!R.st.final};
+  // A replay in progress (the Gamecast's Replay button): the whole page shows the game as of that play.
+  if (ui.rp && ui.rp.id !== g.id) rpStop(false);
+  if (ui.rp) R = replay(g, ui.rp.n);
   ui.ctx = ui.editing != null ? Object.assign(replay(g, ui.editing), {}) : R;
   $('#sample').hidden = !g.sample || !!ui.viewer;
   const sb = $('#sharebtn');
@@ -388,6 +391,7 @@ document.addEventListener('click', e => {
   if (d.pfoldall != null){ ui.pbpFold = ui.pbpFold || {}; document.querySelectorAll('[data-pdrive]').forEach(b => { ui.pbpFold[`${g.id}:${b.dataset.pdrive}`] = d.pfoldall === '1'; }); return renderView(); }
   if (d.pdrive != null){ const k = `${g.id}:${d.pdrive}`; ui.pbpFold = ui.pbpFold || {}; ui.pbpFold[k] = t.getAttribute('aria-expanded') !== 'true'; return renderView(); }
   if (d.half){ ui.half = d.half; return renderView(); }      // anyone: the box score by half
+  if (d.rp) return rpAct(d.rp);                               // anyone: the Gamecast's replay
   if (ui.viewer && !d.tab && !d.pbp && !d.pbsort) return;     // viewers can switch tabs and nothing else
   if ('xlsx' in d) return downloadXlsx();
   if (d.share){

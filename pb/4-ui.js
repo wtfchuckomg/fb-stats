@@ -22,7 +22,7 @@ function parseClock(v){
 }
 // A game that arrived without a clock (an older copy, or one part-way in from another device) reads as stopped
 // at the start of a quarter rather than throwing on every tick.
-function clockNow(){ const c = (g && g.clk) || {s:((g && g.set && g.set.qtr) || 12) * 60, run:false, at:0}; return c.run ? Math.max(0, c.s - (Date.now() - c.at) / 1000) : c.s; }
+function clockNow(){ if (ui.rp && R) return rpClock(); const c = (g && g.clk) || {s:((g && g.set && g.set.qtr) || 12) * 60, run:false, at:0}; return c.run ? Math.max(0, c.s - (Date.now() - c.at) / 1000) : c.s; }
 // An incomplete pass, or a run or catch that went out of bounds, stops the clock.
 const stopsClock = p => (p.t === 'pass' && p.res === 'i') || ((p.t === 'run' || (p.t === 'pass' && p.res === 'c')) && /\b(oob|out of bounds)\b/i.test(p.q || ''));
 function stopClockFor(p){ if (g.clk.run && stopsClock(p)) g.clk = {s:clockNow(), run:false, at:Date.now()}; }
