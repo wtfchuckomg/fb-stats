@@ -103,15 +103,81 @@ async () => {
 }
 """
 
+# Every playoff game played so far on our own brackets (pb/35-bracket.js), for the schools' playoff histories: the same
+# walk bkSchedRefresh() makes, each final in KPreps' bracket shape with the home team as a.
+PLAYOFFS = """
+() => {
+  const NAMES = ['Round 1', 'Regional', 'Sectional', 'Sub-State', 'State'], out = [], was = bk.cls, after = fromYmd(BK_WEEK8_END);
+  const one = (cls, r, a, b) => {
+    if (!a || !b || a.bye || b.bye) return;
+    const want = canonSchool(b.name);
+    for (const row of schoolRows(a.name)){
+      if (gameDay(row.x) <= after || canonSchool(row.x.teams[row.opp].name) !== want) continue;
+      const f = finalOf(row.x); if (!f.fin || !f.score) continue;
+      const pa = +f.score[row.side], pb = +f.score[row.opp]; if (pa === pb) continue;
+      const aH = row.side === 'H', ot = row.x.per === 'fot' || /OT/.test(f.status || '') || (f.q || 0) > 4;
+      out.push({y:2026, c:cls, rd:r + 1, rn:NAMES[r], a:aH ? a.name : b.name, ap:aH ? pa : pb, b:aH ? b.name : a.name, bp:aH ? pb : pa,
+        ot:!!ot, ...(row.x.per === 'ff' || (Math.min(pa, pb) === 0 && Math.max(pa, pb) <= 2) ? {ff:true} : {}), ...(row.x.site ? {at:row.x.site} : {})});
+      return;
+    }
+  };
+  try {
+    for (const cls of BK_CLASSES){
+      bk.cls = cls;
+      const champs = bkSides(cls).map(slots => {
+        let cur = slots;
+        for (let r = 0; r < 4; r++){ for (let i = 0; i < cur.length; i += 2) one(cls, r, cur[i], cur[i + 1]); cur = bkAdvance(cur).next; }
+        return cur[0] || null;
+      });
+      one(cls, 4, champs[0], champs[1]);
+    }
+  } finally { bk.cls = was; }
+  return out;
+}
+"""
+
+
+def site_playoffs(page):
+    """kp/playoffs-site.json from the live brackets, then every school's playoff history rebuilt from it (Chuck,
+    2026-11-15). The games arrive a few at a time, so it reads until two looks agree, and never keeps fewer games
+    than the file already has."""
+    import time
+    page.goto(f'{SITE}/?bracket=6A', wait_until='domcontentloaded', timeout=60000)
+    page.wait_for_function("typeof bkSides === 'function' && typeof allGames === 'object' && allGames.idx", timeout=90000)
+    got, last = [], -1
+    for _ in range(12):
+        time.sleep(5)
+        got = page.evaluate(PLAYOFFS)
+        if len(got) == last: break
+        last = len(got)
+    f = REPO / '.github' / 'kp' / 'playoffs-site.json'
+    old = json.loads(f.read_text()) if f.exists() else []
+    if len(got) < len(old):
+        print(f'playoffs: only {len(got)} games came back (the file has {len(old)}); kept the file')
+        return
+    f.write_text(json.dumps(got, separators=(',', ':'), ensure_ascii=False))
+    subprocess.run([sys.executable, str(REPO / '.github' / 'kp' / 'playoffs.py')], check=True)
+    print(f'playoffs: {len(got)} games this season')
+
 
 def main():
     from playwright.sync_api import sync_playwright
+    if '--playoffs' in sys.argv:   # only the playoff histories
+        with sync_playwright() as p:
+            browser = p.chromium.launch(channel=os.environ.get('CHROME_CHANNEL', 'chrome'))
+            site_playoffs(browser.new_page())
+            browser.close()
+        return
     with sync_playwright() as p:
         browser = p.chromium.launch(channel=os.environ.get('CHROME_CHANNEL', 'chrome'))
         page = browser.new_page()
         page.goto(f'{SITE}/?gamecast=nightly-rebuild&embed=1', wait_until='domcontentloaded', timeout=60000)
         page.wait_for_function("typeof viewerApi === 'function' && typeof gameNumbers === 'function'", timeout=60000)
         out = page.evaluate(BUILD)
+        try:
+            site_playoffs(page)
+        except Exception as e:   # a bad night here never costs the rebuild
+            print('playoffs: not rebuilt:', e)
         browser.close()
 
     for b in out['broken']: print('could not read', b)

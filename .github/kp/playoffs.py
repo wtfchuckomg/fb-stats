@@ -144,12 +144,25 @@ def main():
     kp_file = HERE / 'playoffs-kpreps.json'
     kp = json.loads(kp_file.read_text()) if kp_file.exists() else []
     now = date.today().year
+    # No KPreps reads unless asked for by name (Chuck, 2026-11-01: "we're not doing any kprep pulls anymore").
     want = KP_YEARS if '--all' in sys.argv else [y for y in KP_YEARS if y == now or not any(g['y'] == y for g in kp)]
     if date.today() < date(now, 10, 25):
         want = [y for y in want if y != now]   # no brackets before the season's last week
+    if '--kpreps' not in sys.argv and '--all' not in sys.argv:
+        want = []
+    # This season's playoff games from our own brackets (Chuck, 2026-11-15: "make sure you're updating the playoff
+    # history on each team as the rounds progress"): .github/nightly.py reads every played game off the live site's
+    # brackets each night into kp/playoffs-site.json, in KPreps' shape — a = the home team, rn = the round's name,
+    # ff = a forfeit, at = where a title game was played. Those years replace anything KPreps had.
+    sf = HERE / 'playoffs-site.json'
+    site_games = json.loads(sf.read_text()) if sf.exists() else []
     if want:
         kp = fetch_kpreps(want, kp)
         kp_file.write_text(json.dumps(kp, separators=(',', ':')))
+    if site_games:
+        ys = {g['y'] for g in site_games}
+        SITE_YEARS.update(ys)
+        kp = [g for g in kp if g['y'] not in ys] + site_games
     kp = [g for g in kp if g['c'] not in SKIP_CLASSES]
     ppi = json.loads((HERE / 'playoffs-ppi.json').read_text())
     # (year, class, round, winner, winner's points, loser, loser's points, overtime, which side won: 0 the top team, 1 the bottom)
@@ -166,9 +179,12 @@ def main():
     for g in kp:
         last[(g['y'], g['c'])] = max(last.get((g['y'], g['c']), 0), g['rd'])
     for g in kp:
-        rnd = MODERN[last[(g['y'], g['c'])] - g['rd']]
+        # Counting back from the final only works once there is one: a season still being played names its own rounds.
+        rnd = g.get('rn') or MODERN[last[(g['y'], g['c'])] - g['rd']]
         a, b = (g['a'], g['ap']), (g['b'], g['bp'])
         (w, ws), (l, ls) = (a, b) if g['ap'] >= g['bp'] else (b, a)
+        if g.get('ff'): DEFS.add((g['y'], g['c'], key(w), key(l)))   # a forfeit: "def.", no score
+        if g.get('at') and rnd == 'State': SITE_AT.setdefault(str(g['y']), {}).setdefault(g['c'], {}).setdefault(rnd, g['at'])
         # Who was at home: KPreps puts the home team on top (every first-round game 2013-2025 checked against the
         # schools' schedules), and 2010-12 mark a top team on the road with "@".
         games.append((g['y'], g['c'], rnd, w, ws, l, ls, g['ot'], 0 if g['ap'] >= g['bp'] else 1, 1 if g.get('away') == 'a' else 0))
@@ -325,6 +341,9 @@ def write_years(games, out, order):
     firsts = read_firsts()
     f = HERE / 'playoffs-firsts.json'
     sites = json.loads(f.read_text()).get('sites', {}) if f.exists() else {}
+    for y, cs in SITE_AT.items():   # sites from our own games, where Chuck hasn't given one
+        for c, rs in cs.items():
+            for r, at in rs.items(): sites.setdefault(y, {}).setdefault(c, {}).setdefault(r, at)
     notes = json.loads(f.read_text()).get('notes', {}) if f.exists() else {}
     called = json.loads(f.read_text()).get('rounds', {}) if f.exists() else {}
     labels = json.loads(f.read_text()).get('labels', {}) if f.exists() else {}
@@ -335,6 +354,11 @@ def write_years(games, out, order):
     for y, classes in by.items():
         doc = {}
         for c, gs in classes.items():
+            # A class still playing (our own games, no title game yet) has no final to work back from: its games keep
+            # the rounds they were played in, home on top, and the year's bracket waits for the title game.
+            if y in SITE_YEARS and not any(g['r'] == 'State' for g in gs):
+                for g in gs: WHERE[g['i']] = ('w' if g['top'] == g['home'] else 'l', None)
+                continue
             # The bracket comes from the games themselves, not from the round each was printed under (the archive swaps
             # some: 1974 8-Man lists McCracken beating Scandia a round after Luray beat McCracken). From the final back,
             # each team's slot is filled with the last game it won before that one.
@@ -450,6 +474,8 @@ def write_years(games, out, order):
             elif c in doc:
                 for i, t in enumerate(t for g in doc[c]['rounds'][0]['games'] for t in ((g['a'], g['b']) if g else (None, None))):
                     if t: t['dn'] = i + 1
+        if not doc:
+            continue
         (ydir / f'{y}.json').write_text(json.dumps({'y': y, 'classes': doc}, separators=(',', ':')))
         index[y] = sorted(doc, key=lambda c: CLASS_ORDER.index(c) if c in CLASS_ORDER else 99)
     (ydir / 'index.json').write_text(json.dumps({str(y): index[y] for y in sorted(index, reverse=True)}, separators=(',', ':')))
@@ -562,6 +588,8 @@ def place(levels, rows, keep=False):
 WHERE = {}      # game number → ('w' or 'l', the side at home, or None; the site, or None)
 ADVANCED = {}
 DEFS = set()   # (year, class, winner, loser): the result is known, the score isn't
+SITE_YEARS = set()   # years whose games come from our own brackets (playoffs-site.json)
+SITE_AT = {}   # year → class → round → site, from our own games (playoffs-site.json)
 
 PAIRS = [(1, 16), (8, 9), (4, 13), (5, 12), (2, 15), (7, 10), (3, 14), (6, 11)]
 PAD = ['State', 'Sub-State', 'Quarterfinals', 'Second Round', 'First Round']
