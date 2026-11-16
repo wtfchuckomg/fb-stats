@@ -235,7 +235,40 @@ def main():
         rows = [{'y': y, 'c': c, 'g': [{k: v for k, v in g.items() if k != '_d'} for g in sorted(gs, key=lambda x: x['_d'])]}
                 for (y, c), gs in sorted(seasons.items(), reverse=True)]
         (out / f'{slug(s)}.json').write_text(json.dumps({'school': s, 'seasons': rows}, separators=(',', ':')))
+    write_records(games, named, order, per, out)
     print(len(per), 'schools,', len(games), 'games')
+
+
+def write_records(games, named, order, per, out):
+    """playoffs/records.json, for the Playoff History page's other views (Chuck, 2026-11-16): the longest playoff
+    winning streaks still going, the same for home games only, and every school's state titles, in all and by class."""
+    def streak(gs):
+        n, first = 0, None
+        for y, c, g in reversed(gs):
+            if g['w'] != 1: break
+            n, first = n + 1, (y, g['r'])
+        return n, first
+    def top(rows, keep=25):   # the first 25, and anyone tied with the 25th
+        rows.sort(key=lambda r: (-r['w'], r['s']))
+        return [r for r in rows if r['w'] >= rows[min(keep, len(rows)) - 1]['w']] if rows else []
+    win, home = [], []
+    for s, seasons in per.items():
+        gs = [(y, c, g) for (y, c), sg in sorted(seasons.items()) for g in sorted(sg, key=lambda x: x['_d'])]
+        for rows, pick in ((win, gs), (home, [x for x in gs if x[2].get('loc') == 'h'])):
+            n, first = streak(pick)
+            if n >= 2: rows.append({'s': s, 'w': n, 'y': first[0], 'r': first[1]})
+    titles = {}
+    for i, (y, c, rnd, w, ws, l, ls, ot, *_) in enumerate(games):
+        if c == '5A' and y in (1969, 1970): continue   # league champions, not a playoff (as on the schools' own pages)
+        r = named.get(i, (rnd,))[0]
+        if r not in ('State', 'Finals'): continue
+        n = site_in(w, c) or w
+        t = titles.setdefault(n, {'s': n, **({'p': 1} if site_in(w, c) else {}), 't': 0, 'c': {}})
+        t['t'] += 1
+        t['c'].setdefault(c, []).append(y)
+    champs = sorted(titles.values(), key=lambda t: (-t['t'], t['s']))
+    for t in champs: t['c'] = {c: sorted(ys) for c, ys in t['c'].items()}
+    (out / 'records.json').write_text(json.dumps({'streak': top(win), 'home': top(home), 'titles': champs}, separators=(',', ':')))
 
 
 OFFICIAL_FROM = 1998   # Chuck pasted 1988-1997 himself; kp/playoffs-official.json is KSHSAA's own brackets
