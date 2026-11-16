@@ -243,11 +243,11 @@ def write_records(games, named, order, per, out):
     """playoffs/records.json, for the Playoff History page's other views (Chuck, 2026-11-16): the longest playoff
     winning streaks still going, the same for home games only, and every school's state titles, in all and by class."""
     def streak(gs):
-        n, first = 0, None
+        n, first, last = 0, None, None
         for y, c, g in reversed(gs):
             if g['w'] != 1: break
-            n, first = n + 1, (y, g['r'])
-        return n, first
+            n, first, last = n + 1, (y, g['r']), last or (y, g['r'])
+        return n, first, last
     def top(rows, keep=25):   # the first 25, and anyone tied with the 25th
         rows.sort(key=lambda r: (-r['w'], r['s']))
         return [r for r in rows if r['w'] >= rows[min(keep, len(rows)) - 1]['w']] if rows else []
@@ -255,8 +255,8 @@ def write_records(games, named, order, per, out):
     for s, seasons in per.items():
         gs = [(y, c, g) for (y, c), sg in sorted(seasons.items()) for g in sorted(sg, key=lambda x: x['_d'])]
         for rows, pick in ((win, gs), (home, [x for x in gs if x[2].get('loc') == 'h'])):
-            n, first = streak(pick)
-            if n >= 2: rows.append({'s': s, 'w': n, 'y': first[0], 'r': first[1]})
+            n, first, last = streak(pick)
+            if n >= 2: rows.append({'s': s, 'w': n, 'y': first[0], 'r': first[1], 'ly': last[0], 'lr': last[1]})
     titles = {}
     for i, (y, c, rnd, w, ws, l, ls, ot, *_) in enumerate(games):
         if c == '5A' and y in (1969, 1970): continue   # league champions, not a playoff (as on the schools' own pages)
@@ -266,9 +266,30 @@ def write_records(games, named, order, per, out):
         t = titles.setdefault(n, {'s': n, **({'p': 1} if site_in(w, c) else {}), 't': 0, 'c': {}})
         t['t'] += 1
         t['c'].setdefault(c, []).append(y)
+    # The longest runs ever (Chuck, 2026-11-16), every school's games, closed schools too: each run its own row, so a
+    # school can be on the list more than once. y/r where it began; ey/er/eo the loss that ended it (none: still going).
+    seq = {}
+    for i, (y, c, rnd, w, ws, l, ls, ot, *_) in enumerate(games):
+        if c == '5A' and y in (1969, 1970): continue
+        r, d = named.get(i, (rnd, order.get(rnd, 9)))
+        for me, opp, won in ((w, l, 1), (l, w, 0)):
+            n = site_in(me, c) or me
+            seq.setdefault(n, []).append((y, d, r, won, site_in(opp, c) or opp, bool(site_in(me, c))))
+    runs = []
+    for n, gs in seq.items():
+        gs.sort(key=lambda x: (x[0], x[1]))
+        run = None
+        for y, d, r, won, o, pg in gs + [(None,) * 6]:
+            if run and (y is None or not won):
+                if run['w'] >= 2: runs.append(dict(run, **({'ey': y, 'er': r, 'eo': o} if y is not None else {})))
+                run = None
+            if y is None: break
+            if won:
+                run = dict(run, w=run['w'] + 1) if run else {'s': n, **({} if pg else {'p': 0}), 'w': 1, 'y': y, 'r': r}
+                run['ly'], run['lr'] = y, r   # its last win so far
     champs = sorted(titles.values(), key=lambda t: (-t['t'], t['s']))
     for t in champs: t['c'] = {c: sorted(ys) for c, ys in t['c'].items()}
-    (out / 'records.json').write_text(json.dumps({'streak': top(win), 'home': top(home), 'titles': champs}, separators=(',', ':')))
+    (out / 'records.json').write_text(json.dumps({'streak': top(win), 'home': top(home), 'alltime': top(runs), 'titles': champs}, separators=(',', ':')))
 
 
 OFFICIAL_FROM = 1998   # Chuck pasted 1988-1997 himself; kp/playoffs-official.json is KSHSAA's own brackets

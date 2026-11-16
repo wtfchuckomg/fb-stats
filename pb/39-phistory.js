@@ -7,13 +7,13 @@
 
      ?brackets                      the latest year, its first class
      ?brackets=<year>&class=<c>     that year's bracket for that class
-     ?brackets&view=streak|home|titles   the other views in the bar's Playoff History menu (Chuck, 2026-11-16), from
+     ?brackets&view=streak|home|alltime|titles   the other views in the bar's Playoff History menu (Chuck, 2026-11-16), from
                                     playoffs/records.json: current playoff win streaks, current home
                                     playoff win streaks, and state titles (&class=<c> for one class)
    ================================================================ */
 const PH_PAGE = PAGE_Q.has('brackets');
 const ph = {index:null, year:'', cls:'', docs:{}, err:'', rec:null};
-const PH_VIEWS = [['', 'Brackets'], ['streak', 'Playoff Win Streaks'], ['home', 'Home Playoff Win Streaks'], ['titles', 'State Championships']];
+const PH_VIEWS = [['', 'Brackets'], ['streak', 'Playoff Win Streaks'], ['home', 'Home Playoff Win Streaks'], ['alltime', 'All-Time Playoff Win Streaks'], ['titles', 'State Championships']];
 const PH_VIEW = (v => PH_VIEWS.some(x => x[0] === v) ? v : '')(PAGE_Q.get('view') || '');
 const PH_ORDER = ['6A', '5A', '4A', '4A-I', '4A-II', '3A', '2A', '2-1A', '1A', '8M', '8M-I', '8M-II', '6M'];
 const PH_LABEL = c => ({'8M':'8-Man', '8M-I':'8-Man I', '8M-II':'8-Man II', '6M':'6-Man'})[c] || `Class ${c}`;
@@ -98,10 +98,12 @@ function phRanked(rows, val, cols){
 }
 function phRecordsHtml(){
   const R = ph.rec, v = PH_VIEW;
-  if (v === 'streak' || v === 'home'){
-    const rows = R[v] || [];
-    return `<section class="bcard ccard"><div class="ccard-hd"><h2>${v === 'home' ? 'Home Playoff Win Streaks' : 'Playoff Win Streaks'}</h2></div>${rows.length ? phRanked(rows.map(o => Object.assign({p:1}, o)), o => o.w,
-      [['Wins', o => o.w], ['Since', o => `${o.y} ${esc(o.r)}`, 'txt']]) : '<p class="bempty">None on file.</p>'}</section>`;
+  if (v === 'streak' || v === 'home' || v === 'alltime'){
+    const rows = R[v] || [], at = (y, r) => y ? `${y} ${esc(r)}` : '';
+    const opp = n => n ? ` vs ${esc(n)}` : '';
+    const cols = [['Wins', o => o.w], ['Began', o => at(o.y, o.r), 'txt'], ['Last win', o => at(o.ly, o.lr), 'txt']];
+    if (v === 'alltime') cols.push(['Ended', o => o.ey ? `${at(o.ey, o.er)}${opp(o.eo)}` : 'Active', 'txt']);
+    return `<section class="bcard ccard"><div class="ccard-hd"><h2>${esc(PH_VIEWS.find(x => x[0] === v)[1])}</h2></div>${rows.length ? phRanked(rows.map(o => Object.assign({p:1}, o)), o => o.w, cols) : '<p class="bempty">None on file.</p>'}</section>`;
   }
   const c = ph.cls, all = R.titles || [];
   const rows = (c ? all.filter(o => o.c[c]).map(o => Object.assign({}, o, {t:o.c[c].length})) : all.slice()).sort((a, b) => b.t - a.t || a.s.localeCompare(b.s));
