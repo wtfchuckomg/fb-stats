@@ -815,6 +815,7 @@ const LOGO_MAP = {
 "newton": "https://stats.kansasmediarankings.com/logos/Newton.png",
 "nickerson": "https://stats.kansasmediarankings.com/logos/Nickerson.png",
 "north": "https://stats.kansasmediarankings.com/logos/North.png",
+"ridgeview": "https://stats.kansasmediarankings.com/logos/Ridgeview.png",
 "wichita-north": "https://stats.kansasmediarankings.com/logos/North.png",
 "northeast": "https://stats.kansasmediarankings.com/logos/Northeast.png",
 "northeast-arma": "https://stats.kansasmediarankings.com/logos/Northeast.png",

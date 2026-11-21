@@ -1330,6 +1330,17 @@
   "mascot": "Indians"
  },
  {
+  "name": "Ridgeview",
+  "slug": "ridgeview",
+  "file": "Ridgeview.png",
+  "city": "",
+  "w": 377,
+  "h": 400,
+  "aliases": [],
+  "abbr": "Ridgeview",
+  "mascot": "Wolfpack"
+ },
+ {
   "name": "Wichita Heights",
   "slug": "wichita-heights",
   "file": "Heights.png",
