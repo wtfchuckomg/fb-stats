@@ -54,7 +54,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git add -A season.json stats.json rosters.json ratings.json kpscores.json schedule.json g p pv embed history playoffs .github/kp logos/sm
+          # Only paths that are there, on disk or in git: a folder that empties out (pv/ once every previewed game has been
+          # played) is gone from both, and naming it made git refuse the whole save — every rebuild 2026-11-07 to 11-20.
+          paths=""
+          for p in season.json stats.json rosters.json ratings.json kpscores.json schedule.json g p pv embed history playoffs .github/kp logos/sm; do
+            if [ -e "$p" ] || [ -n "$(git ls-files -- "$p" | head -1)" ]; then paths="$paths $p"; fi
+          done
+          git add -A -- $paths
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
           git -c user.name="Nightly rebuild" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "Nightly rebuild: season, stats, previews, embeds"
           git pull -q --rebase && git push -q
