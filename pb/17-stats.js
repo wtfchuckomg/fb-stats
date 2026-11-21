@@ -62,7 +62,7 @@ async function startCounty(){
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
     const [appM, fsM, authM] = await Promise.all(['app', 'firestore', ...(admin ? ['auth'] : [])].map(m => import(base + m + '.js')));
     const app = appM.initializeApp(firebaseConfig);
-    if (authM) authM.onAuthStateChanged(authM.getAuth(app), u => { ui.admin = !!u && u.uid === ADMIN_UID; renderCounty(); });
+    if (authM) authM.onAuthStateChanged(await authFor(authM, app), u => { ui.admin = !!u && u.uid === ADMIN_UID; renderCounty(); });
     const fsdb = fsM.getFirestore(app);
     scoresReady({fsM, fsdb});   // the week's scores strip, above the menu bar
     watchStatMins({fsM, fsdb});

@@ -142,7 +142,7 @@ async function startBracket(){
     const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-`;
     const [appM, fsM, authM] = await Promise.all(['app', 'firestore', ...(admin ? ['auth'] : [])].map(m => import(base + m + '.js')));
     const app = appM.initializeApp(firebaseConfig);
-    if (authM) authM.onAuthStateChanged(authM.getAuth(app), u => { ui.admin = !!u && u.uid === ADMIN_UID; renderBracket(); });
+    if (authM) authM.onAuthStateChanged(await authFor(authM, app), u => { ui.admin = !!u && u.uid === ADMIN_UID; renderBracket(); });
     const fsdb = fsM.getFirestore(app);
     scoresReady({fsM, fsdb});
     watchFlips({fsM, fsdb});

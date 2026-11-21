@@ -18,6 +18,27 @@ const firebaseConfig = {
 // Google refuses sign-in inside Facebook, Instagram, X and similar in-app browsers.
 const IN_APP_BROWSER = /FBAN|FBAV|FB_IAB|Instagram|Twitter|LinkedInApp|Snapchat|Line\/|MicroMessenger|GSA\//i.test(navigator.userAgent)
   || /Android.*;\s*wv\)/i.test(navigator.userAgent);
+// Sign-in keeps who is signed in in the browser's storage database (IndexedDB). On some iPhones that database stops
+// answering — Safari's known hang — and sign-in then never says who it is: the tracker sat at "Connecting…", and
+// the scoreboards waited on it for tonight's games (Chuck, 2026-11-20). So it is asked first, with a time limit, and
+// when it doesn't answer, sign-in keeps its record in the page's ordinary storage instead.
+let idbP = null;
+function idbOk(){
+  return idbP || (idbP = new Promise(res => {
+    let done = false; const end = v => { if (!done){ done = true; res(v); } };
+    try {
+      const r = indexedDB.open('kms-probe');
+      r.onsuccess = () => { try { r.result.close(); } catch (e) {} end(true); };
+      r.onerror = r.onblocked = () => end(false);
+    } catch (e) { end(false); }
+    setTimeout(() => end(false), 3000);
+  }));
+}
+async function authFor(authM, app){
+  if (await idbOk()) return authM.getAuth(app);
+  try { return authM.initializeAuth(app, {persistence:[authM.browserLocalPersistence, authM.inMemoryPersistence], popupRedirectResolver:authM.browserPopupRedirectResolver}); }
+  catch (e) { return authM.getAuth(app); }
+}
 const sync = {state:'off', user:null, api:null, unsub:null, first:true, timers:{}, pending:0, err:'', failed:new Set()};
 
 async function startSync(){
@@ -27,7 +48,7 @@ async function startSync(){
     const load = Promise.all(['app', 'auth', 'firestore'].map(m => import(base + m + '.js')));
     const [appM, authM, fsM] = await Promise.race([load, new Promise((_, no) => setTimeout(() => no(new Error('timeout')), 12000))]);
     const app = appM.initializeApp(firebaseConfig);
-    sync.api = {authM, fsM, auth:authM.getAuth(app), fsdb:fsM.getFirestore(app)};
+    sync.api = {authM, fsM, auth:await authFor(authM, app), fsdb:fsM.getFirestore(app)};
   } catch (e) { sync.state = 'unavailable'; return renderSync(); }
   const {authM, auth} = sync.api;
   scoresReady(sync.api);   // shared games for the scoreboard need no sign-in
@@ -45,6 +66,8 @@ async function startSync(){
     if (ui.admin) setTimeout(pushPrivateFinals, 4000);   // after the page has drawn
     renderSync();
   });
+  // Still no word from sign-in after 12 seconds: say so, instead of "Connecting…" forever.
+  setTimeout(() => { if (sync.state === 'off'){ sync.state = 'error'; sync.err = 'Can’t reach your account on this device. Close the browser all the way, then open the site again.'; renderSync(); } }, 12000);
   addEventListener('online', () => { retryFailed(); renderSync(); });
   addEventListener('offline', renderSync);
   setInterval(retryFailed, 30000);   // a signal can come back without the browser saying so
@@ -198,7 +221,7 @@ async function signIn(){
   if (IN_APP_BROWSER) return toast('Open this page in Safari or Chrome to sign in');
   const {authM, auth} = sync.api, provider = new authM.GoogleAuthProvider();
   // Embedded browsers may block IndexedDB; walk down to whatever storage this one allows.
-  for (const p of [authM.indexedDBLocalPersistence, authM.browserLocalPersistence, authM.browserSessionPersistence, authM.inMemoryPersistence]){
+  for (const p of [...(await idbOk() ? [authM.indexedDBLocalPersistence] : []), authM.browserLocalPersistence, authM.browserSessionPersistence, authM.inMemoryPersistence]){
     try { await authM.setPersistence(auth, p); break; } catch (e) { /* try the next */ }
   }
   try { await authM.signInWithPopup(auth, provider); }
@@ -296,7 +319,7 @@ function viewerApi(){
     const [appM, fs, authM] = await Promise.all(['app', 'firestore', ...(admin ? ['auth'] : [])].map(m => import(base + m + '.js')));
     const app = appM.initializeApp(firebaseConfig), fsdb = fs.getFirestore(app);
     let asAdmin = false;
-    if (authM) asAdmin = await new Promise(res => { const off = authM.onAuthStateChanged(authM.getAuth(app), u => { off(); res(!!u && u.uid === ADMIN_UID); }); });
+    if (authM) asAdmin = await new Promise(res => { (async () => { const off = authM.onAuthStateChanged(await authFor(authM, app), u => { off(); res(!!u && u.uid === ADMIN_UID); }); })(); });
     return {fsM:fs, fsdb, asAdmin};
   })();
 }
@@ -381,7 +404,7 @@ function syncBlock(){
   if (s === 'off') return '<div class="acct" id="acct"><p class="hint">Connecting to your account…</p></div>';
   if (s === 'unavailable') return `<div class="acct" id="acct"><p class="hint">Games are saved in this browser only. To keep them on every device, open Press Box from your own site and sign in with Google.</p></div>`;
   if (!u) return `<div class="acct" id="acct"><div><b>Keep your games on every device</b>
-    <p class="hint">Sign in with your Google account and your games follow you to any phone or computer where you sign in.</p></div>
+    ${sync.err ? `<p class="hint">${esc(sync.err)}</p>` : ''}<p class="hint">Sign in with your Google account and your games follow you to any phone or computer where you sign in.</p></div>
     <button class="btn small primary" data-signin>Sign in with Google</button></div>`;
   return `<div class="acct" id="acct"><div><b>Syncing to ${esc(u.email || 'your account')}</b>
     <p class="hint">${sync.err ? esc(sync.err) : 'Every change is saved here and to your account. Sign in on another device to pick up where you left off.'}</p></div>
