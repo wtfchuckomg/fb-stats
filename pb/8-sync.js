@@ -231,7 +231,7 @@ function friendlySync(e){
 function renderSync(){
   const el = $('#sync'); if (!el) return;
   let s = sync.state;
-  if (s === 'off'){ el.innerHTML = ''; return; }
+  if (s === 'off'){ el.innerHTML = '<button class="abtn syncbtn busy" data-sync title="Connecting to your account"><i></i>Connecting…</button>'; return; }
   if (sync.user && navigator.onLine === false) s = 'offline';
   const label = {unavailable:'This device only', 'signed-out':'Sign in to sync', on:'Synced', saving:'Saving…', offline:'Offline · saved here', error:'Sync problem'}[s];
   const cls = {on:'ok', saving:'busy', offline:'busy', error:'bad'}[s] || '';
@@ -240,7 +240,7 @@ function renderSync(){
   el.innerHTML = `<button class="abtn syncbtn ${cls}" data-sync title="${esc(tip)}"><i></i>${label}</button>`;
   const ob = $('#othersbtn'); if (ob) ob.hidden = !ui.admin;
   if (ui.dlg === 'others' && dlg().open) dlg().innerHTML = dlgOthers();
-  if (ui.dlg === 'games' && dlg().open){ const a = $('#acct'); if (a) a.outerHTML = syncBlock(); }
+  if (ui.dlg === 'games' && dlg().open) dlg().innerHTML = dlgGames();   // the account line, the list, and where games are saved
   if (ui.dlg === 'share' && dlg().open) dlg().innerHTML = dlgShare();
 }
 
@@ -377,7 +377,8 @@ function renderLive(){
 }
 function syncBlock(){
   const s = sync.state, u = sync.user;
-  if (s === 'off') return '<div id="acct"></div>';
+  // Still reaching the account (Chuck's phone, 2026-11-20, showed nothing here and none of his games).
+  if (s === 'off') return '<div class="acct" id="acct"><p class="hint">Connecting to your account…</p></div>';
   if (s === 'unavailable') return `<div class="acct" id="acct"><p class="hint">Games are saved in this browser only. To keep them on every device, open Press Box from your own site and sign in with Google.</p></div>`;
   if (!u) return `<div class="acct" id="acct"><div><b>Keep your games on every device</b>
     <p class="hint">Sign in with your Google account and your games follow you to any phone or computer where you sign in.</p></div>

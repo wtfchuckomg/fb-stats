@@ -48,37 +48,41 @@ function loadTracker(then){
   document.head.appendChild(s);
 }
 function startTracker(){
-  load();
-  if (db.games.sample && db.games.sample.sample !== 2) db.games.sample = sampleGame();
-  seedTeamLibrary();
-  seedSchedule();         // the 2026 Butler County schedule, loaded once as scheduled games
-  seedOppSchedule();      // and the schedules of the teams they play
-  // ?edit=<id>, from the Edit button on a game's own page: open that game here, then tidy the address.
-  const EDIT_ID = new URLSearchParams(location.search).get('edit');
-  // ?tracker&id=<id>: the game the tracker had open, after a refresh.
-  const TRACK_ID = new URLSearchParams(location.search).get('id'), back = !!(TRACK_ID && db.games[TRACK_ID]);
-  g = (EDIT_ID && db.games[EDIT_ID]) || (back && db.games[TRACK_ID]) || db.games[db.cur] || Object.values(db.games)[0];
-  if (EDIT_ID) history.replaceState(null, '', `${location.pathname}?tracker`);
-  if (!g) g = sampleGame();
-  // A game asked for by name (Edit, or a refresh of the one open) stays; otherwise the game last saved in the account
-  // wins over whatever this device last had open (Chuck, 2026-11-20: it "tries to load an older game").
-  // The address's game holds only on a refresh: a bookmark or a tab the phone brought back opens the latest instead.
-  const reload = (() => { try { return performance.getEntriesByType('navigation')[0].type === 'reload'; } catch (e) { return false; } })();
-  ui.pinned = EDIT_ID ? 'edit' : back && reload ? 'back' : '';
-  newestOver();
-  // No game under way (the last one is over, or there's only the sample or a box score): the start screen.
-  ui.start = !EDIT_ID && !(back && g.id === TRACK_ID) && idleGame(g);
-  setCurrent();
-  refresh();
-  if (EDIT_ID && db.games[EDIT_ID]){ if (g.box) boxPop(); }
-  else if (EDIT_ID) sync.editId = EDIT_ID;   // not on this device yet: it opens when the account's games arrive
-  // ?tracker&open=games (or setup, export, share): from the scorer's buttons on the other pages.
-  const OPEN = new URLSearchParams(location.search).get('open');
-  if (['games', 'setup', 'export', 'share', 'others'].includes(OPEN)){ history.replaceState(null, '', `${location.pathname}?tracker`); openDialog(OPEN); }
-  // ?tracker&box=<game>: Paste box score, from a school's schedule or the scoreboard.
-  const BOX_FROM = new URLSearchParams(location.search).get('box');
-  if (BOX_FROM != null){ ui.boxFrom = BOX_FROM || null; ui.boxGame = null; history.replaceState(null, '', `${location.pathname}?tracker`); openDialog('box'); }
-  startSync();
+  // The account connection starts even if something below trips on this device's saved games: without it a phone
+  // sees only what it has stored, never the account's games (Chuck, 2026-11-20).
+  try {
+    load();
+    if (db.games.sample && db.games.sample.sample !== 2) db.games.sample = sampleGame();
+    seedTeamLibrary();
+    seedSchedule();         // the 2026 Butler County schedule, loaded once as scheduled games
+    seedOppSchedule();      // and the schedules of the teams they play
+    // ?edit=<id>, from the Edit button on a game's own page: open that game here, then tidy the address.
+    const EDIT_ID = new URLSearchParams(location.search).get('edit');
+    // ?tracker&id=<id>: the game the tracker had open, after a refresh.
+    const TRACK_ID = new URLSearchParams(location.search).get('id'), back = !!(TRACK_ID && db.games[TRACK_ID]);
+    g = (EDIT_ID && db.games[EDIT_ID]) || (back && db.games[TRACK_ID]) || db.games[db.cur] || Object.values(db.games)[0];
+    if (EDIT_ID) history.replaceState(null, '', `${location.pathname}?tracker`);
+    if (!g) g = sampleGame();
+    // A game asked for by name (Edit, or a refresh of the one open) stays; otherwise the game last saved in the account
+    // wins over whatever this device last had open (Chuck, 2026-11-20: it "tries to load an older game").
+    // The address's game holds only on a refresh: a bookmark or a tab the phone brought back opens the latest instead.
+    const reload = (() => { try { return performance.getEntriesByType('navigation')[0].type === 'reload'; } catch (e) { return false; } })();
+    ui.pinned = EDIT_ID ? 'edit' : back && reload ? 'back' : '';
+    newestOver();
+    // No game under way (the last one is over, or there's only the sample or a box score): the start screen.
+    ui.start = !EDIT_ID && !(back && g.id === TRACK_ID) && idleGame(g);
+    setCurrent();
+    refresh();
+    if (EDIT_ID && db.games[EDIT_ID]){ if (g.box) boxPop(); }
+    else if (EDIT_ID) sync.editId = EDIT_ID;   // not on this device yet: it opens when the account's games arrive
+    // ?tracker&open=games (or setup, export, share): from the scorer's buttons on the other pages.
+    const OPEN = new URLSearchParams(location.search).get('open');
+    if (['games', 'setup', 'export', 'share', 'others'].includes(OPEN)){ history.replaceState(null, '', `${location.pathname}?tracker`); openDialog(OPEN); }
+    // ?tracker&box=<game>: Paste box score, from a school's schedule or the scoreboard.
+    const BOX_FROM = new URLSearchParams(location.search).get('box');
+    if (BOX_FROM != null){ ui.boxFrom = BOX_FROM || null; ui.boxGame = null; history.replaceState(null, '', `${location.pathname}?tracker`); openDialog('box'); }
+  } catch (e) { console.error(e); if (!g) g = sampleGame(); try { refresh(); } catch (e2) {} }
+  finally { startSync(); }
 }
 
 startEmbed();   // ?embed=1: whatever page this is, it is inside someone else's
