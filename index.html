@@ -11476,10 +11476,20 @@ function sosNote(A, H, P){
 const kps = {rows:null, idx:null, want:false, logos:0};
 // KPreps writes some schools another way round — "Towanda-Circle" for the school this site calls Circle.
 // The logo list carries those aliases, so both names settle on ours.
+// Remembered for each name until the logo list changes: it searched all 350 schools on every call, thousands of
+// times each time the games were indexed, which froze iPhones for a second or two on every score (Chuck, 2026-11-20:
+// "lots of lagging").
+const kpAliasMemo = {list:undefined, n:-1, m:new Map()};
 const kpAlias = n => {
+  const L = logoLib.list;
+  if (kpAliasMemo.list !== L || kpAliasMemo.n !== (L ? L.length : -1)){ kpAliasMemo.list = L; kpAliasMemo.n = L ? L.length : -1; kpAliasMemo.m = new Map(); }
+  let v = kpAliasMemo.m.get(n);
+  if (v !== undefined) return v;
   const k = logoSlug(n);
-  const t = (logoLib.list || []).find(v => logoSlug(v.name) === k || v.slug === k || (v.aliases || []).some(a => logoSlug(a) === k));
-  return canonSchool(t ? t.name : n);
+  const t = (L || []).find(x => logoSlug(x.name) === k || x.slug === k || (x.aliases || []).some(a => logoSlug(a) === k));
+  v = canonSchool(t ? t.name : n);
+  kpAliasMemo.m.set(n, v);
+  return v;
 };
 function loadKpScores(){
   if (kps.want) return;
