@@ -2544,8 +2544,11 @@ function replay(g, upto = g.plays.length, from = 0){
     // yards wait for kickoffBy. Already lined up for the kickoff, it is marked off now, like any flag before a kick.
     const kp = p.pen;
     if (kp && kp.ko && !['off', 'dec'].includes(kp.enf) && st.phase !== 'kick'){
-      const r = p.t === 'pen' ? (clk = p.clk ?? null, tags = [], trace = [], flagNow = null, defer = null, {text:''}) : apply({...p, pen:null});
+      // Set aside before the play runs: a try (or anything else that ends in a kickoff) lines the kickoff up as it
+      // finishes, and a flag added after that missed it — Buhler kicked from its own 40, not the McPherson 45, after
+      // roughing the kicker on the try (Chuck, 2026-11-20).
       st.koPen = (st.koPen || []).concat({...kp, ko:false});
+      const r = p.t === 'pen' ? (clk = p.clk ?? null, tags = [], trace = [], flagNow = null, defer = null, {text:''}) : apply({...p, pen:null});
       tags.push(['flag', 'Flag']);
       r.text = `${r.text ? r.text + ' ' : ''}PENALTY ${ab(kp.side)} ${kp.name}${kp.n ? ` (${nm(kp.side, kp.n)})` : ''}, ${plural(+kp.y || 0, 'yard')}, enforced on the kickoff.`;
       return r;
