@@ -80,6 +80,13 @@ def main():
     with sync_playwright() as p:
         browser = p.chromium.launch(channel=os.environ.get('CHROME_CHANNEL', 'chrome'))
         results = [check(browser, *pg) for pg in PAGES]
+        # A page caught mid-publish (the save just before this can put up thousands of files, and GitHub Pages takes
+        # minutes to swap them in) gets a second look three minutes later; only a page that fails twice counts
+        # (2026-11-21: the first save after the Nov 7-20 outage failed this step, and every page passed by hand).
+        if any(r['problems'] for r in results):
+            import time
+            time.sleep(180)
+            results = [check(browser, *pg) if r['problems'] else r for r, pg in zip(results, PAGES)]
         browser.close()
     bad = [r for r in results if r['problems']]
     (REPO / 'health.json').write_text(json.dumps({'checked': datetime.now(timezone.utc).isoformat(timespec='seconds'),
