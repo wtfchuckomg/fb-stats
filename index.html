@@ -4833,7 +4833,9 @@ function newestOver(){
   if (!n || !g || g.sample || n.id === g.id || (g.updated || 0) >= (n.updated || 0) || ui.editing != null || ui.dlg) return false;
   // Asked for by name: kept, except that a finished game never holds the tracker over one still being played (Chuck,
   // 2026-11-20: "it keeps trying to make me do the Carroll game", last week's final, with Buhler-McPherson under way).
-  if (ui.pinned === 'edit' || (ui.pinned && !(idleGame(g) && !idleGame(n)))) return false;
+  // A refreshed page keeps its game only if that game was worked on in the last six hours.
+  const fresh = Date.now() - (g.updated || 0) < 6 * 3600e3;
+  if (ui.pinned === 'edit' || (ui.pinned && fresh && !(idleGame(g) && !idleGame(n)))) return false;
   g = n; resetUi(); return true;
 }
 
@@ -8561,7 +8563,9 @@ function renderHome(){
    pick one off the schedule, or reopen a recent game to fix a play.
    ================================================================ */
 // A game that isn't under way: the sample, a pasted box score, or one that's over.
-const idleGame = x => !x || !!x.sample || !!x.box || replay(x).st.final;
+// A game never started whose day has passed counts too: a phone kept opening a blank Carroll-Andover from the
+// week before (Chuck, 2026-11-20).
+const idleGame = x => !x || !!x.sample || !!x.box || (!(x.plays && x.plays.length) && gameDay(x) < new Date(new Date().setHours(0, 0, 0, 0))) || replay(x).st.final;
 
 // This week's games still to come that nobody is keeping stats on yet; next week's once this week's are played.
 function startSchedule(){
@@ -13211,7 +13215,7 @@ function startTracker(){
     ui.pinned = EDIT_ID ? 'edit' : back && reload ? 'back' : '';
     newestOver();
     // No game under way (the last one is over, or there's only the sample or a box score): the start screen.
-    ui.start = !EDIT_ID && !(back && g.id === TRACK_ID) && idleGame(g);
+    ui.start = !EDIT_ID && !(back && g.id === TRACK_ID && Date.now() - (g.updated || 0) < 6 * 3600e3) && idleGame(g);
     setCurrent();
     refresh();
     if (EDIT_ID && db.games[EDIT_ID]){ if (g.box) boxPop(); }

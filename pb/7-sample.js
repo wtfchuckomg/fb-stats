@@ -70,7 +70,7 @@ function startTracker(){
     ui.pinned = EDIT_ID ? 'edit' : back && reload ? 'back' : '';
     newestOver();
     // No game under way (the last one is over, or there's only the sample or a box score): the start screen.
-    ui.start = !EDIT_ID && !(back && g.id === TRACK_ID) && idleGame(g);
+    ui.start = !EDIT_ID && !(back && g.id === TRACK_ID && Date.now() - (g.updated || 0) < 6 * 3600e3) && idleGame(g);
     setCurrent();
     refresh();
     if (EDIT_ID && db.games[EDIT_ID]){ if (g.box) boxPop(); }

@@ -5,7 +5,9 @@
    pick one off the schedule, or reopen a recent game to fix a play.
    ================================================================ */
 // A game that isn't under way: the sample, a pasted box score, or one that's over.
-const idleGame = x => !x || !!x.sample || !!x.box || replay(x).st.final;
+// A game never started whose day has passed counts too: a phone kept opening a blank Carroll-Andover from the
+// week before (Chuck, 2026-11-20).
+const idleGame = x => !x || !!x.sample || !!x.box || (!(x.plays && x.plays.length) && gameDay(x) < new Date(new Date().setHours(0, 0, 0, 0))) || replay(x).st.final;
 
 // This week's games still to come that nobody is keeping stats on yet; next week's once this week's are played.
 function startSchedule(){

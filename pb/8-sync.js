@@ -98,7 +98,9 @@ function newestOver(){
   if (!n || !g || g.sample || n.id === g.id || (g.updated || 0) >= (n.updated || 0) || ui.editing != null || ui.dlg) return false;
   // Asked for by name: kept, except that a finished game never holds the tracker over one still being played (Chuck,
   // 2026-11-20: "it keeps trying to make me do the Carroll game", last week's final, with Buhler-McPherson under way).
-  if (ui.pinned === 'edit' || (ui.pinned && !(idleGame(g) && !idleGame(n)))) return false;
+  // A refreshed page keeps its game only if that game was worked on in the last six hours.
+  const fresh = Date.now() - (g.updated || 0) < 6 * 3600e3;
+  if (ui.pinned === 'edit' || (ui.pinned && fresh && !(idleGame(g) && !idleGame(n)))) return false;
   g = n; resetUi(); return true;
 }
 
