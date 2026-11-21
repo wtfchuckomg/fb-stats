@@ -730,7 +730,9 @@ function bkFullHtml(eastSlots, westSlots){
   // the first round, shrink the first round and make the current round the primary round"). A round is done when
   // every pairing in it, both sides, has a final (a bye needs none).
   const done = c => c.games.every((gm, i) => gm || (c.slots[2 * i] || {}).bye || (c.slots[2 * i + 1] || {}).bye);
-  let cur = 0; while (cur < 3 && done(W.cols[cur]) && done(E.cols[cur])) cur++;
+  // Past Sub-State, the title game is the round being played (cur 4): Sub-State goes narrow like every round before it
+  // and State gets the full names (Chuck, 2026-11-20: "we did it for all the other rounds").
+  let cur = 0; while (cur < 4 && done(W.cols[cur]) && done(E.cols[cur])) cur++;
   // A missing final early on (a week-9 score never typed in) doesn't hold the bracket back: the furthest round with a
   // final in it is at least the current one, or the next one once it's all played.
   const any = c => c.games.some(Boolean);
@@ -738,10 +740,12 @@ function bkFullHtml(eastSlots, westSlots){
   // Each column only as wide as what's in it, and the whole bracket centered (Chuck, 2026-11-13: the East side was
   // cut off, with open space in the middle): the columns sit together and the connectors keep their 20px gap.
   const width = r => r === cur ? 'minmax(min-content,220px)' : r < cur ? 'minmax(100px,106px)' : 'minmax(64px,84px)';   // a finished round has scores to fit
-  const grid = [0, 1, 2, 3].map(width).join(' ') + ' minmax(70px,120px) ' + [3, 2, 1, 0].map(width).join(' ');
+  const grid = [0, 1, 2, 3].map(width).join(' ') + (cur === 4 ? ' minmax(min-content,240px) ' : ' minmax(112px,140px) ') + [3, 2, 1, 0].map(width).join(' ');
   const col = (c, r, west) => `<div class="bkf-col${west ? ' w' : ''}${r === cur ? ' cur' : ''}"><span class="bkt-h">${ROUNDS[r]}</span><div class="bkf-pairs">${c.games.map((gm, i) =>
     bkPair(c.slots[2 * i], c.slots[2 * i + 1], bkLine(c.slots[2 * i], gm, r !== cur, r) + bkLine(c.slots[2 * i + 1], gm, r !== cur, r))).join('')}</div></div>`;
-  const fin = bkPlayed(W.champ, E.champ), state = bkPair(W.champ, E.champ, bkLine(W.champ, fin, true) + bkLine(E.champ, fin, true), ' st');
+  // The title game stands out (Chuck, 2026-11-20: "need to highlight the state championship games"): gold, and named.
+  const stLbl = '<div class="bk-st-lbl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10v2h4v3a5 5 0 0 1-4.6 5A5 5 0 0 1 13 15.9V18h3v4H8v-4h3v-2.1A5 5 0 0 1 7.6 12 5 5 0 0 1 3 7V4h4V2zm0 4H5v1a3 3 0 0 0 2 2.8V6zm10 0v3.8A3 3 0 0 0 19 7V6h-2z"/></svg>State Championship</div>';
+  const fin = bkPlayed(W.champ, E.champ), state = bkPair(W.champ, E.champ, stLbl + bkLine(W.champ, fin, cur !== 4, 4) + bkLine(E.champ, fin, cur !== 4, 4), ' st');
   // A phone (Chuck, 2026-10-25: "shrink it… so we can see multiple rounds at the same time"): each side's four rounds
   // across in small boxes, the logo and short name, then State under both.
   const mcol = (c, r) => `<div class="bkm-col"><span class="bkt-h">${ROUNDS[r]}</span><div class="bkm-pairs">${c.games.map((gm, i) =>
@@ -749,10 +753,10 @@ function bkFullHtml(eastSlots, westSlots){
   const mside = (S, name) => `<div class="bkm-side"><h3>${name}</h3><div class="bkm-grid">${S.cols.map(mcol).join('')}</div></div>`;
   // West on the left, East on the right, the way they sit on a map (Chuck, 2026-10-26).
   return `<div class="bkf" style="grid-template-columns:${grid}">${W.cols.map((c, r) => col(c, r, false)).join('')}
-    <div class="bkf-col st"><span class="bkt-h">State</span><div class="bkf-pairs">${state}</div></div>
+    <div class="bkf-col st${cur === 4 ? ' cur' : ''}"><span class="bkt-h">State</span><div class="bkf-pairs">${state}</div></div>
     ${E.cols.map((c, r) => col(c, r, true)).reverse().join('')}</div>
     <div class="bkf-sides"><span>West</span><span>East</span></div>
-    <div class="bkm">${mside(W, 'West')}${mside(E, 'East')}<div class="bkm-side bkm-st"><h3>State</h3>${state}</div></div>`;
+    <div class="bkm">${mside(W, 'West')}<div class="bkm-side bkm-st"><h3>State</h3>${state}</div>${mside(E, 'East')}</div>`;   // State between the two sides, not under both (Chuck, 2026-11-20)
 }
 // A district's standings; the teams past fourth don't go on.
 function bkDistrictHtml(d, teams){
