@@ -68,6 +68,16 @@ function openToEdit(){
   if (g.box) boxPop();
 }
 const newestGame = () => Object.values(db.games).filter(x => !x.sample && !x.foreign).sort((a, b) => (b.updated || 0) - (a.updated || 0))[0];
+// The game most recently saved, from this device or another, in place of an older one this device last had open —
+// unless that game was asked for by name, or something is being typed or edited in it right now.
+function newestOver(){
+  const n = newestGame();
+  if (!n || !g || g.sample || n.id === g.id || (g.updated || 0) >= (n.updated || 0) || ui.editing != null || ui.dlg) return false;
+  // Asked for by name: kept, except that a finished game never holds the tracker over one still being played (Chuck,
+  // 2026-11-20: "it keeps trying to make me do the Carroll game", last week's final, with Buhler-McPherson under way).
+  if (ui.pinned === 'edit' || (ui.pinned && !(idleGame(g) && !idleGame(n)))) return false;
+  g = n; resetUi(); return true;
+}
 
 function listen(){
   const {fsM, fsdb} = sync.api;
@@ -109,6 +119,8 @@ function listen(){
       if (!remoteIds.has(mySchoolsDocId()) && mySchoolNames().length) syncMySchools(0);
       // A device still showing the sample opens the latest real game instead.
       if (g && g.sample && newestGame()){ g = newestGame(); resetUi(); ui.start = idleGame(g); current = 'opened'; changed = true; }
+      // Signed in on a device that had an older game open: the account's latest game, which may be newer than any here.
+      else if (newestOver()){ ui.start = idleGame(g); current = 'opened'; changed = true; }
     }
     if (current === 'updated') g = db.games[g.id];
     if (current === 'gone'){ g = newestGame() || sampleGame(); resetUi(); ui.start = idleGame(g); }

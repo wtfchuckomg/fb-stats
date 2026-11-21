@@ -60,8 +60,14 @@ function startTracker(){
   g = (EDIT_ID && db.games[EDIT_ID]) || (back && db.games[TRACK_ID]) || db.games[db.cur] || Object.values(db.games)[0];
   if (EDIT_ID) history.replaceState(null, '', `${location.pathname}?tracker`);
   if (!g) g = sampleGame();
+  // A game asked for by name (Edit, or a refresh of the one open) stays; otherwise the game last saved in the account
+  // wins over whatever this device last had open (Chuck, 2026-11-20: it "tries to load an older game").
+  // The address's game holds only on a refresh: a bookmark or a tab the phone brought back opens the latest instead.
+  const reload = (() => { try { return performance.getEntriesByType('navigation')[0].type === 'reload'; } catch (e) { return false; } })();
+  ui.pinned = EDIT_ID ? 'edit' : back && reload ? 'back' : '';
+  newestOver();
   // No game under way (the last one is over, or there's only the sample or a box score): the start screen.
-  ui.start = !EDIT_ID && !back && idleGame(g);
+  ui.start = !EDIT_ID && !(back && g.id === TRACK_ID) && idleGame(g);
   setCurrent();
   refresh();
   if (EDIT_ID && db.games[EDIT_ID]){ if (g.box) boxPop(); }
