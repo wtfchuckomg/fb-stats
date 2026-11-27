@@ -2798,7 +2798,11 @@ function renderField(){
   s += `<path d="${hash}" style="stroke:var(--fld-line);stroke-width:1.2"/>`;
   // The home team's logo painted on the 50 (Chuck, 2026-11-14), tipped back with the field: narrower at the far
   // edge. SVG can't tip an image, so it is cut into thin strips across, each squeezed to the field's width at that depth.
-  const mLogo = (logoUrls(T.H) || [])[0];
+  // A state championship is played on a neutral field: the KSHSAA state championships mark goes there instead
+  // (Chuck, 2026-11-27). One per season — add the next year's when KSHSAA puts it out.
+  const STATE_50 = {2026:'art/kshsaa-state-2026.png'};
+  const title = weekLabel(gameWeek(g)) === 'State Championship' && STATE_50[gameDay(g).getFullYear()];
+  const mLogo = title ? `${DATA}/${title}` : (logoUrls(T.H) || [])[0];
   if (mLogo && !LOGO_GUESS.has(mLogo)){
     // Never past the 40s or the hash marks (Chuck, 2026-11-14): a long logo just comes out small. Flattened .52, his
     // pick of four.
