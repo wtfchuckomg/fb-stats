@@ -1142,7 +1142,16 @@ input.st-clock{width:72px;text-align:center;border:1px solid var(--line);border-
 @media (max-width:1000px){.dbar{display:block}.st-masc{display:none}.st-name{white-space:normal;overflow:visible;text-overflow:clip}}   /* phones: no mascot, and the school's name whole, never "…" (Chuck, 2026-11-27) */
 @media (max-width:700px){
   .strip-in{padding:10px 10px;gap:6px}
-  .st-id{display:none}
+  /* the school's name, no mascot or record (Chuck, 2026-11-27: "just have it say their school names instead of nothing") */
+  .st-id{display:block}.st-rec{display:none}.st-name{font-size:11px;line-height:1.15}
+  /* the name under the logo, the score beside both */
+  .st-side,.st-side.home{display:grid;grid-template-columns:auto 1fr;column-gap:8px;row-gap:3px;align-items:center}
+  .st-side .st-logo{grid-column:1;grid-row:1;justify-self:center}
+  .st-side .st-id{grid-column:1;grid-row:2;text-align:center!important;max-width:76px}
+  .st-side .st-scorebox{grid-column:2;grid-row:1 / span 2;justify-self:end}
+  .st-side.home{grid-template-columns:1fr auto}
+  .st-side.home .st-logo,.st-side.home .st-id{grid-column:2}
+  .st-side.home .st-scorebox{grid-column:1;justify-self:start}
   .st-logo{width:46px;height:46px}
   .st-logo .tlogo,.st-logo .tmono{width:46px!important;height:46px!important}
   .st-score{font-size:38px}
