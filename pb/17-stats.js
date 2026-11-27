@@ -345,14 +345,17 @@ function countyStats(games){
     return a.slice(i + (a.length >= b.length ? 1 : 0)) === b.slice(i + (b.length >= a.length ? 1 : 0));
   };
   const split = n => { const p = n.toLowerCase().split(/\s+/); return [p[0], p.slice(1).join(' ')]; };
-  const list = Object.entries(players);
-  list.forEach(([k1, P]) => list.forEach(([k2, Q]) => {
+  // Compared within each team only (a match is always the same team): every player against every other statewide was
+  // most of a 0.6-second redraw, and failed the nightly site check on slower days (2026-11-27).
+  const byTeam = new Map();
+  Object.entries(players).forEach(e => { const t = e[1].team; if (!byTeam.has(t)) byTeam.set(t, []); byTeam.get(t).push(e); });
+  byTeam.forEach(list => list.forEach(([k1, P]) => list.forEach(([k2, Q]) => {
     if (k1 === k2 || !players[k1] || !players[k2] || P.team !== Q.team || !P.name.includes(' ') || !Q.name.includes(' ')) return;
     const [f1, l1] = split(P.name), [f2, l2] = split(Q.name);
     if (f1 !== f2 || l1 === l2 || Math.min(l1.length, l2.length) < 5 || !oneOff(l1, l2)) return;
     const [keep, drop, dk] = P.gp >= Q.gp ? [P, Q, k2] : [Q, P, k1];
     keep.gp += drop.gp; C_KEYS.forEach(n => { keep[n] += drop[n]; }); delete players[dk];
-  }));
+  })));
   return {teams:Object.values(teams), players:Object.values(players)};
 }
 // 2025: players' season totals from the leaderboard, with no games behind them; each team's offense is its players

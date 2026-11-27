@@ -95,6 +95,9 @@ def main():
         print(f"{'FAIL' if r['problems'] else 'ok  '}  {r['page']:<26} load {r.get('load_s')}s  redraw {r.get('draw_s', '-')}s"
               f"  {r.get('elements', '')} elements  {'; '.join(r['problems'])}")
     if bad:
+        # As GitHub annotations too: those show on the run without signing in, the log doesn't (2026-11-27).
+        for r in bad:
+            print(f"::error title=Site check: {r['page']}::{'; '.join(r['problems'])} ({r['url']})")
         print(f"\n{len(bad)} page(s) need a look.")
         sys.exit(1)
 
