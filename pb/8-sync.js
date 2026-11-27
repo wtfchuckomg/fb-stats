@@ -62,6 +62,7 @@ async function startSync(){
     sync.api = {authM, fsM, auth:await authFor(authM, app), fsdb:fsM.getFirestore(app)};
   } catch (e) { sync.state = 'unavailable'; return renderSync(); }
   const {authM, auth} = sync.api;
+  pickPersistence();
   scoresReady(sync.api);   // shared games for the scoreboard need no sign-in
   watchRosters(sync.api);  // and other scorers' rosters, for Setup
   authM.getRedirectResult(auth).catch(err => { sync.err = friendlySync(err); renderSync(); });
@@ -229,14 +230,20 @@ function syncDelete(id){
     .catch(e => { sync.err = friendlySync(e); sync.state = 'error'; renderSync(); });
 }
 
+// Embedded browsers may block IndexedDB; walk down to whatever storage this one allows. Once, as the page loads.
+async function pickPersistence(){
+  const {authM, auth} = sync.api;
+  for (const p of [...(authLocal() ? [] : [authM.indexedDBLocalPersistence]), authM.browserLocalPersistence, authM.browserSessionPersistence, authM.inMemoryPersistence]){
+    try { await authM.setPersistence(auth, p); break; } catch (e) { /* try the next */ }
+  }
+}
 async function signIn(){
   if (!sync.api) return openDialog('games');
   if (IN_APP_BROWSER) return toast('Open this page in Safari or Chrome to sign in');
   const {authM, auth} = sync.api, provider = new authM.GoogleAuthProvider();
-  // Embedded browsers may block IndexedDB; walk down to whatever storage this one allows.
-  for (const p of [...(authLocal() ? [] : [authM.indexedDBLocalPersistence]), authM.browserLocalPersistence, authM.browserSessionPersistence, authM.inMemoryPersistence]){
-    try { await authM.setPersistence(auth, p); break; } catch (e) { /* try the next */ }
-  }
+  // The Google window opens straight from the tap, nothing awaited first: Safari only lets a window open in the same
+  // moment as the click, and the storage step that used to run here first got it blocked as a pop-up (Chuck,
+  // 2026-11-27: "I can't" sign in). That step now runs when the page loads (pickPersistence).
   try { await authM.signInWithPopup(auth, provider); }
   catch (err){
     let e = err;
