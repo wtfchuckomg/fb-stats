@@ -1733,7 +1733,7 @@ try { if (new URLSearchParams(location.search).has('embed')) document.documentEl
 const SITE = 'kmr';
 const SITE_AV = SITE === 'avctl';
 // The scorer's tools (shorthand, voice, imports, the spreadsheet) are a file of their own, named by build.py.
-const TRACKER_JS = 'tracker-430a8cb375.js';
+const TRACKER_JS = 'tracker-459f9b3b4c.js';
 const SITE_NAME = SITE_AV ? 'Ark Valley Chisholm Trail League statistics and leaders' : 'Kansas Media Stats';
 const SITE_TITLE = SITE_AV ? 'AVCTL Stats' : 'Kansas Media Stats';   // after the page's own name in a tab's title
 // Where the nightly files (season.json, stats.json, schedules, logos, game snapshots) live: stats/KMR builds
@@ -2663,7 +2663,13 @@ function replay(g, upto = g.plays.length, from = 0){
     // on, or weather — never reaches the rest, and those quarters show an X instead of a 0. Ending the game is
     // bookkeeping, not a play: it is recorded after the half has already turned the clock to the 3rd quarter.
     if (!['final', 'note', 'to'].includes(p.t) && pre.q > st.qPlayed) st.qPlayed = pre.q;
-    const r = apply(p);
+    let r = apply(p.pen2 ? {...p, pen2:undefined} : p);
+    // A second flag on the same play (pen2): marked off after the first, from wherever that one left the ball.
+    if (p.pen2){
+      const p2 = p.pen2; defer = null; flagNow = null;
+      const t2 = p2.enf === 'dec' ? (tags.push(['flag', 'Declined']), `Penalty ${ab(p2.side)} ${p2.name}, declined.`) : penalize({...p2, foul:undefined, ball:undefined}, false, null, p2.enf === 'dead');
+      r = {...r, text:`${r.text} ${t2}`};
+    }
     if (st.phase === 'try' && !wasTry) tdClk = p.clk ?? null;
     log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, spot:pre.spot, down:pre.down, phase:pre.phase, trace, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q, A:st.score.A, H:st.score.H});
   }
@@ -2930,7 +2936,7 @@ function penBlank(side, enf){ return {side, name:'Holding', y:10, a:false, l:fal
 function blank(t, st){
   const O = st.poss, D = other(O);
   const fum = {lost:'lost', by:'', ff:'', ry:'', td:false, atOn:false, at:{side:'', n:''}, twice:false, then:{lost:'lost', by:'', ry:''}};
-  const base = {t, fumOn:false, fum, penOn:false, pen:penBlank(D, 'prev')};
+  const base = {t, fumOn:false, fum, penOn:false, pen:penBlank(D, 'prev'), pen2On:false, pen2:penBlank(D, 'dead')};
   switch (t){
     case 'run': return {...base, r:'', y:'', yn:'gain', tk:['', ''], latOn:false, lat:{r:'', y:''}};
     case 'pass': return {...base, qb:first(O, 'qb'), res:'c', to:'', y:'', yn:'gain', tk:['', ''], pbu:'', ib:'', at:'', ry:'', by:['', ''], sy:''};
@@ -2938,7 +2944,7 @@ function blank(t, st){
     case 'ko': return {...base, k:first(O, 'kick'), d:'', res:'ret', ret:'', ry:'', ryn:'gain', tk:['', ''], by:'', mr:'', oob:false, rk:false};
     case 'fg': return {...base, k:first(O, 'kick'), d:'', res:'good', by:'', b:'', ret:'', ry:''};
     case 'try': return {t, kind:'kick', res:'good', k:first(O, 'kick'), r:'', qb:first(O, 'qb'), to:''};
-    case 'pen': return {t, pen:penBlank(O, 'acc')};
+    case 'pen': return {t, pen:penBlank(O, 'acc'), pen2On:false, pen2:penBlank(O, 'dead')};
     case 'note': return {t, text:''};
     default: return {t};
   }
@@ -2955,6 +2961,7 @@ function toDraft(p, st){
     }
     else if (k === 'lat'){ d.latOn = true; d.lat = {r:str(p.lat.r), y:str(p.lat.y)}; }
     else if (k === 'pen'){ d.pen = {...p.pen, n:str(p.pen.n)}; if (p.t !== 'pen') d.penOn = true; }
+    else if (k === 'pen2'){ d.pen2 = {...p.pen2, n:str(p.pen2.n)}; d.pen2On = true; }
     else if (k === 'y'){ d.y = p.y ? String(Math.abs(p.y)) : ''; d.yn = p.y < 0 ? 'loss' : 'gain'; }
     else if (k === 'ry' && (p.t === 'ko' || p.t === 'punt')){ d.ry = p.ry ? String(Math.abs(p.ry)) : ''; d.ryn = p.ry < 0 ? 'loss' : 'gain'; }
     else if (k === 'tk' || k === 'by' && Array.isArray(p.by)){ const a = p[k].map(String); d[k] = [a[0] || '', a[1] || '']; }
@@ -3026,6 +3033,8 @@ function buildPlay(d){
     }
   }
   if (['run', 'pass', 'punt', 'ko', 'fg', 'try'].includes(d.t) && d.penOn) p.pen = cleanPen(d.pen);
+  // A second flag, marked off after the first (Chuck, 2026-11-27): the same as "pen m 10 at m20 pen m 15 db".
+  if (d.pen2On && (d.penOn || d.t === 'pen') && d.pen2) p.pen2 = cleanPen(d.pen2);
   if (p.pen && p.t === 'pass' && p.pen.enf === 'end') passFlag(p, replay(g, ui.editing ?? g.plays.length).st);
   return JSON.parse(JSON.stringify(p));
 }
@@ -3098,17 +3107,19 @@ const ENF_HINT = {
   end:'A run and its stats count, then the yards are marked off from where it ended. For a foul downfield, enter the run’s yards only up to the spot of the foul. A pass is wiped out and marked off from the previous spot.',
   dec:'The play stands. The foul is noted but not charged.',
   off:'Fouls by both teams cancel and the down is replayed.',
-  acc:'Marked off from the current spot. Half the distance to the goal applies automatically.'};
-function flagFields(standalone){
-  const pn = ui.draft.pen;
-  const enf = standalone ? [['acc', 'Accepted'], ['off', 'Offsetting']] : [['prev', 'Replay down'], ['end', 'Add to play'], ['dec', 'Declined'], ['off', 'Offsetting']];
-  return `<div class="sub ${standalone ? '' : 'flag'}">
-    ${row(fSeg('pen.side', 'Against', [['A', ab('A')], ['H', ab('H')]]),
-      `<div class="fld"><label class="eyebrow" for="f-pen.name">Foul</label><select class="inp" id="f-pen.name" data-k="pen.name">${PENALTIES.map(x => `<option ${x.name === pn.name ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>`)}
-    ${row(fN('pen.y', 'Yards', '0'), fJ('pen.n', 'Player', pn.side))}
-    <div class="checks">${tog('pen.a', 'Automatic 1st down')}${tog('pen.l', 'Loss of down')}${tog('pen.ko', 'On the kickoff')}</div>
-    ${fSeg('pen.enf', 'Enforcement', enf)}
-    <p class="hint">${ENF_HINT[pn.enf]}</p></div>`;
+  acc:'Marked off from the current spot. Half the distance to the goal applies automatically.',
+  dead:'Marked off after the first flag, from wherever it left the ball. Half the distance applies automatically.'};
+function flagFields(standalone, K = 'pen'){
+  const pn = ui.draft[K];
+  const enf = K === 'pen2' ? [['dead', 'After the first'], ['dec', 'Declined']]
+    : standalone ? [['acc', 'Accepted'], ['off', 'Offsetting']] : [['prev', 'Replay down'], ['end', 'Add to play'], ['dec', 'Declined'], ['off', 'Offsetting']];
+  return `<div class="sub ${standalone ? '' : 'flag'}">${K === 'pen2' ? '<h4 class="eyebrow">Second flag</h4>' : ''}
+    ${row(fSeg(`${K}.side`, 'Against', [['A', ab('A')], ['H', ab('H')]]),
+      `<div class="fld"><label class="eyebrow" for="f-${K}.name">Foul</label><select class="inp" id="f-${K}.name" data-k="${K}.name">${PENALTIES.map(x => `<option ${x.name === pn.name ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>`)}
+    ${row(fN(`${K}.y`, 'Yards', '0'), fJ(`${K}.n`, 'Player', pn.side))}
+    <div class="checks">${tog(`${K}.a`, 'Automatic 1st down')}${tog(`${K}.l`, 'Loss of down')}${tog(`${K}.ko`, 'On the kickoff')}</div>
+    ${fSeg(`${K}.enf`, 'Enforcement', enf)}
+    <p class="hint">${ENF_HINT[pn.enf] || ''}</p>${K === 'pen' && pn.enf !== 'off' ? `<div class="checks">${tog('pen2On', 'Second flag')}</div>` : ''}</div>${K === 'pen' && ui.draft.pen2On && pn.enf !== 'off' ? flagFields(standalone, 'pen2') : ''}`;
 }
 function extras(){
   const d = ui.draft;
@@ -3695,7 +3706,7 @@ document.addEventListener('click', e => {
     ui.type = d.type; ui.draft = null;
     if (old){
       const nu = ui.draft = blank(d.type, ui.ctx.st);
-      ['y', 'yn', 'tk', 'fumOn', 'fum', 'penOn', 'pen', 'clkTxt'].forEach(k => { if (k in old && (k in nu || k === 'clkTxt')) nu[k] = old[k]; });
+      ['y', 'yn', 'tk', 'fumOn', 'fum', 'penOn', 'pen', 'pen2On', 'pen2', 'clkTxt'].forEach(k => { if (k in old && (k in nu || k === 'clkTxt')) nu[k] = old[k]; });
       if (d.type === 'run' && old.t === 'pass') nu.r = (old.res === 'c' && old.to) || old.qb || '';
       if (d.type === 'pass' && old.t === 'run'){ nu.to = old.r || ''; nu.res = 'c'; }
     }
@@ -3769,9 +3780,9 @@ document.addEventListener('input', e => {
   if (el.id === 'qk'){ ui.qtext = el.value; return quickPreview(); }
   if (!k || !ui.draft) return;
   setK(ui.draft, k, el.value);
-  if (k === 'pen.name'){
-    const x = PENALTIES.find(p => p.name === el.value), st = ui.ctx.st;
-    if (x){ Object.assign(ui.draft.pen, {y:x.y, a:x.a, l:x.l}); if (x.s === 'O') ui.draft.pen.side = st.poss; if (x.s === 'D') ui.draft.pen.side = other(st.poss); }
+  if (k === 'pen.name' || k === 'pen2.name'){
+    const x = PENALTIES.find(p => p.name === el.value), st = ui.ctx.st, P = ui.draft[k.split('.')[0]];
+    if (x){ Object.assign(P, {y:x.y, a:x.a, l:x.l}); if (x.s === 'O') P.side = st.poss; if (x.s === 'D') P.side = other(st.poss); }
     return renderPad();
   }
   const who = document.querySelector(`[data-who="${k}"]`);

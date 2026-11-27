@@ -255,7 +255,7 @@ function penBlank(side, enf){ return {side, name:'Holding', y:10, a:false, l:fal
 function blank(t, st){
   const O = st.poss, D = other(O);
   const fum = {lost:'lost', by:'', ff:'', ry:'', td:false, atOn:false, at:{side:'', n:''}, twice:false, then:{lost:'lost', by:'', ry:''}};
-  const base = {t, fumOn:false, fum, penOn:false, pen:penBlank(D, 'prev')};
+  const base = {t, fumOn:false, fum, penOn:false, pen:penBlank(D, 'prev'), pen2On:false, pen2:penBlank(D, 'dead')};
   switch (t){
     case 'run': return {...base, r:'', y:'', yn:'gain', tk:['', ''], latOn:false, lat:{r:'', y:''}};
     case 'pass': return {...base, qb:first(O, 'qb'), res:'c', to:'', y:'', yn:'gain', tk:['', ''], pbu:'', ib:'', at:'', ry:'', by:['', ''], sy:''};
@@ -263,7 +263,7 @@ function blank(t, st){
     case 'ko': return {...base, k:first(O, 'kick'), d:'', res:'ret', ret:'', ry:'', ryn:'gain', tk:['', ''], by:'', mr:'', oob:false, rk:false};
     case 'fg': return {...base, k:first(O, 'kick'), d:'', res:'good', by:'', b:'', ret:'', ry:''};
     case 'try': return {t, kind:'kick', res:'good', k:first(O, 'kick'), r:'', qb:first(O, 'qb'), to:''};
-    case 'pen': return {t, pen:penBlank(O, 'acc')};
+    case 'pen': return {t, pen:penBlank(O, 'acc'), pen2On:false, pen2:penBlank(O, 'dead')};
     case 'note': return {t, text:''};
     default: return {t};
   }
@@ -280,6 +280,7 @@ function toDraft(p, st){
     }
     else if (k === 'lat'){ d.latOn = true; d.lat = {r:str(p.lat.r), y:str(p.lat.y)}; }
     else if (k === 'pen'){ d.pen = {...p.pen, n:str(p.pen.n)}; if (p.t !== 'pen') d.penOn = true; }
+    else if (k === 'pen2'){ d.pen2 = {...p.pen2, n:str(p.pen2.n)}; d.pen2On = true; }
     else if (k === 'y'){ d.y = p.y ? String(Math.abs(p.y)) : ''; d.yn = p.y < 0 ? 'loss' : 'gain'; }
     else if (k === 'ry' && (p.t === 'ko' || p.t === 'punt')){ d.ry = p.ry ? String(Math.abs(p.ry)) : ''; d.ryn = p.ry < 0 ? 'loss' : 'gain'; }
     else if (k === 'tk' || k === 'by' && Array.isArray(p.by)){ const a = p[k].map(String); d[k] = [a[0] || '', a[1] || '']; }
@@ -351,6 +352,8 @@ function buildPlay(d){
     }
   }
   if (['run', 'pass', 'punt', 'ko', 'fg', 'try'].includes(d.t) && d.penOn) p.pen = cleanPen(d.pen);
+  // A second flag, marked off after the first (Chuck, 2026-11-27): the same as "pen m 10 at m20 pen m 15 db".
+  if (d.pen2On && (d.penOn || d.t === 'pen') && d.pen2) p.pen2 = cleanPen(d.pen2);
   if (p.pen && p.t === 'pass' && p.pen.enf === 'end') passFlag(p, replay(g, ui.editing ?? g.plays.length).st);
   return JSON.parse(JSON.stringify(p));
 }
@@ -423,17 +426,19 @@ const ENF_HINT = {
   end:'A run and its stats count, then the yards are marked off from where it ended. For a foul downfield, enter the run’s yards only up to the spot of the foul. A pass is wiped out and marked off from the previous spot.',
   dec:'The play stands. The foul is noted but not charged.',
   off:'Fouls by both teams cancel and the down is replayed.',
-  acc:'Marked off from the current spot. Half the distance to the goal applies automatically.'};
-function flagFields(standalone){
-  const pn = ui.draft.pen;
-  const enf = standalone ? [['acc', 'Accepted'], ['off', 'Offsetting']] : [['prev', 'Replay down'], ['end', 'Add to play'], ['dec', 'Declined'], ['off', 'Offsetting']];
-  return `<div class="sub ${standalone ? '' : 'flag'}">
-    ${row(fSeg('pen.side', 'Against', [['A', ab('A')], ['H', ab('H')]]),
-      `<div class="fld"><label class="eyebrow" for="f-pen.name">Foul</label><select class="inp" id="f-pen.name" data-k="pen.name">${PENALTIES.map(x => `<option ${x.name === pn.name ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>`)}
-    ${row(fN('pen.y', 'Yards', '0'), fJ('pen.n', 'Player', pn.side))}
-    <div class="checks">${tog('pen.a', 'Automatic 1st down')}${tog('pen.l', 'Loss of down')}${tog('pen.ko', 'On the kickoff')}</div>
-    ${fSeg('pen.enf', 'Enforcement', enf)}
-    <p class="hint">${ENF_HINT[pn.enf]}</p></div>`;
+  acc:'Marked off from the current spot. Half the distance to the goal applies automatically.',
+  dead:'Marked off after the first flag, from wherever it left the ball. Half the distance applies automatically.'};
+function flagFields(standalone, K = 'pen'){
+  const pn = ui.draft[K];
+  const enf = K === 'pen2' ? [['dead', 'After the first'], ['dec', 'Declined']]
+    : standalone ? [['acc', 'Accepted'], ['off', 'Offsetting']] : [['prev', 'Replay down'], ['end', 'Add to play'], ['dec', 'Declined'], ['off', 'Offsetting']];
+  return `<div class="sub ${standalone ? '' : 'flag'}">${K === 'pen2' ? '<h4 class="eyebrow">Second flag</h4>' : ''}
+    ${row(fSeg(`${K}.side`, 'Against', [['A', ab('A')], ['H', ab('H')]]),
+      `<div class="fld"><label class="eyebrow" for="f-${K}.name">Foul</label><select class="inp" id="f-${K}.name" data-k="${K}.name">${PENALTIES.map(x => `<option ${x.name === pn.name ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>`)}
+    ${row(fN(`${K}.y`, 'Yards', '0'), fJ(`${K}.n`, 'Player', pn.side))}
+    <div class="checks">${tog(`${K}.a`, 'Automatic 1st down')}${tog(`${K}.l`, 'Loss of down')}${tog(`${K}.ko`, 'On the kickoff')}</div>
+    ${fSeg(`${K}.enf`, 'Enforcement', enf)}
+    <p class="hint">${ENF_HINT[pn.enf] || ''}</p>${K === 'pen' && pn.enf !== 'off' ? `<div class="checks">${tog('pen2On', 'Second flag')}</div>` : ''}</div>${K === 'pen' && ui.draft.pen2On && pn.enf !== 'off' ? flagFields(standalone, 'pen2') : ''}`;
 }
 function extras(){
   const d = ui.draft;

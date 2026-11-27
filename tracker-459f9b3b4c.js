@@ -211,7 +211,7 @@ function parseQuick(raw, st){
   if (st.final) return bad('The game is final. Type undo to reopen it.');
 
   /* ---- penalties: alone, or after a play on the same line ---- */
-  let pen = null;
+  let pen = null, pen2 = null;
   const pi = toks.findIndex(t => ['pen', 'penalty', 'flag'].includes(t));
   if (pi >= 0){
     let pt = toks.slice(pi + 1); toks = toks.slice(0, pi);
@@ -219,12 +219,14 @@ function parseQuick(raw, st){
     if (toks.length && T(toks[toks.length - 1])) pt.unshift(toks.pop());
     // Offsetting fouls cancel, so they need neither a team nor a yardage: "pen offset" says it all. A flag on
     // each team on the same line says it too: "pen C 10 pen R 10".
-    let offset = pt.some(t => ['offset', 'offsetting', 'offsets'].includes(t));
+    let offset = pt.some(t => ['offset', 'offsetting', 'offsets'].includes(t)), pt2 = null;
     const pi2 = pt.findIndex(t => ['pen', 'penalty', 'flag'].includes(t));
     if (pi2 >= 0){
       const s1 = pt.slice(0, pi2).map(T).find(Boolean), s2 = pt.slice(pi2 + 1).map(T).find(Boolean);
       if (s1 && s2 && s1 !== s2) offset = true;
-      else if (!offset) pt = pt.slice(0, pi2);          // the same team twice: the first one is the flag
+      // The same team twice (Chuck, 2026-11-27: "we cannot do 2 penalties at once"): the first is the play's flag, the
+      // second is marked off after it — "pen m 10 at m20 pen m 15 db" ends half the distance from the 10, at the 5.
+      else if (!offset){ pt2 = pt.slice(pi2 + 1); if (!pt2.map(T).find(Boolean) && s1) pt2.unshift(Object.keys(map).find(k => map[k] === s1)); pt = pt.slice(0, pi2); }
     }
     const side = pt.map(T).find(Boolean);
     if (!side && !offset) return bad(`Which team? Like pen ${L('A')} 5 or pen ${L('H')} 15.`);
@@ -234,39 +236,53 @@ function parseQuick(raw, st){
       if (!toks.length) return ok({t:'pen', pen});
     }
     else {
-    const code = pt.find(t => PEN_CODES[t]);
-    const preset = code && PENALTIES.find(x => x.name === PEN_CODES[code]);
-    // A spot foul: "pen m 10 ball spot 35" is where the ref put the ball, "pen m 10 foul at the 25" is where
-    // it happened. A bare yard line is read as whichever side of the field is nearer the line of scrimmage.
-    const near = n => Math.abs(n - st.spot) <= Math.abs((FL - n) - st.spot) ? n : FL - n;
-    const spotAfter = words => {
-      const at = pt.findIndex(t => words.includes(t)); if (at < 0) return null;
-      const tail = pt.slice(at + 1), s = tail.map(spotOf).find(Boolean);
-      if (s) return {pos:s.side === st.poss ? s.n : FL - s.n, raw:s.n, side:s.side};
-      const n = tail.find(t => isNum(t) && +t >= 0 && +t <= FL);
-      return n == null ? null : {pos:near(+n), raw:+n};
+    const readPen = (pt, side, alone) => {
+      const code = pt.find(t => PEN_CODES[t]);
+      const preset = code && PENALTIES.find(x => x.name === PEN_CODES[code]);
+      // A spot foul: "pen m 10 ball spot 35" is where the ref put the ball, "pen m 10 foul at the 25" is where
+      // it happened. A bare yard line is read as whichever side of the field is nearer the line of scrimmage.
+      const near = n => Math.abs(n - st.spot) <= Math.abs((FL - n) - st.spot) ? n : FL - n;
+      const spotAfter = words => {
+        const at = pt.findIndex(t => words.includes(t)); if (at < 0) return null;
+        const tail = pt.slice(at + 1), s = tail.map(spotOf).find(Boolean);
+        if (s) return {pos:s.side === st.poss ? s.n : FL - s.n, raw:s.n, side:s.side};
+        const n = tail.find(t => isNum(t) && +t >= 0 && +t <= FL);
+        return n == null ? null : {pos:near(+n), raw:+n};
+      };
+      // "pen r 10 at r28" with neither word: a yard line named with a team is where the foul was.
+      const foulAt = pt.includes('foul') ? spotAfter(['foul'])
+        : !pt.some(t => ['spot', 'ballspot', 'ball'].includes(t)) && pt.includes('at') && (spotAfter(['at']) || {}).side ? spotAfter(['at']) : null;
+      const ballAt = foulAt ? null : spotAfter(['spot', 'ballspot', 'ball']);
+      const said = foulAt || ballAt;
+      const nums = pt.filter(isNum).map(x => Math.abs(+x));
+      if (said){ const k = nums.indexOf(said.raw); if (k >= 0) nums.splice(k, 1); }   // a yard line isn't a jersey
+      const y = nums.length ? nums[0] : preset ? preset.y : null;
+      if (y == null) return {err:'How many yards? Like pen S 15, or add a code like hold.'};
+      const pen = {side, name:preset ? preset.name : 'Penalty', y, a:preset ? preset.a : false, l:preset ? preset.l : false};
+      if (nums[1] != null) pen.n = String(nums[1]);
+      if (foulAt) pen.foul = foulAt.pos; else if (ballAt) pen.ball = ballAt.pos;
+      if (said && said.side) pen.at = {side:said.side, n:said.raw};   // re-read once we know who has the ball after the play
+      if (pt.some(t => ['1st', 'auto', 'af'].includes(t))) pen.a = true;
+      if (pt.includes('lod')) pen.l = true;
+      if (pt.some(t => ['kickoff', 'ko'].includes(t))) pen.ko = true;   // "pen r 15 on kickoff": marked off on the next kickoff
+      const declined = pt.some(t => ['dec', 'declined'].includes(t));
+      if (alone){ delete pen.at; return {pen:{...pen, enf:declined ? 'dec' : 'acc'}, alone:true}; }
+      pen.enf = pt.some(t => ['np', 'noplay', 'nullified', 'replay'].includes(t)) ? 'prev'
+        : declined ? 'dec'
+        : pt.some(t => ['db', 'dead', 'deadball', 'after'].includes(t)) ? 'dead' : 'end';
+      return {pen};
     };
-    // "pen r 10 at r28" with neither word: a yard line named with a team is where the foul was.
-    const foulAt = pt.includes('foul') ? spotAfter(['foul'])
-      : !pt.some(t => ['spot', 'ballspot', 'ball'].includes(t)) && pt.includes('at') && (spotAfter(['at']) || {}).side ? spotAfter(['at']) : null;
-    const ballAt = foulAt ? null : spotAfter(['spot', 'ballspot', 'ball']);
-    const said = foulAt || ballAt;
-    const nums = pt.filter(isNum).map(x => Math.abs(+x));
-    if (said){ const k = nums.indexOf(said.raw); if (k >= 0) nums.splice(k, 1); }   // a yard line isn't a jersey
-    const y = nums.length ? nums[0] : preset ? preset.y : null;
-    if (y == null) return bad('How many yards? Like pen S 15, or add a code like hold.');
-    pen = {side, name:preset ? preset.name : 'Penalty', y, a:preset ? preset.a : false, l:preset ? preset.l : false};
-    if (nums[1] != null) pen.n = String(nums[1]);
-    if (foulAt) pen.foul = foulAt.pos; else if (ballAt) pen.ball = ballAt.pos;
-    if (said && said.side) pen.at = {side:said.side, n:said.raw};   // re-read once we know who has the ball after the play
-    if (pt.some(t => ['1st', 'auto', 'af'].includes(t))) pen.a = true;
-    if (pt.includes('lod')) pen.l = true;
-    if (pt.some(t => ['kickoff', 'ko'].includes(t))) pen.ko = true;   // "pen r 15 on kickoff": marked off on the next kickoff
-    const declined = pt.some(t => ['dec', 'declined'].includes(t));
-    if (!toks.length){ delete pen.at; return ok({t:'pen', pen:{...pen, enf:declined ? 'dec' : 'acc'}}); }
-    pen.enf = pt.some(t => ['np', 'noplay', 'nullified', 'replay'].includes(t)) ? 'prev'
-      : declined ? 'dec'
-      : pt.some(t => ['db', 'dead', 'deadball', 'after'].includes(t)) ? 'dead' : 'end';
+    const r1 = readPen(pt, side, !toks.length && !pt2);
+    if (r1.err) return bad(r1.err);
+    if (r1.alone) return ok({t:'pen', pen:r1.pen});
+    pen = r1.pen;
+    if (pt2){
+      const side2 = pt2.map(T).find(Boolean) || side, r2 = readPen(pt2, side2, false);
+      if (r2.err) return bad(r2.err);
+      pen2 = r2.pen; delete pen2.at;
+      if (pen2.enf === 'end') pen2.enf = 'dead';   // the second flag is marked off after the first
+      if (!toks.length){ delete pen.at; return ok({t:'pen', pen:{...pen, enf:['dec', 'prev', 'off'].includes(pen.enf) ? pen.enf : 'acc'}, pen2}); }   // two flags, no play
+    }
     }
   }
   let fumErr = null;                       // set when a fumble's "ball on" spot can't be right
@@ -287,6 +303,7 @@ function parseQuick(raw, st){
         if (pen.foul != null) pen.foul = pos; else if (pen.ball != null) pen.ball = pos;
       }
       delete pen.at; p.pen = pen;
+      if (pen2) p.pen2 = pen2;
       passFlag(p, st);   // a flag on a pass takes the pass away
     }
     return ok(p);

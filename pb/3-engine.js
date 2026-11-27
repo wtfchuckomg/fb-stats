@@ -906,7 +906,13 @@ function replay(g, upto = g.plays.length, from = 0){
     // on, or weather — never reaches the rest, and those quarters show an X instead of a 0. Ending the game is
     // bookkeeping, not a play: it is recorded after the half has already turned the clock to the 3rd quarter.
     if (!['final', 'note', 'to'].includes(p.t) && pre.q > st.qPlayed) st.qPlayed = pre.q;
-    const r = apply(p);
+    let r = apply(p.pen2 ? {...p, pen2:undefined} : p);
+    // A second flag on the same play (pen2): marked off after the first, from wherever that one left the ball.
+    if (p.pen2){
+      const p2 = p.pen2; defer = null; flagNow = null;
+      const t2 = p2.enf === 'dec' ? (tags.push(['flag', 'Declined']), `Penalty ${ab(p2.side)} ${p2.name}, declined.`) : penalize({...p2, foul:undefined, ball:undefined}, false, null, p2.enf === 'dead');
+      r = {...r, text:`${r.text} ${t2}`};
+    }
     if (st.phase === 'try' && !wasTry) tdClk = p.clk ?? null;
     log.push({i, q:pre.q, clk:p.clk, sit:pre.sit, poss:pre.poss, spot:pre.spot, down:pre.down, phase:pre.phase, trace, t:p.t, text:r.text, wiped:r.wiped, tags, src:p.q, A:st.score.A, H:st.score.H});
   }

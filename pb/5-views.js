@@ -422,7 +422,7 @@ document.addEventListener('click', e => {
     ui.type = d.type; ui.draft = null;
     if (old){
       const nu = ui.draft = blank(d.type, ui.ctx.st);
-      ['y', 'yn', 'tk', 'fumOn', 'fum', 'penOn', 'pen', 'clkTxt'].forEach(k => { if (k in old && (k in nu || k === 'clkTxt')) nu[k] = old[k]; });
+      ['y', 'yn', 'tk', 'fumOn', 'fum', 'penOn', 'pen', 'pen2On', 'pen2', 'clkTxt'].forEach(k => { if (k in old && (k in nu || k === 'clkTxt')) nu[k] = old[k]; });
       if (d.type === 'run' && old.t === 'pass') nu.r = (old.res === 'c' && old.to) || old.qb || '';
       if (d.type === 'pass' && old.t === 'run'){ nu.to = old.r || ''; nu.res = 'c'; }
     }
@@ -496,9 +496,9 @@ document.addEventListener('input', e => {
   if (el.id === 'qk'){ ui.qtext = el.value; return quickPreview(); }
   if (!k || !ui.draft) return;
   setK(ui.draft, k, el.value);
-  if (k === 'pen.name'){
-    const x = PENALTIES.find(p => p.name === el.value), st = ui.ctx.st;
-    if (x){ Object.assign(ui.draft.pen, {y:x.y, a:x.a, l:x.l}); if (x.s === 'O') ui.draft.pen.side = st.poss; if (x.s === 'D') ui.draft.pen.side = other(st.poss); }
+  if (k === 'pen.name' || k === 'pen2.name'){
+    const x = PENALTIES.find(p => p.name === el.value), st = ui.ctx.st, P = ui.draft[k.split('.')[0]];
+    if (x){ Object.assign(P, {y:x.y, a:x.a, l:x.l}); if (x.s === 'O') P.side = st.poss; if (x.s === 'D') P.side = other(st.poss); }
     return renderPad();
   }
   const who = document.querySelector(`[data-who="${k}"]`);
