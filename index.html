@@ -12534,6 +12534,10 @@ function bkAdvance(slots){
    better seed at home, on that round's Friday; State is on the 27th. Not yet played only — a final is a real game
    already. A game anyone enters, or KPreps lists, for the same two schools that week takes its place. */
 const BK_ROUND_DAYS = ['2026-10-30', '2026-11-06', '2026-11-13', '2026-11-20', '2026-11-27'];
+// State is Saturday the 28th except for the classes played Friday the 27th (Chuck, 2026-11-27: "all other games, except
+// for 1A are on Saturday"; 2A and 4A were already played Friday).
+const BK_STATE_FRI = new Set(['1A', '2A', '4A']);
+const bkRoundDay = (cls, r) => r === 4 && !BK_STATE_FRI.has(cls) ? '2026-11-28' : BK_ROUND_DAYS[r];
 // Week 9 games on Thursday the 29th, by a school in them: KPreps' "Thursday Games" list, checked 2026-10-29 (52 games),
 // and the two played away from either school.
 const BK_THURSDAY = new Set(['Abilene', 'Altoona-Midway', 'Andover Central', 'Ashland', 'Attica-Argonia', 'Axtell', 'BV West', 'Beloit', 'Bennington', 'Bluestem', 'Caney Valley', 'Canton-Galva', 'Cedar Vale-Dexter', 'Central Burden', 'Central Plains', 'Centralia', 'Centre', 'Chase', 'Chase County', 'Cherryvale', 'Cheylin', 'Clifton-Clyde', 'Conway Springs', 'Cunningham', 'Decatur', 'Deerfield', 'Dighton', 'Elkhart', 'Ell-Saline', 'Ellis', 'Erie', 'Flinthills', 'Gardner Edgerton', 'Hanover', 'Hartford', 'Highland Park', 'Hill City', 'Hodgeman County', 'Hoxie', 'Hutch Central Christian', 'Jackson Heights', 'Jayhawk-Linn', 'Kiowa County', 'Lakeside', 'Lebo', 'Lincoln', 'Linn', 'Little River', 'Logan', 'Lyndon', 'Madison', 'Marais des Cygnes Valley', 'Marmaton Valley', 'Meade', 'Minneola', 'Moscow', 'Neodesha', 'Ness City', 'Northeast-Arma', 'Norwich', 'Olathe East', 'Olathe North', 'Olathe Northwest', 'Olpe', 'Osborne', 'Oswego', 'Otis-Bison', 'Oxford', 'Pleasant Ridge', 'Pleasanton', 'Quinter', 'Rawlins County', 'Remington', 'Rock Creek', 'Sabetha', 'Salina Central', 'Sedan', 'Silver Lake', 'Solomon', 'South Central', 'South Gray', 'South Sumner', 'Southeast (Cherokee)', 'Southern Coffey County', 'Southwestern Heights', 'Spearville', 'Spring Hill', 'St John\'s', 'Stanton County', 'Sylvan-Lucas Unified', 'Thomas More Prep', 'Thunder Ridge', 'Turner', 'WaKeeney-Trego', 'Wakefield', 'Wallace County', 'Wamego', 'West Franklin', 'Western Plains', 'Wheatland-Grinnell', 'Wichita County', 'Winona-Triplains', 'Wyandotte', 'Yates Center'].map(canonSchool));
@@ -12576,7 +12580,7 @@ function bkSchedRefresh(){
       if (!a || !b || a.bye || b.bye) return;   // past week 8 by the calendar: a week-1 game with no final on file doesn't hold it up
       const [H, A] = r < 4 && rank(b) < rank(a) ? [b, a] : [a, b];
       out.push(bkWeek9Fix({id:`bk26-${cls}-${r}-${canonSchool(A.name)}-${canonSchool(H.name)}`, kind:'score', sched:true, opp:true, file:true, playoff:true,
-        created:0, updated:0, date:BK_ROUND_DAYS[r], teams:{A:team(A.name), H:team(H.name)}, A:0, H:0, per:'pre', clk:''}));
+        created:0, updated:0, date:bkRoundDay(cls, r), teams:{A:team(A.name), H:team(H.name)}, A:0, H:0, per:'pre', clk:''}));
     };
     try {
       BK_CLASSES.forEach(cls => {
