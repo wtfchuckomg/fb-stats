@@ -80,7 +80,7 @@ function openDialog(kind){
   ui.dlg = kind; ui.confirm = null;
   dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : kind === 'statbox' ? dlgStatBox() : kind === 'others' ? dlgOthers() : kind === 'lines' ? dlgLines() : kind === 'teams' ? dlgTeams() : kind === 'schools' ? dlgSchools() : dlgSetup(kind === 'new');
   if (!dlg().hasAttribute('open')) showDialog();
-  if ($('#s-A-roster')){ ['A', 'H'].forEach(fillSetupRoster); fillSetupFormat(); }
+  if ($('#s-A-roster')){ ['A', 'H'].forEach(s => { fillSetupRoster(s); const el = $(`#s-${s}-shared`), nm = $(`#s-${s}-name`); if (el && nm) el.innerHTML = sharedHint(s, nm.value.trim()); }); fillSetupFormat(); }
 }
 // Phones without the pop-up window feature (iPhones before iOS 15.4, among others) get the same box, opened plainly.
 function showDialog(){

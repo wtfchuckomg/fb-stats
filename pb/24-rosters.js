@@ -117,11 +117,14 @@ function shareRoster(t){
 // The line under a roster box in Setup: up to three others' copies, each with Use it.
 function sharedHint(s, name){
   const day = r => new Date(r.updated).toLocaleDateString('en-US', {month:'short', day:'numeric'});
+  // Already in the box (Setup fills the fullest copy in on its own): it says so, instead of a Use it that seems to do
+  // nothing (Chuck, 2026-11-27: "i'm clicking on use it and it's not using it").
+  const box = $(`#s-${s}-roster`), has = r => box && box.value.trim() === rosterToText(r.roster).trim();
   return rostersFor(name).slice(0, 3).map(r => `Shared roster: ${plural2(r.count, 'player')}, updated ${day(r)}.
-    <button type="button" class="linkbtn" data-use-shared="${esc(r.id)}" data-side="${s}">Use it</button>`).join('<br>');
+    ${has(r) ? '<b>In use</b>' : `<button type="button" class="linkbtn" data-use-shared="${esc(r.id)}" data-side="${s}">Use it</button>`}`).join('<br>');
 }
 function refreshRosterHints(){
-  ['A', 'H'].forEach(s => { const el = $(`#s-${s}-shared`), nm = $(`#s-${s}-name`); if (el && nm) el.innerHTML = sharedHint(s, nm.value.trim()); fillSetupRoster(s); });
+  ['A', 'H'].forEach(s => { const el = $(`#s-${s}-shared`), nm = $(`#s-${s}-name`); fillSetupRoster(s); if (el && nm) el.innerHTML = sharedHint(s, nm.value.trim()); });
   renderTeamPage();   // a school's page lists its roster too
 }
 document.addEventListener('input', e => { if (e.target.id && /^s-[AH]-name$/.test(e.target.id)){ refreshRosterHints(); fillSetupFormat(); } });
@@ -141,6 +144,7 @@ document.addEventListener('click', e => {
   const r = (sharedRosters.list || []).find(x => x.id === b.dataset.useShared), box = $(`#s-${b.dataset.side}-roster`);
   if (!r || !box) return;
   box.value = rosterToText(r.roster);
+  const el = $(`#s-${b.dataset.side}-shared`), nm = $(`#s-${b.dataset.side}-name`); if (el && nm) el.innerHTML = sharedHint(b.dataset.side, nm.value.trim());
   toast(`Using the shared ${r.name} roster`);
 });
 /* 2025 season stats for the Butler County schools, from "2025 Butler County Leaderboard.xlsx" (its PLAYERS sheet):
