@@ -118,6 +118,7 @@ function plainWords(line){
     .replace(/\b(?:extra point|pat)\b/g, ' xp ')
     .replace(/\bfair catch\b/g, ' fc ')
     .replace(/\btouchback\b/g, ' tb ')
+    .replace(/\b(?:fumb|fumbl|fmbl)\b/g, ' fum ')    // short ways of writing fumble (Chuck, 2026-11-27: "24-17 fumb tb" went in as a plain run)
     .replace(/\bout of bounds\b/g, ' oob ')
     .replace(/\b(?:re-?kicks?|re-?kicked|kick(?:s|ed)? again)\b/g, ' rekick ')
     .replace(/\b(?:kicks off|kicked off|kick off|kickoff)\b/g, ' ko ')
