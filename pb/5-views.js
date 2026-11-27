@@ -174,10 +174,14 @@ function saveLines(){
 }
 function clearLines(){ delete g.lines; save(); closeDialog(); refresh(); toast('Back to the play-by-play'); }
 
+const savedWhere = () => `Every game is saved in this browser${sync.user ? ' and to your Google account' : ''}. Export makes a backup you can keep anywhere.`;
+// Each game's replay, kept until the game changes: the Games list replays every game on the device to show its score.
+const gamesMemo = new Map();
+const replayOnce = x => { const k = `${x.id}:${x.updated || 0}:${(x.plays || []).length}`; let r = gamesMemo.get(k); if (!r){ r = replay(x); gamesMemo.set(k, r); } return r; };
 function dlgGames(){
   // A record without teams (half-written, or part-way in from another device) is skipped rather than shown.
   const list = Object.values(db.games).filter(x => x && x.teams && x.teams.A && x.teams.H).sort((a, b) => (b.updated || 0) - (a.updated || 0));
-  const items = list.map(x => { const r = replay(x);
+  const items = list.map(x => { const r = replayOnce(x);
     return `<div class="gitem"><div><b>${esc(x.teams.A.abbr)} ${r.st.score.A} at ${esc(x.teams.H.abbr)} ${r.st.score.H}</b>${x.id === g.id ? '<span class="cur-tag">Open</span>' : ''}${x.sample ? '<span class="cur-tag" style="color:var(--flag-ink)">Sample</span>' : ''}${x.foreign ? '<span class="cur-tag" style="color:var(--flag-ink)">Someone else’s</span>' : ''}
       <div class="meta">${esc(x.teams.A.name)} at ${esc(x.teams.H.name)} · ${rulesOf(x).men === 8 ? '8-man · ' : ''}${gameDay(x).toLocaleDateString()} · ${r.st.final ? 'Final' : perLabel(r.st.q)} · ${x.box ? 'box score' : `${x.plays.length} plays`}</div></div>
       <div class="acts">${x.id !== g.id ? `<button class="btn small" data-open-game="${x.id}">Open</button>` : ''}<button class="btn small danger" data-del-game="${x.id}">${ui.confirm === 'g:' + x.id ? 'Tap again' : 'Delete'}</button></div></div>`; }).join('');
@@ -187,7 +191,7 @@ function dlgGames(){
   const adm = !!(sync.user && sync.user.uid === ADMIN_UID);
   return `${dlgHead('Games')}<div class="dlg-ft top"><button class="btn" data-open="export">Export</button>${adm ? '<button class="btn" data-open="others">Others</button><button class="btn" data-open="schools">Schools</button>' : ''}<span style="margin-right:auto"></span><button class="btn" data-box-new>Paste a box score</button><button class="btn primary" data-open="new">New game</button></div>
     <div class="dlg-bd">${syncBlock()}${typeof turboBlock === 'function' ? turboBlock() : ''}<div class="grp"><h3>Games</h3><div class="glist">${items}</div></div>
-    <p class="hint">Every game is saved in this browser${sync.user ? ' and to your Google account' : ''}. Export makes a backup you can keep anywhere.</p></div>`;
+    <p class="hint" id="g-saved">${savedWhere()}</p></div>`;
 }
 // The live look-in: a link anyone can open to watch this game, read-only.
 function dlgShare(){

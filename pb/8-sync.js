@@ -279,7 +279,9 @@ function renderSync(){
   el.innerHTML = `<button class="abtn syncbtn ${cls}" data-sync title="${esc(tip)}"><i></i>${label}</button>`;
   const ob = $('#othersbtn'); if (ob) ob.hidden = !ui.admin;
   if (ui.dlg === 'others' && dlg().open) dlg().innerHTML = dlgOthers();
-  if (ui.dlg === 'games' && dlg().open) dlg().innerHTML = dlgGames();   // the account line, the list, and where games are saved
+  // Only the account line and the saved-where note: redrawing the whole list replays every game on the device, and
+  // doing that on each status change froze Safari at sign-out and while saving (Chuck, 2026-11-27).
+  if (ui.dlg === 'games' && dlg().open){ const a = $('#acct'); if (a) a.outerHTML = syncBlock(); const h = $('#g-saved'); if (h) h.textContent = savedWhere(); }
   if (ui.dlg === 'share' && dlg().open) dlg().innerHTML = dlgShare();
 }
 

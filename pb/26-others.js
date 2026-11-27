@@ -36,9 +36,13 @@ function watchOthers(){
     redraw();
   });
 }
+const othersSum = new Map();
 function othersRow(o){
   const {x} = o, A = x.teams.A, H = x.teams.H;
-  let m; try { m = summary(Object.assign({plays:[]}, x)); } catch (e) { m = {score:{A:0, H:0}, status:'—', pre:true}; }
+  // Each game's line worked out once per version: this window is redrawn on every sync change (2026-11-27, Safari froze).
+  const key = `${x.id}:${o.updated || x.updated || 0}:${(x.plays || []).length}`;
+  let m = othersSum.get(key);
+  if (!m){ try { m = summary(Object.assign({plays:[]}, x)); } catch (e) { m = {score:{A:0, H:0}, status:'—', pre:true}; } othersSum.set(key, m); }
   const how = x.kind === 'score' ? 'quick score' : x.box ? 'box score' : `${(x.plays || []).length} plays`;
   // A quick score is just a score: there's no game behind it to watch.
   const watch = x.kind === 'score' ? '' : `<a class="btn small" href="?game=${encodeURIComponent(x.id)}" target="_blank" rel="noopener">Watch</a>`;
