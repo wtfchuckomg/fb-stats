@@ -206,7 +206,7 @@ async function pushNow(id){
 // A save that didn't reach the account is kept and tried again. Without this a game imported or scored where
 // there is no signal stays on the one device, looking saved, and never reaches the scoreboards.
 function retryFailed(){
-  if (!sync.user || !sync.failed.size || navigator.onLine === false) return;
+  if (!sync.user || !sync.failed.size) return;   // tried even when the browser says offline: it can be wrong
   [...sync.failed].forEach(id => { if (db.games[id]) syncPush(db.games[id], 0); else sync.failed.delete(id); });
 }
 // Deleting leaves a marker rather than removing the document, so other devices learn about it too.
@@ -257,7 +257,10 @@ function renderSync(){
   const el = $('#sync'); if (!el) return;
   let s = sync.state;
   if (s === 'off'){ el.innerHTML = '<button class="abtn syncbtn busy" data-sync title="Connecting to your account"><i></i>Connecting…</button>'; return; }
-  if (sync.user && navigator.onLine === false) s = 'offline';
+  // The browser's own online flag can stick on "offline" after a change of network while saves go through fine
+  // (Chuck, 2026-11-27, the 4A title game: "Offline · saved here", every play already in his account). It counts only
+  // when something is actually waiting to go up.
+  if (sync.user && navigator.onLine === false && (sync.pending || sync.failed.size || Object.keys(sync.timers).length)) s = 'offline';
   const label = {unavailable:'This device only', 'signed-out':'Sign in to sync', on:'Synced', saving:'Saving…', offline:'Offline · saved here', error:'Sync problem'}[s];
   const cls = {on:'ok', saving:'busy', offline:'busy', error:'bad'}[s] || '';
   const tip = sync.err || (sync.user ? `Signed in as ${sync.user.email || ''}` : s === 'unavailable' ? 'Syncing works on your own site' : 'Keep your games on every device');
