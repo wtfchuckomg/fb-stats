@@ -19,25 +19,36 @@ const firebaseConfig = {
 const IN_APP_BROWSER = /FBAN|FBAV|FB_IAB|Instagram|Twitter|LinkedInApp|Snapchat|Line\/|MicroMessenger|GSA\//i.test(navigator.userAgent)
   || /Android.*;\s*wv\)/i.test(navigator.userAgent);
 // Sign-in keeps who is signed in in the browser's storage database (IndexedDB). On some iPhones that database stops
-// answering — Safari's known hang — and sign-in then never says who it is: the tracker sat at "Connecting…", and
-// the scoreboards waited on it for tonight's games (Chuck, 2026-11-20). So it is asked first, with a time limit, and
-// when it doesn't answer, sign-in keeps its record in the page's ordinary storage instead.
-let idbP = null;
-function idbOk(){
-  return idbP || (idbP = new Promise(res => {
+// answering — Safari's known hang — and sign-in then never says who it is: the tracker sat at "Connecting…", and the
+// scoreboards waited on it for that night's games (Chuck, 2026-11-20). A 3-second check before every sign-in (that
+// fix) failed on a busy page that was fine, signed his Mac out and left no Sign out (2026-11-27). Now sign-in is
+// normal everywhere; only a device where it has really hung — no answer in 20 seconds, and the storage database
+// itself not answering either — is switched for good to the page's ordinary storage, and reloaded once.
+const AUTH_LOCAL = 'kms-auth-local';
+const authLocal = () => { try { return localStorage.getItem(AUTH_LOCAL) === '1'; } catch (e) { return false; } };
+function idbAnswers(ms){
+  return new Promise(res => {
     let done = false; const end = v => { if (!done){ done = true; res(v); } };
-    try {
-      const r = indexedDB.open('kms-probe');
-      r.onsuccess = () => { try { r.result.close(); } catch (e) {} end(true); };
-      r.onerror = r.onblocked = () => end(false);
-    } catch (e) { end(false); }
-    setTimeout(() => end(false), 3000);
-  }));
+    try { const r = indexedDB.open('kms-probe'); r.onsuccess = () => { try { r.result.close(); } catch (e) {} end(true); }; r.onerror = r.onblocked = () => end(false); }
+    catch (e) { end(false); }
+    setTimeout(() => end(false), ms);
+  });
 }
 async function authFor(authM, app){
-  if (await idbOk()) return authM.getAuth(app);
-  try { return authM.initializeAuth(app, {persistence:[authM.browserLocalPersistence, authM.inMemoryPersistence], popupRedirectResolver:authM.browserPopupRedirectResolver}); }
-  catch (e) { return authM.getAuth(app); }
+  if (authLocal()){
+    try { return authM.initializeAuth(app, {persistence:[authM.browserLocalPersistence, authM.inMemoryPersistence], popupRedirectResolver:authM.browserPopupRedirectResolver}); }
+    catch (e) { return authM.getAuth(app); }
+  }
+  const auth = authM.getAuth(app);
+  let heard = false; const off = authM.onAuthStateChanged(auth, () => { heard = true; off(); });
+  setTimeout(async () => {
+    if (heard || await idbAnswers(5000)) return;
+    try {
+      localStorage.setItem(AUTH_LOCAL, '1');
+      if (!sessionStorage.getItem('kms-auth-reload')){ sessionStorage.setItem('kms-auth-reload', '1'); location.reload(); }
+    } catch (e) {}
+  }, 20000);
+  return auth;
 }
 const sync = {state:'off', user:null, api:null, unsub:null, first:true, timers:{}, pending:0, err:'', failed:new Set()};
 
@@ -223,7 +234,7 @@ async function signIn(){
   if (IN_APP_BROWSER) return toast('Open this page in Safari or Chrome to sign in');
   const {authM, auth} = sync.api, provider = new authM.GoogleAuthProvider();
   // Embedded browsers may block IndexedDB; walk down to whatever storage this one allows.
-  for (const p of [...(await idbOk() ? [authM.indexedDBLocalPersistence] : []), authM.browserLocalPersistence, authM.browserSessionPersistence, authM.inMemoryPersistence]){
+  for (const p of [...(authLocal() ? [] : [authM.indexedDBLocalPersistence]), authM.browserLocalPersistence, authM.browserSessionPersistence, authM.inMemoryPersistence]){
     try { await authM.setPersistence(auth, p); break; } catch (e) { /* try the next */ }
   }
   try { await authM.signInWithPopup(auth, provider); }
