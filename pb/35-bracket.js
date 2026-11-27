@@ -720,6 +720,7 @@ function bkLine(t, game, small, r = 0){
     <a class="bk-nm${won ? ' locked' : ''}" href="?team=${encodeURIComponent(t.name)}" title="${esc(t.name)}">${nm}</a>
     <span class="bk-rec">${game ? `<b>${game.pts.get(t)}</b>` : small ? '' : r ? esc(bkRecNow(t)) : t.gp ? esc(bkRec(t)) : ''}</span></div>`;
 }
+const BK_CUP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10v2h4v3a5 5 0 0 1-4.6 5A5 5 0 0 1 13 15.9V18h3v4H8v-4h3v-2.1A5 5 0 0 1 7.6 12 5 5 0 0 1 3 7V4h4V2zm0 4H5v1a3 3 0 0 0 2 2.8V6zm10 0v3.8A3 3 0 0 0 19 7V6h-2z"/></svg>';
 function bkFullHtml(eastSlots, westSlots){
   const ROUNDS = ['Week 9', 'Regional', 'Sectional', 'Sub-State'];
   const side = slots => { const cols = []; let cur = slots;
@@ -745,7 +746,12 @@ function bkFullHtml(eastSlots, westSlots){
     bkPair(c.slots[2 * i], c.slots[2 * i + 1], bkLine(c.slots[2 * i], gm, r !== cur, r) + bkLine(c.slots[2 * i + 1], gm, r !== cur, r))).join('')}</div></div>`;
   // The title game stands out (Chuck, 2026-11-20: "need to highlight the state championship games"): gold, and named.
   const stLbl = '<div class="bk-st-lbl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10v2h4v3a5 5 0 0 1-4.6 5A5 5 0 0 1 13 15.9V18h3v4H8v-4h3v-2.1A5 5 0 0 1 7.6 12 5 5 0 0 1 3 7V4h4V2zm0 4H5v1a3 3 0 0 0 2 2.8V6zm10 0v3.8A3 3 0 0 0 19 7V6h-2z"/></svg>State Championship</div>';
-  const fin = bkPlayed(W.champ, E.champ), state = bkPair(W.champ, E.champ, stLbl + bkLine(W.champ, fin, cur !== 4, 4) + bkLine(E.champ, fin, cur !== 4, 4), ' st');
+  // The champion's line, once the title game is final, in gold with a trophy (Chuck, 2026-11-27: "we need to
+  // highlight the champion in some way").
+  const fin = bkPlayed(W.champ, E.champ);
+  const stLine = t => { const h = bkLine(t, fin, cur !== 4, 4);
+    return fin && t && fin.win === t ? h.replace('<div class="bkp', '<div class="bkp bk-champ').replace('<span class="bk-rec">', `<span class="bk-cup" title="State champion">${BK_CUP}</span><span class="bk-rec">`) : h; };
+  const state = bkPair(W.champ, E.champ, stLbl + stLine(W.champ) + stLine(E.champ), ' st');
   // A phone (Chuck, 2026-10-25: "shrink it… so we can see multiple rounds at the same time"): each side's four rounds
   // across in small boxes, the logo and short name, then State under both.
   const mcol = (c, r) => `<div class="bkm-col"><span class="bkt-h">${ROUNDS[r]}</span><div class="bkm-pairs">${c.games.map((gm, i) =>

@@ -364,10 +364,17 @@ function previewHtml(){
   const soon = !live && tracked[0];
   const recLine = n => { const r = shownRecord(n), info = schoolInfo(n); return [r && r.rec, info && info[1]].filter(Boolean).join(' · '); };
   const rankTag = n => { const r = rankOf(n); return r && r.rank ? `<span class="pg-rank">${r.rank}</span>` : ''; };
-  const head = `<section class="bcard pg-head">
-      <div class="pg-team">${markFor(T.A, 64)}<div><div class="pg-name">${rankTag(A)}<a class="tlink" href="?team=${encodeURIComponent(A)}">${esc(A)}</a></div><div class="pg-sub">${esc(recLine(A))}</div></div></div>
-      <div class="pg-when"><b>${esc(when)}</b><span>${esc(time)}</span><span class="pg-at">at ${esc(x.site || H)}</span></div>
-      <div class="pg-team h"><div><div class="pg-name">${rankTag(H)}<a class="tlink" href="?team=${encodeURIComponent(H)}">${esc(H)}</a></div><div class="pg-sub">${esc(recLine(H))}</div></div>${markFor(T.H, 64)}</div>
+  // A game that's over with only its final on the site (no stats to open) still comes here, from the bracket and the
+  // schedules: the header then shows the final, not the kickoff time (Chuck, 2026-11-27: a completed game "just went
+  // to the preview and not the finished game").
+  const F = (() => { try { const f = finalOf(typeof kpFill === 'function' ? kpFill(x) : x); return f && f.fin && f.score ? f.score : null; } catch (e) { return null; } })();
+  const won = F && +F.A !== +F.H ? (+F.A > +F.H ? 'A' : 'H') : null;
+  const pts = s => F ? `<b class="pg-score${won === s ? ' w' : won ? ' l' : ''}">${+F[s] || 0}</b>` : '';
+  if (F) document.title = `${A} ${+F.A || 0}, ${H} ${+F.H || 0} · Final · ${SITE_TITLE}`;
+  const head = `<section class="bcard pg-head${F ? ' fin' : ''}">
+      <div class="pg-team">${markFor(T.A, 64)}<div><div class="pg-name">${rankTag(A)}<a class="tlink" href="?team=${encodeURIComponent(A)}">${esc(A)}</a></div><div class="pg-sub">${esc(recLine(A))}</div></div>${pts('A')}</div>
+      <div class="pg-when">${F ? `<b class="pg-fs"><span class="${won === 'A' ? '' : won ? 'l' : ''}">${+F.A || 0}</span> – <span class="${won === 'H' ? '' : won ? 'l' : ''}">${+F.H || 0}</span></b><b>Final</b><span>${esc(when)}</span>` : `<b>${esc(when)}</b><span>${esc(time)}</span>`}<span class="pg-at">at ${esc(x.site || H)}</span></div>
+      <div class="pg-team h">${pts('H')}<div><div class="pg-name">${rankTag(H)}<a class="tlink" href="?team=${encodeURIComponent(H)}">${esc(H)}</a></div><div class="pg-sub">${esc(recLine(H))}</div></div>${markFor(T.H, 64)}</div>
     </section>
     ${live ? `<section class="bcard pg-live"><b>This game has started.</b> <a class="bbtn" href="?game=${encodeURIComponent(live.id)}">Watch the gamecast</a></section>`
       : soon ? `<section class="bcard pg-live"><b>Someone is set to keep stats on this game.</b> This page turns into the gamecast on the first play.</section>` : ''}`;
