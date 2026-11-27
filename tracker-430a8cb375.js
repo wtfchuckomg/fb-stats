@@ -570,6 +570,19 @@ function parseQuick(raw, st){
     if (has(...BLK_WORDS)){
       const after = rest.filter(isNum);
       p.res = 'blk'; if (after[0] != null) p.by = after[0]; if (after[1] != null) p.ret = after[1];
+      // Players named with their team's letter (Chuck, 2026-11-27: "15 punt blocked m6 rec in end zone rec m1" —
+      // blocked by Miege #6, recovered in the end zone by Miege #1): right after a block or recover word, a lettered
+      // number is a player, not a yard line. "end zone" / "ez" says where it was recovered.
+      const REC = ['rec', 'recovered', 'recovers', 'recover', 'recovery'], SKIP = ['by', 'in', 'the', 'end', 'zone', 'endzone', 'ez', 'it', 'and'];
+      const who1 = at => { for (let j = at + 1; j < pRaw.length; j++){ const t = pRaw[j]; if (SKIP.includes(t)) continue;
+        if (isNum(t)) return {n:t}; const s = spotOf(t); return s ? {n:String(s.n), side:s.side} : null; } return null; };
+      const bkAt = pRaw.findIndex(t => BLK_WORDS.includes(t)), blocker = bkAt >= 0 ? who1(bkAt) : null;
+      let recBy = null; pRaw.forEach((t, j) => { if (!recBy && REC.includes(t)) recBy = who1(j); });
+      if (blocker && blocker.side){ p.by = blocker.n; if (recBy == null && after[0] != null) p.ret = after[0]; }
+      if (recBy && recBy.side){ p.ret = recBy.n; if (recBy.side === O){ p.own = true; delete p.ret; p.ret = recBy.n; } }
+      const inEz = has('ez', 'endzone') || pRaw.some((t, j) => t === 'end' && pRaw[j + 1] === 'zone');
+      if (inEz && !p.own && !has('safety', 'saf', 'sfty')){ p.ez = true; return flag(p); }   // the other team fell on it in the end zone: touchdown
+      if (inEz && p.own) p.saf = true;                                                    // the punting team fell on it there: safety
       // Blocked out of the back of the end zone: a safety for the other team, and nobody recovered it.
       if (has('safety', 'saf', 'sfty')){ p.saf = true; delete p.ret; return flag(p); }
       // The kicking team can fall on its own blocked punt, and "ball at …" says where it was recovered.

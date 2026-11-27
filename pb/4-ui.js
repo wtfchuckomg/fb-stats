@@ -317,7 +317,8 @@ function buildPlay(d){
       if (d.res === 'fc') p.ret = j(d.ret);
       if (d.res === 'muff') Object.assign(p, {by:j(d.by), ret:j(d.ret), mr:yes(d.mr) || undefined});
       if (d.res === 'blk') Object.assign(p, d.saf ? {by:j(d.by), saf:true}
-        : yes(d.own) ? {by:j(d.by), b:n(d.b) || 0, ret:j(d.ret), own:true} : {by:j(d.by), b:n(d.b) || 0, ret:j(d.ret), ry:n(d.ry) || 0});
+        : yes(d.own) ? {by:j(d.by), b:n(d.b) || 0, ret:j(d.ret), own:true} : yes(d.ez) ? {by:j(d.by), ret:j(d.ret), ez:true}
+        : {by:j(d.by), b:n(d.b) || 0, ret:j(d.ret), ry:n(d.ry) || 0});
       break;
     case 'ko':
       Object.assign(p, {k:j(d.k), d:n(d.d) || 0, res:d.res});
@@ -476,7 +477,8 @@ function formHtml(){
       if (d.res === 'blk') h += row(fJ('by', 'Blocked by', D), `<div class="fld">${tog('saf', 'Out of the end zone: safety')}</div>`)
         + (d.saf ? '' : fSeg('own', 'Recovering team', [['', `${ab(D)} (blocking team)`], ['true', `${ab(O)} (punting team)`]])
           + (String(d.own) === 'true' ? row(fN('b', 'Recovered, yds behind line', '0'), fJ('ret', 'Recovered by', O))
-            : row(fN('b', 'Recovered, yds behind line', '0'), fJ('ret', 'Recovered by', D), fN('ry', 'Return yards', '0'))));
+            : (d.ez === true || d.ez === 'true' ? row(fJ('ret', 'Recovered by', D)) : row(fN('b', 'Recovered, yds behind line', '0'), fJ('ret', 'Recovered by', D), fN('ry', 'Return yards', '0')))
+              + `<div class="checks">${tog('ez', 'Recovered in the end zone: touchdown')}</div>`));
       return h + extras();
     }
     case 'ko': {

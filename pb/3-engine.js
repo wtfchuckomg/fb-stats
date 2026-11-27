@@ -630,6 +630,12 @@ function replay(g, upto = g.plays.length, from = 0){
         if (st.ot){ otEnd(); return txt + '.'; }
         newSeries(R, FL - mine); return txt + '. Turnover on downs.';
       }
+      // Recovered in the end zone by the other team (p.ez): a touchdown on the spot.
+      if (p.ez){
+        if (p.ret) bump(pl(R, p.ret), 'fr');
+        return `${nm(O, p.k)} punt BLOCKED${p.by ? ` by ${nm(R, p.by)}` : ''}, recovered in the end zone by ${p.ret ? nm(R, p.ret) : ab(R)}.`
+          + touchdown(R, `${p.ret ? nm(R, p.ret) : ab(R)} blocked punt recovery`, pl(R, p.ret));
+      }
       const at = clamp(FL - (st.spot - (+p.b || 0)), 1, FL), ry = +p.ry || 0, fin = at + ry;
       if (ry) leg('run', R, at, fin);
       let txt = `${nm(O, p.k)} punt BLOCKED${p.by ? ` by ${nm(R, p.by)}` : ''}, recovered by ${p.ret ? nm(R, p.ret) : ab(R)} at the ${yl(R, at)}`;

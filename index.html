@@ -1724,7 +1724,7 @@ try { if (new URLSearchParams(location.search).has('embed')) document.documentEl
 const SITE = 'kmr';
 const SITE_AV = SITE === 'avctl';
 // The scorer's tools (shorthand, voice, imports, the spreadsheet) are a file of their own, named by build.py.
-const TRACKER_JS = 'tracker-7f39139669.js';
+const TRACKER_JS = 'tracker-430a8cb375.js';
 const SITE_NAME = SITE_AV ? 'Ark Valley Chisholm Trail League statistics and leaders' : 'Kansas Media Stats';
 const SITE_TITLE = SITE_AV ? 'AVCTL Stats' : 'Kansas Media Stats';   // after the page's own name in a tab's title
 // Where the nightly files (season.json, stats.json, schedules, logos, game snapshots) live: stats/KMR builds
@@ -2378,6 +2378,12 @@ function replay(g, upto = g.plays.length, from = 0){
         if (st.ot){ otEnd(); return txt + '.'; }
         newSeries(R, FL - mine); return txt + '. Turnover on downs.';
       }
+      // Recovered in the end zone by the other team (p.ez): a touchdown on the spot.
+      if (p.ez){
+        if (p.ret) bump(pl(R, p.ret), 'fr');
+        return `${nm(O, p.k)} punt BLOCKED${p.by ? ` by ${nm(R, p.by)}` : ''}, recovered in the end zone by ${p.ret ? nm(R, p.ret) : ab(R)}.`
+          + touchdown(R, `${p.ret ? nm(R, p.ret) : ab(R)} blocked punt recovery`, pl(R, p.ret));
+      }
       const at = clamp(FL - (st.spot - (+p.b || 0)), 1, FL), ry = +p.ry || 0, fin = at + ry;
       if (ry) leg('run', R, at, fin);
       let txt = `${nm(O, p.k)} punt BLOCKED${p.by ? ` by ${nm(R, p.by)}` : ''}, recovered by ${p.ret ? nm(R, p.ret) : ab(R)} at the ${yl(R, at)}`;
@@ -2977,7 +2983,8 @@ function buildPlay(d){
       if (d.res === 'fc') p.ret = j(d.ret);
       if (d.res === 'muff') Object.assign(p, {by:j(d.by), ret:j(d.ret), mr:yes(d.mr) || undefined});
       if (d.res === 'blk') Object.assign(p, d.saf ? {by:j(d.by), saf:true}
-        : yes(d.own) ? {by:j(d.by), b:n(d.b) || 0, ret:j(d.ret), own:true} : {by:j(d.by), b:n(d.b) || 0, ret:j(d.ret), ry:n(d.ry) || 0});
+        : yes(d.own) ? {by:j(d.by), b:n(d.b) || 0, ret:j(d.ret), own:true} : yes(d.ez) ? {by:j(d.by), ret:j(d.ret), ez:true}
+        : {by:j(d.by), b:n(d.b) || 0, ret:j(d.ret), ry:n(d.ry) || 0});
       break;
     case 'ko':
       Object.assign(p, {k:j(d.k), d:n(d.d) || 0, res:d.res});
@@ -3136,7 +3143,8 @@ function formHtml(){
       if (d.res === 'blk') h += row(fJ('by', 'Blocked by', D), `<div class="fld">${tog('saf', 'Out of the end zone: safety')}</div>`)
         + (d.saf ? '' : fSeg('own', 'Recovering team', [['', `${ab(D)} (blocking team)`], ['true', `${ab(O)} (punting team)`]])
           + (String(d.own) === 'true' ? row(fN('b', 'Recovered, yds behind line', '0'), fJ('ret', 'Recovered by', O))
-            : row(fN('b', 'Recovered, yds behind line', '0'), fJ('ret', 'Recovered by', D), fN('ry', 'Return yards', '0'))));
+            : (d.ez === true || d.ez === 'true' ? row(fJ('ret', 'Recovered by', D)) : row(fN('b', 'Recovered, yds behind line', '0'), fJ('ret', 'Recovered by', D), fN('ry', 'Return yards', '0')))
+              + `<div class="checks">${tog('ez', 'Recovered in the end zone: touchdown')}</div>`));
       return h + extras();
     }
     case 'ko': {
