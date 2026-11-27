@@ -77,6 +77,7 @@ async function startSync(){
     if (user){ listen(); saveProfile(user); }
     if (ui.admin) setTimeout(pushPrivateFinals, 4000);   // after the page has drawn
     renderSync();
+    if (typeof renderStart === 'function') renderStart();   // the sign-in gate opens or closes
   });
   // Still no word from sign-in after 12 seconds: say so, instead of "Connecting…" forever.
   setTimeout(() => { if (sync.state === 'off'){ sync.state = 'error'; sync.err = 'Can’t reach your account on this device. Close the browser all the way, then open the site again.'; renderSync(); } }, 12000);
@@ -121,6 +122,7 @@ function listen(){
   const q = fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('owner', '==', sync.user.uid));
   sync.unsub = fsM.onSnapshot(q, snap => {
     let changed = false, current = null;
+    if (!snap.metadata.fromCache) sync.remote = new Set(snap.docs.map(d => d.id));
     snap.docChanges().forEach(ch => {
       if (ch.type === 'removed' || ch.doc.metadata.hasPendingWrites) return;
       const id = ch.doc.id, d = ch.doc.data(), local = db.games[id];
@@ -254,9 +256,18 @@ async function signIn(){
     sync.err = friendlySync(e); if (sync.err) toast(sync.err); renderSync();
   }
 }
+// Signing out takes the account's games off this device (Chuck, 2026-11-27: signed out, he could still see every
+// game in the list). A game still waiting to go up stays, so nothing is lost.
 async function signOutSync(){
   if (!sync.api) return;
-  try { await sync.api.authM.signOut(sync.api.auth); toast('Signed out. Games stay on this device.'); } catch (e) { toast(friendlySync(e)); }
+  const mine = sync.remote || new Set(), waiting = id => sync.failed.has(id) || !!sync.timers[id];
+  try { await sync.api.authM.signOut(sync.api.auth); } catch (e) { return toast(friendlySync(e)); }
+  Object.keys(db.games).forEach(id => { const x = db.games[id]; if (x && !x.sample && (mine.has(id) || x.foreign) && !waiting(id)){ delete db.games[id]; goneIds.add(id); } });
+  sync.remote = null;
+  if (!db.games[g && g.id]) g = sampleGame();
+  resetUi(); ui.start = true; persist(); refresh();
+  if (ui.dlg === 'games' && dlg().open) dlg().innerHTML = dlgGames();
+  toast('Signed out');
 }
 function friendlySync(e){
   const code = e?.code || '';

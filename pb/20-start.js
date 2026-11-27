@@ -19,11 +19,19 @@ function startSchedule(){
 }
 
 function renderStart(){
-  const on = !!ui.start && !ui.viewer;
+  const locked = typeof trackLocked === 'function' && trackLocked();
+  const on = (!!ui.start || locked) && !ui.viewer;
   document.body.classList.toggle('starting', on);
   const box = $('#start'); if (!box) return;
   box.hidden = !on;
   if (!on) return;
+  if (locked){
+    box.innerHTML = `<div class="s-main"><section class="hcard s-hero"><span class="h-eyebrow">Game Tracker</span>
+      <h1>Sign in to keep stats</h1>
+      <p>${sync.state === 'error' && sync.err ? esc(sync.err) : 'Every game is kept in your account, so it’s on the site from the first play and never stuck on one phone or computer.'}</p>
+      <div class="h-btns"><button type="button" class="h-btn primary" data-signin>Sign in with Google</button></div></section></div>`;
+    return;
+  }
   const sched = startSchedule();
   // Each school's logo stays with its name, so a long name wraps between the teams, not away from its logo.
   const matchup = T => `<span class="s-t">${markFor(T.A, 24)}${esc(T.A.name)}</span><em>at</em><span class="s-t">${markFor(T.H, 24)}${esc(T.H.name)}</span>`;

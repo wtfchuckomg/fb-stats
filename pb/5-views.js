@@ -64,7 +64,19 @@ const dlg = () => $('#dlg');
 // Embedded viewers (an iframe) block file downloads, so only offer one on a top-level page.
 const framed = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
 const dlgHead = t => `<div class="dlg-hd"><h2>${t}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>`;
+// Games are kept only by someone signed in (Chuck, 2026-11-27: "You cannot track games unless you're signed in"):
+// signed out, nothing here makes or changes a game, so no game can live on one device alone.
+const trackLocked = () => {
+  if (ui.viewer || sync.user) return false;
+  if (sync.state === 'signed-out') return true;
+  // No sign-in service at all (no signal at a field): a device already signed in keeps tracking, and its plays go up
+  // once it's back. One that never signed in can't start.
+  if (sync.state === 'unavailable' || sync.state === 'error'){ try { return localStorage.getItem('pressbox.scorer') !== '1'; } catch (e) { return true; } }
+  return false;
+};
+const LOCKED_DLG = ['new', 'setup', 'box', 'statbox', 'score', 'lines'];
 function openDialog(kind){
+  if (trackLocked() && LOCKED_DLG.includes(kind)){ toast('Sign in to keep stats'); kind = 'games'; }
   ui.dlg = kind; ui.confirm = null;
   dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : kind === 'statbox' ? dlgStatBox() : kind === 'others' ? dlgOthers() : kind === 'lines' ? dlgLines() : kind === 'teams' ? dlgTeams() : kind === 'schools' ? dlgSchools() : dlgSetup(kind === 'new');
   if (!dlg().hasAttribute('open')) showDialog();
@@ -276,10 +288,41 @@ function load(){
     const games = {}, dropped = [];
     Object.entries(d.games).forEach(([id, x]) => { const ok = soundGame(x); if (ok) games[id] = ok; else dropped.push(id); });
     d.games = games; db = d;
+    try { storeRev = +(localStorage.getItem(STORE + '.rev') || 0); } catch (e) {}
     if (dropped.length) persist();   // don't let a bad record come back on the next load
   } catch (e) {}
 }
-function persist(){ try { localStorage.setItem(STORE, JSON.stringify(db)); } catch (e) {} }
+// Several tracker tabs share one saved list. Each used to write its own copy over the whole thing, so an old tab
+// could wipe a game another tab was keeping (Chuck, 2026-11-27: the 2A title game, gone from Safari). Now a tab that
+// sees another tab has written since takes those games in first (the newer copy of a game wins), and a game deleted
+// here stays deleted.
+const goneIds = new Set();
+let storeRev = 0;
+function mergeStored(){
+  try {
+    const rev = +(localStorage.getItem(STORE + '.rev') || 0);
+    if (rev === storeRev) return false;
+    const d = JSON.parse(localStorage.getItem(STORE) || 'null');
+    storeRev = rev;
+    if (!d || !d.games) return false;
+    let changed = false;
+    for (const [id, x] of Object.entries(d.games)){
+      if (goneIds.has(id) || !x || !x.teams) continue;
+      const mine = db.games[id];
+      if (!mine || (x.updated || 0) > (mine.updated || 0)){ const ok = soundGame(x); if (ok){ db.games[id] = ok; if (g && g.id === id && g !== ok) g = ok; changed = true; } }
+    }
+    return changed;
+  } catch (e) { return false; }
+}
+function persist(){
+  try {
+    mergeStored();
+    localStorage.setItem(STORE, JSON.stringify(db));
+    storeRev = Date.now(); localStorage.setItem(STORE + '.rev', String(storeRev));
+  } catch (e) {}
+}
+// Another tab saved: take its games in, so this tab never writes over them.
+addEventListener('storage', e => { if (e.key === STORE + '.rev' && mergeStored() && ui.dlg === 'games' && dlg().open) dlg().innerHTML = dlgGames(); });
 // An edit: stamp the game, keep it here, and send it to the account when signed in.
 function save(){ if (!g) return; g.updated = Date.now(); db.games[g.id] = g; db.cur = g.id; persist(); syncPush(g); }
 // Opening a game isn't an edit, so it mustn't look newer than another device's copy.
@@ -309,6 +352,7 @@ function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add
 
 /* ---------- actions ---------- */
 function record(){
+  if (trackLocked()){ toast('Sign in to keep stats'); return renderStart(); }
   const p = buildPlay(ui.draft);
   if (ui.editing != null && ui.ins){
     const c = parseClock(ui.draft.clkTxt || '');
@@ -486,7 +530,7 @@ document.addEventListener('click', e => {
     if (ui.confirm !== 'g:' + id){ ui.confirm = 'g:' + id; dlg().innerHTML = dlgGames(); return; }
     // Their game is only a copy here: closing it leaves their own record alone.
     const theirs = !!(db.games[id] && db.games[id].foreign);
-    delete db.games[id]; ui.confirm = null; if (!theirs) syncDelete(id);
+    delete db.games[id]; goneIds.add(id); ui.confirm = null; if (!theirs) syncDelete(id);
     if (id === g.id){ g = Object.values(db.games)[0] || sampleGame(); resetUi(); ui.start = idleGame(g); }
     setCurrent(); refresh(); dlg().innerHTML = dlgGames(); return toast('Game deleted');
   }

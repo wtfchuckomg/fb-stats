@@ -3348,7 +3348,19 @@ const dlg = () => $('#dlg');
 // Embedded viewers (an iframe) block file downloads, so only offer one on a top-level page.
 const framed = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
 const dlgHead = t => `<div class="dlg-hd"><h2>${t}</h2><button class="x" type="button" data-close aria-label="Close">×</button></div>`;
+// Games are kept only by someone signed in (Chuck, 2026-11-27: "You cannot track games unless you're signed in"):
+// signed out, nothing here makes or changes a game, so no game can live on one device alone.
+const trackLocked = () => {
+  if (ui.viewer || sync.user) return false;
+  if (sync.state === 'signed-out') return true;
+  // No sign-in service at all (no signal at a field): a device already signed in keeps tracking, and its plays go up
+  // once it's back. One that never signed in can't start.
+  if (sync.state === 'unavailable' || sync.state === 'error'){ try { return localStorage.getItem('pressbox.scorer') !== '1'; } catch (e) { return true; } }
+  return false;
+};
+const LOCKED_DLG = ['new', 'setup', 'box', 'statbox', 'score', 'lines'];
 function openDialog(kind){
+  if (trackLocked() && LOCKED_DLG.includes(kind)){ toast('Sign in to keep stats'); kind = 'games'; }
   ui.dlg = kind; ui.confirm = null;
   dlg().innerHTML = kind === 'games' ? dlgGames() : kind === 'export' ? dlgExport() : kind === 'share' ? dlgShare() : kind === 'team' ? dlgTeam(ui.teamKey) : kind === 'score' ? dlgScore(ui.qsId) : kind === 'box' ? dlgBox() : kind === 'statbox' ? dlgStatBox() : kind === 'others' ? dlgOthers() : kind === 'lines' ? dlgLines() : kind === 'teams' ? dlgTeams() : kind === 'schools' ? dlgSchools() : dlgSetup(kind === 'new');
   if (!dlg().hasAttribute('open')) showDialog();
@@ -3560,10 +3572,41 @@ function load(){
     const games = {}, dropped = [];
     Object.entries(d.games).forEach(([id, x]) => { const ok = soundGame(x); if (ok) games[id] = ok; else dropped.push(id); });
     d.games = games; db = d;
+    try { storeRev = +(localStorage.getItem(STORE + '.rev') || 0); } catch (e) {}
     if (dropped.length) persist();   // don't let a bad record come back on the next load
   } catch (e) {}
 }
-function persist(){ try { localStorage.setItem(STORE, JSON.stringify(db)); } catch (e) {} }
+// Several tracker tabs share one saved list. Each used to write its own copy over the whole thing, so an old tab
+// could wipe a game another tab was keeping (Chuck, 2026-11-27: the 2A title game, gone from Safari). Now a tab that
+// sees another tab has written since takes those games in first (the newer copy of a game wins), and a game deleted
+// here stays deleted.
+const goneIds = new Set();
+let storeRev = 0;
+function mergeStored(){
+  try {
+    const rev = +(localStorage.getItem(STORE + '.rev') || 0);
+    if (rev === storeRev) return false;
+    const d = JSON.parse(localStorage.getItem(STORE) || 'null');
+    storeRev = rev;
+    if (!d || !d.games) return false;
+    let changed = false;
+    for (const [id, x] of Object.entries(d.games)){
+      if (goneIds.has(id) || !x || !x.teams) continue;
+      const mine = db.games[id];
+      if (!mine || (x.updated || 0) > (mine.updated || 0)){ const ok = soundGame(x); if (ok){ db.games[id] = ok; if (g && g.id === id && g !== ok) g = ok; changed = true; } }
+    }
+    return changed;
+  } catch (e) { return false; }
+}
+function persist(){
+  try {
+    mergeStored();
+    localStorage.setItem(STORE, JSON.stringify(db));
+    storeRev = Date.now(); localStorage.setItem(STORE + '.rev', String(storeRev));
+  } catch (e) {}
+}
+// Another tab saved: take its games in, so this tab never writes over them.
+addEventListener('storage', e => { if (e.key === STORE + '.rev' && mergeStored() && ui.dlg === 'games' && dlg().open) dlg().innerHTML = dlgGames(); });
 // An edit: stamp the game, keep it here, and send it to the account when signed in.
 function save(){ if (!g) return; g.updated = Date.now(); db.games[g.id] = g; db.cur = g.id; persist(); syncPush(g); }
 // Opening a game isn't an edit, so it mustn't look newer than another device's copy.
@@ -3593,6 +3636,7 @@ function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add
 
 /* ---------- actions ---------- */
 function record(){
+  if (trackLocked()){ toast('Sign in to keep stats'); return renderStart(); }
   const p = buildPlay(ui.draft);
   if (ui.editing != null && ui.ins){
     const c = parseClock(ui.draft.clkTxt || '');
@@ -3770,7 +3814,7 @@ document.addEventListener('click', e => {
     if (ui.confirm !== 'g:' + id){ ui.confirm = 'g:' + id; dlg().innerHTML = dlgGames(); return; }
     // Their game is only a copy here: closing it leaves their own record alone.
     const theirs = !!(db.games[id] && db.games[id].foreign);
-    delete db.games[id]; ui.confirm = null; if (!theirs) syncDelete(id);
+    delete db.games[id]; goneIds.add(id); ui.confirm = null; if (!theirs) syncDelete(id);
     if (id === g.id){ g = Object.values(db.games)[0] || sampleGame(); resetUi(); ui.start = idleGame(g); }
     setCurrent(); refresh(); dlg().innerHTML = dlgGames(); return toast('Game deleted');
   }
@@ -4865,6 +4909,7 @@ async function startSync(){
     if (user){ listen(); saveProfile(user); }
     if (ui.admin) setTimeout(pushPrivateFinals, 4000);   // after the page has drawn
     renderSync();
+    if (typeof renderStart === 'function') renderStart();   // the sign-in gate opens or closes
   });
   // Still no word from sign-in after 12 seconds: say so, instead of "Connecting…" forever.
   setTimeout(() => { if (sync.state === 'off'){ sync.state = 'error'; sync.err = 'Can’t reach your account on this device. Close the browser all the way, then open the site again.'; renderSync(); } }, 12000);
@@ -4909,6 +4954,7 @@ function listen(){
   const q = fsM.query(fsM.collection(fsdb, 'pressbox'), fsM.where('owner', '==', sync.user.uid));
   sync.unsub = fsM.onSnapshot(q, snap => {
     let changed = false, current = null;
+    if (!snap.metadata.fromCache) sync.remote = new Set(snap.docs.map(d => d.id));
     snap.docChanges().forEach(ch => {
       if (ch.type === 'removed' || ch.doc.metadata.hasPendingWrites) return;
       const id = ch.doc.id, d = ch.doc.data(), local = db.games[id];
@@ -5042,9 +5088,18 @@ async function signIn(){
     sync.err = friendlySync(e); if (sync.err) toast(sync.err); renderSync();
   }
 }
+// Signing out takes the account's games off this device (Chuck, 2026-11-27: signed out, he could still see every
+// game in the list). A game still waiting to go up stays, so nothing is lost.
 async function signOutSync(){
   if (!sync.api) return;
-  try { await sync.api.authM.signOut(sync.api.auth); toast('Signed out. Games stay on this device.'); } catch (e) { toast(friendlySync(e)); }
+  const mine = sync.remote || new Set(), waiting = id => sync.failed.has(id) || !!sync.timers[id];
+  try { await sync.api.authM.signOut(sync.api.auth); } catch (e) { return toast(friendlySync(e)); }
+  Object.keys(db.games).forEach(id => { const x = db.games[id]; if (x && !x.sample && (mine.has(id) || x.foreign) && !waiting(id)){ delete db.games[id]; goneIds.add(id); } });
+  sync.remote = null;
+  if (!db.games[g && g.id]) g = sampleGame();
+  resetUi(); ui.start = true; persist(); refresh();
+  if (ui.dlg === 'games' && dlg().open) dlg().innerHTML = dlgGames();
+  toast('Signed out');
 }
 function friendlySync(e){
   const code = e?.code || '';
@@ -8656,11 +8711,19 @@ function startSchedule(){
 }
 
 function renderStart(){
-  const on = !!ui.start && !ui.viewer;
+  const locked = typeof trackLocked === 'function' && trackLocked();
+  const on = (!!ui.start || locked) && !ui.viewer;
   document.body.classList.toggle('starting', on);
   const box = $('#start'); if (!box) return;
   box.hidden = !on;
   if (!on) return;
+  if (locked){
+    box.innerHTML = `<div class="s-main"><section class="hcard s-hero"><span class="h-eyebrow">Game Tracker</span>
+      <h1>Sign in to keep stats</h1>
+      <p>${sync.state === 'error' && sync.err ? esc(sync.err) : 'Every game is kept in your account, so it’s on the site from the first play and never stuck on one phone or computer.'}</p>
+      <div class="h-btns"><button type="button" class="h-btn primary" data-signin>Sign in with Google</button></div></section></div>`;
+    return;
+  }
   const sched = startSchedule();
   // Each school's logo stays with its name, so a long name wraps between the teams, not away from its logo.
   const matchup = T => `<span class="s-t">${markFor(T.A, 24)}${esc(T.A.name)}</span><em>at</em><span class="s-t">${markFor(T.H, 24)}${esc(T.H.name)}</span>`;
