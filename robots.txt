@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /embed/
+Disallow: /*?tracker
+Disallow: /*&open=
+
+Sitemap: https://stats.kansasmediarankings.com/sitemap.xml

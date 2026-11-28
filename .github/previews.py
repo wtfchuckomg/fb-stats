@@ -13,6 +13,7 @@ import html, json, os, re, shutil, sys, urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import cards   # draws g/<id>/card.png
+import seo
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'g')
@@ -44,6 +45,12 @@ def card_of(doc_id, f, seed):
         return None, None
 
 
+def teams_of(title):
+    """The two schools in a card title: "Pittsburg 36, Bonner Springs 13" or "Augusta at Andover"."""
+    m = re.fullmatch(r'(.+?) \d+, (.+?) \d+', title) or re.fullmatch(r'(.+?) (?:at|vs\.?) (.+)', title)
+    return [m.group(1), m.group(2)] if m else []
+
+
 def page(doc_id, title, sub):
     t = html.escape(title, quote=True)
     d = html.escape(f"{sub + ' · ' if sub else ''}Play-by-play, box score and stats on Kansas Media Stats", quote=True)
@@ -66,9 +73,8 @@ def page(doc_id, title, sub):
 <meta name="twitter:description" content="{d}">
 <meta name="twitter:image" content="{SITE}/g/{doc_id}/card.png">
 <link rel="canonical" href="{here}">
-<meta http-equiv="refresh" content="0; url={go}">
-<script>location.replace('{go}' + (location.search ? '&' + location.search.slice(1) : ''));</script>
-</head><body><p><a href="{go}">{t}</a> · Kansas Media Stats</p></body></html>
+{seo.go_script(go, keep_query=True)}
+</head>{seo.body(t, [sub], (go, 'Play-by-play, box score and stats'), teams_of(title))}</html>
 '''
 
 

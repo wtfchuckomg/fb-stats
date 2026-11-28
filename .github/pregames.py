@@ -14,6 +14,7 @@ from datetime import date
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import cards   # fonts, logos, colors and the slug helper
+import seo
 
 from PIL import Image, ImageDraw
 
@@ -95,9 +96,8 @@ def page(g):
 <meta name="twitter:description" content="{d}">
 <meta name="twitter:image" content="{here}card.png">
 <link rel="canonical" href="{here}">
-<meta http-equiv="refresh" content="0; url={go}">
-<script>location.replace({json.dumps(go)});</script>
-</head><body><p><a href="{go}">{t}</a></p></body></html>
+{seo.go_script(html.unescape(go))}
+</head>{seo.body(t, [g['when']], (go, 'Records, the matchup predictor and the series'), [g['an'], g['hn']])}</html>
 '''
 
 
