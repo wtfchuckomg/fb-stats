@@ -379,7 +379,7 @@ function summary0(x){
     // Before kickoff a scheduled game shows its day ("Fri 9/18") and no score.
     const fin = qsOver(x.per), pre = x.per === 'pre';
     return {quick:true, fin, pre, ff:x.per === 'ff', live:!pre && !fin, q:{pre:0, half:2, ot:5, final:4, fot:5, ff:4}[x.per] ?? +x.per,
-      status:pre ? x.time || dayShort(gameDay(x)) : QS_STATUS[x.per] || `${x.clk ? x.clk + ' - ' : ''}${ord(+x.per)}`,
+      status:pre ? (x.time ? `${dayShort(gameDay(x)).split(' ')[0]} ${x.time}` : dayShort(gameDay(x))) : QS_STATUS[x.per] || `${x.clk ? x.clk + ' - ' : ''}${ord(+x.per)}`,
       score:{A:+x.A || 0, H:+x.H || 0}, poss:null, lines:null, S:null, men:0};
   }
   const r = replay(x), st = r.st;

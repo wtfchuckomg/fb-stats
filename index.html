@@ -5802,7 +5802,7 @@ function summary0(x){
     // Before kickoff a scheduled game shows its day ("Fri 9/18") and no score.
     const fin = qsOver(x.per), pre = x.per === 'pre';
     return {quick:true, fin, pre, ff:x.per === 'ff', live:!pre && !fin, q:{pre:0, half:2, ot:5, final:4, fot:5, ff:4}[x.per] ?? +x.per,
-      status:pre ? x.time || dayShort(gameDay(x)) : QS_STATUS[x.per] || `${x.clk ? x.clk + ' - ' : ''}${ord(+x.per)}`,
+      status:pre ? (x.time ? `${dayShort(gameDay(x)).split(' ')[0]} ${x.time}` : dayShort(gameDay(x))) : QS_STATUS[x.per] || `${x.clk ? x.clk + ' - ' : ''}${ord(+x.per)}`,
       score:{A:+x.A || 0, H:+x.H || 0}, poss:null, lines:null, S:null, men:0};
   }
   const r = replay(x), st = r.st;
@@ -11398,7 +11398,7 @@ function previewHtml(){
   document.title = `${A} at ${H} · Preview · ${SITE_TITLE}`;
   const day = gameDay(x), P = predict(A, H, day.getFullYear());
   const when = `${day.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'})}`;
-  const time = '7:00 PM';   // every Kansas game kicks off at 7 p.m.; a listing that says otherwise is ignored
+  const time = x.time || '7:00 PM';   // 7 p.m. unless the site set a kickoff itself (title games); outside listings are ignored
   // A game someone is keeping stats on. Once the first play is in, a shared preview link becomes the gamecast
   // on its own — nobody has to send the link again.
   const pair = [A, H].map(canonSchool).sort().join('|');
@@ -12633,6 +12633,8 @@ const BK_ROUND_DAYS = ['2026-10-30', '2026-11-06', '2026-11-13', '2026-11-20', '
 // for 1A are on Saturday"; 2A and 4A were already played Friday).
 const BK_STATE_FRI = new Set(['1A', '2A', '4A']);
 const bkRoundDay = (cls, r) => r === 4 && !BK_STATE_FRI.has(cls) ? '2026-11-28' : BK_ROUND_DAYS[r];
+// Title-game kickoffs (2026). Replaced each year; a class not listed shows its day only.
+const BK_STATE_TIME = {'6A':'1:00 PM', '5A':'6:00 PM', '3A':'12:00 PM', '8M-I':'7:00 PM', '8M-II':'11:00 AM', '6M':'3:00 PM'};
 // Week 9 games on Thursday the 29th, by a school in them: KPreps' "Thursday Games" list, checked 2026-10-29 (52 games),
 // and the two played away from either school.
 const BK_THURSDAY = new Set(['Abilene', 'Altoona-Midway', 'Andover Central', 'Ashland', 'Attica-Argonia', 'Axtell', 'BV West', 'Beloit', 'Bennington', 'Bluestem', 'Caney Valley', 'Canton-Galva', 'Cedar Vale-Dexter', 'Central Burden', 'Central Plains', 'Centralia', 'Centre', 'Chase', 'Chase County', 'Cherryvale', 'Cheylin', 'Clifton-Clyde', 'Conway Springs', 'Cunningham', 'Decatur', 'Deerfield', 'Dighton', 'Elkhart', 'Ell-Saline', 'Ellis', 'Erie', 'Flinthills', 'Gardner Edgerton', 'Hanover', 'Hartford', 'Highland Park', 'Hill City', 'Hodgeman County', 'Hoxie', 'Hutch Central Christian', 'Jackson Heights', 'Jayhawk-Linn', 'Kiowa County', 'Lakeside', 'Lebo', 'Lincoln', 'Linn', 'Little River', 'Logan', 'Lyndon', 'Madison', 'Marais des Cygnes Valley', 'Marmaton Valley', 'Meade', 'Minneola', 'Moscow', 'Neodesha', 'Ness City', 'Northeast-Arma', 'Norwich', 'Olathe East', 'Olathe North', 'Olathe Northwest', 'Olpe', 'Osborne', 'Oswego', 'Otis-Bison', 'Oxford', 'Pleasant Ridge', 'Pleasanton', 'Quinter', 'Rawlins County', 'Remington', 'Rock Creek', 'Sabetha', 'Salina Central', 'Sedan', 'Silver Lake', 'Solomon', 'South Central', 'South Gray', 'South Sumner', 'Southeast (Cherokee)', 'Southern Coffey County', 'Southwestern Heights', 'Spearville', 'Spring Hill', 'St John\'s', 'Stanton County', 'Sylvan-Lucas Unified', 'Thomas More Prep', 'Thunder Ridge', 'Turner', 'WaKeeney-Trego', 'Wakefield', 'Wallace County', 'Wamego', 'West Franklin', 'Western Plains', 'Wheatland-Grinnell', 'Wichita County', 'Winona-Triplains', 'Wyandotte', 'Yates Center'].map(canonSchool));
@@ -12675,7 +12677,7 @@ function bkSchedRefresh(){
       if (!a || !b || a.bye || b.bye) return;   // past week 8 by the calendar: a week-1 game with no final on file doesn't hold it up
       const [H, A] = r < 4 && rank(b) < rank(a) ? [b, a] : [a, b];
       out.push(bkWeek9Fix({id:`bk26-${cls}-${r}-${canonSchool(A.name)}-${canonSchool(H.name)}`, kind:'score', sched:true, opp:true, file:true, playoff:true,
-        created:0, updated:0, date:bkRoundDay(cls, r), teams:{A:team(A.name), H:team(H.name)}, A:0, H:0, per:'pre', clk:''}));
+        created:0, updated:0, date:bkRoundDay(cls, r), ...(r === 4 && BK_STATE_TIME[cls] ? {time:BK_STATE_TIME[cls]} : {}), teams:{A:team(A.name), H:team(H.name)}, A:0, H:0, per:'pre', clk:''}));
     };
     try {
       BK_CLASSES.forEach(cls => {

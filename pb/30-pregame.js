@@ -352,7 +352,7 @@ function previewHtml(){
   document.title = `${A} at ${H} · Preview · ${SITE_TITLE}`;
   const day = gameDay(x), P = predict(A, H, day.getFullYear());
   const when = `${day.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'})}`;
-  const time = '7:00 PM';   // every Kansas game kicks off at 7 p.m.; a listing that says otherwise is ignored
+  const time = x.time || '7:00 PM';   // 7 p.m. unless the site set a kickoff itself (title games); outside listings are ignored
   // A game someone is keeping stats on. Once the first play is in, a shared preview link becomes the gamecast
   // on its own — nobody has to send the link again.
   const pair = [A, H].map(canonSchool).sort().join('|');
