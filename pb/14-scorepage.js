@@ -164,6 +164,33 @@ function storyStar(x, S, s){
 const STORY_CHAMPS = {'Manhattan':'6A', 'Salina Central':'5A', 'Kapaun Mt Carmel':'4A', 'Andale':'3A', 'Nemaha Central':'2A', 'Sterling':'1A',
   'South Central':'8-Man I', 'Hanover':'8-Man II', 'Cunningham':'6-Man'};
 const storyChamp = n => { const k = canonSchool(n), hit = Object.keys(STORY_CHAMPS).find(c => canonSchool(c) === k); return hit ? STORY_CHAMPS[hit] : ''; };
+// Every school's state titles (playoffs/records.json), for the title-game stories (Chuck, 2026-11-28: "last
+// title, repeating, first in school history"). Asked for the first time a title game's story is drawn.
+const storyTitles = {list:null, asked:false};
+function titleYears(name){
+  if (!storyTitles.asked){
+    storyTitles.asked = true;
+    fetch(DATA + '/playoffs/records.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null)
+      .then(d => { if (d && d.titles){ storyTitles.list = d.titles; renderScoreboard(); } }).catch(() => {});
+  }
+  if (!storyTitles.list) return null;
+  const k = canonSchool(name), t = storyTitles.list.find(t => canonSchool(t.s) === k);
+  return t ? Object.values(t.c).flat().sort((a, b) => a - b) : [];
+}
+const NTH = ['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth'];
+const nth = n => NTH[n] || ord(n);
+// What a title means to the school that won it: its first ever, a repeat, or the first in a long while.
+function titleFact(name, school, year){
+  const ys = titleYears(name); if (!ys) return '';
+  const before = ys.filter(y => y < year), n = before.length + 1, last = before[before.length - 1];
+  if (!before.length) return `It's the first state title in ${school} history.`;
+  if (last === year - 1){
+    let run = 1; while (before.includes(year - run - 1)) run++;
+    return `${school} wins its ${nth(run + 1)} straight title${n > run + 1 ? `, its ${nth(n)} overall` : ''}.`;
+  }
+  if (year - last >= 5) return `It's ${school}'s first state title since ${last}, and its ${nth(n)} overall.`;
+  return `It's the ${nth(n)} state title for ${school}.`;
+}
 // What a score can't say: the two schools, then the line to run under their game.
 const STORY_NOTES = [['Herington', 'Northern Heights', 'The game was called in the fourth quarter because of weather.']];
 const storyPair = (a, b) => [a, b].map(canonSchool).sort().join('|');
@@ -229,12 +256,13 @@ function gameStory(x, m, po){
   const facts = [
     storyNote(x),
     mercy ? 'The mercy rule ended it early.' : '',
+    round === 'State Championship' ? titleFact(x.teams[W].name, won, gameDay(x).getFullYear()) : '',
     champL ? (po ? `${won} ended the title defense of the ${champL} champions.` : `${lost} is the defending ${champL} champion.`) : '',
     upset,
     revenge ? `${won} avenged a ${wasL}-${wasW} loss on ${met.day}.` : met && wasW > wasL ? `${won} also won the first meeting, ${wasW}-${wasL}, on ${met.day}.` : met ? `The first meeting ended in a ${wasW}-${wasL} tie on ${met.day}.` : '',
     lr && ll === 1 && lw >= 3 ? `${lost} had been unbeaten.` : '',
     champW && wr ? `The defending ${champW} champion ${!wl && ww >= 5 ? `stays perfect at ${wr}` : `${up} to ${wr}`}.` : '',
-    !champW && wr && !wl && ww >= 5 ? `${won} stays perfect at ${wr}.` : '',
+    !champW && wr && !wl && ww >= 5 ? (round === 'State Championship' ? `${won} finishes a perfect ${wr} season.` : `${won} stays perfect at ${wr}.`) : '',
     wr && ww === 1 && wl >= 3 ? `${won} got its first win of the season.` : '',
     next ? `${won} moves on to the ${next === 'State Championship' ? 'state championship' : `${next.toLowerCase()} round`}.` : ''
   ].filter(Boolean);
